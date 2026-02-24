@@ -908,11 +908,33 @@
     });
   });
 
-  // Google Sheets — dynamiczne linki do zakładek procesów
+  // Google Sheets — dynamiczne linki do zakładek procesów (fuzzy matching)
   (async function loadSheetLinks() {
     const SPREADSHEET_ID = '1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY';
     const API_KEY = 'AIzaSyAlBh740rlHHg5wtWVDFp_WBFROxS8kKbM';
     const BASE = 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID + '/edit';
+
+    // Normalizacja: małe litery + usunięcie polskich ogonków + zwinięcie spacji
+    function norm(s) {
+      return s.trim().toLowerCase()
+        .replace(/ą/g,'a').replace(/ć/g,'c').replace(/ę/g,'e')
+        .replace(/ł/g,'l').replace(/ń/g,'n').replace(/ó/g,'o')
+        .replace(/ś/g,'s').replace(/ź/g,'z').replace(/ż/g,'z')
+        .replace(/\s+/g,' ');
+    }
+
+    // Odległość Levenshteina
+    function lev(a, b) {
+      const m = a.length, n = b.length;
+      const dp = Array.from({length: m+1}, (_, i) =>
+        Array.from({length: n+1}, (_, j) => i || j));
+      for (let i = 1; i <= m; i++)
+        for (let j = 1; j <= n; j++)
+          dp[i][j] = a[i-1] === b[j-1]
+            ? dp[i-1][j-1]
+            : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+      return dp[m][n];
+    }
 
     try {
       const res = await fetch(
@@ -922,18 +944,36 @@
       if (!res.ok) return;
       const data = await res.json();
 
-      const sheetMap = {};
+      // Dwie mapy: exact lowercase → gid  oraz  znormalizowana → gid
+      const exactMap = {}, normMap = {};
       for (const sheet of data.sheets) {
-        const key = sheet.properties.title.trim().toLowerCase();
-        sheetMap[key] = sheet.properties.sheetId;
+        const title = sheet.properties.title.trim();
+        const gid   = sheet.properties.sheetId;
+        exactMap[title.toLowerCase()] = gid;
+        normMap[norm(title)] = gid;
+      }
+
+      function findGid(processName) {
+        // 1. Exact (case-insensitive)
+        const exact = processName.trim().toLowerCase();
+        if (exactMap[exact] !== undefined) return exactMap[exact];
+        // 2. Znormalizowane (bez ogonków, małe litery)
+        const normalized = norm(processName);
+        if (normMap[normalized] !== undefined) return normMap[normalized];
+        // 3. Fuzzy: Levenshtein ≤ 3 na znormalizowanych
+        let bestGid = null, bestDist = Infinity;
+        for (const [key, gid] of Object.entries(normMap)) {
+          const d = lev(normalized, key);
+          if (d <= 3 && d < bestDist) { bestDist = d; bestGid = gid; }
+        }
+        return bestGid;
       }
 
       document.querySelectorAll('.process-item').forEach(item => {
         const nameEl = item.querySelector('.p-name');
         if (!nameEl) return;
-        const key = nameEl.textContent.trim().toLowerCase();
-        if (Object.prototype.hasOwnProperty.call(sheetMap, key)) {
-          const gid = sheetMap[key];
+        const gid = findGid(nameEl.textContent);
+        if (gid !== null) {
           const url = BASE + '?gid=' + gid + '#gid=' + gid;
           item.classList.add('has-sheet');
           nameEl.insertAdjacentHTML('afterend', '<span class="sheet-badge">↗ Sheets</span>');
