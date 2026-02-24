@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OvocxMalinovi — Centrum Operacyjne</title>
+<script src="config.js"></script>
+<script src="opakowania-data.js" defer></script>
+<script src="planowanie-data.js" defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -575,6 +578,13 @@
     0%,60%,100% { opacity: 0.2; transform: scale(1); }
     30% { opacity: 1; transform: scale(1.25); }
   }
+  .ctx-badge {
+    font-size: 10px;
+    color: var(--purple);
+    opacity: 0.7;
+    margin-bottom: 4px;
+    font-family: 'DM Mono', monospace;
+  }
 
   /* Team strip */
   .team-row {
@@ -1104,8 +1114,142 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
 
   let malHistory = [];
 
+  // ─── Smart context injection ────────────────────────────────────────────────
+  // Jeśli zapytanie dotyczy danych firmowych, dołącz je automatycznie.
+  function buildMalContext(msg) {
+    const q = msg.toLowerCase()
+      .replace(/ą/g,'a').replace(/ć/g,'c').replace(/ę/g,'e')
+      .replace(/ł/g,'l').replace(/ń/g,'n').replace(/ó/g,'o')
+      .replace(/ś/g,'s').replace(/ź/g,'z').replace(/ż/g,'z');
+
+    // Czy pytanie dotyczy danych ilościowych?
+    const dataKeywords = ['karton','opakow','kg','ton','ilosc','wolumen','prognoz','plan','zamow','sprzed','sezon','tygodnie','tyg','pakow','szt','jednostek'];
+    const hasDataIntent = dataKeywords.some(k => q.includes(k));
+    if (!hasDataIntent) return '';
+
+    const hasOpak = !!(window.OPAK_DATA && window.OPAK_DATA.rekordy);
+    const hasPlan = !!(window.PLAN_DATA && window.PLAN_DATA.length);
+    if (!hasOpak && !hasPlan) return '';
+
+    // ── Znajdź odbiorcę ──
+    const ODBIORCY = hasOpak ? [...new Set(window.OPAK_DATA.rekordy.map(r => r.odbiorca))] : [];
+    const KLIENCI  = hasPlan  ? [...new Set(window.PLAN_DATA.filter(r=>r.typ==='klient').map(r=>r.podmiot))] : [];
+    const ALL_NAMES = [...new Set([...ODBIORCY, ...KLIENCI])];
+
+    function normN(s) {
+      return (s||'').toLowerCase()
+        .replace(/ą/g,'a').replace(/ć/g,'c').replace(/ę/g,'e')
+        .replace(/ł/g,'l').replace(/ń/g,'n').replace(/ó/g,'o')
+        .replace(/ś/g,'s').replace(/ź/g,'z').replace(/ż/g,'z');
+    }
+
+    let matchedName = null;
+    let bestScore = 0;
+    for (const name of ALL_NAMES) {
+      const n = normN(name);
+      const words = n.split(/\s+/);
+      const score = words.filter(w => q.includes(w) && w.length > 2).length;
+      if (score > bestScore) { bestScore = score; matchedName = name; }
+    }
+
+    // ── Znajdź owoc ──
+    let matchedOwoc = null;
+    if (q.includes('malin')) matchedOwoc = 'Malina';
+    else if (q.includes('truskaw')) matchedOwoc = 'Truskawka tunelowa';
+
+    // ── Znajdź miesiąc ──
+    const MONTHS = {
+      'maj':[18,22],'czerw':[23,26],'lip':[27,30],'sierp':[31,35],
+      'wrzes':[36,39],'paz':[40,44],'listop':[45,46]
+    };
+    let matchedWeeks = null;
+    for (const [kw, range] of Object.entries(MONTHS)) {
+      if (q.includes(kw)) { matchedWeeks = range; break; }
+    }
+
+    // ── Czy pyta o ceny? ──
+    const priceKw = ['cen','eur','pln','zl','zł','plac','platil','kosztow'];
+    const asksPrice = priceKw.some(k => q.includes(k));
+
+    let ctx = '';
+
+    // ── Dane RT 2025 (opakowania) ──
+    if (hasOpak) {
+      let rekordy = window.OPAK_DATA.rekordy;
+      if (matchedName) rekordy = rekordy.filter(r => r.odbiorca === matchedName || normN(r.odbiorca) === normN(matchedName));
+      if (matchedOwoc) rekordy = rekordy.filter(r => r.owoc === matchedOwoc);
+      if (matchedWeeks) rekordy = rekordy.filter(r => r.tydzien >= matchedWeeks[0] && r.tydzien <= matchedWeeks[1]);
+
+      if (rekordy.length > 0) {
+        // Agreguj po pak
+        const agg = {};
+        for (const r of rekordy) {
+          const k = r.pak;
+          if (!agg[k]) agg[k] = { owoc: r.owoc, odbiorca: r.odbiorca, kg: 0, kartony: 0, jednostki: 0 };
+          agg[k].kg       += r.wolumen_kg  || 0;
+          agg[k].kartony  += r.kartonow    || 0;
+          agg[k].jednostki+= r.jednostek   || 0;
+        }
+        const rows = Object.entries(agg)
+          .sort((a,b) => b[1].kartony - a[1].kartony)
+          .slice(0, 20)
+          .map(([pak, v]) => `${pak}: ${Math.round(v.kg)} kg, ${v.kartony} kart., ${v.jednostki} jedn.`)
+          .join('\n');
+        const totalKg      = rekordy.reduce((s,r) => s + (r.wolumen_kg||0), 0);
+        const totalKartony = rekordy.reduce((s,r) => s + (r.kartonow||0), 0);
+
+        ctx += `\n[DANE FIRMOWE — RT 2025`;
+        if (matchedName) ctx += `, odbiorca: ${matchedName}`;
+        if (matchedOwoc) ctx += `, owoc: ${matchedOwoc}`;
+        if (matchedWeeks) ctx += `, tyg. ${matchedWeeks[0]}–${matchedWeeks[1]}`;
+        ctx += `]\nŁącznie: ${Math.round(totalKg)} kg, ${totalKartony} kartonów\nWg opakowania:\n${rows}`;
+        if (asksPrice) ctx += '\n⚠️ Ceny nie są dostępne w tym narzędziu — sprawdź RT 2025 Excel.';
+      }
+    }
+
+    // ── Dane PLAN 2026 ──
+    if (hasPlan) {
+      let plan = window.PLAN_DATA.filter(r => r.typ === 'klient');
+      if (matchedName) plan = plan.filter(r => r.podmiot === matchedName || normN(r.podmiot) === normN(matchedName));
+      if (matchedOwoc) plan = plan.filter(r => r.owoc === matchedOwoc);
+      if (matchedWeeks) plan = plan.filter(r => r.tydzien >= matchedWeeks[0] && r.tydzien <= matchedWeeks[1]);
+
+      const planKw = ['plan','prognoz','2026','sezon'];
+      const asksPlan = planKw.some(k => q.includes(k));
+
+      if (plan.length > 0 && asksPlan) {
+        const planKg = plan.reduce((s,r) => s + (r.kg||0), 0);
+        const grouped = {};
+        for (const r of plan) {
+          const k = `${r.podmiot}/${r.owoc}`;
+          if (!grouped[k]) grouped[k] = 0;
+          grouped[k] += r.kg || 0;
+        }
+        const planRows = Object.entries(grouped)
+          .sort((a,b) => b[1]-a[1]).slice(0,10)
+          .map(([k,v]) => `${k}: ${Math.round(v)} kg`)
+          .join('\n');
+        ctx += `\n\n[PLAN 2026`;
+        if (matchedName) ctx += `, klient: ${matchedName}`;
+        if (matchedOwoc) ctx += `, owoc: ${matchedOwoc}`;
+        ctx += `]\nŁącznie: ${Math.round(planKg)} kg\n${planRows}`;
+      }
+    }
+
+    return ctx;
+  }
+  // ─────────────────────────────────────────────────────────────────────────────
+
   function malGetKey() {
+    // Priorytet: config.js (jeden klucz dla całego zespołu)
+    const cfgKey = (window.OXM_CONFIG && window.OXM_CONFIG.apiKey) ? window.OXM_CONFIG.apiKey.trim() : '';
+    if (cfgKey) return cfgKey;
+    // Fallback: klucz wpisany ręcznie w tej przeglądarce
     return localStorage.getItem('oxm_mal_key') || null;
+  }
+
+  function malModel() {
+    return (window.OXM_CONFIG && window.OXM_CONFIG.model) ? window.OXM_CONFIG.model : 'claude-haiku-4-5-20251001';
   }
 
   function malAddMsg(role, text) {
@@ -1148,8 +1292,18 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
     document.getElementById('mal-suggestions').style.display = 'none';
     document.getElementById('mal-btn').disabled = true;
 
+    // Wstrzyknij dane firmowe jeśli zapytanie tego wymaga
+    const ctx = buildMalContext(msg);
+    const msgForApi = ctx ? msg + '\n\n' + ctx : msg;
+
     malAddMsg('user', msg);
-    malHistory.push({ role: 'user', content: msg });
+    if (ctx) {
+      const badge = document.createElement('div');
+      badge.className = 'ctx-badge';
+      badge.textContent = '📊 dane firmowe dołączone';
+      document.getElementById('mal-history').appendChild(badge);
+    }
+    malHistory.push({ role: 'user', content: msgForApi });
     malTyping();
 
     try {
@@ -1162,7 +1316,7 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
           'anthropic-dangerous-direct-browser-access': 'true'
         },
         body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
+          model: malModel(),
           max_tokens: 1024,
           system: MAL_SYSTEM,
           messages: malHistory
@@ -1444,6 +1598,13 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
   });
 
   (function initMalKey() {
+    const cfgKey = (window.OXM_CONFIG && window.OXM_CONFIG.apiKey) ? window.OXM_CONFIG.apiKey.trim() : '';
+    if (cfgKey) {
+      // Klucz skonfigurowany w config.js — ukryj cały formularz
+      document.getElementById('mal-key-setup').style.display = 'none';
+      document.getElementById('mal-key-reset').style.display = 'none';
+      return;
+    }
     const hasKey = !!localStorage.getItem('oxm_mal_key');
     document.getElementById('mal-key-setup').style.display = hasKey ? 'none' : 'block';
     if (hasKey) document.getElementById('mal-key-reset').style.display = 'inline';
