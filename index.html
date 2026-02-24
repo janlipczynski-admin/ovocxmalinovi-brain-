@@ -300,6 +300,20 @@
   .pill-ip { background: rgba(217,119,6,0.1); color: var(--yellow); border: 1px solid rgba(217,119,6,0.2); }
   .pill-ok { background: rgba(22,163,74,0.1); color: var(--green); border: 1px solid rgba(22,163,74,0.2); }
   .pill-bl { background: rgba(220,38,38,0.1); color: var(--red); border: 1px solid rgba(220,38,38,0.2); }
+  .pill[data-pid] { cursor: pointer; user-select: none; transition: filter .12s; }
+  .pill[data-pid]:hover { filter: brightness(0.93); }
+
+  /* Malinoovek key setup */
+  .key-setup { background: rgba(250,66,17,0.05); border: 1px solid rgba(250,66,17,0.2); border-radius: 8px; padding: 11px 13px; margin-bottom: 10px; }
+  .key-setup-lbl { font-size: 11px; font-weight: 600; color: var(--orange); margin-bottom: 5px; }
+  .key-setup-hint { font-size: 10px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; }
+  .key-setup-row { display: flex; gap: 6px; }
+  .key-setup-row input { flex: 1; border: 1px solid var(--border2); border-radius: 6px; padding: 6px 9px; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text); background: var(--white); outline: none; min-width: 0; }
+  .key-setup-row input:focus { border-color: rgba(250,66,17,.4); }
+  .key-save-btn { padding: 6px 12px; background: var(--grad); color: white; border: none; border-radius: 6px; font-size: 11px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; white-space: nowrap; }
+  .key-save-btn:hover { opacity: .88; }
+  .key-reset-lnk { font-size: 9px; font-family: 'DM Mono', monospace; color: var(--text-muted); cursor: pointer; text-decoration: underline; margin-left: 8px; }
+  .key-reset-lnk:hover { color: var(--red); }
 
   /* Backlog */
   .backlog-list { display: flex; flex-direction: column; gap: 7px; }
@@ -704,8 +718,8 @@
     </div>
     <div class="stat-card">
       <div class="stat-label">In progress</div>
-      <div class="stat-value" style="color:var(--yellow)">1</div>
-      <div class="stat-sub">Gospodarka magazynowa</div>
+      <div class="stat-value" style="color:var(--yellow)" id="cnt-ip">1</div>
+      <div class="stat-sub" id="cnt-ip-lbl">Gospodarka magazynowa</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Backlog</div>
@@ -738,7 +752,7 @@
                 <div class="p-owner">Dyrektor handlowy</div>
               </div>
             </div>
-            <div class="pill pill-ns">Not started</div>
+            <div class="pill pill-ns" data-pid="01" onclick="toggleStatus(event,'01')" title="Kliknij, żeby zmienić status">Not started</div>
           </div>
           <div class="process-item">
             <div class="p-left">
@@ -748,7 +762,7 @@
                 <div class="p-owner">Dr. handlowy + Magazyny + Iza + Renia</div>
               </div>
             </div>
-            <div class="pill pill-ns">Not started</div>
+            <div class="pill pill-ns" data-pid="02" onclick="toggleStatus(event,'02')" title="Kliknij, żeby zmienić status">Not started</div>
           </div>
           <div class="process-item has-sheet" onclick="window.open('rozliczenia-rt.html','_self')">
             <div class="p-left">
@@ -758,7 +772,7 @@
                 <div class="p-owner">Dz. Rozliczeń</div>
               </div>
             </div>
-            <div class="pill pill-ns">Not started</div>
+            <div class="pill pill-ns" data-pid="03" onclick="toggleStatus(event,'03')" title="Kliknij, żeby zmienić status">Not started</div>
           </div>
         </div>
 
@@ -772,7 +786,7 @@
                 <div class="p-owner">Olgierd (nowy właściciel)</div>
               </div>
             </div>
-            <div class="pill pill-ns">Not started</div>
+            <div class="pill pill-ns" data-pid="04" onclick="toggleStatus(event,'04')" title="Kliknij, żeby zmienić status">Not started</div>
           </div>
           <div class="process-item active">
             <div class="p-left">
@@ -782,7 +796,7 @@
                 <div class="p-owner">Renia + Magazyny · v1.0</div>
               </div>
             </div>
-            <div class="pill pill-ip">In progress</div>
+            <div class="pill pill-ip" data-pid="05" onclick="toggleStatus(event,'05')" title="Kliknij, żeby zmienić status">In progress</div>
           </div>
           <div class="process-item">
             <div class="p-left">
@@ -792,7 +806,7 @@
                 <div class="p-owner">wszyscy związani z biurem</div>
               </div>
             </div>
-            <div class="pill pill-ns">Not started</div>
+            <div class="pill pill-ns" data-pid="06" onclick="toggleStatus(event,'06')" title="Kliknij, żeby zmienić status">Not started</div>
           </div>
           <div class="process-item">
             <div class="p-left">
@@ -802,7 +816,7 @@
                 <div class="p-owner">Iza i Renia</div>
               </div>
             </div>
-            <div class="pill pill-ns">Not started</div>
+            <div class="pill pill-ns" data-pid="07" onclick="toggleStatus(event,'07')" title="Kliknij, żeby zmienić status">Not started</div>
           </div>
         </div>
       </div>
@@ -941,12 +955,21 @@
               <line x1="81" y1="28" x2="89" y2="28" stroke="#9013fe" stroke-width="1.3" opacity="0.65"/>
             </svg>
           </div>
-          <div>
+          <div style="flex:1">
             <div class="mal-name">Malinoovek</div>
             <div class="mal-status">● Agent aktywny</div>
           </div>
+          <span class="key-reset-lnk" id="mal-key-reset" onclick="malResetKey()" title="Usuń zapisany klucz API" style="display:none">kasuj klucz</span>
         </div>
         <div class="mal-body">
+          <div class="key-setup" id="mal-key-setup">
+            <div class="key-setup-lbl">🔑 Klucz API Anthropic</div>
+            <div class="key-setup-hint">Zostanie zapisany lokalnie w tej przeglądarce.<br>Zaczyna się od <code style="font-family:'DM Mono',monospace;font-size:10px">sk-ant-</code></div>
+            <div class="key-setup-row">
+              <input type="password" id="mal-key-input" placeholder="sk-ant-api03-..." autocomplete="off">
+              <button class="key-save-btn" onclick="malSaveKey()">Zapisz</button>
+            </div>
+          </div>
           <div class="chat-history" id="mal-history">
             <div class="msg-bot">Cześć! Znam procesy OvocxMalinovi i pomagam w codziennej pracy. Co dziś robimy?</div>
           </div>
@@ -1082,12 +1105,7 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
   let malHistory = [];
 
   function malGetKey() {
-    let k = localStorage.getItem('oxm_mal_key');
-    if (!k) {
-      k = prompt('Malinoovek potrzebuje klucza API Anthropic.\nZostanie zapisany tylko lokalnie w tej przeglądarce.\n\nKlucz (zaczyna się od "sk-ant-"):');
-      if (k && k.trim()) localStorage.setItem('oxm_mal_key', k.trim());
-    }
-    return k ? k.trim() : null;
+    return localStorage.getItem('oxm_mal_key') || null;
   }
 
   function malAddMsg(role, text) {
@@ -1120,7 +1138,11 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
     const msg = (text || input.value).trim();
     if (!msg) return;
     const key = malGetKey();
-    if (!key) return;
+    if (!key) {
+      document.getElementById('mal-key-setup').style.display = 'block';
+      document.getElementById('mal-key-input').focus();
+      return;
+    }
 
     input.value = '';
     document.getElementById('mal-suggestions').style.display = 'none';
@@ -1265,6 +1287,86 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
     } catch (e) {
       // brak dostępu do API — dashboard działa normalnie
     }
+  })();
+
+  // ─── Status procesów ──────────────────────────────────────────
+  const PILL_LABELS = { ns: 'Not started', ip: 'In progress', ok: 'Done ✓', bl: 'Blocked' };
+  const PILL_CYCLE  = ['ns', 'ip', 'ok', 'bl'];
+  const PILL_KEY    = 'oxm_process_status';
+  const PILL_DEFAULTS = { '01':'ns','02':'ns','03':'ns','04':'ns','05':'ip','06':'ns','07':'ns' };
+
+  function toggleStatus(e, pid) {
+    e.stopPropagation();
+    const statuses = JSON.parse(localStorage.getItem(PILL_KEY) || '{}');
+    const cur = statuses[pid] !== undefined ? statuses[pid] : (PILL_DEFAULTS[pid] || 'ns');
+    const next = PILL_CYCLE[(PILL_CYCLE.indexOf(cur) + 1) % PILL_CYCLE.length];
+    statuses[pid] = next;
+    localStorage.setItem(PILL_KEY, JSON.stringify(statuses));
+    const pill = document.querySelector('.pill[data-pid="' + pid + '"]');
+    if (pill) { pill.className = 'pill pill-' + next; pill.textContent = PILL_LABELS[next]; }
+    updatePillCounters();
+  }
+
+  function loadStatuses() {
+    const statuses = JSON.parse(localStorage.getItem(PILL_KEY) || '{}');
+    document.querySelectorAll('.pill[data-pid]').forEach(function(pill) {
+      const pid = pill.dataset.pid;
+      const st = statuses[pid] !== undefined ? statuses[pid] : (PILL_DEFAULTS[pid] || 'ns');
+      pill.className = 'pill pill-' + st;
+      pill.textContent = PILL_LABELS[st];
+    });
+    updatePillCounters();
+  }
+
+  function updatePillCounters() {
+    const statuses = JSON.parse(localStorage.getItem(PILL_KEY) || '{}');
+    let ipCount = 0; const ipNames = [];
+    document.querySelectorAll('.pill[data-pid]').forEach(function(pill) {
+      const pid = pill.dataset.pid;
+      const st = statuses[pid] !== undefined ? statuses[pid] : (PILL_DEFAULTS[pid] || 'ns');
+      if (st === 'ip') {
+        ipCount++;
+        const nameEl = pill.closest('.process-item') && pill.closest('.process-item').querySelector('.p-name');
+        if (nameEl) ipNames.push(nameEl.textContent.replace(/↗.*/, '').trim());
+      }
+    });
+    const cntEl = document.getElementById('cnt-ip');
+    const lblEl = document.getElementById('cnt-ip-lbl');
+    if (cntEl) cntEl.textContent = ipCount;
+    if (lblEl) lblEl.textContent = ipCount === 0 ? 'Brak aktywnych' : ipNames.slice(0,2).join(', ') + (ipNames.length > 2 ? '…' : '');
+  }
+
+  loadStatuses();
+
+  // ─── Malinoovek klucz ─────────────────────────────────────────
+  function malSaveKey() {
+    const inp = document.getElementById('mal-key-input');
+    const k = inp.value.trim();
+    if (!k) { inp.style.borderColor = 'var(--red)'; return; }
+    inp.style.borderColor = '';
+    localStorage.setItem('oxm_mal_key', k);
+    document.getElementById('mal-key-setup').style.display = 'none';
+    document.getElementById('mal-key-reset').style.display = 'inline';
+    malAddMsg('bot', '✅ Klucz zapisany! Możesz teraz pisać do Malinoovka.');
+    document.getElementById('mal-input').focus();
+  }
+
+  function malResetKey() {
+    if (!confirm('Usunąć zapisany klucz API?')) return;
+    localStorage.removeItem('oxm_mal_key');
+    document.getElementById('mal-key-setup').style.display = 'block';
+    document.getElementById('mal-key-reset').style.display = 'none';
+    document.getElementById('mal-key-input').value = '';
+  }
+
+  document.getElementById('mal-key-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') malSaveKey();
+  });
+
+  (function initMalKey() {
+    const hasKey = !!localStorage.getItem('oxm_mal_key');
+    document.getElementById('mal-key-setup').style.display = hasKey ? 'none' : 'block';
+    if (hasKey) document.getElementById('mal-key-reset').style.display = 'inline';
   })();
 </script>
 
