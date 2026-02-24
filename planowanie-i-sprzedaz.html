@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planowanie i Sprzedaż 2026 — OvocxMalinovi</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #fa4211;
+    --purple: #9013fe;
+    --grad: linear-gradient(135deg, #fa4211, #9013fe);
+    --bg: #f7f7f5;
+    --white: #ffffff;
+    --border: #e8e6e1;
+    --border2: #d8d5ce;
+    --text: #1a1a18;
+    --text-dim: #6b6b65;
+    --text-muted: #a8a8a0;
+    --surface2: #f2f0eb;
+    --green: #16a34a;
+    --yellow: #d97706;
+    --red: #dc2626;
+    --blue: #2563eb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 36px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    box-shadow: var(--shadow);
+    gap: 16px;
+  }
+
+  .back-btn {
+    display: flex; align-items: center; gap: 8px;
+    text-decoration: none; color: var(--text-dim);
+    font-size: 13px; font-weight: 500; transition: color 0.15s;
+    white-space: nowrap;
+  }
+  .back-btn:hover { color: var(--orange); }
+
+  .header-center {
+    display: flex; align-items: center; gap: 10px; flex: 1; justify-content: center;
+  }
+
+  .page-title { font-size: 16px; font-weight: 700; }
+
+  .year-pill {
+    font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600;
+    background: var(--grad); color: white;
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  .header-actions { display: flex; align-items: center; gap: 8px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 7px; font-size: 12px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer; transition: all 0.15s; border: 1px solid var(--border2);
+    background: var(--white); color: var(--text-dim); font-weight: 500;
+  }
+  .btn:hover { background: var(--surface2); border-color: var(--border); }
+  .btn-primary {
+    background: var(--grad); border: none; color: white;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-danger { border-color: rgba(220,38,38,0.3); color: var(--red); }
+  .btn-danger:hover { background: rgba(220,38,38,0.06); }
+
+  /* ---- TABS ---- */
+  .tabs-bar {
+    display: flex; gap: 0;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 36px;
+    overflow-x: auto;
+  }
+
+  .tab {
+    display: flex; align-items: center; gap: 6px;
+    padding: 12px 18px;
+    font-size: 12px; font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--text-dim); }
+  .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+  .tab-badge {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    background: var(--surface2); color: var(--text-muted);
+    padding: 1px 6px; border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .tab.active .tab-badge { background: rgba(250,66,17,0.1); color: var(--orange); border-color: rgba(250,66,17,0.2); }
+
+  /* ---- MAIN ---- */
+  main {
+    padding: 24px 36px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ---- IMPORT PANEL ---- */
+  .import-zone {
+    border: 2px dashed var(--border2);
+    border-radius: 14px;
+    padding: 48px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--white);
+    margin-bottom: 20px;
+  }
+  .import-zone:hover, .import-zone.drag-over {
+    border-color: var(--orange);
+    background: rgba(250,66,17,0.02);
+  }
+  .import-icon { font-size: 40px; margin-bottom: 12px; }
+  .import-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .import-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+
+  /* ---- SHEET SELECTOR ---- */
+  .sheet-selector {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .sheet-selector-label {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-muted); margin-bottom: 10px;
+  }
+
+  .sheet-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .sheet-chip {
+    padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    border: 1px solid var(--border2); background: var(--surface2); color: var(--text-dim);
+  }
+  .sheet-chip:hover { border-color: var(--orange); color: var(--orange); }
+  .sheet-chip.active { background: var(--orange); border-color: var(--orange); color: white; }
+
+  /* ---- FILTERS BAR ---- */
+  .filters-bar {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px;
+    margin-bottom: 14px; display: none;
+    flex-wrap: wrap; gap: 10px; align-items: flex-end;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-label {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .filter-select, .filter-input {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 7px; padding: 6px 10px;
+    font-size: 12px; color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-width: 130px; outline: none; transition: border-color 0.15s;
+  }
+  .filter-select:focus, .filter-input:focus { border-color: rgba(250,66,17,0.4); }
+  .filter-input::placeholder { color: var(--text-muted); }
+
+  /* ---- TABLE WRAP ---- */
+  .table-wrap {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .table-header-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 18px; border-bottom: 1px solid var(--border);
+    background: var(--surface2); gap: 10px; flex-wrap: wrap;
+  }
+
+  .table-title {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em;
+  }
+
+  .table-actions { display: flex; gap: 6px; align-items: center; }
+
+  .table-count {
+    font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted);
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+    max-height: calc(100vh - 340px);
+    overflow-y: auto;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+  thead th {
+    position: sticky; top: 0;
+    background: var(--surface2); border-bottom: 1px solid var(--border2);
+    padding: 8px 10px; text-align: left;
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em;
+    white-space: nowrap; user-select: none; cursor: pointer;
+    transition: background 0.1s;
+  }
+  thead th:hover { background: var(--border); }
+  thead th.sort-asc::after { content: ' ↑'; color: var(--orange); }
+  thead th.sort-desc::after { content: ' ↓'; color: var(--orange); }
+  thead th.col-edit { cursor: default; width: 36px; }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:hover { background: rgba(250,66,17,0.02); }
+  tbody tr.edited { background: rgba(217,119,6,0.04); }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody td { padding: 7px 10px; color: var(--text); }
+  td.num { text-align: right; font-family: 'DM Mono', monospace; font-size: 11px; }
+  td.muted { color: var(--text-muted); font-size: 11px; }
+
+  /* Edit cell */
+  .edit-cell {
+    display: inline-block; min-width: 60px; padding: 2px 5px;
+    border-radius: 4px; cursor: text;
+    transition: background 0.1s;
+  }
+  .edit-cell:focus {
+    outline: 2px solid var(--orange);
+    background: rgba(250,66,17,0.05);
+    border-radius: 4px;
+  }
+
+  .row-changed-dot {
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--yellow);
+    margin-left: 4px; vertical-align: middle;
+    title: 'Zmieniono';
+  }
+
+  /* Pagination */
+  .pagination {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--surface2); flex-wrap: wrap;
+  }
+  .page-btn {
+    background: var(--white); border: 1px solid var(--border2);
+    border-radius: 6px; padding: 4px 10px; font-size: 11px;
+    color: var(--text-dim); cursor: pointer; transition: all 0.15s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .page-btn:hover { border-color: var(--orange); color: var(--orange); }
+  .page-btn.active { background: var(--orange); border-color: var(--orange); color: white; }
+  .page-btn:disabled { opacity: 0.4; cursor: default; }
+  .page-info { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); }
+
+  /* ---- HISTORY TAB ---- */
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .history-item {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+
+  .h-time {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--text-muted); white-space: nowrap; min-width: 120px;
+  }
+
+  .h-body { flex: 1; }
+
+  .h-row-id {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--orange); font-weight: 500; margin-bottom: 3px;
+  }
+
+  .h-change { font-size: 12px; color: var(--text); }
+
+  .h-old { color: var(--text-muted); text-decoration: line-through; }
+  .h-arrow { color: var(--text-muted); margin: 0 4px; }
+  .h-new { color: var(--green); font-weight: 500; }
+
+  .history-empty {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace; font-size: 11px;
+  }
+
+  /* ---- SUMMARY CARDS ---- */
+  .summary-bar {
+    display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .sum-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px;
+    box-shadow: var(--shadow); flex: 1; min-width: 120px;
+  }
+  .sum-label {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;
+  }
+  .sum-value { font-size: 18px; font-weight: 700; line-height: 1; }
+  .sum-value.grad {
+    background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  /* Loading */
+  .loading {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-height: 260px; gap: 14px;
+    color: var(--text-muted); font-family: 'DM Mono', monospace; font-size: 12px;
+  }
+  .spinner {
+    width: 26px; height: 26px;
+    border: 3px solid var(--border2);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @keyframes up {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  @media (max-width: 700px) {
+    header, main { padding-left: 14px; padding-right: 14px; }
+    .tabs-bar { padding: 0 14px; }
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--text); color: white;
+    padding: 10px 18px; border-radius: 8px;
+    font-size: 12px; font-family: 'DM Mono', monospace;
+    box-shadow: var(--shadow-md);
+    opacity: 0; transform: translateY(8px);
+    transition: all 0.25s; z-index: 999; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: var(--green); }
+  .toast.warning { background: var(--yellow); }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-btn">← Dashboard</a>
+  <div class="header-center">
+    <span class="page-title">Planowanie i Sprzedaż</span>
+    <span class="year-pill">2026</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn" onclick="exportChanges()" title="Eksportuj zmiany do CSV">⬇ Eksport zmian</button>
+    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">+ Wgraj plik Excel</button>
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFileUpload(event)">
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <div class="tab active" onclick="switchTab('sprzedaz')">
+    📊 Dane sprzedaży <span class="tab-badge" id="tabBadgeSprzedaz">—</span>
+  </div>
+  <div class="tab" onclick="switchTab('plan')">
+    📋 Plan 2026 <span class="tab-badge" id="tabBadgePlan">—</span>
+  </div>
+  <div class="tab" onclick="switchTab('historia')">
+    🕐 Historia zmian <span class="tab-badge" id="tabBadgeHistoria">0</span>
+  </div>
+</div>
+
+<main>
+
+  <!-- ===== TAB: SPRZEDAZ ===== -->
+  <div class="tab-content active" id="tab-sprzedaz">
+
+    <div class="import-zone" id="importZone"
+         onclick="document.getElementById('fileInput').click()"
+         ondragover="e=>{e.preventDefault();this.classList.add('drag-over')}"
+         ondragleave="this.classList.remove('drag-over')"
+         ondrop="handleDrop(event)">
+      <div class="import-icon">📂</div>
+      <div class="import-title">Wgraj plik "Planowanie i Sprzedaż"</div>
+      <div class="import-sub">Kliknij lub przeciągnij plik .xlsx / .xls / .csv<br>Obsługujemy każdy format — wybierzesz zakładkę po wgraniu</div>
+      <button class="btn btn-primary" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Wybierz plik</button>
+    </div>
+
+    <div class="sheet-selector" id="sheetSelector">
+      <div class="sheet-selector-label">Wybierz zakładkę do wyświetlenia</div>
+      <div class="sheet-chips" id="sheetChips"></div>
+    </div>
+
+    <div class="filters-bar" id="sprzFilters">
+      <div class="filter-group">
+        <div class="filter-label">Szukaj</div>
+        <input class="filter-input" id="sprzSearch" type="text" placeholder="Szukaj w danych...">
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Kolumna 1</div>
+        <select class="filter-select" id="sprzF1"><option value="">Wszystkie</option></select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Kolumna 2</div>
+        <select class="filter-select" id="sprzF2"><option value="">Wszystkie</option></select>
+      </div>
+      <button class="btn" onclick="resetSprzFilters()">↺ Wyczyść</button>
+    </div>
+
+    <div class="summary-bar" id="sprzSummary" style="display:none">
+      <div class="sum-card">
+        <div class="sum-label">Wierszy</div>
+        <div class="sum-value" id="sprzCount">—</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Kolumn</div>
+        <div class="sum-value" id="sprzCols">—</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Plik</div>
+        <div class="sum-value grad" id="sprzFile" style="font-size:13px">—</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Zakładka</div>
+        <div class="sum-value" id="sprzSheet" style="font-size:13px">—</div>
+      </div>
+    </div>
+
+    <div class="table-wrap" id="sprzTableWrap" style="display:none">
+      <div class="table-header-bar">
+        <div class="table-title" id="sprzTableTitle">Dane sprzedaży</div>
+        <div class="table-actions">
+          <span class="table-count" id="sprzTableCount"></span>
+        </div>
+      </div>
+      <div class="table-scroll" id="sprzTableScroll">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+      <div class="pagination" id="sprzPagination" style="display:none"></div>
+    </div>
+
+  </div>
+
+  <!-- ===== TAB: PLAN 2026 ===== -->
+  <div class="tab-content" id="tab-plan">
+
+    <div id="planEmpty" style="text-align:center;padding:60px 20px;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px">
+      <div style="font-size:32px;margin-bottom:12px">📋</div>
+      Wgraj plik Excel w zakładce "Dane sprzedaży",<br>
+      a Plan 2026 zostanie załadowany automatycznie.<br><br>
+      Możesz też edytować dane ręcznie — zmiany są zapisywane z historią.
+    </div>
+
+    <div id="planContent" style="display:none">
+      <div class="filters-bar" id="planFilters" style="display:flex;margin-bottom:14px">
+        <div class="filter-group">
+          <div class="filter-label">Szukaj</div>
+          <input class="filter-input" id="planSearch" type="text" placeholder="Szukaj...">
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">Kolumna 1</div>
+          <select class="filter-select" id="planF1"><option value="">Wszystkie</option></select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">Kolumna 2</div>
+          <select class="filter-select" id="planF2"><option value="">Wszystkie</option></select>
+        </div>
+        <button class="btn" onclick="resetPlanFilters()">↺ Wyczyść</button>
+        <button class="btn btn-primary" onclick="savePlanEdits()" id="btnSavePlan" style="display:none">💾 Zapisz zmiany</button>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-header-bar">
+          <div class="table-title">Plan 2026 — edytowalny</div>
+          <div class="table-actions">
+            <span class="table-count" id="planTableCount"></span>
+            <button class="btn" onclick="toggleEditMode()" id="btnEdit">✏️ Tryb edycji</button>
+          </div>
+        </div>
+        <div class="table-scroll" id="planTableScroll"></div>
+        <div class="pagination" id="planPagination" style="display:none"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== TAB: HISTORIA ===== -->
+  <div class="tab-content" id="tab-historia">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:3px">Historia zmian</div>
+        <div style="font-size:12px;color:var(--text-muted)">Wszystkie edycje zapisywane lokalnie w przeglądarce</div>
+      </div>
+      <button class="btn btn-danger" onclick="clearHistory()">🗑 Wyczyść historię</button>
+    </div>
+    <div id="historyList"></div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const STORAGE_KEY = 'oxm_plan_data';
+const HISTORY_KEY = 'oxm_plan_history';
+const PAGE_SIZE = 100;
+
+let workbook = null;
+let fileName = '';
+let currentSheet = '';
+
+// Dane sprzedaży (z pliku)
+let sprzData = { headers: [], rows: [] };
+let sprzFiltered = [];
+let sprzPage = 0;
+let sprzSortCol = null, sprzSortDir = 1;
+let sprzFilterCols = [null, null]; // które kolumny w filtrach
+
+// Plan 2026 (edytowalny)
+let planData = { headers: [], rows: [] };
+let planFiltered = [];
+let planPage = 0;
+let planSortCol = null, planSortDir = 1;
+let planFilterCols = [null, null];
+let editMode = false;
+let pendingEdits = {}; // { rowIdx: { colIdx: newVal } }
+
+// ============================================================
+// UTILS
+// ============================================================
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => el.className = 'toast', 2500);
+}
+
+function fmtNum(v, dec=2) {
+  const n = parseFloat(v);
+  if (isNaN(n)) return v || '—';
+  return n.toLocaleString('pl-PL', {minimumFractionDigits: dec, maximumFractionDigits: dec});
+}
+
+function isNumCol(rows, idx) {
+  const vals = rows.slice(0, 30).map(r => r[idx]).filter(v => v != null && v !== '');
+  if (vals.length === 0) return false;
+  return vals.filter(v => !isNaN(parseFloat(v))).length > vals.length * 0.7;
+}
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { return []; }
+}
+
+function saveHistory(h) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); } catch(e) {}
+  updateHistoryBadge();
+}
+
+function addHistoryEntry(entry) {
+  const h = getHistory();
+  h.unshift({ ...entry, ts: new Date().toISOString() });
+  if (h.length > 500) h.length = 500;
+  saveHistory(h);
+}
+
+function updateHistoryBadge() {
+  const count = getHistory().length;
+  document.getElementById('tabBadgeHistoria').textContent = count || '0';
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const tabs = ['sprzedaz','plan','historia'];
+    t.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(el => {
+    el.classList.toggle('active', el.id === 'tab-' + name);
+  });
+  if (name === 'historia') renderHistory();
+}
+
+// ============================================================
+// FILE UPLOAD
+// ============================================================
+function handleFileUpload(e) {
+  const f = e.target.files[0];
+  if (f) loadFile(f);
+  e.target.value = '';
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('importZone').classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) loadFile(f);
+}
+
+function loadFile(file) {
+  fileName = file.name;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      workbook = XLSX.read(e.target.result, { type: 'binary', cellDates: true });
+      showSheetSelector();
+      toast('Plik załadowany: ' + fileName, 'success');
+    } catch(err) {
+      toast('Błąd wczytywania pliku: ' + err.message);
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+function showSheetSelector() {
+  const sel = document.getElementById('sheetSelector');
+  const chips = document.getElementById('sheetChips');
+  chips.innerHTML = '';
+  sel.style.display = 'block';
+  document.getElementById('importZone').style.display = 'none';
+
+  workbook.SheetNames.forEach(name => {
+    const chip = document.createElement('div');
+    chip.className = 'sheet-chip';
+    chip.textContent = name;
+    chip.onclick = () => {
+      document.querySelectorAll('.sheet-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      loadSheet(name, 'sprzedaz');
+    };
+    chips.appendChild(chip);
+  });
+
+  // Auto-select first sheet
+  if (workbook.SheetNames.length > 0) {
+    chips.children[0].click();
+  }
+}
+
+function loadSheet(sheetName, target) {
+  currentSheet = sheetName;
+  const ws = workbook.Sheets[sheetName];
+  const raw = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+
+  // Find header row (first non-empty row)
+  let headerIdx = 0;
+  for (let i = 0; i < Math.min(10, raw.length); i++) {
+    if (raw[i].some(c => c !== '')) { headerIdx = i; break; }
+  }
+
+  const headers = raw[headerIdx].map((h, i) => h || `Kolumna ${i+1}`);
+  const rows = raw.slice(headerIdx + 1).filter(r => r.some(c => c !== ''));
+
+  if (target === 'sprzedaz') {
+    sprzData = { headers, rows };
+    sprzFiltered = [...rows];
+    sprzPage = 0;
+    sprzSortCol = null;
+    buildSprzFilters();
+    renderSprzTable();
+    document.getElementById('sprzFilters').style.display = 'flex';
+    document.getElementById('sprzSummary').style.display = 'flex';
+    document.getElementById('sprzTableWrap').style.display = 'block';
+    document.getElementById('sprzFile').textContent = fileName;
+    document.getElementById('sprzSheet').textContent = sheetName;
+    document.getElementById('tabBadgeSprzedaz').textContent = rows.length.toLocaleString('pl-PL');
+
+    // Auto-populate Plan 2026 from first load
+    if (planData.rows.length === 0) {
+      planData = { headers: [...headers], rows: rows.map(r => [...r]) };
+      planFiltered = [...planData.rows];
+      buildPlanFilters();
+      renderPlanTable();
+      document.getElementById('planEmpty').style.display = 'none';
+      document.getElementById('planContent').style.display = 'block';
+      document.getElementById('tabBadgePlan').textContent = rows.length.toLocaleString('pl-PL');
+      savePlanToStorage();
+    }
+  }
+}
+
+// ============================================================
+// SPRZEDAZ TABLE
+// ============================================================
+function buildSprzFilters() {
+  const h = sprzData.headers;
+  // Pick 2 most interesting columns (non-numeric)
+  const textCols = h.map((_, i) => i).filter(i => !isNumCol(sprzData.rows, i));
+  sprzFilterCols[0] = textCols[0] ?? 0;
+  sprzFilterCols[1] = textCols[1] ?? 1;
+
+  buildSelectFilter('sprzF1', sprzFilterCols[0], sprzData.headers, sprzData.rows);
+  buildSelectFilter('sprzF2', sprzFilterCols[1], sprzData.headers, sprzData.rows);
+
+  document.getElementById('sprzSearch').oninput = () => { sprzPage = 0; applySprzFilters(); };
+  document.getElementById('sprzF1').onchange = () => { sprzPage = 0; applySprzFilters(); };
+  document.getElementById('sprzF2').onchange = () => { sprzPage = 0; applySprzFilters(); };
+}
+
+function buildSelectFilter(selId, colIdx, headers, rows) {
+  const sel = document.getElementById(selId);
+  // update label
+  const label = sel.closest('.filter-group').querySelector('.filter-label');
+  if (label) label.textContent = headers[colIdx] || 'Kolumna';
+  sel.innerHTML = '<option value="">Wszystkie</option>';
+  const vals = [...new Set(rows.map(r => String(r[colIdx] || '')).filter(Boolean))].sort();
+  vals.slice(0, 300).forEach(v => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v.length > 50 ? v.slice(0,50)+'…' : v;
+    sel.appendChild(o);
+  });
+}
+
+function applySprzFilters() {
+  const search = document.getElementById('sprzSearch').value.toLowerCase();
+  const f1 = document.getElementById('sprzF1').value;
+  const f2 = document.getElementById('sprzF2').value;
+
+  sprzFiltered = sprzData.rows.filter(r => {
+    if (f1 && String(r[sprzFilterCols[0]] || '') !== f1) return false;
+    if (f2 && String(r[sprzFilterCols[1]] || '') !== f2) return false;
+    if (search) {
+      const hay = r.slice(0, 10).map(c => String(c || '')).join(' ').toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  if (sprzSortCol !== null) sortRows(sprzFiltered, sprzSortCol, sprzSortDir);
+  document.getElementById('sprzTableCount').textContent = sprzFiltered.length.toLocaleString('pl-PL') + ' wierszy';
+  document.getElementById('sprzCount').textContent = sprzFiltered.length.toLocaleString('pl-PL');
+  renderSprzTable();
+  renderSprzPagination();
+}
+
+function renderSprzTable() {
+  if (!sprzData.headers.length) return;
+  const h = sprzData.headers;
+  const numFlags = h.map((_, i) => isNumCol(sprzData.rows, i));
+
+  const rows = sprzFiltered.slice(sprzPage * PAGE_SIZE, (sprzPage + 1) * PAGE_SIZE);
+
+  let html = '<table><thead><tr>';
+  h.forEach((col, i) => {
+    const cls = sprzSortCol === i ? (sprzSortDir === 1 ? 'sort-asc' : 'sort-desc') : '';
+    html += `<th class="${cls}" onclick="sprzSort(${i})">${col}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  if (!rows.length) {
+    html += `<tr><td colspan="${h.length}" style="text-align:center;padding:40px;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:11px">Brak wyników</td></tr>`;
+  } else {
+    rows.forEach(r => {
+      html += '<tr>';
+      h.forEach((_, i) => {
+        const v = r[i] ?? '';
+        if (numFlags[i]) {
+          const n = parseFloat(v);
+          html += `<td class="num">${isNaN(n) ? v || '—' : fmtNum(n)}</td>`;
+        } else {
+          const s = String(v);
+          html += `<td title="${s}">${s.length > 50 ? s.slice(0,50) + '…' : s || '—'}</td>`;
+        }
+      });
+      html += '</tr>';
+    });
+  }
+
+  html += '</tbody></table>';
+  document.getElementById('sprzTableScroll').innerHTML = html;
+  document.getElementById('sprzTableCount').textContent = sprzFiltered.length.toLocaleString('pl-PL') + ' wierszy';
+  document.getElementById('sprzCount').textContent = sprzFiltered.length.toLocaleString('pl-PL');
+  document.getElementById('sprzCols').textContent = h.length;
+  renderSprzPagination();
+}
+
+function sprzSort(idx) {
+  if (sprzSortCol === idx) sprzSortDir *= -1;
+  else { sprzSortCol = idx; sprzSortDir = 1; }
+  sprzPage = 0; applySprzFilters();
+}
+
+function resetSprzFilters() {
+  document.getElementById('sprzSearch').value = '';
+  document.getElementById('sprzF1').value = '';
+  document.getElementById('sprzF2').value = '';
+  sprzSortCol = null; sprzSortDir = 1; sprzPage = 0;
+  applySprzFilters();
+}
+
+function renderSprzPagination() {
+  renderPagination('sprzPagination', sprzFiltered.length, sprzPage,
+    p => { sprzPage = p; renderSprzTable(); });
+}
+
+// ============================================================
+// PLAN 2026 TABLE
+// ============================================================
+function loadPlanFromStorage() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (saved && saved.headers && saved.rows) {
+      planData = saved;
+      planFiltered = [...planData.rows];
+      buildPlanFilters();
+      renderPlanTable();
+      document.getElementById('planEmpty').style.display = 'none';
+      document.getElementById('planContent').style.display = 'block';
+      document.getElementById('tabBadgePlan').textContent = saved.rows.length.toLocaleString('pl-PL');
+    }
+  } catch(e) {}
+}
+
+function savePlanToStorage() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(planData)); } catch(e) {}
+}
+
+function buildPlanFilters() {
+  const h = planData.headers;
+  const textCols = h.map((_, i) => i).filter(i => !isNumCol(planData.rows, i));
+  planFilterCols[0] = textCols[0] ?? 0;
+  planFilterCols[1] = textCols[1] ?? 1;
+
+  buildSelectFilter('planF1', planFilterCols[0], planData.headers, planData.rows);
+  buildSelectFilter('planF2', planFilterCols[1], planData.headers, planData.rows);
+
+  document.getElementById('planSearch').oninput = () => { planPage = 0; applyPlanFilters(); };
+  document.getElementById('planF1').onchange = () => { planPage = 0; applyPlanFilters(); };
+  document.getElementById('planF2').onchange = () => { planPage = 0; applyPlanFilters(); };
+}
+
+function applyPlanFilters() {
+  const search = document.getElementById('planSearch').value.toLowerCase();
+  const f1 = document.getElementById('planF1').value;
+  const f2 = document.getElementById('planF2').value;
+
+  planFiltered = planData.rows.filter(r => {
+    if (f1 && String(r[planFilterCols[0]] || '') !== f1) return false;
+    if (f2 && String(r[planFilterCols[1]] || '') !== f2) return false;
+    if (search) {
+      const hay = r.slice(0, 10).map(c => String(c || '')).join(' ').toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  if (planSortCol !== null) sortRows(planFiltered, planSortCol, planSortDir);
+  renderPlanTable();
+  renderPlanPagination();
+}
+
+function renderPlanTable() {
+  if (!planData.headers.length) return;
+  const h = planData.headers;
+  const numFlags = h.map((_, i) => isNumCol(planData.rows, i));
+  const rows = planFiltered.slice(planPage * PAGE_SIZE, (planPage + 1) * PAGE_SIZE);
+
+  let html = '<table><thead><tr>';
+  if (editMode) html += '<th class="col-edit"></th>';
+  h.forEach((col, i) => {
+    const cls = planSortCol === i ? (planSortDir === 1 ? 'sort-asc' : 'sort-desc') : '';
+    html += `<th class="${cls}" onclick="planSort(${i})">${col}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  if (!rows.length) {
+    html += `<tr><td colspan="${h.length + (editMode?1:0)}" style="text-align:center;padding:40px;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:11px">Brak wyników</td></tr>`;
+  } else {
+    rows.forEach((r, ri) => {
+      // Find real index in planData.rows
+      const realIdx = planData.rows.indexOf(r);
+      const hasEdit = pendingEdits[realIdx] !== undefined;
+      html += `<tr class="${hasEdit ? 'edited' : ''}" data-ridx="${realIdx}">`;
+      if (editMode) html += `<td style="padding:4px 8px"><span style="font-size:9px;color:var(--text-muted);font-family:'DM Mono',monospace">${realIdx+1}</span></td>`;
+      h.forEach((_, i) => {
+        const pendingVal = pendingEdits[realIdx]?.[i];
+        const v = pendingVal !== undefined ? pendingVal : (r[i] ?? '');
+        if (editMode) {
+          if (numFlags[i]) {
+            html += `<td class="num"><span class="edit-cell" contenteditable="true" data-ridx="${realIdx}" data-cidx="${i}" onblur="onCellEdit(this)">${v}</span></td>`;
+          } else {
+            html += `<td><span class="edit-cell" contenteditable="true" data-ridx="${realIdx}" data-cidx="${i}" onblur="onCellEdit(this)">${String(v).length > 60 ? String(v).slice(0,60)+'…' : v}</span></td>`;
+          }
+        } else {
+          if (numFlags[i]) {
+            const n = parseFloat(v);
+            html += `<td class="num">${isNaN(n) ? v || '—' : fmtNum(n)}</td>`;
+          } else {
+            const s = String(v);
+            html += `<td title="${s}">${s.length > 50 ? s.slice(0,50)+'…' : s || '—'}${hasEdit && pendingEdits[realIdx]?.[i] !== undefined ? '<span class="row-changed-dot" title="Zmieniono"></span>' : ''}</td>`;
+          }
+        }
+      });
+      html += '</tr>';
+    });
+  }
+
+  html += '</tbody></table>';
+  document.getElementById('planTableScroll').innerHTML = html;
+  document.getElementById('planTableCount').textContent = planFiltered.length.toLocaleString('pl-PL') + ' wierszy';
+  renderPlanPagination();
+}
+
+function onCellEdit(el) {
+  const ridx = parseInt(el.dataset.ridx);
+  const cidx = parseInt(el.dataset.cidx);
+  const oldVal = planData.rows[ridx]?.[cidx] ?? '';
+  const newVal = el.textContent.trim();
+  if (String(oldVal) === String(newVal)) return;
+
+  if (!pendingEdits[ridx]) pendingEdits[ridx] = {};
+  pendingEdits[ridx][cidx] = newVal;
+
+  // Show save button
+  document.getElementById('btnSavePlan').style.display = 'inline-flex';
+
+  el.closest('tr').classList.add('edited');
+}
+
+function savePlanEdits() {
+  if (!Object.keys(pendingEdits).length) { toast('Brak zmian do zapisania'); return; }
+
+  const changes = [];
+  for (const [ridxStr, cols] of Object.entries(pendingEdits)) {
+    const ridx = parseInt(ridxStr);
+    for (const [cidxStr, newVal] of Object.entries(cols)) {
+      const cidx = parseInt(cidxStr);
+      const oldVal = planData.rows[ridx]?.[cidx] ?? '';
+      changes.push({
+        rowId: planData.rows[ridx]?.[0] ?? `Wiersz ${ridx+1}`,
+        colName: planData.headers[cidx] || `Kol.${cidx+1}`,
+        oldVal: String(oldVal),
+        newVal: String(newVal),
+        rowIdx: ridx,
+        colIdx: cidx
+      });
+      planData.rows[ridx][cidx] = newVal;
+    }
+  }
+
+  addHistoryEntry({ changes, sheet: currentSheet || 'Plan 2026', file: fileName || 'ręczna edycja' });
+  savePlanToStorage();
+
+  pendingEdits = {};
+  document.getElementById('btnSavePlan').style.display = 'none';
+  renderPlanTable();
+  toast(`Zapisano ${changes.length} zmian`, 'success');
+  updateHistoryBadge();
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn = document.getElementById('btnEdit');
+  btn.textContent = editMode ? '✅ Zakończ edycję' : '✏️ Tryb edycji';
+  btn.style.background = editMode ? 'rgba(250,66,17,0.08)' : '';
+  btn.style.borderColor = editMode ? 'rgba(250,66,17,0.3)' : '';
+  btn.style.color = editMode ? 'var(--orange)' : '';
+
+  if (!editMode && Object.keys(pendingEdits).length) savePlanEdits();
+  renderPlanTable();
+}
+
+function planSort(idx) {
+  if (planSortCol === idx) planSortDir *= -1;
+  else { planSortCol = idx; planSortDir = 1; }
+  planPage = 0; applyPlanFilters();
+}
+
+function resetPlanFilters() {
+  document.getElementById('planSearch').value = '';
+  document.getElementById('planF1').value = '';
+  document.getElementById('planF2').value = '';
+  planSortCol = null; planSortDir = 1; planPage = 0;
+  applyPlanFilters();
+}
+
+function renderPlanPagination() {
+  renderPagination('planPagination', planFiltered.length, planPage,
+    p => { planPage = p; renderPlanTable(); document.getElementById('planTableScroll').scrollTop=0; });
+}
+
+// ============================================================
+// GENERIC SORT + PAGINATION
+// ============================================================
+function sortRows(rows, colIdx, dir) {
+  rows.sort((a, b) => {
+    const av = a[colIdx] ?? '';
+    const bv = b[colIdx] ?? '';
+    const an = parseFloat(av), bn = parseFloat(bv);
+    if (!isNaN(an) && !isNaN(bn)) return (an - bn) * dir;
+    return String(av).localeCompare(String(bv), 'pl') * dir;
+  });
+}
+
+function renderPagination(elId, total, current, onPage) {
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const el = document.getElementById(elId);
+  if (totalPages <= 1) { el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+
+  let html = `<button class="page-btn" onclick="(${onPage})(${current-1})" ${current===0?'disabled':''}>← Poprz.</button>`;
+  let s = Math.max(0, current - 3), e = Math.min(totalPages - 1, s + 6);
+  if (e - s < 6) s = Math.max(0, e - 6);
+  if (s > 0) html += `<button class="page-btn" onclick="(${onPage})(0)">1</button><span class="page-info">…</span>`;
+  for (let i = s; i <= e; i++)
+    html += `<button class="page-btn ${i===current?'active':''}" onclick="(${onPage})(${i})">${i+1}</button>`;
+  if (e < totalPages - 1) html += `<span class="page-info">…</span><button class="page-btn" onclick="(${onPage})(${totalPages-1})">${totalPages}</button>`;
+  html += `<button class="page-btn" onclick="(${onPage})(${current+1})" ${current===totalPages-1?'disabled':''}>Nast. →</button>`;
+  html += `<span class="page-info">${current+1} / ${totalPages}</span>`;
+  el.innerHTML = html;
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+function renderHistory() {
+  const h = getHistory();
+  const el = document.getElementById('historyList');
+  if (!h.length) {
+    el.innerHTML = '<div class="history-empty">📭 Brak zapisanych zmian.<br>Edytuj dane w zakładce "Plan 2026" i zapisz — pojawią się tutaj.</div>';
+    return;
+  }
+
+  let html = '<div class="history-list">';
+  h.forEach(entry => {
+    const dt = new Date(entry.ts);
+    const dtStr = dt.toLocaleDateString('pl-PL') + ' ' + dt.toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'});
+    entry.changes.forEach(ch => {
+      html += `
+        <div class="history-item">
+          <div class="h-time">${dtStr}</div>
+          <div class="h-body">
+            <div class="h-row-id">${ch.rowId} · ${ch.colName}</div>
+            <div class="h-change">
+              <span class="h-old">${ch.oldVal || '(puste)'}</span>
+              <span class="h-arrow">→</span>
+              <span class="h-new">${ch.newVal || '(puste)'}</span>
+            </div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:3px;font-family:'DM Mono',monospace">${entry.file} · ${entry.sheet}</div>
+          </div>
+        </div>`;
+    });
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function clearHistory() {
+  if (!confirm('Usunąć całą historię zmian?')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  updateHistoryBadge();
+  renderHistory();
+  toast('Historia wyczyszczona');
+}
+
+function exportChanges() {
+  const h = getHistory();
+  if (!h.length) { toast('Brak zmian do eksportu'); return; }
+  const rows = [['Data', 'Identyfikator', 'Kolumna', 'Stara wartość', 'Nowa wartość', 'Plik', 'Zakładka']];
+  h.forEach(entry => {
+    const dt = new Date(entry.ts).toLocaleString('pl-PL');
+    entry.changes.forEach(ch => {
+      rows.push([dt, ch.rowId, ch.colName, ch.oldVal, ch.newVal, entry.file, entry.sheet]);
+    });
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Historia zmian');
+  XLSX.writeFile(wb, 'historia-zmian-plan2026.xlsx');
+  toast('Wyeksportowano historię zmian', 'success');
+}
+
+// ============================================================
+// AUTO-LOAD: try to load "planowanie i sprzedaz" from repo
+// ============================================================
+async function tryAutoLoad() {
+  const candidates = [
+    'planowanie i sprzedaz.xlsx',
+    'planowanie_i_sprzedaz.xlsx',
+    'planowanie-i-sprzedaz.xlsx',
+    'Planowanie i sprzedaz.xlsx',
+    'Planowanie i Sprzedaz.xlsx',
+    'Planowanie_i_Sprzedaz.xlsx',
+    'planowanie i sprzedaz.xls',
+  ];
+  for (const name of candidates) {
+    try {
+      const resp = await fetch(name);
+      if (!resp.ok) continue;
+      const buf = await resp.arrayBuffer();
+      const data = new Uint8Array(buf);
+      workbook = XLSX.read(data, { type: 'array', cellDates: true });
+      fileName = name;
+      showSheetSelector();
+      toast('Auto-załadowano: ' + name, 'success');
+      return;
+    } catch(e) {}
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+updateHistoryBadge();
+loadPlanFromStorage();
+tryAutoLoad();
+</script>
+
+</body>
+</html>
