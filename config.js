@@ -12,6 +12,6 @@
 // ──────────────────────────────────────────────────────────────────────────────
 
 window.OXM_CONFIG = {
-  apiKey: '',   // ← WKLEJ TU KLUCZ API: 'sk-ant-api03-...'
+  apiKey: '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',
   model:  'claude-sonnet-4-5-20251029'   // sonnet = lepsze odpowiedzi analityczne
 };
