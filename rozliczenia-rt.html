@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rozliczenia RT 2025 — OvocxMalinovi</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #fa4211;
+    --purple: #9013fe;
+    --grad: linear-gradient(135deg, #fa4211, #9013fe);
+    --bg: #f7f7f5;
+    --white: #ffffff;
+    --border: #e8e6e1;
+    --border2: #d8d5ce;
+    --text: #1a1a18;
+    --text-dim: #6b6b65;
+    --text-muted: #a8a8a0;
+    --surface2: #f2f0eb;
+    --green: #16a34a;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 36px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  .back-btn:hover { color: var(--orange); }
+
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: rgba(22,163,74,0.1);
+    color: var(--green);
+    border: 1px solid rgba(22,163,74,0.2);
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .file-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  main {
+    padding: 24px 36px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  /* Filters */
+  .filters-bar {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .filter-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .filter-select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 7px 10px;
+    font-size: 12px;
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    min-width: 140px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .filter-select:focus { border-color: rgba(250,66,17,0.4); }
+
+  .filter-search {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 7px 10px;
+    font-size: 12px;
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-width: 200px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .filter-search:focus { border-color: rgba(250,66,17,0.4); }
+  .filter-search::placeholder { color: var(--text-muted); }
+
+  .btn-reset {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-reset:hover { background: var(--border); color: var(--text); }
+
+  /* Summary bar */
+  .summary-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .sum-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    box-shadow: var(--shadow);
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .sum-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+  }
+
+  .sum-value {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .sum-value.grad {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Table */
+  .table-wrap {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .table-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .table-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .table-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+    max-height: calc(100vh - 340px);
+    overflow-y: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border2);
+    padding: 9px 12px;
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.1s;
+  }
+
+  thead th:hover { background: var(--border); }
+
+  thead th.sort-asc::after { content: ' ↑'; color: var(--orange); }
+  thead th.sort-desc::after { content: ' ↓'; color: var(--orange); }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  tbody tr:hover { background: rgba(250,66,17,0.02); }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody td {
+    padding: 8px 12px;
+    white-space: nowrap;
+    color: var(--text);
+  }
+
+  td.num { text-align: right; font-family: 'DM Mono', monospace; font-size: 11px; }
+  td.muted { color: var(--text-muted); font-size: 11px; }
+  td.bold { font-weight: 600; }
+
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .badge-kraj { background: rgba(22,163,74,0.1); color: var(--green); border: 1px solid rgba(22,163,74,0.2); }
+  .badge-eksport { background: rgba(37,99,235,0.1); color: #2563eb; border: 1px solid rgba(37,99,235,0.2); }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .page-btn {
+    background: var(--white);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .page-btn:hover { border-color: var(--orange); color: var(--orange); }
+  .page-btn.active { background: var(--orange); border-color: var(--orange); color: white; }
+  .page-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .page-info {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  /* Loading */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    gap: 16px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid var(--border2);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  @media (max-width: 700px) {
+    main { padding: 14px; }
+    header { padding: 12px 14px; }
+    .filters-bar { gap: 8px; }
+    .filter-select, .filter-search { min-width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-btn">← Dashboard</a>
+  <div class="header-title">
+    <span style="font-size:16px;font-weight:700">Rozliczenia RT 2025</span>
+    <span class="header-badge">Zamówienia</span>
+  </div>
+  <div class="header-right">
+    <span class="file-badge">📁 Rozliczenia RT 2025.xlsx</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="filters-bar" id="filtersBar" style="display:none">
+    <div class="filter-group">
+      <div class="filter-label">Szukaj</div>
+      <input class="filter-search" id="fSearch" type="text" placeholder="Meldunek, odbiorca, producent...">
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Tydzień</div>
+      <select class="filter-select" id="fTydzien"><option value="">Wszystkie</option></select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Owoc</div>
+      <select class="filter-select" id="fOwoc"><option value="">Wszystkie</option></select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Odbiorca</div>
+      <select class="filter-select" id="fOdbiorca"><option value="">Wszyscy</option></select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Producent</div>
+      <select class="filter-select" id="fProducent"><option value="">Wszyscy</option></select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Pakowanie</div>
+      <select class="filter-select" id="fPakowanie"><option value="">Wszystkie</option></select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Eksport</div>
+      <select class="filter-select" id="fEksport">
+        <option value="">Wszystkie</option>
+        <option value="Kraj">Kraj</option>
+        <option value="Eksport">Eksport</option>
+      </select>
+    </div>
+    <button class="btn-reset" onclick="resetFilters()">↺ Wyczyść</button>
+  </div>
+
+  <div class="summary-bar" id="summaryBar" style="display:none">
+    <div class="sum-card">
+      <div class="sum-label">Wierszy</div>
+      <div class="sum-value" id="sCount">—</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">Wolumen (kg)</div>
+      <div class="sum-value grad" id="sWolumen">—</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">Przychód (PLN)</div>
+      <div class="sum-value grad" id="sPrzychod">—</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">Rodzajów pakowania</div>
+      <div class="sum-value" id="sPakowania">—</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">Odbiorców</div>
+      <div class="sum-value" id="sOdbiorcy">—</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header-bar">
+      <div class="table-title">Arkusz: Zamówienia</div>
+      <div class="table-count" id="tableCount">Ładowanie...</div>
+    </div>
+    <div class="table-scroll" id="tableScroll">
+      <div class="loading">
+        <div class="spinner"></div>
+        <span>Ładowanie pliku Excel...</span>
+      </div>
+    </div>
+    <div class="pagination" id="pagination" style="display:none"></div>
+  </div>
+
+</main>
+
+<script>
+const FILE = 'Rozliczenia RT 2025.xlsx';
+const SHEET = 'Zamówienia';
+const PAGE_SIZE = 100;
+
+// Kolumny które chcemy pokazać: [index, label, typ]
+const COLS = [
+  [0,  'Meldunek',        'text'],
+  [3,  'Data sprzedaży',  'date'],
+  [4,  'Tydzień',         'num'],
+  [5,  'Producent',       'text'],
+  [6,  'Wyrób gotowy',    'text'],
+  [7,  'Odbiorca',        'text'],
+  [12, 'Wolumen (kg)',    'num'],
+  [23, 'Pakowanie',       'text'],
+  [24, 'Kto pakował',     'text'],
+  [14, 'C. sprzed. PLN/kg','num'],
+  [20, 'Przychód PLN',   'num'],
+  [36, 'Eksport',         'badge'],
+  [38, 'Owoc',            'text'],
+];
+
+let allData = [];
+let filtered = [];
+let sortCol = null;
+let sortDir = 1;
+let page = 0;
+
+function fmtNum(v, dec=0) {
+  if (v == null || v === '') return '—';
+  const n = parseFloat(v);
+  if (isNaN(n)) return '—';
+  return n.toLocaleString('pl-PL', {minimumFractionDigits: dec, maximumFractionDigits: dec});
+}
+
+function fmtDate(v) {
+  if (!v) return '—';
+  if (v instanceof Date) {
+    return v.toLocaleDateString('pl-PL', {day:'2-digit', month:'2-digit', year:'numeric'});
+  }
+  if (typeof v === 'number') {
+    // Excel serial date
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    return d.toLocaleDateString('pl-PL', {day:'2-digit', month:'2-digit', year:'numeric'});
+  }
+  return v;
+}
+
+async function loadExcel() {
+  try {
+    const resp = await fetch(FILE);
+    if (!resp.ok) throw new Error('Nie można załadować pliku: ' + resp.status);
+    const buf = await resp.arrayBuffer();
+    const wb = XLSX.read(buf, {type: 'array', cellDates: true});
+    const ws = wb.Sheets[SHEET];
+    if (!ws) throw new Error('Nie znaleziono arkusza: ' + SHEET);
+
+    // Pobierz dane jako array of arrays
+    const raw = XLSX.utils.sheet_to_json(ws, {header: 1, raw: false, dateNF: 'YYYY-MM-DD'});
+
+    // Pierwsza linia = nagłówki, reszta = dane
+    allData = raw.slice(1).filter(r => r.some(c => c != null && c !== ''));
+
+    buildFilters();
+    applyFilters();
+    document.getElementById('filtersBar').style.display = 'flex';
+    document.getElementById('summaryBar').style.display = 'flex';
+    document.getElementById('pagination').style.display = 'flex';
+  } catch(e) {
+    document.getElementById('tableScroll').innerHTML =
+      '<div class="loading"><span>Błąd: ' + e.message + '</span></div>';
+    document.getElementById('tableCount').textContent = 'Błąd ładowania';
+  }
+}
+
+function getVal(row, idx) {
+  return row[idx] != null ? String(row[idx]) : '';
+}
+
+function buildFilters() {
+  function opts(idx, selId) {
+    const vals = [...new Set(allData.map(r => getVal(r, idx)).filter(v => v && v !== 'BRAK'))].sort();
+    const sel = document.getElementById(selId);
+    vals.forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+  }
+  opts(4,  'fTydzien');
+  opts(38, 'fOwoc');
+  opts(7,  'fOdbiorca');
+  opts(5,  'fProducent');
+  opts(23, 'fPakowanie');
+
+  ['fSearch','fTydzien','fOwoc','fOdbiorca','fProducent','fPakowanie','fEksport'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => { page = 0; applyFilters(); });
+    document.getElementById(id).addEventListener('change', () => { page = 0; applyFilters(); });
+  });
+}
+
+function applyFilters() {
+  const search  = document.getElementById('fSearch').value.toLowerCase().trim();
+  const tydzien = document.getElementById('fTydzien').value;
+  const owoc    = document.getElementById('fOwoc').value;
+  const odbiorca= document.getElementById('fOdbiorca').value;
+  const producent=document.getElementById('fProducent').value;
+  const pakowanie=document.getElementById('fPakowanie').value;
+  const eksport = document.getElementById('fEksport').value;
+
+  filtered = allData.filter(r => {
+    if (tydzien  && getVal(r,4)  !== tydzien)  return false;
+    if (owoc     && getVal(r,38) !== owoc)     return false;
+    if (odbiorca && getVal(r,7)  !== odbiorca) return false;
+    if (producent&& getVal(r,5)  !== producent)return false;
+    if (pakowanie&& getVal(r,23) !== pakowanie)return false;
+    if (eksport  && getVal(r,36) !== eksport)  return false;
+    if (search) {
+      const hay = [getVal(r,0),getVal(r,7),getVal(r,5),getVal(r,6),getVal(r,1)].join(' ').toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  if (sortCol !== null) {
+    filtered.sort((a, b) => {
+      const av = a[sortCol] ?? '';
+      const bv = b[sortCol] ?? '';
+      const an = parseFloat(av), bn = parseFloat(bv);
+      if (!isNaN(an) && !isNaN(bn)) return (an - bn) * sortDir;
+      return String(av).localeCompare(String(bv), 'pl') * sortDir;
+    });
+  }
+
+  updateSummary();
+  renderTable();
+  renderPagination();
+}
+
+function updateSummary() {
+  const count = filtered.length;
+  const wolumen = filtered.reduce((s,r) => s + (parseFloat(r[12]) || 0), 0);
+  const przychod = filtered.reduce((s,r) => s + (parseFloat(r[20]) || 0), 0);
+  const pakowaniaSet = new Set(filtered.map(r => getVal(r,23)).filter(v => v && v !== 'BRAK'));
+  const odbiorcySet = new Set(filtered.map(r => getVal(r,7)).filter(Boolean));
+
+  document.getElementById('sCount').textContent = count.toLocaleString('pl-PL');
+  document.getElementById('sWolumen').textContent = fmtNum(wolumen, 0);
+  document.getElementById('sPrzychod').textContent = fmtNum(przychod, 0);
+  document.getElementById('sPakowania').textContent = pakowaniaSet.size;
+  document.getElementById('sOdbiorcy').textContent = odbiorcySet.size;
+
+  document.getElementById('tableCount').textContent =
+    count.toLocaleString('pl-PL') + ' wierszy';
+}
+
+function renderTable() {
+  const start = page * PAGE_SIZE;
+  const rows = filtered.slice(start, start + PAGE_SIZE);
+
+  let html = '<table><thead><tr>';
+  COLS.forEach(([idx, label], i) => {
+    const cls = sortCol === idx ? (sortDir === 1 ? 'sort-asc' : 'sort-desc') : '';
+    html += `<th class="${cls}" onclick="sortBy(${idx})">${label}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  if (rows.length === 0) {
+    html += `<tr><td colspan="${COLS.length}" style="text-align:center;padding:40px;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:11px">Brak wyników dla wybranych filtrów</td></tr>`;
+  } else {
+    rows.forEach(r => {
+      html += '<tr>';
+      COLS.forEach(([idx, label, typ]) => {
+        const raw = r[idx];
+        if (typ === 'date') {
+          html += `<td class="muted">${fmtDate(raw)}</td>`;
+        } else if (typ === 'num') {
+          const n = parseFloat(raw);
+          const dec = (idx === 14 || idx === 20) ? 2 : (idx === 12 ? 0 : 2);
+          html += `<td class="num">${isNaN(n) ? '—' : fmtNum(n, dec)}</td>`;
+        } else if (typ === 'badge') {
+          const v = raw || '';
+          const cls = v === 'Kraj' ? 'badge-kraj' : (v ? 'badge-eksport' : '');
+          html += `<td><span class="badge ${cls}">${v || '—'}</span></td>`;
+        } else {
+          const v = raw || '';
+          const isBold = idx === 0 || idx === 7;
+          html += `<td class="${isBold ? 'bold' : ''}" title="${v}">${v.length > 40 ? v.slice(0,40) + '…' : v || '—'}</td>`;
+        }
+      });
+      html += '</tr>';
+    });
+  }
+
+  html += '</tbody></table>';
+  document.getElementById('tableScroll').innerHTML = html;
+}
+
+function renderPagination() {
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  if (totalPages <= 1) {
+    document.getElementById('pagination').style.display = 'none';
+    return;
+  }
+  document.getElementById('pagination').style.display = 'flex';
+
+  let html = `<button class="page-btn" onclick="goPage(${page-1})" ${page===0?'disabled':''}>← Poprz.</button>`;
+
+  // Pokaż maks. 7 przycisków
+  let start = Math.max(0, page - 3);
+  let end = Math.min(totalPages - 1, start + 6);
+  if (end - start < 6) start = Math.max(0, end - 6);
+
+  if (start > 0) html += `<button class="page-btn" onclick="goPage(0)">1</button><span class="page-info">…</span>`;
+  for (let i = start; i <= end; i++) {
+    html += `<button class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i+1}</button>`;
+  }
+  if (end < totalPages - 1) html += `<span class="page-info">…</span><button class="page-btn" onclick="goPage(${totalPages-1})">${totalPages}</button>`;
+
+  html += `<button class="page-btn" onclick="goPage(${page+1})" ${page===totalPages-1?'disabled':''}>Nast. →</button>`;
+  html += `<span class="page-info">${page+1} / ${totalPages} (${filtered.length.toLocaleString('pl-PL')} wierszy)</span>`;
+
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function goPage(p) {
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  page = Math.max(0, Math.min(totalPages - 1, p));
+  renderTable();
+  renderPagination();
+  document.getElementById('tableScroll').scrollTop = 0;
+}
+
+function sortBy(idx) {
+  if (sortCol === idx) {
+    sortDir *= -1;
+  } else {
+    sortCol = idx;
+    sortDir = 1;
+  }
+  page = 0;
+  applyFilters();
+}
+
+function resetFilters() {
+  ['fSearch','fTydzien','fOwoc','fOdbiorca','fProducent','fPakowanie','fEksport'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = '';
+  });
+  sortCol = null;
+  sortDir = 1;
+  page = 0;
+  applyFilters();
+}
+
+loadExcel();
+</script>
+
+</body>
+</html>
