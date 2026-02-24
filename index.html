@@ -754,7 +754,7 @@
     <!-- Backlog -->
     <div class="card">
       <div class="card-header">
-        <div class="card-title" data-sheet-link>Backlog</div>
+        <div class="card-title">Backlog</div>
         <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted)">6 wpisów</span>
       </div>
       <div class="card-body">
@@ -981,8 +981,8 @@
         }
       });
 
-      // Tytuły kart z atrybutem data-sheet-link
-      document.querySelectorAll('.card-title[data-sheet-link]').forEach(titleEl => {
+      // Wszystkie tytuły kart — automatyczny link jeśli istnieje pasująca zakładka
+      document.querySelectorAll('.card-title').forEach(titleEl => {
         const gid = findGid(titleEl.textContent);
         if (gid !== null) {
           const url = BASE + '?gid=' + gid + '#gid=' + gid;
