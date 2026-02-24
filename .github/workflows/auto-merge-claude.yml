@@ -1,15 +1,25 @@
-name: Auto-merge claude/* → main
+name: Auto-merge claude/* → main + Deploy
 
 on:
   push:
     branches:
       - 'claude/**'
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
-  merge:
+  merge-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,3 +34,16 @@ jobs:
           git checkout main
           git merge --ff-only origin/${{ github.ref_name }} || git merge -X theirs origin/${{ github.ref_name }}
           git push origin main
+
+      - name: Wstrzyknij klucz API z GitHub Secrets
+        run: |
+          sed -i "s|'__ANTHROPIC_KEY__'|'${{ secrets.ANTHROPIC_API_KEY }}'|g" config.js
+
+      - uses: actions/configure-pages@v4
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - uses: actions/deploy-pages@v4
+        id: deployment
