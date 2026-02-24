@@ -13,5 +13,5 @@
 
 window.OXM_CONFIG = {
   apiKey: '__ANTHROPIC_KEY__',  // wartość wstrzykiwana przez GitHub Actions z Secrets
-  model:  'claude-sonnet-4-5-20251029'   // sonnet = lepsze odpowiedzi analityczne
+  model:  'claude-sonnet-4-6'   // sonnet = lepsze odpowiedzi analityczne
 };
