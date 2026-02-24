@@ -865,18 +865,27 @@ async function tryAutoLoad() {
     'planowanie i sprzedaz 2026.xlsx',
     'Planowanie i Sprzedaz 2026.xlsx',
   ];
+
+  async function tryFetch(name) {
+    // Próbuj 3 warianty enkodowania
+    const attempts = [
+      encodeURIComponent(name),           // pełne enkodowanie
+      name,                               // surowa nazwa (przeglądarka enkoduje sama)
+      name.normalize('NFD').replace(/[\u0300-\u036f]/g,''), // bez ogonków
+    ];
+    for (const url of attempts) {
+      try {
+        const r = await fetch(url);
+        if (r.ok) return r;
+      } catch(e) {}
+    }
+    return null;
+  }
+
   for (const name of candidates) {
     try {
-      const r = await fetch(encodeURIComponent(name).replace(/%20/g,'+').replace(/%2B/g,'+'));
-      if (!r.ok) {
-        // try raw name
-        const r2 = await fetch(name);
-        if (!r2.ok) continue;
-        const buf = await r2.arrayBuffer();
-        const wb = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
-        fileName = name; parseWorkbook(wb);
-        toast('Auto-załadowano: '+name, 'ok'); return;
-      }
+      const r = await tryFetch(name);
+      if (!r) continue;
       const buf = await r.arrayBuffer();
       const wb = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
       fileName = name; parseWorkbook(wb);
