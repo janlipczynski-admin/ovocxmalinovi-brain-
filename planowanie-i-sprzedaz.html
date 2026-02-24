@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Planowanie i Sprzedaż 2026 — OvocxMalinovi</title>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="planowanie-data.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -857,51 +858,29 @@ function exportChanges() {
 // ================================================================
 // AUTO-LOAD FROM REPO
 // ================================================================
-async function tryAutoLoad() {
-  const candidates = [
-    'Planowanie + sprzedaż 2026 (1).xlsx',
-    'Planowanie + sprzedaz 2026 (1).xlsx',
-    'planowanie i sprzedaz.xlsx',
-    'planowanie i sprzedaz 2026.xlsx',
-    'Planowanie i Sprzedaz 2026.xlsx',
-  ];
-
-  async function tryFetch(name) {
-    // Próbuj 3 warianty enkodowania
-    const attempts = [
-      encodeURIComponent(name),           // pełne enkodowanie
-      name,                               // surowa nazwa (przeglądarka enkoduje sama)
-      name.normalize('NFD').replace(/[\u0300-\u036f]/g,''), // bez ogonków
-    ];
-    for (const url of attempts) {
-      try {
-        const r = await fetch(url);
-        if (r.ok) return r;
-      } catch(e) {}
-    }
-    return null;
+function tryAutoLoad() {
+  // 1. Dane wygenerowane przez serwer (planowanie-data.js) — najbardziej niezawodne
+  if (typeof window.PLAN_DATA !== 'undefined' && window.PLAN_DATA.length > 0) {
+    allRows = window.PLAN_DATA;
+    fileName = 'Planowanie + sprzedaż 2026.xlsx';
+    buildUI();
+    return;
   }
 
-  for (const name of candidates) {
-    try {
-      const r = await tryFetch(name);
-      if (!r) continue;
-      const buf = await r.arrayBuffer();
-      const wb = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
-      fileName = name; parseWorkbook(wb);
-      toast('Auto-załadowano: '+name, 'ok'); return;
-    } catch(e) {}
-  }
-
-  // Try to restore from localStorage
+  // 2. Dane z poprzedniej sesji (localStorage)
   try {
     const saved = JSON.parse(localStorage.getItem(DATA_KEY)||'null');
     if (saved && saved.length > 0) {
       allRows = saved;
-      toast('Przywrócono dane z pamięci przeglądarki');
+      fileName = 'dane z pamięci';
       buildUI();
+      toast('Przywrócono dane z poprzedniej sesji');
+      return;
     }
   } catch(e) {}
+
+  // 3. Brak danych — pokaż strefę importu
+  document.getElementById('importBox').style.display = 'block';
 }
 
 // ================================================================
