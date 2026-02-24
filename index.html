@@ -754,7 +754,7 @@
     <!-- Backlog -->
     <div class="card">
       <div class="card-header">
-        <div class="card-title">Backlog Zmian</div>
+        <div class="card-title" data-sheet-link>Backlog</div>
         <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted)">6 wpisów</span>
       </div>
       <div class="card-body">
@@ -978,6 +978,20 @@
           item.classList.add('has-sheet');
           nameEl.insertAdjacentHTML('afterend', '<span class="sheet-badge">↗ Sheets</span>');
           item.addEventListener('click', () => window.open(url, '_blank'));
+        }
+      });
+
+      // Tytuły kart z atrybutem data-sheet-link
+      document.querySelectorAll('.card-title[data-sheet-link]').forEach(titleEl => {
+        const gid = findGid(titleEl.textContent);
+        if (gid !== null) {
+          const url = BASE + '?gid=' + gid + '#gid=' + gid;
+          const link = document.createElement('a');
+          link.href = url;
+          link.target = '_blank';
+          link.className = 'card-link';
+          link.textContent = '↗ Otwórz w Google Sheets';
+          titleEl.closest('.card-header').appendChild(link);
         }
       });
     } catch (e) {
