@@ -7,6 +7,7 @@
 <script src="config.js"></script>
 <script src="opakowania-data.js" defer></script>
 <script src="planowanie-data.js" defer></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1122,9 +1123,10 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
       .replace(/ł/g,'l').replace(/ń/g,'n').replace(/ó/g,'o')
       .replace(/ś/g,'s').replace(/ź/g,'z').replace(/ż/g,'z');
 
-    // Czy pytanie dotyczy danych ilościowych?
+    // Czy pytanie dotyczy danych ilościowych lub cenowych?
     const dataKeywords = ['karton','opakow','kg','ton','ilosc','wolumen','prognoz','plan','zamow','sprzed','sezon','tygodnie','tyg','pakow','szt','jednostek'];
-    const hasDataIntent = dataKeywords.some(k => q.includes(k));
+    const priceKeywords = ['cen','pln','eur','zl','plac','porownaj','rozlicz','rt ','rt2025'];
+    const hasDataIntent = dataKeywords.some(k => q.includes(k)) || priceKeywords.some(k => q.includes(k));
     if (!hasDataIntent) return '';
 
     const hasOpak = !!(window.OPAK_DATA && window.OPAK_DATA.rekordy);
@@ -1134,7 +1136,8 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
     // ── Znajdź odbiorcę ──
     const ODBIORCY = hasOpak ? [...new Set(window.OPAK_DATA.rekordy.map(r => r.odbiorca))] : [];
     const KLIENCI  = hasPlan  ? [...new Set(window.PLAN_DATA.filter(r=>r.typ==='klient').map(r=>r.podmiot))] : [];
-    const ALL_NAMES = [...new Set([...ODBIORCY, ...KLIENCI])];
+    const RT_ODB   = (window.RT_SPRZEDAZ && window.RT_SPRZEDAZ.length) ? [...new Set(window.RT_SPRZEDAZ.map(r => r.odbiorca))] : [];
+    const ALL_NAMES = [...new Set([...ODBIORCY, ...KLIENCI, ...RT_ODB])];
 
     function normN(s) {
       return (s||'').toLowerCase()
@@ -1203,7 +1206,44 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
         if (matchedOwoc) ctx += `, owoc: ${matchedOwoc}`;
         if (matchedWeeks) ctx += `, tyg. ${matchedWeeks[0]}–${matchedWeeks[1]}`;
         ctx += `]\nŁącznie: ${Math.round(totalKg)} kg, ${totalKartony} kartonów\nWg opakowania:\n${rows}`;
-        if (asksPrice) ctx += '\n⚠️ Ceny nie są dostępne w tym narzędziu — sprawdź RT 2025 Excel.';
+        if (asksPrice) ctx += '\n(Ceny sprzedaży — patrz sekcja RT 2025 poniżej)';
+      }
+    }
+
+    // ── Dane RT 2025 — ceny sprzedaży (z Rozliczenia RT 2025.xlsx) ──
+    const hasRT = !!(window.RT_SPRZEDAZ && window.RT_SPRZEDAZ.length);
+    const asksRT = asksPrice || q.includes('porownaj') || q.includes('cen') || q.includes('rozlicz');
+    if (hasRT && asksRT) {
+      let rt = window.RT_SPRZEDAZ;
+      const isCompare = q.includes('porownaj');
+      if (!isCompare && matchedName) {
+        rt = rt.filter(r => normN(r.odbiorca).includes(normN(matchedName)) || normN(matchedName).includes(normN(r.odbiorca).split(' ')[0]));
+      }
+      if (matchedOwoc) rt = rt.filter(r => r.owoc === matchedOwoc);
+      if (matchedWeeks) rt = rt.filter(r => r.tydzien >= matchedWeeks[0] && r.tydzien <= matchedWeeks[1]);
+
+      if (rt.length > 0) {
+        const agg = {};
+        for (const r of rt) {
+          const k = `${r.odbiorca}|||${r.owoc}`;
+          if (!agg[k]) agg[k] = { odbiorca: r.odbiorca, owoc: r.owoc, totalKg: 0, totalPrzychod: 0, tygodnie: new Set() };
+          agg[k].totalKg      += r.kg;
+          agg[k].totalPrzychod += r.przychod;
+          agg[k].tygodnie.add(r.tydzien);
+        }
+        const rtRows = Object.values(agg)
+          .sort((a, b) => b.totalKg - a.totalKg)
+          .slice(0, 20)
+          .map(v => {
+            const avg = v.totalKg > 0 ? (v.totalPrzychod / v.totalKg).toFixed(2) : '—';
+            return `${v.odbiorca} / ${v.owoc}: ${Math.round(v.totalKg)} kg, śr. cena ${avg} PLN/kg`;
+          }).join('\n');
+
+        ctx += `\n\n[ROZLICZENIA RT 2025 — ceny sprzedaży`;
+        if (!isCompare && matchedName) ctx += `, odbiorca: ${matchedName}`;
+        if (matchedOwoc) ctx += `, owoc: ${matchedOwoc}`;
+        if (matchedWeeks) ctx += `, tyg. ${matchedWeeks[0]}–${matchedWeeks[1]}`;
+        ctx += `]\n${rtRows}`;
       }
     }
 
@@ -1596,6 +1636,33 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
   document.getElementById('mal-key-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') malSaveKey();
   });
+
+  // ─── Ładowanie danych RT 2025 (Rozliczenia RT 2025.xlsx) w tle ───────────────
+  (async function loadRTSprzedaz() {
+    try {
+      const resp = await fetch('Rozliczenia RT 2025.xlsx');
+      if (!resp.ok) return;
+      const buf = await resp.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array', cellDates: false });
+      const ws = wb.Sheets['Zamówienia'];
+      if (!ws) return;
+      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true });
+      window.RT_SPRZEDAZ = raw.slice(1)
+        .filter(r => r.some(c => c != null && c !== ''))
+        .map(r => ({
+          tydzien:  parseFloat(r[4])  || 0,
+          producent:String(r[5]  || ''),
+          wyrob:    String(r[6]  || ''),
+          odbiorca: String(r[7]  || ''),
+          kg:       parseFloat(r[12]) || 0,
+          cena:     parseFloat(r[14]) || 0,
+          przychod: parseFloat(r[20]) || 0,
+          owoc:     String(r[38] || ''),
+        }))
+        .filter(r => r.odbiorca && r.kg > 0);
+    } catch(e) { /* silent fail */ }
+  })();
+  // ─────────────────────────────────────────────────────────────────────────────
 
   (function initMalKey() {
     const cfgKey = (window.OXM_CONFIG && window.OXM_CONFIG.apiKey) ? window.OXM_CONFIG.apiKey.trim() : '';
