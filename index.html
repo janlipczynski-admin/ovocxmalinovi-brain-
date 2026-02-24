@@ -1269,6 +1269,86 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
         }
       });
 
+      // ─── Sync statusów procesów z Google Sheets ───────────────
+      // Mapowanie wartości Sheets → kod pilla
+      function sheetStatusToCode(val) {
+        const v = (val || '').trim().toLowerCase();
+        if (v.includes('progress')) return 'ip';
+        if (v === 'done' || v.includes('done') || v.includes('gotow') || v === 'ok') return 'ok';
+        if (v.includes('block') || v.includes('zablok')) return 'bl';
+        if (v.includes('not started') || v === 'ns') return 'ns';
+        return null; // nieznana wartość — nie nadpisuj
+      }
+
+      // Przeszukaj każdy arkusz szukając kolumny STATUS
+      for (const sheet of data.sheets) {
+        try {
+          const title = sheet.properties.title;
+          const range = encodeURIComponent(title + '!A1:H25');
+          const vRes = await fetch(
+            'https://sheets.googleapis.com/v4/spreadsheets/' + SPREADSHEET_ID +
+            '/values/' + range + '?key=' + API_KEY
+          );
+          if (!vRes.ok) continue;
+          const vData = await vRes.json();
+          const rows = vData.values || [];
+          if (rows.length < 2) continue;
+
+          // Znajdź nagłówek STATUS (wiersz z "STATUS" w jednej z komórek)
+          let headerRow = -1, statusCol = -1, nameCol = -1;
+          for (let ri = 0; ri < Math.min(5, rows.length); ri++) {
+            const row = rows[ri];
+            const statusIdx = row.findIndex(c => (c||'').toUpperCase().includes('STATUS'));
+            if (statusIdx !== -1) {
+              headerRow = ri;
+              statusCol = statusIdx;
+              // Szukaj kolumny z nazwami — szukaj "NAZW", "PROCES", albo weź kol. 0
+              nameCol = row.findIndex(c => {
+                const u = (c||'').toUpperCase();
+                return u.includes('NAZW') || u.includes('PROCES') || u.includes('NAME');
+              });
+              if (nameCol === -1) nameCol = 0;
+              break;
+            }
+          }
+          if (statusCol === -1 || headerRow === -1) continue;
+
+          // Mamy arkusz z kolumną STATUS — aktualizuj pille
+          let updated = 0;
+          for (let ri = headerRow + 1; ri < rows.length; ri++) {
+            const row = rows[ri];
+            const processName = (row[nameCol] || '').trim();
+            const statusRaw   = (row[statusCol] || '').trim();
+            if (!processName && !statusRaw) continue;
+            const code = sheetStatusToCode(statusRaw);
+            if (!code) continue;
+
+            // Dopasuj do pilla po nazwie procesu (norm + lev)
+            const pNorm = norm(processName);
+            document.querySelectorAll('.pill[data-pid]').forEach(pill => {
+              const nameEl2 = pill.closest('.process-item') && pill.closest('.process-item').querySelector('.p-name');
+              if (!nameEl2) return;
+              const dNorm = norm(nameEl2.textContent.replace(/↗.*/,'').trim());
+              if (dNorm === pNorm || lev(pNorm, dNorm) <= 3) {
+                const pid = pill.dataset.pid;
+                // Update localStorage + pill
+                const statuses = JSON.parse(localStorage.getItem(PILL_KEY) || '{}');
+                statuses[pid] = code;
+                localStorage.setItem(PILL_KEY, JSON.stringify(statuses));
+                pill.className = 'pill pill-' + code;
+                pill.textContent = PILL_LABELS[code];
+                updated++;
+              }
+            });
+          }
+
+          if (updated > 0) {
+            updatePillCounters();
+            break; // Znaleziono właściwy arkusz — kończymy
+          }
+        } catch (e2) { continue; }
+      }
+
       // Wszystkie tytuły kart — automatyczny link tylko jeśli nie ma już card-link
       document.querySelectorAll('.card-title').forEach(titleEl => {
         const header = titleEl.closest('.card-header');
