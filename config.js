@@ -12,6 +12,6 @@
 // ──────────────────────────────────────────────────────────────────────────────
 
 window.OXM_CONFIG = {
-  apiKey: '',  // ← klucz wpisz ręcznie przez GitHub web editor (nie commituj!)
+  apiKey: '__ANTHROPIC_KEY__',  // wartość wstrzykiwana przez GitHub Actions z Secrets
   model:  'claude-sonnet-4-5-20251029'   // sonnet = lepsze odpowiedzi analityczne
 };
