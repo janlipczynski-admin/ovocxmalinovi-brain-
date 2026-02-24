@@ -504,6 +504,63 @@
   }
 
   .chat-btn:hover { opacity: 0.85; }
+  .chat-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .chat-history {
+    max-height: 210px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    scroll-behavior: smooth;
+  }
+  .chat-history::-webkit-scrollbar { width: 3px; }
+  .chat-history::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  .msg-bot {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px 8px 8px 2px;
+    padding: 9px 12px;
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .msg-user {
+    background: var(--grad);
+    color: white;
+    border-radius: 8px 8px 2px 8px;
+    padding: 9px 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    align-self: flex-end;
+    max-width: 90%;
+    word-break: break-word;
+  }
+  .typing-dots {
+    display: flex;
+    gap: 4px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px 8px 8px 2px;
+    width: fit-content;
+  }
+  .typing-dots span {
+    width: 6px; height: 6px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    animation: malBlink 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes malBlink {
+    0%,60%,100% { opacity: 0.2; transform: scale(1); }
+    30% { opacity: 1; transform: scale(1.25); }
+  }
 
   /* Team strip */
   .team-row {
@@ -890,17 +947,17 @@
           </div>
         </div>
         <div class="mal-body">
-          <div class="chat-bubble">
-            Cześć! Znam procesy OvocxMalinovi i pomagam w codziennej pracy. Co dziś robimy?
+          <div class="chat-history" id="mal-history">
+            <div class="msg-bot">Cześć! Znam procesy OvocxMalinovi i pomagam w codziennej pracy. Co dziś robimy?</div>
           </div>
-          <div class="suggestions">
-            <button class="sug">📦 Opakowania na sezon 2026?</button>
-            <button class="sug">📋 Status: gospodarka magazynowa</button>
-            <button class="sug">🔴 Co pilnego w backlogu?</button>
+          <div class="suggestions" id="mal-suggestions">
+            <button class="sug" onclick="malSend('Ile kartonów opakowań potrzebujemy na sezon 2026?')">📦 Opakowania na sezon 2026?</button>
+            <button class="sug" onclick="malSend('Jaki jest status procesu gospodarka magazynowa i co jest do zrobienia?')">📋 Status: gospodarka magazynowa</button>
+            <button class="sug" onclick="malSend('Co jest najważniejszego do zrobienia w backlogu procesów?')">🔴 Co pilnego w backlogu?</button>
           </div>
           <div class="chat-row">
-            <input class="chat-in" type="text" placeholder="Napisz do Malinoovka...">
-            <button class="chat-btn">↑</button>
+            <input class="chat-in" id="mal-input" type="text" placeholder="Napisz do Malinoovka...">
+            <button class="chat-btn" id="mal-btn" onclick="malSend()">↑</button>
           </div>
         </div>
         <div class="team-row">
@@ -985,11 +1042,136 @@
     if (el) el.textContent = total ? total + ' zmian' : 'Brak zmian';
   } catch(e) {}
 
-  document.querySelectorAll('.sug').forEach(b => {
-    b.addEventListener('click', () => {
-      document.querySelector('.chat-in').value = b.textContent.trim().replace(/^.\s/, '');
-      document.querySelector('.chat-in').focus();
-    });
+  // ─── Malinoovek chat ───────────────────────────────────────────
+  const MAL_SYSTEM = `Jesteś Malinoovkiem — asystentem AI firmy OvocxMalinovi sp. z o.o.
+Twoja rola: wspierać zespół w codziennej pracy, optymalizacji procesów i zarządzaniu wiedzą firmową.
+Zawsze odpowiadaj po polsku, chyba że ktoś pisze do Ciebie w innym języku.
+Jesteś konkretny, procesowy i praktyczny. Nie owijasz w bawełnę. Odpowiedzi krótkie i na temat — max 3-4 zdania lub lista punktów.
+
+## O firmie
+OvocxMalinovi sp. z o.o. — polska firma handlująca owocami miękkimi (głównie maliny).
+Działalność: zakup owoców od producentów (rolników), logistyka, sprzedaż krajowa i zagraniczna, rozliczenia z growerami, programy odmianowe (BerryWorld Varieties).
+Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO).
+
+## Zespół
+- Jan — Właściciel, projekt REORG (mapy procesów)
+- Iza — Rozliczenia, FA/KORFA, korekty SS, EDI DINO. Korekta ilościowa: ZWWZ→MM-→MM+→RW→KORFA
+- Renia — Zakupy, FZ, FRR rolnicy, opakowania (buforowanie u dostawców), przelewy 2x/tydzień
+- Kacper — Sprzedaż, zakup owoców, zamówienia SS, forecasting, koordynacja transportu z TJ
+- Adrian — Excel RT, analizy finansowe, wytyczne do przelewów, KOWR/FOR/GUS
+- Olgierd — Menedżer procesów, przejmuje obsługę reklamacji od Izy
+- TJ — firma zewnętrzna, logistyka i transport
+
+## Znane problemy operacyjne
+- Magazyny często nie wysyłają WZ na czas → blokuje rozliczenia
+- Korekty ilościowe w SS = 4 dokumenty extra (bardzo pracochłonne)
+- Logistyka niepełna po odejściu Marty
+- Proces reklamacyjny wymaga pełnego opisania przed przekazaniem Olgierdowi
+
+## Narzędzia dostępne w systemie
+- Planowanie i Sprzedaż 2026 (planowanie-i-sprzedaz.html) — import Excel, forecasting
+- Rozliczenia RT 2025 (rozliczenia-rt.html) — podgląd zamówień, filtrowanie
+- Opakowania 2025/2026 (opakowania.html) — zużycie kartonów, prognoza 2026, per odbiorca
+- StreamSoft ERP — system zewnętrzny
+
+## Partnerzy
+- BerryWorld Varieties — royalties tylko z kanału Frutania & Local Market
+- DINO — klient EDI
+- RUBI JUICE — klient z osobnym supportem SS`;
+
+  let malHistory = [];
+
+  function malGetKey() {
+    let k = localStorage.getItem('oxm_mal_key');
+    if (!k) {
+      k = prompt('Malinoovek potrzebuje klucza API Anthropic.\nZostanie zapisany tylko lokalnie w tej przeglądarce.\n\nKlucz (zaczyna się od "sk-ant-"):');
+      if (k && k.trim()) localStorage.setItem('oxm_mal_key', k.trim());
+    }
+    return k ? k.trim() : null;
+  }
+
+  function malAddMsg(role, text) {
+    const hist = document.getElementById('mal-history');
+    const div = document.createElement('div');
+    div.className = role === 'user' ? 'msg-user' : 'msg-bot';
+    div.textContent = text;
+    hist.appendChild(div);
+    hist.scrollTop = hist.scrollHeight;
+    return div;
+  }
+
+  function malTyping() {
+    const hist = document.getElementById('mal-history');
+    const div = document.createElement('div');
+    div.className = 'typing-dots';
+    div.id = 'mal-typing';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    hist.appendChild(div);
+    hist.scrollTop = hist.scrollHeight;
+  }
+
+  function malStopTyping() {
+    const t = document.getElementById('mal-typing');
+    if (t) t.remove();
+  }
+
+  async function malSend(text) {
+    const input = document.getElementById('mal-input');
+    const msg = (text || input.value).trim();
+    if (!msg) return;
+    const key = malGetKey();
+    if (!key) return;
+
+    input.value = '';
+    document.getElementById('mal-suggestions').style.display = 'none';
+    document.getElementById('mal-btn').disabled = true;
+
+    malAddMsg('user', msg);
+    malHistory.push({ role: 'user', content: msg });
+    malTyping();
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1024,
+          system: MAL_SYSTEM,
+          messages: malHistory
+        })
+      });
+      malStopTyping();
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          localStorage.removeItem('oxm_mal_key');
+          malAddMsg('bot', '⚠️ Nieprawidłowy klucz API. Odśwież stronę i podaj poprawny klucz.');
+        } else {
+          malAddMsg('bot', '⚠️ Błąd API: ' + (err.error?.message || res.statusText));
+        }
+        return;
+      }
+      const data = await res.json();
+      const reply = data.content?.[0]?.text || '(brak odpowiedzi)';
+      malHistory.push({ role: 'assistant', content: reply });
+      malAddMsg('bot', reply);
+    } catch (e) {
+      malStopTyping();
+      malAddMsg('bot', '⚠️ Błąd połączenia. Sprawdź CORS — uruchom przez serwer HTTP (nie file://).');
+    } finally {
+      document.getElementById('mal-btn').disabled = false;
+      input.focus();
+    }
+  }
+
+  document.getElementById('mal-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); malSend(); }
   });
 
   // Google Sheets — dynamiczne linki do zakładek procesów (fuzzy matching)
