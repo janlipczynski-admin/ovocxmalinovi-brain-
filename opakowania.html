@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opakowania 2025/2026 — OvocxMalinovi</title>
+<script src="opakowania-data.js"></script>
+<script src="planowanie-data.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange:#fa4211;--purple:#9013fe;
+    --grad:linear-gradient(135deg,#fa4211,#9013fe);
+    --bg:#f7f7f5;--white:#fff;
+    --border:#e8e6e1;--border2:#d8d5ce;
+    --text:#1a1a18;--text-dim:#6b6b65;--text-muted:#a8a8a0;
+    --surface2:#f2f0eb;
+    --green:#16a34a;--yellow:#d97706;--red:#dc2626;--blue:#2563eb;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+    --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;font-size:14px}
+
+  /* HEADER */
+  header{display:flex;align-items:center;justify-content:space-between;padding:13px 32px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:var(--shadow);gap:12px}
+  .back-btn{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:color .15s;white-space:nowrap}
+  .back-btn:hover{color:var(--orange)}
+  .h-center{display:flex;align-items:center;gap:10px;flex:1;justify-content:center}
+  .page-title{font-size:16px;font-weight:700}
+  .year-pill{font-family:'DM Mono',monospace;font-size:11px;font-weight:600;background:var(--grad);color:#fff;padding:3px 10px;border-radius:20px}
+  .h-actions{display:flex;align-items:center;gap:7px}
+  .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .15s;border:1px solid var(--border2);background:var(--white);color:var(--text-dim);font-weight:500}
+  .btn:hover{background:var(--surface2)}
+
+  /* TABS */
+  .tabs-bar{display:flex;background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;overflow-x:auto}
+  .tab{display:flex;align-items:center;gap:6px;padding:12px 16px;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+  .tab:hover{color:var(--text-dim)}
+  .tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+  .tab-badge{font-family:'DM Mono',monospace;font-size:9px;background:var(--surface2);color:var(--text-muted);padding:1px 6px;border-radius:10px;border:1px solid var(--border)}
+  .tab.active .tab-badge{background:rgba(250,66,17,.1);color:var(--orange);border-color:rgba(250,66,17,.2)}
+
+  /* MAIN */
+  main{padding:20px 32px;max-width:1600px;margin:0 auto}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+
+  /* FILTERS */
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center}
+  .filter-group{display:flex;flex-direction:column;gap:3px}
+  .filter-label{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)}
+  select,input[type=text]{background:var(--white);border:1px solid var(--border2);border-radius:7px;padding:6px 10px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);outline:none;transition:border-color .15s}
+  select:focus,input[type=text]:focus{border-color:var(--orange)}
+  select{cursor:pointer;min-width:130px}
+  input[type=text]{min-width:200px}
+  .filter-sep{width:1px;height:36px;background:var(--border);align-self:flex-end;margin:0 4px}
+
+  /* STATS ROW */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .stat-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px}
+  .stat-label{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:5px}
+  .stat-val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat-sub{font-size:10px;color:var(--text-muted);margin-top:2px}
+  .stat-val.grad{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+  /* TABLE */
+  .table-wrap{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .table-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border)}
+  .table-title{font-size:13px;font-weight:600}
+  .table-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted)}
+  table{width:100%;border-collapse:collapse}
+  th{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:8px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:500;white-space:nowrap;cursor:pointer;user-select:none}
+  th:hover{color:var(--text-dim)}
+  th.sort-asc::after{content:" ↑"}
+  th.sort-desc::after{content:" ↓"}
+  th.num,td.num{text-align:right}
+  td{padding:8px 14px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--surface2)}
+  .code-chip{font-family:'DM Mono',monospace;font-size:10px;background:var(--surface2);border:1px solid var(--border);padding:2px 7px;border-radius:5px;color:var(--text-dim)}
+  .badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:500}
+  .badge-pełne{background:rgba(250,66,17,.1);color:var(--orange);border:1px solid rgba(250,66,17,.2)}
+  .badge-proste{background:rgba(37,99,235,.1);color:var(--blue);border:1px solid rgba(37,99,235,.2)}
+  .badge-ts{background:rgba(144,19,254,.1);color:var(--purple);border:1px solid rgba(144,19,254,.2)}
+  .badge-sk{background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+  .odb-list{font-size:10px;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .num-big{font-family:'DM Mono',monospace;font-size:12px;font-weight:600}
+  .num-muted{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted)}
+
+  /* PER ODBIORCA */
+  .odb-selector{display:flex;gap:10px;align-items:flex-end;margin-bottom:16px}
+  .odb-info{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:none}
+  .odb-info.visible{display:block}
+  .odb-name{font-size:16px;font-weight:700;margin-bottom:6px}
+  .odb-meta{display:flex;gap:16px;flex-wrap:wrap}
+  .odb-meta-item{font-size:11px;color:var(--text-muted)}
+  .odb-meta-item strong{color:var(--text-dim);font-weight:600}
+
+  /* BAR CELL */
+  .bar-cell{display:flex;align-items:center;gap:6px}
+  .bar-bg{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;min-width:60px}
+  .bar-fill{height:100%;background:var(--grad);border-radius:3px;transition:width .3s}
+  .bar-pct{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);min-width:32px;text-align:right}
+
+  /* PROGNOZA */
+  .prognoza-top{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+  .info-box{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
+  .info-box-title{font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text-dim)}
+  .prog-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
+  .diff-pos{color:var(--green);font-size:10px;font-family:'DM Mono',monospace}
+  .diff-neg{color:var(--red);font-size:10px;font-family:'DM Mono',monospace}
+  .empty-state{padding:48px;text-align:center;color:var(--text-muted);font-size:13px}
+
+  /* RESPONSIVE */
+  @media(max-width:900px){
+    main{padding:14px 16px}
+    header{padding:11px 16px}
+    .tabs-bar{padding:0 16px}
+    .stats-row{grid-template-columns:repeat(2,1fr)}
+    .prognoza-top{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-btn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Dashboard
+  </a>
+  <div class="h-center">
+    <span class="page-title">Opakowania</span>
+    <span class="year-pill">2025 → 2026</span>
+  </div>
+  <div class="h-actions">
+    <button class="btn" onclick="window.print()">🖨 Drukuj</button>
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <div class="tab active" data-tab="zestawienie" onclick="switchTab('zestawienie')">
+    📦 Zestawienie 2025
+    <span class="tab-badge" id="badge-zestawienie">—</span>
+  </div>
+  <div class="tab" data-tab="odbiorca" onclick="switchTab('odbiorca')">
+    🏢 Per odbiorca
+    <span class="tab-badge" id="badge-odbiorca">—</span>
+  </div>
+  <div class="tab" data-tab="prognoza" onclick="switchTab('prognoza')">
+    📈 Prognoza 2026
+    <span class="tab-badge" id="badge-prognoza">—</span>
+  </div>
+</div>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════ TAB 1: ZESTAWIENIE -->
+<div id="tab-zestawienie" class="tab-content active">
+
+  <div class="filters">
+    <div class="filter-group">
+      <div class="filter-label">Typ kartonu</div>
+      <select id="f-typ" onchange="renderZestawienie()">
+        <option value="">Wszystkie</option>
+        <option value="PEŁNE">PEŁNE</option>
+        <option value="PROSTE">PROSTE</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Rodzaj kartonu</div>
+      <select id="f-rodzaj" onchange="renderZestawienie()">
+        <option value="">Wszystkie</option>
+        <option value="SKŁADANY">SKŁADANY</option>
+        <option value="KLEJONY">KLEJONY</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Waga jednostki</div>
+      <select id="f-waga" onchange="renderZestawienie()">
+        <option value="">Wszystkie</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Topseal</div>
+      <select id="f-topseal" onchange="renderZestawienie()">
+        <option value="">Wszystkie</option>
+        <option value="1">Tak</option>
+        <option value="0">Nie</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Owoc</div>
+      <select id="f-owoc" onchange="renderZestawienie()">
+        <option value="">Wszystkie</option>
+      </select>
+    </div>
+    <div class="filter-sep"></div>
+    <div class="filter-group">
+      <div class="filter-label">Szukaj</div>
+      <input type="text" id="f-search" placeholder="Kod lub opis..." oninput="renderZestawienie()">
+    </div>
+  </div>
+
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Łączny wolumen</div>
+      <div class="stat-val grad" id="s-vol">—</div>
+      <div class="stat-sub">kg w 2025</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Łączne kartony</div>
+      <div class="stat-val" id="s-kart">—</div>
+      <div class="stat-sub">sztuk kartonów</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Jednostkowe opakowania</div>
+      <div class="stat-val" id="s-jedn">—</div>
+      <div class="stat-sub">szt opakowań małych</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Unikalnych kodów</div>
+      <div class="stat-val" id="s-kody">—</div>
+      <div class="stat-sub">typów opakowań</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Zużycie opakowań 2025</span>
+      <span class="table-count" id="z-count">—</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortZ('pak')">Kod opakowania</th>
+            <th>Typ</th>
+            <th>Jedn.</th>
+            <th class="num" onclick="sortZ('wolumen_kg_total')">Wolumen [kg]</th>
+            <th class="num" onclick="sortZ('kartonow_total')">Kartonów</th>
+            <th class="num" onclick="sortZ('jednostek_total')">Jedn. opakowań</th>
+            <th class="num">kg / karton</th>
+            <th>Odbiorcy</th>
+          </tr>
+        </thead>
+        <tbody id="z-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 2: PER ODBIORCA -->
+<div id="tab-odbiorca" class="tab-content">
+
+  <div class="odb-selector">
+    <div class="filter-group">
+      <div class="filter-label">Wybierz odbiorcę</div>
+      <select id="sel-odb" onchange="renderOdbiorca()" style="min-width:280px">
+        <option value="">— wybierz —</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Owoc</div>
+      <select id="odb-owoc" onchange="renderOdbiorca()">
+        <option value="">Wszystkie</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="odb-info" id="odb-info">
+    <div class="odb-name" id="odb-name-title">—</div>
+    <div class="odb-meta" id="odb-meta"></div>
+  </div>
+
+  <div class="table-wrap" id="odb-table-wrap">
+    <div class="table-header">
+      <span class="table-title">Opakowania wg odbiorcy</span>
+      <span class="table-count" id="odb-count">Wybierz odbiorcę</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Kod opakowania</th>
+            <th>Typ</th>
+            <th>Jedn.</th>
+            <th class="num">Wolumen [kg]</th>
+            <th class="num">Kartonów</th>
+            <th class="num">Jedn. opakowań</th>
+            <th>Udział</th>
+          </tr>
+        </thead>
+        <tbody id="odb-body">
+          <tr><td colspan="7" class="empty-state">Wybierz odbiorcę z listy powyżej</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 3: PROGNOZA -->
+<div id="tab-prognoza" class="tab-content">
+
+  <div class="prognoza-top">
+    <div class="info-box">
+      <div class="info-box-title">Metodologia prognozy</div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.7">
+        Prognoza bazuje na <strong>proporcjach opakowań z 2025</strong> (z RT 2025 — Zamówienia)
+        przeskalowanych do <strong>planu 2026</strong> (z planowanie-data.js — typ: klient).<br><br>
+        Wzór: <code style="font-family:'DM Mono',monospace;font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:4px">
+        kartony_2026 = (udział_2025 × plan_kg_2026) / kg_per_karton</code><br><br>
+        <span style="color:var(--text-muted)">Proporcje są obliczane osobno dla każdego owocu.</span>
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="info-box-title">Plan sprzedaży 2026 (klienci)</div>
+      <div id="plan-summary" style="font-size:12px;color:var(--text-dim);line-height:1.8"></div>
+    </div>
+  </div>
+
+  <div class="prog-controls">
+    <div class="filter-group">
+      <div class="filter-label">Owoc</div>
+      <select id="prog-owoc" onchange="renderPrognoza()">
+        <option value="">Wszystkie</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Min. kartony 2026</div>
+      <input type="number" id="prog-min" value="100" min="0" style="min-width:120px" oninput="renderPrognoza()">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Prognoza kartonów na 2026</span>
+      <span class="table-count" id="prog-count">—</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Kod opakowania</th>
+            <th>Typ</th>
+            <th>Jedn.</th>
+            <th class="num">Faktyczne 2025 [kg]</th>
+            <th class="num">Faktyczne kartony 2025</th>
+            <th class="num">Plan 2026 [kg]</th>
+            <th class="num">Prognoza kartony 2026</th>
+            <th class="num">Zmiana</th>
+          </tr>
+        </thead>
+        <tbody id="prog-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════════ DATA PREP
+
+const rekordy = window.OPAK_DATA.rekordy;
+const katalog = window.OPAK_DATA.katalog;
+
+// Build reverse index: pak -> odbiorcy
+const pakOdbiorca = {};
+rekordy.forEach(r => {
+  if (!pakOdbiorca[r.pak]) pakOdbiorca[r.pak] = new Set();
+  pakOdbiorca[r.pak].add(r.odbiorca);
+});
+
+// All unique values for filters
+const allOwoc = [...new Set(rekordy.map(r => r.owoc).filter(Boolean))].sort();
+const allOdbiorcy = [...new Set(rekordy.map(r => r.odbiorca).filter(Boolean))].sort();
+const allWagi = [...new Set(katalog.map(k => k.waga_g).filter(Boolean))].sort((a, b) => a - b);
+
+// Populate filter dropdowns
+function populateSelect(id, values, fmt) {
+  const sel = document.getElementById(id);
+  values.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = fmt ? fmt(v) : v;
+    sel.appendChild(opt);
+  });
+}
+populateSelect('f-waga', allWagi, v => `${v}g`);
+populateSelect('f-owoc', allOwoc);
+populateSelect('odb-owoc', allOwoc);
+populateSelect('prog-owoc', allOwoc);
+populateSelect('sel-odb', allOdbiorcy);
+document.getElementById('badge-odbiorca').textContent = allOdbiorcy.length + ' odb.';
+
+// ═══════════════════════════════════════════════════════ HELPERS
+function fmtNum(n) {
+  if (n == null) return '—';
+  return n.toLocaleString('pl-PL');
+}
+function fmtKg(n) {
+  if (n == null) return '—';
+  return n.toLocaleString('pl-PL', {maximumFractionDigits: 0});
+}
+function typBadge(typ) {
+  const cls = typ === 'PEŁNE' ? 'badge-pełne' : 'badge-proste';
+  return `<span class="badge ${cls}">${typ}</span>`;
+}
+function opisJedn(r) {
+  if (!r.waga_g || !r.szt_w_kartonie) return '—';
+  let s = `${r.waga_g}g × ${r.szt_w_kartonie}szt`;
+  if (r.topseal) s += ' <span class="badge badge-ts">TS</span>';
+  if (r.rodzaj_kartonu === 'KLEJONY') s += ' <span class="badge badge-sk">KL</span>';
+  return s;
+}
+function kodCell(pak) {
+  return `<span class="code-chip" title="${pak}">${pak.length > 32 ? pak.substring(0, 30) + '…' : pak}</span>`;
+}
+
+// ═══════════════════════════════════════════════════════ TAB 1: ZESTAWIENIE
+
+let zSortCol = 'kartonow_total';
+let zSortDir = -1; // -1 = desc
+
+function sortZ(col) {
+  if (zSortCol === col) zSortDir *= -1;
+  else { zSortCol = col; zSortDir = -1; }
+  renderZestawienie();
+}
+
+function getFilteredKatalog() {
+  const typ = document.getElementById('f-typ').value;
+  const rodzaj = document.getElementById('f-rodzaj').value;
+  const waga = document.getElementById('f-waga').value;
+  const topseal = document.getElementById('f-topseal').value;
+  const owoc = document.getElementById('f-owoc').value;
+  const search = document.getElementById('f-search').value.toLowerCase().trim();
+
+  // Build kg aggregation with owoc filter
+  const pakKg = {};
+  const pakKart = {};
+  const pakJedn = {};
+  rekordy.forEach(r => {
+    if (owoc && r.owoc !== owoc) return;
+    pakKg[r.pak] = (pakKg[r.pak] || 0) + r.wolumen_kg;
+    if (r.kartonow) pakKart[r.pak] = (pakKart[r.pak] || 0) + r.kartonow;
+    if (r.jednostek) pakJedn[r.pak] = (pakJedn[r.pak] || 0) + r.jednostek;
+  });
+
+  return katalog
+    .filter(k => {
+      if (typ && k.typ_kartonu !== typ) return false;
+      if (rodzaj && k.rodzaj_kartonu !== rodzaj) return false;
+      if (waga && k.waga_g !== parseFloat(waga)) return false;
+      if (topseal === '1' && !k.topseal) return false;
+      if (topseal === '0' && k.topseal) return false;
+      if (search && !k.kod.toLowerCase().includes(search)) return false;
+      // Only show if has volume in filtered set
+      if (owoc && !pakKg[k.kod]) return false;
+      return true;
+    })
+    .map(k => ({
+      ...k,
+      _vol: pakKg[k.kod] || 0,
+      _kart: pakKart[k.kod] || 0,
+      _jedn: pakJedn[k.kod] || 0
+    }));
+}
+
+function renderZestawienie() {
+  let data = getFilteredKatalog();
+
+  // Sort
+  const owoc = document.getElementById('f-owoc').value;
+  const useFiltered = !!owoc;
+  data.sort((a, b) => {
+    const av = useFiltered ?
+      (zSortCol === 'wolumen_kg_total' ? a._vol : zSortCol === 'kartonow_total' ? a._kart : a[zSortCol]) :
+      a[zSortCol];
+    const bv = useFiltered ?
+      (zSortCol === 'wolumen_kg_total' ? b._vol : zSortCol === 'kartonow_total' ? b._kart : b[zSortCol]) :
+      b[zSortCol];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (typeof av === 'string') return av.localeCompare(bv) * zSortDir;
+    return (av - bv) * zSortDir;
+  });
+
+  // Stats
+  const totVol = data.reduce((s, k) => s + (useFiltered ? k._vol : k.wolumen_kg_total), 0);
+  const totKart = data.reduce((s, k) => s + (useFiltered ? k._kart : k.kartonow_total || 0), 0);
+  const totJedn = data.reduce((s, k) => s + (useFiltered ? k._jedn : k.jednostek_total || 0), 0);
+
+  document.getElementById('s-vol').textContent = fmtKg(totVol) + ' kg';
+  document.getElementById('s-kart').textContent = fmtNum(Math.round(totKart));
+  document.getElementById('s-jedn').textContent = fmtNum(Math.round(totJedn));
+  document.getElementById('s-kody').textContent = data.length;
+  document.getElementById('z-count').textContent = `${data.length} kodów`;
+  document.getElementById('badge-zestawienie').textContent = data.length;
+
+  const tbody = document.getElementById('z-body');
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Brak wyników dla wybranych filtrów</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(k => {
+    const vol = useFiltered ? k._vol : k.wolumen_kg_total;
+    const kart = useFiltered ? k._kart : k.kartonow_total;
+    const jedn = useFiltered ? k._jedn : k.jednostek_total;
+    const odbList = [...(pakOdbiorca[k.kod] || [])].join(', ');
+    return `<tr>
+      <td>${kodCell(k.kod)}</td>
+      <td>${k.typ_kartonu ? typBadge(k.typ_kartonu) : '—'}</td>
+      <td>${opisJedn(k)}</td>
+      <td class="num"><span class="num-big">${fmtKg(vol)}</span></td>
+      <td class="num"><span class="num-big">${fmtNum(kart ? Math.round(kart) : null)}</span></td>
+      <td class="num"><span class="num-muted">${fmtNum(jedn ? Math.round(jedn) : null)}</span></td>
+      <td class="num"><span class="num-muted">${k.kg_per_karton ? k.kg_per_karton + ' kg' : '—'}</span></td>
+      <td><div class="odb-list" title="${odbList}">${odbList || '—'}</div></td>
+    </tr>`;
+  }).join('');
+
+  // Update sort headers
+  document.querySelectorAll('#tab-zestawienie th').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+  });
+}
+
+// ═══════════════════════════════════════════════════════ TAB 2: PER ODBIORCA
+
+function renderOdbiorca() {
+  const odb = document.getElementById('sel-odb').value;
+  const owoc = document.getElementById('odb-owoc').value;
+
+  if (!odb) {
+    document.getElementById('odb-info').classList.remove('visible');
+    document.getElementById('odb-body').innerHTML = '<tr><td colspan="7" class="empty-state">Wybierz odbiorcę z listy powyżej</td></tr>';
+    document.getElementById('odb-count').textContent = 'Wybierz odbiorcę';
+    return;
+  }
+
+  // Filter records for this odbiorca
+  const filtered = rekordy.filter(r => r.odbiorca === odb && (!owoc || r.owoc === owoc));
+
+  // Aggregate by pak
+  const byPak = {};
+  filtered.forEach(r => {
+    if (!byPak[r.pak]) byPak[r.pak] = { pak: r.pak, kg: 0, kart: 0, jedn: 0 };
+    byPak[r.pak].kg += r.wolumen_kg;
+    byPak[r.pak].kart += r.kartonow || 0;
+    byPak[r.pak].jedn += r.jednostek || 0;
+  });
+
+  const rows = Object.values(byPak).sort((a, b) => b.kg - a.kg);
+  const totalKg = rows.reduce((s, r) => s + r.kg, 0);
+  const totalKart = rows.reduce((s, r) => s + r.kart, 0);
+  const owocList = [...new Set(filtered.map(r => r.owoc))].filter(Boolean).join(', ');
+  const tygList = [...new Set(filtered.map(r => r.tydzien))].filter(Boolean).sort((a,b)=>a-b);
+  const tygRange = tygList.length ? `${tygList[0]}–${tygList[tygList.length-1]}` : '—';
+
+  // Info box
+  document.getElementById('odb-info').classList.add('visible');
+  document.getElementById('odb-name-title').textContent = odb;
+  document.getElementById('odb-meta').innerHTML = `
+    <div class="odb-meta-item"><strong>${fmtKg(totalKg)} kg</strong> łącznie</div>
+    <div class="odb-meta-item"><strong>${fmtNum(Math.round(totalKart))}</strong> kartonów</div>
+    <div class="odb-meta-item"><strong>${rows.length}</strong> typów opakowań</div>
+    <div class="odb-meta-item">Owoc: <strong>${owocList || '—'}</strong></div>
+    <div class="odb-meta-item">Tygodnie: <strong>${tygRange}</strong></div>
+  `;
+
+  document.getElementById('odb-count').textContent = `${rows.length} typów opakowań · ${fmtKg(totalKg)} kg`;
+
+  if (rows.length === 0) {
+    document.getElementById('odb-body').innerHTML = '<tr><td colspan="7" class="empty-state">Brak danych</td></tr>';
+    return;
+  }
+
+  const katMap = {};
+  katalog.forEach(k => katMap[k.kod] = k);
+
+  document.getElementById('odb-body').innerHTML = rows.map(r => {
+    const k = katMap[r.pak] || {};
+    const pct = totalKg > 0 ? (r.kg / totalKg * 100) : 0;
+    const barW = Math.round(pct);
+    return `<tr>
+      <td>${kodCell(r.pak)}</td>
+      <td>${k.typ_kartonu ? typBadge(k.typ_kartonu) : '—'}</td>
+      <td>${opisJedn(k)}</td>
+      <td class="num"><span class="num-big">${fmtKg(r.kg)}</span></td>
+      <td class="num"><span class="num-big">${fmtNum(r.kart ? Math.round(r.kart) : null)}</span></td>
+      <td class="num"><span class="num-muted">${fmtNum(r.jedn ? Math.round(r.jedn) : null)}</span></td>
+      <td>
+        <div class="bar-cell">
+          <div class="bar-bg"><div class="bar-fill" style="width:${barW}%"></div></div>
+          <span class="bar-pct">${pct.toFixed(1)}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════ TAB 3: PROGNOZA
+
+function buildPrognoza() {
+  // From PLAN_DATA: type=klient, aggregate to get total kg by owoc
+  const planData = window.PLAN_DATA || [];
+  const planKlienci = planData.filter(r => r.typ === 'klient');
+
+  // Total plan by owoc
+  const planByOwoc = {};
+  planKlienci.forEach(r => {
+    planByOwoc[r.owoc] = (planByOwoc[r.owoc] || 0) + r.kg;
+  });
+
+  // Total RT 2025 by owoc
+  const rt2025ByOwoc = {};
+  rekordy.forEach(r => {
+    rt2025ByOwoc[r.owoc] = (rt2025ByOwoc[r.owoc] || 0) + r.wolumen_kg;
+  });
+
+  // Build plan summary
+  let summary = '';
+  Object.entries(planByOwoc).sort((a,b) => b[1]-a[1]).forEach(([owoc, kg]) => {
+    const rt = rt2025ByOwoc[owoc] || 0;
+    const diff = rt > 0 ? ((kg - rt) / rt * 100) : null;
+    const diffStr = diff !== null ?
+      `<span class="${diff >= 0 ? 'diff-pos' : 'diff-neg'}">${diff >= 0 ? '+' : ''}${diff.toFixed(1)}% vs 2025</span>` : '';
+    summary += `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border)">
+      <span style="font-weight:500">${owoc}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:11px">${fmtKg(kg)} kg ${diffStr}</span>
+    </div>`;
+  });
+  const totalPlan = Object.values(planByOwoc).reduce((s,v)=>s+v,0);
+  const totalRT = Object.values(rt2025ByOwoc).reduce((s,v)=>s+v,0);
+  summary += `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;margin-top:2px">
+    <span style="font-weight:700">ŁĄCZNIE</span>
+    <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700">${fmtKg(totalPlan)} kg</span>
+  </div>`;
+  document.getElementById('plan-summary').innerHTML = summary;
+  document.getElementById('badge-prognoza').textContent = fmtKg(totalPlan) + ' kg';
+
+  return { planByOwoc, rt2025ByOwoc };
+}
+
+function renderPrognoza() {
+  const { planByOwoc, rt2025ByOwoc } = buildPrognoza();
+  const owocFilter = document.getElementById('prog-owoc').value;
+  const minKart = parseInt(document.getElementById('prog-min').value) || 0;
+
+  // Aggregate RT2025 by pak and owoc
+  const rt2025PakOwoc = {}; // pak -> owoc -> kg
+  rekordy.forEach(r => {
+    if (!rt2025PakOwoc[r.pak]) rt2025PakOwoc[r.pak] = {};
+    rt2025PakOwoc[r.pak][r.owoc] = (rt2025PakOwoc[r.pak][r.owoc] || 0) + r.wolumen_kg;
+  });
+
+  // For each pak, calculate 2026 forecast
+  const katMap = {};
+  katalog.forEach(k => katMap[k.kod] = k);
+
+  const results = [];
+
+  katalog.forEach(k => {
+    const pakData = rt2025PakOwoc[k.kod] || {};
+    let prog2026Kg = 0;
+    let fact2025Kg = 0;
+
+    // Calculate proportion and scale to 2026 plan
+    Object.entries(pakData).forEach(([owoc, kg]) => {
+      if (owocFilter && owoc !== owocFilter) return;
+      fact2025Kg += kg;
+      const totalOwoc2025 = rt2025ByOwoc[owoc] || 0;
+      const plan2026 = planByOwoc[owoc] || 0;
+      if (totalOwoc2025 > 0 && plan2026 > 0) {
+        const share = kg / totalOwoc2025;
+        prog2026Kg += share * plan2026;
+      }
+    });
+
+    if (owocFilter) {
+      fact2025Kg = pakData[owocFilter] || 0;
+    }
+
+    const fact2025Kart = k.kg_per_karton && fact2025Kg > 0 ? Math.round(fact2025Kg / k.kg_per_karton) : null;
+    const prog2026Kart = k.kg_per_karton && prog2026Kg > 0 ? Math.round(prog2026Kg / k.kg_per_karton) : null;
+
+    if (!prog2026Kart || prog2026Kart < minKart) return;
+
+    results.push({
+      ...k,
+      fact2025Kg,
+      fact2025Kart,
+      prog2026Kg,
+      prog2026Kart
+    });
+  });
+
+  results.sort((a, b) => (b.prog2026Kart || 0) - (a.prog2026Kart || 0));
+
+  document.getElementById('prog-count').textContent = `${results.length} kodów opakowań`;
+
+  if (results.length === 0) {
+    document.getElementById('prog-body').innerHTML = '<tr><td colspan="8" class="empty-state">Brak wyników</td></tr>';
+    return;
+  }
+
+  const totalProg = results.reduce((s, r) => s + (r.prog2026Kart || 0), 0);
+  const totalFact = results.reduce((s, r) => s + (r.fact2025Kart || 0), 0);
+
+  document.getElementById('prog-body').innerHTML = [
+    ...results.map(r => {
+      const diff = r.fact2025Kart && r.prog2026Kart ? r.prog2026Kart - r.fact2025Kart : null;
+      const diffPct = r.fact2025Kart && diff !== null ? (diff / r.fact2025Kart * 100) : null;
+      const diffStr = diffPct !== null ?
+        `<span class="${diffPct >= 0 ? 'diff-pos' : 'diff-neg'}">${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(0)}%<br>${diff >= 0 ? '+' : ''}${fmtNum(diff)}</span>` : '—';
+      return `<tr>
+        <td>${kodCell(r.kod)}</td>
+        <td>${r.typ_kartonu ? typBadge(r.typ_kartonu) : '—'}</td>
+        <td>${opisJedn(r)}</td>
+        <td class="num"><span class="num-muted">${fmtKg(r.fact2025Kg)}</span></td>
+        <td class="num"><span class="num-muted">${fmtNum(r.fact2025Kart)}</span></td>
+        <td class="num"><span class="num-muted">${fmtKg(Math.round(r.prog2026Kg))}</span></td>
+        <td class="num"><span class="num-big">${fmtNum(r.prog2026Kart)}</span></td>
+        <td class="num">${diffStr}</td>
+      </tr>`;
+    }),
+    `<tr style="background:var(--surface2);font-weight:700">
+      <td colspan="4"><span style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.05em">ŁĄCZNIE</span></td>
+      <td class="num"><span class="num-muted">${fmtNum(totalFact)}</span></td>
+      <td class="num">—</td>
+      <td class="num"><span class="num-big">${fmtNum(totalProg)}</span></td>
+      <td class="num">—</td>
+    </tr>`
+  ].join('');
+}
+
+// ═══════════════════════════════════════════════════════ TAB SWITCHING
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
+}
+
+// ═══════════════════════════════════════════════════════ INIT
+renderZestawienie();
+buildPrognoza();
+renderPrognoza();
+</script>
+</body>
+</html>
