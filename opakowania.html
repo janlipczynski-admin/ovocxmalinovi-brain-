@@ -6,6 +6,7 @@
 <title>Opakowania 2025/2026 — OvocxMalinovi</title>
 <script src="opakowania-data.js"></script>
 <script src="planowanie-data.js"></script>
+<script src="zestawienie-proc-data.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -167,6 +168,10 @@
   </div>
   <div class="tab" data-tab="miesieczna" onclick="switchTab('miesieczna')">
     📅 Prognoza miesięczna
+  </div>
+  <div class="tab" data-tab="zp2025" onclick="switchTab('zp2025')">
+    📊 Zest. Proc. 2025
+    <span class="tab-badge" id="badge-zp2025">—</span>
   </div>
 </div>
 
@@ -437,6 +442,108 @@
       <table id="mies-table">
         <thead id="mies-thead"></thead>
         <tbody id="mies-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 5: ZESTAWIENIA PROCEDURALNE 2025 -->
+<div id="tab-zp2025" class="tab-content">
+
+  <div class="filters">
+    <div class="filter-group">
+      <div class="filter-label">Miesiąc</div>
+      <select id="zp-miesiac" onchange="renderZP()">
+        <option value="">Wszystkie</option>
+        <option value="4">Kwiecień</option>
+        <option value="5">Maj</option>
+        <option value="6">Czerwiec</option>
+        <option value="7">Lipiec</option>
+        <option value="8">Sierpień</option>
+        <option value="9">Wrzesień</option>
+        <option value="10">Październik</option>
+        <option value="11">Listopad</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Odbiorca</div>
+      <select id="zp-odbiorca" onchange="renderZP()" style="min-width:200px">
+        <option value="">Wszyscy</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Owoc</div>
+      <select id="zp-owoc" onchange="renderZP()">
+        <option value="">Wszystkie</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Typ kartonu</div>
+      <select id="zp-typ" onchange="renderZP()">
+        <option value="">Wszystkie</option>
+        <option value="PEŁNE">PEŁNE</option>
+        <option value="PROSTE">PROSTE</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Topseal</div>
+      <select id="zp-topseal" onchange="renderZP()">
+        <option value="">Wszystkie</option>
+        <option value="1">Tak</option>
+        <option value="0">Nie</option>
+      </select>
+    </div>
+    <div class="filter-sep"></div>
+    <div class="filter-group">
+      <div class="filter-label">Szukaj</div>
+      <input type="text" id="zp-search" placeholder="Kod opakowania..." oninput="renderZP()">
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Łączny wolumen</div>
+      <div class="stat-val grad" id="zp-s-vol">—</div>
+      <div class="stat-sub">kg (01.01–26.11.2025)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Przychód PLN</div>
+      <div class="stat-val" id="zp-s-pln" style="font-size:18px">—</div>
+      <div class="stat-sub">ze sprzedaży owoców</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Łączne kartony</div>
+      <div class="stat-val" id="zp-s-kart">—</div>
+      <div class="stat-sub">sztuk kartonów</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Unikalnych kodów</div>
+      <div class="stat-val" id="zp-s-kody">—</div>
+      <div class="stat-sub">typów opakowań</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Zużycie opakowań — Zestawienia Proceduralne 2025</span>
+      <span class="table-count" id="zp-count">—</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortZP('pak')">Kod opakowania</th>
+            <th>Typ</th>
+            <th>Jedn.</th>
+            <th class="num" onclick="sortZP('wolumen_kg')">Wolumen [kg]</th>
+            <th class="num" onclick="sortZP('przychod_pln')">Przychód [PLN]</th>
+            <th class="num" onclick="sortZP('kartonow')">Kartonów</th>
+            <th class="num" onclick="sortZP('jednostek')">Jedn. opakowań</th>
+            <th>Udział kg</th>
+            <th>Odbiorcy</th>
+          </tr>
+        </thead>
+        <tbody id="zp-body"></tbody>
       </table>
     </div>
   </div>
@@ -1021,18 +1128,127 @@ function renderMiesieczna() {
 populateSelect('mies-klient', allKlienci);
 populateSelect('mies-owoc', allOwoc);
 
+// ═══════════════════════════════════════════════════════ TAB 5: ZESTAWIENIA PROCEDURALNE 2025
+
+const zpRekordy = (window.ZP_DATA && window.ZP_DATA.rekordy) || [];
+
+// Populate ZP filters
+const zpAllOdbiorcy = [...new Set(zpRekordy.map(r => r.odbiorca).filter(Boolean))].sort();
+const zpAllOwoc    = [...new Set(zpRekordy.map(r => r.owoc).filter(Boolean))].sort();
+populateSelect('zp-odbiorca', zpAllOdbiorcy);
+populateSelect('zp-owoc', zpAllOwoc);
+
+// Sort state
+let zpSortCol = 'wolumen_kg';
+let zpSortDir = -1;
+
+function sortZP(col) {
+  if (zpSortCol === col) zpSortDir *= -1;
+  else { zpSortCol = col; zpSortDir = -1; }
+  renderZP();
+}
+
+function renderZP() {
+  const miesiac  = document.getElementById('zp-miesiac').value;
+  const odbiorca = document.getElementById('zp-odbiorca').value;
+  const owoc     = document.getElementById('zp-owoc').value;
+  const typ      = document.getElementById('zp-typ').value;
+  const topseal  = document.getElementById('zp-topseal').value;
+  const search   = document.getElementById('zp-search').value.toLowerCase().trim();
+
+  // Filter records
+  const filtered = zpRekordy.filter(r => {
+    if (miesiac  && String(r.miesiac) !== miesiac) return false;
+    if (odbiorca && r.odbiorca !== odbiorca) return false;
+    if (owoc     && r.owoc !== owoc) return false;
+    if (typ      && r.typ_kartonu !== typ) return false;
+    if (topseal === '1' && !r.topseal) return false;
+    if (topseal === '0' && r.topseal) return false;
+    if (search   && !r.pak.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  // Aggregate by pak
+  const byPak = {};
+  filtered.forEach(r => {
+    if (!byPak[r.pak]) byPak[r.pak] = {
+      pak: r.pak, typ_kartonu: r.typ_kartonu, rodzaj_kartonu: r.rodzaj_kartonu,
+      rozmiar_kartonu: r.rozmiar_kartonu, topseal: r.topseal,
+      waga_g: r.waga_g, szt_w_kartonie: r.szt_w_kartonie, kg_per_karton: r.kg_per_karton,
+      wolumen_kg: 0, przychod_pln: 0, kartonow: 0, jednostek: 0, odbiorcy: new Set()
+    };
+    byPak[r.pak].wolumen_kg   += r.wolumen_kg   || 0;
+    byPak[r.pak].przychod_pln += r.przychod_pln || 0;
+    byPak[r.pak].kartonow     += r.kartonow     || 0;
+    byPak[r.pak].jednostek    += r.jednostek    || 0;
+    if (r.odbiorca) byPak[r.pak].odbiorcy.add(r.odbiorca);
+  });
+
+  let rows = Object.values(byPak);
+
+  // Sort
+  rows.sort((a, b) => {
+    const av = a[zpSortCol]; const bv = b[zpSortCol];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1; if (bv == null) return -1;
+    if (typeof av === 'string') return av.localeCompare(bv) * zpSortDir;
+    return (av - bv) * zpSortDir;
+  });
+
+  // Stats
+  const totVol  = rows.reduce((s, r) => s + r.wolumen_kg, 0);
+  const totPln  = rows.reduce((s, r) => s + r.przychod_pln, 0);
+  const totKart = rows.reduce((s, r) => s + r.kartonow, 0);
+
+  document.getElementById('zp-s-vol').textContent  = fmtKg(totVol) + ' kg';
+  document.getElementById('zp-s-pln').textContent  = fmtNum(Math.round(totPln)) + ' PLN';
+  document.getElementById('zp-s-kart').textContent = fmtNum(Math.round(totKart));
+  document.getElementById('zp-s-kody').textContent = rows.length;
+  document.getElementById('zp-count').textContent  = `${rows.length} kodów`;
+  document.getElementById('badge-zp2025').textContent = rows.length;
+
+  const tbody = document.getElementById('zp-body');
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Brak wyników dla wybranych filtrów</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const pct = totVol > 0 ? (r.wolumen_kg / totVol * 100) : 0;
+    const odbList = [...r.odbiorcy].sort().join(', ');
+    return `<tr>
+      <td>${kodCell(r.pak)}</td>
+      <td>${r.typ_kartonu ? typBadge(r.typ_kartonu) : '—'}</td>
+      <td>${opisJedn(r)}</td>
+      <td class="num"><span class="num-big">${fmtKg(r.wolumen_kg)}</span></td>
+      <td class="num"><span class="num-big" style="color:var(--green)">${r.przychod_pln > 0 ? fmtNum(Math.round(r.przychod_pln)) : '—'}</span></td>
+      <td class="num"><span class="num-big">${fmtNum(r.kartonow ? Math.round(r.kartonow) : null)}</span></td>
+      <td class="num"><span class="num-muted">${fmtNum(r.jednostek ? Math.round(r.jednostek) : null)}</span></td>
+      <td>
+        <div class="bar-cell">
+          <div class="bar-bg"><div class="bar-fill" style="width:${Math.round(pct)}%"></div></div>
+          <span class="bar-pct">${pct.toFixed(1)}%</span>
+        </div>
+      </td>
+      <td><div class="odb-list" title="${odbList}">${odbList || '—'}</div></td>
+    </tr>`;
+  }).join('');
+}
+
 // ═══════════════════════════════════════════════════════ TAB SWITCHING
 
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
   if (name === 'miesieczna') renderMiesieczna();
+  if (name === 'zp2025') renderZP();
 }
 
 // ═══════════════════════════════════════════════════════ INIT
 renderZestawienie();
 buildPrognoza();
 renderPrognoza();
+renderZP();
 </script>
 </body>
 </html>
