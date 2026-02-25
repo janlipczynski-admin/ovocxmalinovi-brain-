@@ -176,7 +176,7 @@
   <div class="snapshot-note">
     ℹ️ Stan magazynowy wg snapshotu z <strong>25.02.2026</strong>.
     Zużycie 2025 z zestawień proceduralnych (01.01–26.11.2025).
-    Prognoza 2026 = zużycie 2025 × współczynnik wzrostu (edytowalny poniżej).
+    Prognoza 2026 = plan sprzedaży 2026 per klient × miks opakowań z ZP 2025.
   </div>
 
   <div class="settings-box">
@@ -471,71 +471,78 @@ function getParam() {
   return {buforM, lead};
 }
 
-// ─── Plan 2026 z PLAN_DATA (planowanie-data.js) ────────────
+// ─── Plan 2026 per klient z PLAN_DATA ────────────────────
 const PLAN_DATA_ALL = window.PLAN_DATA || [];
-// Łączny plan klientów 2026 [kg] — podstawa do obliczeń
-const PLAN_2026_KG = PLAN_DATA_ALL
-  .filter(r => r.typ === 'klient')
-  .reduce((s, r) => s + (r.kg || 0), 0);
-
-// Plan wg owocu (normalizacja nazw: "Truskawka tunelowa" → "Truskawka")
-function normOwoc(o) {
-  if (!o) return 'Inne';
-  return o.replace(' tunelowa','').replace(' szklarniowa','').replace(' letnia','').trim();
-}
-const PLAN_2026_BY_OWOC = {};
+const PLAN_2026_BY_CLIENT = {};
 PLAN_DATA_ALL.filter(r => r.typ === 'klient').forEach(r => {
-  const o = normOwoc(r.owoc);
-  PLAN_2026_BY_OWOC[o] = (PLAN_2026_BY_OWOC[o] || 0) + (r.kg || 0);
+  PLAN_2026_BY_CLIENT[r.podmiot] = (PLAN_2026_BY_CLIENT[r.podmiot] || 0) + (r.kg || 0);
+});
+const PLAN_2026_KG = Object.values(PLAN_2026_BY_CLIENT).reduce((s, v) => s + v, 0);
+
+// ─── Projekcja kartonów: plan kg × miks opakowań per klient ─
+// ZCP = {klient: [{pak, kg_zp, kgpk}]} z zakupy-data.js
+// Dla każdego klienta: PAK_PROJ[pak_code] += plan_kg × share_w_ZP2025 / kgpk
+// Żaden growth factor — plan_kg to bezpośrednia podstawa, kgpk to spec produktu
+const ZCP = (window.ZAKUPY_DATA || {}).zp_client_pak || {};
+
+// Fallback: średni miks (dla klientów niezidentyfikowanych w ZP 2025)
+const ZCP_AVG = {};
+Object.values(ZCP).forEach(paks => {
+  paks.forEach(v => {
+    if (!ZCP_AVG[v.pak]) ZCP_AVG[v.pak] = {kg_zp: 0, kgpk: v.kgpk};
+    ZCP_AVG[v.pak].kg_zp += v.kg_zp;
+    if (!ZCP_AVG[v.pak].kgpk) ZCP_AVG[v.pak].kgpk = v.kgpk;
+  });
+});
+const ZCP_AVG_TOTAL = Object.values(ZCP_AVG).reduce((s, v) => s + v.kg_zp, 0);
+
+const PAK_PROJ = {};  // {pak_code: prognozowana_liczba_kartonów_2026}
+Object.entries(PLAN_2026_BY_CLIENT).forEach(([client, planKg]) => {
+  const paks    = ZCP[client] || [];
+  const zpTotal = paks.reduce((s, v) => s + v.kg_zp, 0);
+  const usePaks = zpTotal > 0 ? paks
+    : (ZCP_AVG_TOTAL > 0 ? Object.entries(ZCP_AVG).map(([pak, v]) => ({pak, ...v})) : []);
+  const useTotal = zpTotal > 0 ? zpTotal : ZCP_AVG_TOTAL;
+  usePaks.forEach(v => {
+    const projKg = (v.kg_zp / useTotal) * planKg;
+    if (v.kgpk > 0) PAK_PROJ[v.pak] = (PAK_PROJ[v.pak] || 0) + projKg / v.kgpk;
+  });
 });
 
-// ─── ZP 2025: proporcje opakowań ──────────────────────────
-// Łączne kg ze wszystkich pak_kodów w ZP 2025
-const ZP_TOTAL_KG = ZP.reduce((s, z) => s + (z.kg_2025 || 0), 0);
-
-// Dla każdego pak_kodu: udział [0..1] w łącznym kg 2025
-// Proj. 2026 kg dla pak_kodu = udział × PLAN_2026_KG
-// Proj. 2026 kartonów = proj_kg / kgpk
-
-// Grupowanie pak_kodów na named carton types
-function projCartonsForGroup(filterFn) {
+function pakSum(filterFn) {
   let total = 0;
-  ZP.forEach(z => {
-    if (!filterFn(z)) return;
-    const share = ZP_TOTAL_KG > 0 ? z.kg_2025 / ZP_TOTAL_KG : 0;
-    const proj_kg = share * PLAN_2026_KG;
-    const kgpk = z.kgpk || 0;
-    if (kgpk > 0) total += proj_kg / kgpk;
-  });
+  Object.entries(PAK_PROJ).forEach(([pak, c]) => { if (filterFn(pak)) total += c; });
   return Math.round(total);
 }
 
-// Proj. 2026 kartonów per named carton (stany mag name → filter ZP)
+// Named carton (stany mag) → pak_code filter
+// Biedronka używa X6/250X8, zielona deska X12 — rozróżnienie bez sztucznych %
 function projCartons2026(nazwa) {
   const n = nazwa.toLowerCase();
   if (n.includes('mały czarny') || n.includes('apla'))
-    return projCartonsForGroup(z => z.typ === 'PROSTE' && z.rozmiar === 'MAŁY');
+    return pakSum(p => p.includes('PROSTE') && p.includes('MAŁY'));
   if (n.includes('mały') && n.includes('biedronka'))
-    return Math.round(projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'MAŁY') * 0.4);
+    return pakSum(p => p.includes('PEŁNE') && p.includes('MAŁY') && (p.includes('X6') || p.includes('250X8')));
   if (n.includes('mały') && (n.includes('zielona') || n.includes('lidl')))
-    return Math.round(projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'MAŁY') * 0.6);
+    return pakSum(p => p.includes('PEŁNE') && p.includes('MAŁY') && p.includes('X12'));
   if (n.includes('duży czarny') && n.includes('klejony'))
-    return projCartonsForGroup(z => z.typ === 'PROSTE' && z.rozmiar === 'DUŻY' && z.rodzaj === 'KLEJONY');
-  if (n.includes('duży czarny') && n.includes('składania'))
-    return projCartonsForGroup(z => z.typ === 'PROSTE' && z.rozmiar === 'DUŻY' && z.rodzaj === 'SKŁADANY');
+    return pakSum(p => p.includes('PROSTE') && p.includes('DUŻY') && p.includes('KLEJONY'));
+  if (n.includes('duży czarny') && n.includes('składan'))
+    return pakSum(p => p.includes('PROSTE') && p.includes('DUŻY') && p.includes('SKŁADANY'));
   if (n.includes('duży') && n.includes('zielony') && n.includes('klejony'))
-    return projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'DUŻY' && z.rodzaj === 'KLEJONY');
-  if (n.includes('duży') && n.includes('zielony') && n.includes('składania'))
-    return Math.round(projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'DUŻY' && z.rodzaj === 'SKŁADANY') * 0.5);
+    return pakSum(p => p.includes('PEŁNE') && p.includes('DUŻY') && p.includes('KLEJONY'));
+  if (n.includes('duży') && n.includes('zielony') && n.includes('składan'))
+    return pakSum(p => p.includes('PEŁNE') && p.includes('DUŻY') && p.includes('SKŁADANY'));
   if (n.includes('duży') && n.includes('biedronka'))
-    return Math.round(projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'DUŻY' && z.rodzaj === 'SKŁADANY') * 0.5);
+    return pakSum(p => p.includes('PEŁNE') && p.includes('DUŻY'));
   if (n.includes('duży') && n.includes('szary'))
-    return Math.round(projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'DUŻY') * 0.15);
+    return pakSum(p => p.includes('PEŁNE') && p.includes('DUŻY'));
   return null;
 }
 
-// Proj. 2026 etykiet: łącznie
-// labels per kg = z ZP 2025: Σ(kg_2025 * szt/waga_g) / ZP_TOTAL_KG
+// ─── Projekcja etykiet ────────────────────────────────────
+// Gęstość etykiet/kg = spec. produktu z ZP 2025; vol = plan 2026 klientów
+const ZP_TOTAL_KG = ZP.reduce((s, z) => s + (z.kg_2025 || 0), 0);
 const ZP_LABELS_PER_KG = ZP_TOTAL_KG > 0
   ? ZP.reduce((s, z) => {
       if (z.szt && z.waga_g && z.kg_2025)
@@ -543,10 +550,8 @@ const ZP_LABELS_PER_KG = ZP_TOTAL_KG > 0
       return s;
     }, 0)
   : 0;
-
 const PROJ_LABELS_2026_TOTAL = Math.round(PLAN_2026_KG * ZP_LABELS_PER_KG);
 
-// Per etykieta: proporcja ze stanów magazynowych
 function projLabels2026(indeks, totalLabelStany) {
   const item = SNAP_STANY.find(i => i.indeks === indeks);
   if (!item || !totalLabelStany || PROJ_LABELS_2026_TOTAL === 0) return null;
