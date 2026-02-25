@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planowanie Zakupów Opakowań — OvocxMalinovi</title>
+<script src="zakupy-data.js"></script>
+<script src="planowanie-data.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange:#fa4211;--purple:#9013fe;
+    --grad:linear-gradient(135deg,#fa4211,#9013fe);
+    --bg:#f7f7f5;--white:#fff;
+    --border:#e8e6e1;--border2:#d8d5ce;
+    --text:#1a1a18;--text-dim:#6b6b65;--text-muted:#a8a8a0;
+    --surface2:#f2f0eb;
+    --green:#16a34a;--green-bg:rgba(22,163,74,.08);--green-border:rgba(22,163,74,.2);
+    --yellow:#d97706;--yellow-bg:rgba(217,119,6,.08);--yellow-border:rgba(217,119,6,.25);
+    --red:#dc2626;--red-bg:rgba(220,38,38,.08);--red-border:rgba(220,38,38,.2);
+    --blue:#2563eb;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+    --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;font-size:14px}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:13px 32px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:var(--shadow);gap:12px}
+  .back-btn{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:color .15s;white-space:nowrap}
+  .back-btn:hover{color:var(--orange)}
+  .h-center{display:flex;align-items:center;gap:10px;flex:1;justify-content:center}
+  .page-title{font-size:16px;font-weight:700}
+  .snapshot-pill{font-family:'DM Mono',monospace;font-size:11px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border2);padding:3px 10px;border-radius:20px}
+  .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .15s;border:1px solid var(--border2);background:var(--white);color:var(--text-dim);font-weight:500}
+  .btn:hover{background:var(--surface2)}
+  .btn-print{background:var(--grad);color:#fff;border:none}
+  .btn-print:hover{opacity:.9}
+
+  .tabs-bar{display:flex;background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;overflow-x:auto}
+  .tab{display:flex;align-items:center;gap:6px;padding:12px 16px;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+  .tab:hover{color:var(--text-dim)}
+  .tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+  .tab-badge{font-family:'DM Mono',monospace;font-size:9px;background:var(--surface2);color:var(--text-muted);padding:1px 6px;border-radius:10px;border:1px solid var(--border)}
+  .tab.active .tab-badge{background:rgba(250,66,17,.1);color:var(--orange);border-color:rgba(250,66,17,.2)}
+
+  main{padding:20px 32px;max-width:1600px;margin:0 auto}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+
+  /* ALERT CARDS */
+  .alert-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+  .alert-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px;border-left:4px solid var(--border)}
+  .alert-card.red{border-left-color:var(--red);background:var(--red-bg)}
+  .alert-card.yellow{border-left-color:var(--yellow);background:var(--yellow-bg)}
+  .alert-card.green{border-left-color:var(--green);background:var(--green-bg)}
+  .alert-label{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:5px}
+  .alert-val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .alert-sub{font-size:10px;color:var(--text-muted);margin-top:2px}
+
+  /* FILTERS */
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:flex-end}
+  .filter-group{display:flex;flex-direction:column;gap:3px}
+  .filter-label{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)}
+  select,input[type=number],input[type=text]{background:var(--white);border:1px solid var(--border2);border-radius:7px;padding:6px 10px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);outline:none;transition:border-color .15s}
+  select:focus,input:focus{border-color:var(--orange)}
+  select{cursor:pointer;min-width:130px}
+  input[type=number]{min-width:80px}
+  .filter-sep{width:1px;height:36px;background:var(--border);align-self:flex-end;margin:0 4px}
+
+  /* TABLE */
+  .table-wrap{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
+  .table-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border)}
+  .table-title{font-size:13px;font-weight:600}
+  .table-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted)}
+  table{width:100%;border-collapse:collapse}
+  th{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:500;white-space:nowrap}
+  th.num,td.num{text-align:right}
+  td{padding:7px 12px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--surface2)}
+
+  /* STATUS BADGES */
+  .status{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;white-space:nowrap}
+  .status-ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+  .status-warn{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border)}
+  .status-crit{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+  .status-na{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)}
+
+  /* NUM */
+  .num-big{font-family:'DM Mono',monospace;font-size:12px;font-weight:600}
+  .num-muted{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted)}
+  .num-order{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--orange)}
+
+  /* BAR */
+  .bar-cell{display:flex;align-items:center;gap:6px}
+  .bar-bg{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;min-width:50px}
+  .bar-fill-green{height:100%;background:var(--green);border-radius:3px}
+  .bar-fill-yellow{height:100%;background:var(--yellow);border-radius:3px}
+  .bar-fill-red{height:100%;background:var(--red);border-radius:3px}
+  .bar-pct{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);min-width:36px;text-align:right}
+
+  /* LABEL MACHINE */
+  .machine-tag{font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text-dim)}
+  .machine-special{background:rgba(144,19,254,.08);color:var(--purple);border-color:rgba(144,19,254,.2)}
+
+  /* ORDER FORM */
+  .order-header{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:16px}
+  .order-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+  .order-meta-item{font-size:12px}
+  .order-meta-label{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);display:block;margin-bottom:3px}
+  .order-section{margin-bottom:24px}
+  .order-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--border)}
+  .order-note{font-size:11px;color:var(--text-dim);background:rgba(250,66,17,.06);border:1px solid rgba(250,66,17,.15);border-radius:7px;padding:10px 14px;margin-bottom:12px;line-height:1.6}
+
+  /* SNAPSHOT INFO */
+  .snapshot-note{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-dim);background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.15);border-radius:7px;padding:9px 14px;margin-bottom:16px}
+
+  /* SETTINGS BOX */
+  .settings-box{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end}
+  .settings-box .filter-label{margin-bottom:4px}
+
+  @media(max-width:900px){
+    main{padding:14px 16px}
+    header{padding:11px 16px}
+    .tabs-bar{padding:0 16px}
+    .alert-row{grid-template-columns:repeat(2,1fr)}
+    .order-meta{grid-template-columns:1fr}
+  }
+  @media print{
+    header,.tabs-bar,.filters,.settings-box,.btn,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .tab-content{display:block !important}
+    .tabs-bar,.tab:not(.active),.back-btn,.btn{display:none}
+    #tab-arkusz{display:block !important}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-btn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Dashboard
+  </a>
+  <div class="h-center">
+    <span class="page-title">Planowanie Zakupów Opakowań</span>
+    <span class="snapshot-pill">Stan: 25.02.2026</span>
+  </div>
+  <div style="display:flex;gap:7px">
+    <button class="btn btn-print" onclick="window.print()">🖨 Drukuj arkusz</button>
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <div class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">
+    🚦 Dashboard
+    <span class="tab-badge" id="badge-dashboard">—</span>
+  </div>
+  <div class="tab" data-tab="kartony" onclick="switchTab('kartony')">
+    📦 Kartony zbiorcze
+    <span class="tab-badge" id="badge-kartony">—</span>
+  </div>
+  <div class="tab" data-tab="etykiety" onclick="switchTab('etykiety')">
+    🏷 Etykiety
+    <span class="tab-badge" id="badge-etykiety">—</span>
+  </div>
+  <div class="tab" data-tab="arkusz" onclick="switchTab('arkusz')">
+    📋 Arkusz zamówień
+  </div>
+</div>
+
+<main>
+
+<!-- ═══ TAB 1: DASHBOARD ═══ -->
+<div id="tab-dashboard" class="tab-content active">
+
+  <div class="snapshot-note">
+    ℹ️ Stan magazynowy wg snapshotu z <strong>25.02.2026</strong>.
+    Zużycie 2025 z zestawień proceduralnych (01.01–26.11.2025).
+    Prognoza 2026 = zużycie 2025 × współczynnik wzrostu (edytowalny poniżej).
+  </div>
+
+  <div class="settings-box">
+    <div class="filter-group">
+      <div class="filter-label">Współczynnik wzrostu 2026 vs 2025</div>
+      <input type="number" id="wzrost" value="1.00" min="0.5" max="3" step="0.05" oninput="refreshAll()" style="min-width:90px">
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Bufor u dostawcy (miesiące)</div>
+      <select id="bufor-mies" onchange="refreshAll()">
+        <option value="2" selected>2 miesiące</option>
+        <option value="1">1 miesiąc</option>
+        <option value="3">3 miesiące</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Czas realizacji (dni)</div>
+      <input type="number" id="lead-time" value="21" min="1" max="60" oninput="refreshAll()" style="min-width:70px">
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);align-self:flex-end;padding-bottom:7px;max-width:300px;line-height:1.5">
+      Bufor = łączna ilość ze wszystkich magazynów zabezpieczająca N miesięcy sezonu (kwiecień–listopad).
+    </div>
+  </div>
+
+  <div class="alert-row" id="alert-row">
+    <div class="alert-card red"><div class="alert-label">Krytyczne — brak buforu</div><div class="alert-val" id="d-crit">—</div><div class="alert-sub">pozycji wymaga natychmiastowego zamówienia</div></div>
+    <div class="alert-card yellow"><div class="alert-label">Uwaga — poniżej buforu</div><div class="alert-val" id="d-warn">—</div><div class="alert-sub">pozycji — zamów w ciągu tygodnia</div></div>
+    <div class="alert-card green"><div class="alert-label">OK — bufor zapewniony</div><div class="alert-val" id="d-ok">—</div><div class="alert-sub">pozycji — stan wystarczający</div></div>
+    <div class="alert-card"><div class="alert-label">Łączne zamówienie</div><div class="alert-val grad" id="d-total-order" style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">—</div><div class="alert-sub">pozycji do zamówienia (kartony + etykiety)</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Kartony zbiorcze — status buforu</span>
+      <span class="table-count" id="d-kart-count">—</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Karton</th>
+          <th class="num">CHO</th>
+          <th class="num">ŁOB</th>
+          <th class="num">STR</th>
+          <th class="num">WYS</th>
+          <th class="num">RAZEM</th>
+          <th class="num">Bufor 2M</th>
+          <th class="num">Zamówić</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody id="d-kart-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Etykiety — status buforu</span>
+      <span class="table-count" id="d-et-count">—</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Etykieta</th>
+          <th class="num">CHO</th>
+          <th class="num">ŁOB</th>
+          <th class="num">STR</th>
+          <th class="num">WYS</th>
+          <th class="num">RAZEM</th>
+          <th class="num">Bufor 2M</th>
+          <th class="num">Zamówić</th>
+          <th>Status / Maszyna</th>
+        </tr></thead>
+        <tbody id="d-et-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB 2: KARTONY ═══ -->
+<div id="tab-kartony" class="tab-content">
+
+  <div class="snapshot-note">
+    ℹ️ Dane zestawień proceduralnych dają łączny wolumen sezonu.
+    Zużycie kartonów = wolumen kg ÷ kg/karton (według kodu opakowania).
+    Mapowanie kodów opakowań na nazwane kartony jest przybliżone — weryfikuj z działem magazynowym.
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <div class="filter-label">Magazyn</div>
+      <select id="kart-mag" onchange="renderKartony()">
+        <option value="">Wszystkie</option>
+        <option value="Chodzież">Chodzież</option>
+        <option value="Łobżenica">Łobżenica</option>
+        <option value="Stróżewo">Stróżewo</option>
+        <option value="Wyszynki">Wyszynki</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Status</div>
+      <select id="kart-status" onchange="renderKartony()">
+        <option value="">Wszystkie</option>
+        <option value="crit">Krytyczne</option>
+        <option value="warn">Uwaga</option>
+        <option value="ok">OK</option>
+      </select>
+    </div>
+    <div class="filter-sep"></div>
+    <div class="filter-group">
+      <div class="filter-label">Szukaj</div>
+      <input type="text" id="kart-search" placeholder="Nazwa kartonu..." oninput="renderKartony()" style="min-width:200px">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Plan zakupów — Kartony zbiorcze 2026</span>
+      <span class="table-count" id="kart-count">—</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Nazwa kartonu</th>
+          <th class="num">Chodzież</th>
+          <th class="num">Łobżenica</th>
+          <th class="num">Stróżewo</th>
+          <th class="num">Wyszynki</th>
+          <th class="num">Razem stan</th>
+          <th class="num">Bufor 2M</th>
+          <th class="num">DO ZAMÓWIENIA</th>
+          <th>Status</th>
+          <th>Pokrycie</th>
+        </tr></thead>
+        <tbody id="kart-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB 3: ETYKIETY ═══ -->
+<div id="tab-etykiety" class="tab-content">
+
+  <div class="order-note">
+    ⚠️ <strong>Etykieciarka Łobżenica</strong> ma inne parametry niż pozostałe magazyny.<br>
+    Przy zamawianiu etykiet dla Łobżenicy podaj: <strong>Gilza: 76 mm / Nawój: 500 m</strong>.<br>
+    Dla pozostałych magazynów (Chodzież, Stróżewo, Wyszynki): <strong>Gilza: 40 mm / Nawój: 300 m</strong>.
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <div class="filter-label">Magazyn</div>
+      <select id="et-mag" onchange="renderEtykiety()">
+        <option value="">Wszystkie</option>
+        <option value="Chodzież">Chodzież</option>
+        <option value="Łobżenica">Łobżenica</option>
+        <option value="Stróżewo">Stróżewo</option>
+        <option value="Wyszynki">Wyszynki</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Status</div>
+      <select id="et-status" onchange="renderEtykiety()">
+        <option value="">Wszystkie</option>
+        <option value="crit">Krytyczne</option>
+        <option value="warn">Uwaga</option>
+        <option value="ok">OK</option>
+      </select>
+    </div>
+    <div class="filter-sep"></div>
+    <div class="filter-group">
+      <div class="filter-label">Szukaj</div>
+      <input type="text" id="et-search" placeholder="Nazwa etykiety..." oninput="renderEtykiety()" style="min-width:200px">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Plan zakupów — Etykiety 2026</span>
+      <span class="table-count" id="et-count">—</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Nazwa etykiety</th>
+          <th class="num">Chodzież</th>
+          <th class="num">Łobżenica</th>
+          <th class="num">Stróżewo</th>
+          <th class="num">Wyszynki</th>
+          <th class="num">Razem stan</th>
+          <th class="num">Bufor 2M</th>
+          <th class="num">DO ZAMÓWIENIA</th>
+          <th>Maszyna / Status</th>
+        </tr></thead>
+        <tbody id="et-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB 4: ARKUSZ ZAMÓWIEŃ ═══ -->
+<div id="tab-arkusz" class="tab-content">
+
+  <div class="order-header">
+    <div style="font-size:15px;font-weight:700">Arkusz zamówieniowy — OvocxMalinovi sp. z o.o.</div>
+    <div class="order-meta">
+      <div class="order-meta-item"><span class="order-meta-label">Data sporządzenia</span><span id="ark-data">25.02.2026</span></div>
+      <div class="order-meta-item"><span class="order-meta-label">Snapshot stanu magazynowego</span><span>25.02.2026</span></div>
+      <div class="order-meta-item"><span class="order-meta-label">Czas realizacji dostaw</span><span id="ark-lead">21 dni</span></div>
+    </div>
+  </div>
+
+  <div class="order-note">
+    📋 Poniższe zestawienie zawiera <strong>wyłącznie pozycje wymagające zamówienia</strong> (stan poniżej buforu 2-miesięcznego).
+    Ilości do zamówienia to sumy dla wszystkich magazynów (bufor centralny u dostawcy).
+    Przed wysłaniem zamówienia <strong>zweryfikuj ilości i podziel dostawy wg potrzeb poszczególnych magazynów</strong>.
+  </div>
+
+  <div class="order-section">
+    <div class="order-section-title">📦 Opakowania zbiorcze (kartony)</div>
+    <div id="ark-kart-note" class="order-note" style="display:none"></div>
+    <table id="ark-kart-table" style="border-collapse:collapse;width:100%;font-size:12px">
+      <thead>
+        <tr style="background:var(--surface2)">
+          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">LP</th>
+          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Nazwa</th>
+          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Stan TOTAL</th>
+          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Bufor 2M</th>
+          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">ZAMÓWIĆ (szt)</th>
+          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Uwagi</th>
+        </tr>
+      </thead>
+      <tbody id="ark-kart-body"></tbody>
+    </table>
+  </div>
+
+  <div class="order-section">
+    <div class="order-section-title">🏷 Etykiety</div>
+    <div class="order-note">
+      <strong>Łobżenica — inna etykieciarka:</strong> Gilza 76 mm / Nawój 500 m<br>
+      <strong>Chodzież, Stróżewo, Wyszynki:</strong> Gilza 40 mm / Nawój 300 m<br>
+      Pamiętaj o podaniu parametrów przy zamówieniu!
+    </div>
+    <table id="ark-et-table" style="border-collapse:collapse;width:100%;font-size:12px">
+      <thead>
+        <tr style="background:var(--surface2)">
+          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">LP</th>
+          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Nazwa etykiety</th>
+          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Stan TOTAL</th>
+          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Bufor 2M</th>
+          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">ZAMÓWIĆ (szt)</th>
+          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Gilza / Nawój</th>
+          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Magazyn dostawy</th>
+        </tr>
+      </thead>
+      <tbody id="ark-et-body"></tbody>
+    </table>
+  </div>
+
+  <div class="order-section">
+    <div class="order-section-title">📍 Adresy magazynów (miejsca dostawy)</div>
+    <div id="ark-adresy" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:8px"></div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════ DATA
+const D = window.ZAKUPY_DATA;
+const MAGS = D.magazyny; // ['Chodzież','Łobżenica','Stróżewo','Wyszynki']
+const SNAP_STANY = D.stany;
+const ZP = D.zp_stats;
+
+// Season months count (Apr-Nov = 8)
+const SEASON_MONTHS = 8;
+
+// ─── Helpers ───────────────────────────────────────────────
+function fmtN(n) {
+  if (n == null || isNaN(n)) return '—';
+  return Math.round(n).toLocaleString('pl-PL');
+}
+function fmtNK(n) {  // thousands with "k"
+  if (!n) return '—';
+  return n >= 1000 ? (n/1000).toFixed(0)+'k' : n.toString();
+}
+
+function getParam() {
+  const wzrost = parseFloat(document.getElementById('wzrost').value) || 1;
+  const buforM = parseInt(document.getElementById('bufor-mies').value) || 2;
+  const lead   = parseInt(document.getElementById('lead-time').value) || 21;
+  return {wzrost, buforM, lead};
+}
+
+// ─── Compute buffer for an item (by name in stany) ─────────
+// For items in stany mag, we estimate 2025 season consumption
+// using zestawienie proc total carton/units counts
+// Approach: look at what WAS consumed total 2025 (in units) across all
+// ZP records, and estimate the buffer needed.
+
+// Build usage estimates from zestawienie proc per pak code
+// Total cartons used 2025 (from ZP)
+const zpByPak = {};
+ZP.forEach(z => {
+  zpByPak[z.pak] = z;
+});
+
+// Total season 2025 in cartons, per pak group
+function zpTotalKart2025() {
+  return ZP.reduce((s, z) => s + (z.kart_2025 || 0), 0);
+}
+
+// For each stany item, estimate 2025 season usage
+// We use a PROPORTIONAL estimate: for OPK-Z (shipping cartons)
+// the ZP data gives us carton counts by pak code type.
+// For labels (ET) we estimate from ZP label counts (units / kg)
+// MAŁY cartons ≈ PROSTE_MAŁY pak codes
+// DUŻY cartons ≈ weighted by pack type
+
+// Build pak code groups
+function groupZP() {
+  const groups = {
+    proste_maly: 0, pełne_maly: 0,
+    proste_duzy_sklad: 0, proste_duzy_klej: 0,
+    pelne_duzy_sklad: 0, pelne_duzy_klej: 0,
+    other: 0
+  };
+  ZP.forEach(z => {
+    const kart = z.kart_2025 || 0;
+    const typ = z.typ || ''; const rodzaj = z.rodzaj || ''; const rozm = z.rozmiar || '';
+    if (typ === 'PROSTE' && rozm === 'MAŁY') groups.proste_maly += kart;
+    else if (typ === 'PEŁNE' && rozm === 'MAŁY') groups.pełne_maly += kart;
+    else if (typ === 'PROSTE' && rozm === 'DUŻY' && rodzaj === 'SKŁADANY') groups.proste_duzy_sklad += kart;
+    else if (typ === 'PROSTE' && rozm === 'DUŻY' && rodzaj === 'KLEJONY') groups.proste_duzy_klej += kart;
+    else if (typ === 'PEŁNE' && rozm === 'DUŻY' && rodzaj === 'SKŁADANY') groups.pelne_duzy_sklad += kart;
+    else if (typ === 'PEŁNE' && rozm === 'DUŻY' && rodzaj === 'KLEJONY') groups.pelne_duzy_klej += kart;
+    else groups.other += kart;
+  });
+  return groups;
+}
+
+// Map named carton to ZP group
+function estCartonUsage2025(nazwa) {
+  const n = nazwa.toLowerCase();
+  const grp = groupZP();
+  if (n.includes('mały czarny') || n.includes('apla')) return grp.proste_maly;
+  if (n.includes('mały') && n.includes('biedronka')) return Math.round(grp.pełne_maly * 0.4);
+  if (n.includes('mały') && (n.includes('zielona') || n.includes('lidl'))) return Math.round(grp.pełne_maly * 0.6);
+  if (n.includes('duży czarny') && n.includes('klejony')) return grp.proste_duzy_klej;
+  if (n.includes('duży czarny') && n.includes('składania')) return grp.proste_duzy_sklad;
+  if (n.includes('duży') && n.includes('zielony') && n.includes('klejony')) return grp.pelne_duzy_klej;
+  if (n.includes('duży') && n.includes('zielony') && n.includes('składania')) return Math.round(grp.pelne_duzy_sklad * 0.5);
+  if (n.includes('duży') && n.includes('biedronka')) return Math.round(grp.pelne_duzy_sklad * 0.5);
+  if (n.includes('duży') && n.includes('szary')) return Math.round(grp.pelne_duzy_sklad * 0.3);
+  return null;  // no estimate
+}
+
+// For labels: estimate based on total label-type units from ZP
+// Each kg of fruit uses approx: 1000g/waga_g labels
+// Total labels per season from ZP
+function estLabelUsage2025Total() {
+  let total = 0;
+  ZP.forEach(z => {
+    if (z.szt && z.waga_g && z.kg_2025) {
+      // labels = kg / (waga_g/1000) = kg * 1000/waga_g
+      total += z.kg_2025 * 1000 / z.waga_g;
+    }
+  });
+  return Math.round(total);
+}
+
+const TOTAL_LABELS_2025 = estLabelUsage2025Total();
+
+// For each label in stany, estimate its share of total label usage
+// We use current stock ratios as a proxy for demand ratio
+function estLabelUsage2025(indeks, totalLabelStany) {
+  // find item total stock
+  const item = SNAP_STANY.find(i => i.indeks === indeks);
+  if (!item || !totalLabelStany) return null;
+  // Proportional to stock ratio (rough estimate)
+  const share = item.total / totalLabelStany;
+  return Math.round(share * TOTAL_LABELS_2025);
+}
+
+// ─── Build planning rows ───────────────────────────────────
+function buildRows(kategoria) {
+  const {wzrost, buforM} = getParam();
+  const items = SNAP_STANY.filter(i => i.kategoria === kategoria);
+
+  // For labels: compute total stock of labels to compute proportions
+  const totalLabelStany = kategoria === 'etykiety'
+    ? items.reduce((s, i) => s + (i.total || 0), 0) : 0;
+
+  return items.map(item => {
+    const stock = item.total || 0;
+    const stockByMag = item.by_mag || {};
+
+    let est2025 = null;
+    if (kategoria === 'kartony') {
+      est2025 = estCartonUsage2025(item.nazwa);
+    } else if (kategoria === 'etykiety') {
+      est2025 = estLabelUsage2025(item.indeks, totalLabelStany);
+    }
+
+    const proj2026 = est2025 != null ? Math.round(est2025 * wzrost) : null;
+    const monthlyNeed = proj2026 != null ? Math.round(proj2026 / SEASON_MONTHS) : null;
+    const bufferNeed = monthlyNeed != null ? monthlyNeed * buforM : null;
+    const toOrder = bufferNeed != null ? Math.max(0, bufferNeed - stock) : null;
+
+    let status = 'na';
+    if (bufferNeed != null) {
+      const cover = bufferNeed > 0 ? stock / bufferNeed : 1;
+      if (cover >= 1) status = 'ok';
+      else if (cover >= 0.5) status = 'warn';
+      else status = 'crit';
+    }
+
+    return {
+      indeks: item.indeks,
+      nazwa: item.nazwa,
+      stockByMag,
+      stock,
+      est2025,
+      proj2026,
+      bufferNeed,
+      toOrder,
+      status
+    };
+  });
+}
+
+function statusBadge(s) {
+  if (s === 'ok')   return '<span class="status status-ok">✓ OK</span>';
+  if (s === 'warn') return '<span class="status status-warn">⚠ UWAGA</span>';
+  if (s === 'crit') return '<span class="status status-crit">✗ KRYTYCZNE</span>';
+  return '<span class="status status-na">— brak est.</span>';
+}
+
+function coverBar(stock, bufferNeed) {
+  if (!bufferNeed || bufferNeed <= 0) return '';
+  const pct = Math.min(100, Math.round(stock / bufferNeed * 100));
+  const cls = pct >= 100 ? 'bar-fill-green' : pct >= 50 ? 'bar-fill-yellow' : 'bar-fill-red';
+  return `<div class="bar-cell">
+    <div class="bar-bg"><div class="${cls}" style="width:${pct}%"></div></div>
+    <span class="bar-pct">${pct}%</span>
+  </div>`;
+}
+
+function magVal(byMag, mag) {
+  const v = byMag[mag] || 0;
+  return v > 0 ? `<span class="num-big">${fmtN(v)}</span>` : '<span class="num-muted">—</span>';
+}
+
+// ─── Etykieciarka tag ───────────────────────────────────────
+function machineTags(byMag) {
+  const lob = (byMag['Łobżenica'] || 0) > 0;
+  const rest = (['Chodzież','Stróżewo','Wyszynki'].some(m => (byMag[m]||0) > 0));
+  let tags = '';
+  if (rest) tags += '<span class="machine-tag">Std 40mm/300m</span> ';
+  if (lob)  tags += '<span class="machine-tag machine-special">ŁOB 76mm/500m</span>';
+  return tags || '—';
+}
+
+// ═══════════════════════════════════════════════ RENDER FUNCTIONS
+
+function renderDashboard() {
+  const kartRows = buildRows('kartony');
+  const etRows   = buildRows('etykiety');
+  const all = [...kartRows, ...etRows];
+
+  const crit = all.filter(r => r.status === 'crit').length;
+  const warn = all.filter(r => r.status === 'warn').length;
+  const ok   = all.filter(r => r.status === 'ok').length;
+  const toOrd = all.filter(r => r.toOrder && r.toOrder > 0).length;
+
+  document.getElementById('d-crit').textContent = crit;
+  document.getElementById('d-warn').textContent = warn;
+  document.getElementById('d-ok').textContent   = ok;
+  document.getElementById('d-total-order').textContent = toOrd + ' poz.';
+  document.getElementById('badge-dashboard').textContent = crit + ' kryt.';
+
+  // Kartony table
+  const sorted_k = [...kartRows].sort((a,b) => {
+    const ord = {crit:0, warn:1, ok:2, na:3};
+    return (ord[a.status]||3) - (ord[b.status]||3);
+  });
+  document.getElementById('d-kart-count').textContent = kartRows.length + ' pozycji';
+  document.getElementById('d-kart-body').innerHTML = sorted_k.map(r => `
+    <tr>
+      <td style="max-width:220px;font-size:11px">${r.nazwa}</td>
+      ${MAGS.map(m => `<td class="num">${magVal(r.stockByMag, m)}</td>`).join('')}
+      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
+      <td class="num"><span class="num-muted">${fmtN(r.bufferNeed)}</span></td>
+      <td class="num">${r.toOrder > 0 ? `<span class="num-order">${fmtN(r.toOrder)}</span>` : '<span class="num-muted">—</span>'}</td>
+      <td>${statusBadge(r.status)}</td>
+    </tr>`).join('');
+
+  // Etykiety table
+  const sorted_e = [...etRows].sort((a,b) => {
+    const ord = {crit:0, warn:1, ok:2, na:3};
+    return (ord[a.status]||3) - (ord[b.status]||3);
+  });
+  document.getElementById('d-et-count').textContent = etRows.length + ' pozycji';
+  document.getElementById('d-et-body').innerHTML = sorted_e.map(r => `
+    <tr>
+      <td style="max-width:220px;font-size:11px">${r.nazwa}</td>
+      ${MAGS.map(m => `<td class="num">${magVal(r.stockByMag, m)}</td>`).join('')}
+      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
+      <td class="num"><span class="num-muted">${fmtN(r.bufferNeed)}</span></td>
+      <td class="num">${r.toOrder > 0 ? `<span class="num-order">${fmtN(r.toOrder)}</span>` : '<span class="num-muted">—</span>'}</td>
+      <td>${statusBadge(r.status)} ${machineTags(r.stockByMag)}</td>
+    </tr>`).join('');
+}
+
+function renderKartony() {
+  const magF    = document.getElementById('kart-mag').value;
+  const statF   = document.getElementById('kart-status').value;
+  const searchF = document.getElementById('kart-search').value.toLowerCase();
+
+  let rows = buildRows('kartony').filter(r => {
+    if (statF && r.status !== statF) return false;
+    if (searchF && !r.nazwa.toLowerCase().includes(searchF)) return false;
+    return true;
+  }).sort((a,b) => {
+    const ord = {crit:0, warn:1, ok:2, na:3};
+    return (ord[a.status]||3) - (ord[b.status]||3);
+  });
+
+  document.getElementById('kart-count').textContent = rows.length + ' pozycji';
+  const crit = rows.filter(r=>r.status==='crit').length;
+  document.getElementById('badge-kartony').textContent = crit > 0 ? crit+' kryt.' : rows.length;
+
+  document.getElementById('kart-body').innerHTML = rows.map(r => {
+    const magHighlight = magF && r.stockByMag[magF] !== undefined;
+    return `<tr${r.status==='crit'?' style="background:var(--red-bg)"':r.status==='warn'?' style="background:var(--yellow-bg)"':''}>
+      <td style="max-width:200px;font-size:11px;font-weight:500">${r.nazwa}</td>
+      ${MAGS.map(m => `<td class="num" ${magF===m?'style="background:rgba(250,66,17,.06);font-weight:700"':''}>${magVal(r.stockByMag, m)}</td>`).join('')}
+      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
+      <td class="num"><span class="num-muted">${fmtN(r.bufferNeed)}</span></td>
+      <td class="num">${r.toOrder > 0 ? `<span class="num-order">${fmtN(r.toOrder)}</span>` : '<span class="num-muted">—</span>'}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td>${coverBar(r.stock, r.bufferNeed)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderEtykiety() {
+  const magF    = document.getElementById('et-mag').value;
+  const statF   = document.getElementById('et-status').value;
+  const searchF = document.getElementById('et-search').value.toLowerCase();
+
+  let rows = buildRows('etykiety').filter(r => {
+    if (statF && r.status !== statF) return false;
+    if (searchF && !r.nazwa.toLowerCase().includes(searchF)) return false;
+    return true;
+  }).sort((a,b) => {
+    const ord = {crit:0, warn:1, ok:2, na:3};
+    return (ord[a.status]||3) - (ord[b.status]||3);
+  });
+
+  document.getElementById('et-count').textContent = rows.length + ' pozycji';
+  const crit = rows.filter(r=>r.status==='crit').length;
+  document.getElementById('badge-etykiety').textContent = crit > 0 ? crit+' kryt.' : rows.length;
+
+  document.getElementById('et-body').innerHTML = rows.map(r => `
+    <tr${r.status==='crit'?' style="background:var(--red-bg)"':r.status==='warn'?' style="background:var(--yellow-bg)"':''}>
+      <td style="max-width:220px;font-size:11px;font-weight:500">${r.nazwa}</td>
+      ${MAGS.map(m => `<td class="num" ${magF===m?'style="background:rgba(250,66,17,.06);font-weight:700"':''}>${magVal(r.stockByMag, m)}</td>`).join('')}
+      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
+      <td class="num"><span class="num-muted">${fmtN(r.bufferNeed)}</span></td>
+      <td class="num">${r.toOrder > 0 ? `<span class="num-order">${fmtN(r.toOrder)}</span>` : '<span class="num-muted">—</span>'}</td>
+      <td>${machineTags(r.stockByMag)}<br>${statusBadge(r.status)}</td>
+    </tr>`).join('');
+}
+
+function renderArkusz() {
+  const {lead} = getParam();
+  document.getElementById('ark-lead').textContent = lead + ' dni';
+
+  const today = new Date();
+  document.getElementById('ark-data').textContent = today.toLocaleDateString('pl-PL');
+
+  // Kartony to order
+  const kartRows = buildRows('kartony').filter(r => r.toOrder > 0).sort((a,b) => b.toOrder - a.toOrder);
+  document.getElementById('ark-kart-body').innerHTML = kartRows.length === 0
+    ? '<tr><td colspan="6" style="padding:12px;text-align:center;color:var(--green);font-size:12px">✓ Wszystkie kartony powyżej progu buforu — brak zamówień</td></tr>'
+    : kartRows.map((r, i) => `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:7px 12px;border:1px solid var(--border2)">${i+1}</td>
+        <td style="padding:7px 12px;border:1px solid var(--border2);font-weight:500">${r.nazwa}</td>
+        <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right">${fmtN(r.stock)}</td>
+        <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right">${fmtN(r.bufferNeed)}</td>
+        <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right;font-weight:700;color:var(--orange)">${fmtN(r.toOrder)}</td>
+        <td style="padding:7px 12px;border:1px solid var(--border2);color:var(--text-muted);font-size:11px">${r.status === 'crit' ? '⚠ PILNE' : ''}</td>
+      </tr>`).join('');
+
+  // Etykiety to order
+  const etRows = buildRows('etykiety').filter(r => r.toOrder > 0).sort((a,b) => b.toOrder - a.toOrder);
+  document.getElementById('ark-et-body').innerHTML = etRows.length === 0
+    ? '<tr><td colspan="7" style="padding:12px;text-align:center;color:var(--green);font-size:12px">✓ Wszystkie etykiety powyżej progu buforu — brak zamówień</td></tr>'
+    : etRows.map((r, i) => {
+        const lobStock = r.stockByMag['Łobżenica'] || 0;
+        const restStock = MAGS.filter(m=>m!=='Łobżenica').reduce((s,m)=>s+(r.stockByMag[m]||0),0);
+        const machines = [];
+        if (restStock > 0) machines.push('40mm / 300m');
+        if (lobStock > 0)  machines.push('76mm / 500m (ŁOB)');
+        return `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:7px 12px;border:1px solid var(--border2)">${i+1}</td>
+          <td style="padding:7px 12px;border:1px solid var(--border2);font-weight:500;font-size:11px">${r.nazwa}</td>
+          <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right">${fmtN(r.stock)}</td>
+          <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right">${fmtN(r.bufferNeed)}</td>
+          <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right;font-weight:700;color:var(--orange)">${fmtN(r.toOrder)}</td>
+          <td style="padding:7px 12px;border:1px solid var(--border2);font-size:10px;font-family:'DM Mono',monospace">${machines.join('<br>') || '—'}</td>
+          <td style="padding:7px 12px;border:1px solid var(--border2);font-size:11px">${MAGS.filter(m=>(r.stockByMag[m]||0)>0).join(', ') || '—'}</td>
+        </tr>`;
+      }).join('');
+
+  // Adresy
+  const adresyData = D.adresy || {};
+  document.getElementById('ark-adresy').innerHTML = Object.entries(adresyData).map(([mag, info]) => `
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:6px">${mag} <span class="snapshot-pill" style="font-size:10px">${info.skrot}</span></div>
+      <div style="font-size:11px;color:var(--text-dim);white-space:pre-line;line-height:1.7">${info.pelna}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════ TAB SWITCHING
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
+  if (name === 'kartony') renderKartony();
+  if (name === 'etykiety') renderEtykiety();
+  if (name === 'arkusz') renderArkusz();
+}
+
+function refreshAll() {
+  renderDashboard();
+  if (document.getElementById('tab-kartony').classList.contains('active')) renderKartony();
+  if (document.getElementById('tab-etykiety').classList.contains('active')) renderEtykiety();
+  if (document.getElementById('tab-arkusz').classList.contains('active')) renderArkusz();
+}
+
+// ═══════════════════════════════════════════════ INIT
+renderDashboard();
+</script>
+</body>
+</html>
