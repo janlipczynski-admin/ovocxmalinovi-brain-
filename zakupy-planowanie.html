@@ -181,8 +181,8 @@
 
   <div class="settings-box">
     <div class="filter-group">
-      <div class="filter-label">Współczynnik wzrostu 2026 vs 2025</div>
-      <input type="number" id="wzrost" value="1.00" min="0.5" max="3" step="0.05" oninput="refreshAll()" style="min-width:90px">
+      <div class="filter-label">Plan sprzedaży 2026 (klienci)</div>
+      <div id="plan-display" style="font-family:'DM Mono',monospace;font-size:14px;font-weight:700;padding:6px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--text)">—</div>
     </div>
     <div class="filter-group">
       <div class="filter-label">Bufor u dostawcy (miesiące)</div>
@@ -196,8 +196,10 @@
       <div class="filter-label">Czas realizacji (dni)</div>
       <input type="number" id="lead-time" value="21" min="1" max="60" oninput="refreshAll()" style="min-width:70px">
     </div>
-    <div style="font-size:11px;color:var(--text-muted);align-self:flex-end;padding-bottom:7px;max-width:300px;line-height:1.5">
-      Bufor = łączna ilość ze wszystkich magazynów zabezpieczająca N miesięcy sezonu (kwiecień–listopad).
+    <div style="font-size:11px;color:var(--text-muted);align-self:flex-end;padding-bottom:7px;max-width:380px;line-height:1.6">
+      Plan pobierany z <strong>Planowanie + sprzedaż 2026</strong>.<br>
+      Proporcje opakowań z zestawień proc. 2025 (mix opak.).<br>
+      Bufor = ilość ze wszystkich magazynów na N miesięcy sezonu.
     </div>
   </div>
 
@@ -464,108 +466,98 @@ function fmtNK(n) {  // thousands with "k"
 }
 
 function getParam() {
-  const wzrost = parseFloat(document.getElementById('wzrost').value) || 1;
   const buforM = parseInt(document.getElementById('bufor-mies').value) || 2;
   const lead   = parseInt(document.getElementById('lead-time').value) || 21;
-  return {wzrost, buforM, lead};
+  return {buforM, lead};
 }
 
-// ─── Compute buffer for an item (by name in stany) ─────────
-// For items in stany mag, we estimate 2025 season consumption
-// using zestawienie proc total carton/units counts
-// Approach: look at what WAS consumed total 2025 (in units) across all
-// ZP records, and estimate the buffer needed.
+// ─── Plan 2026 z PLAN_DATA (planowanie-data.js) ────────────
+const PLAN_DATA_ALL = window.PLAN_DATA || [];
+// Łączny plan klientów 2026 [kg] — podstawa do obliczeń
+const PLAN_2026_KG = PLAN_DATA_ALL
+  .filter(r => r.typ === 'klient')
+  .reduce((s, r) => s + (r.kg || 0), 0);
 
-// Build usage estimates from zestawienie proc per pak code
-// Total cartons used 2025 (from ZP)
-const zpByPak = {};
-ZP.forEach(z => {
-  zpByPak[z.pak] = z;
+// Plan wg owocu (normalizacja nazw: "Truskawka tunelowa" → "Truskawka")
+function normOwoc(o) {
+  if (!o) return 'Inne';
+  return o.replace(' tunelowa','').replace(' szklarniowa','').replace(' letnia','').trim();
+}
+const PLAN_2026_BY_OWOC = {};
+PLAN_DATA_ALL.filter(r => r.typ === 'klient').forEach(r => {
+  const o = normOwoc(r.owoc);
+  PLAN_2026_BY_OWOC[o] = (PLAN_2026_BY_OWOC[o] || 0) + (r.kg || 0);
 });
 
-// Total season 2025 in cartons, per pak group
-function zpTotalKart2025() {
-  return ZP.reduce((s, z) => s + (z.kart_2025 || 0), 0);
-}
+// ─── ZP 2025: proporcje opakowań ──────────────────────────
+// Łączne kg ze wszystkich pak_kodów w ZP 2025
+const ZP_TOTAL_KG = ZP.reduce((s, z) => s + (z.kg_2025 || 0), 0);
 
-// For each stany item, estimate 2025 season usage
-// We use a PROPORTIONAL estimate: for OPK-Z (shipping cartons)
-// the ZP data gives us carton counts by pak code type.
-// For labels (ET) we estimate from ZP label counts (units / kg)
-// MAŁY cartons ≈ PROSTE_MAŁY pak codes
-// DUŻY cartons ≈ weighted by pack type
+// Dla każdego pak_kodu: udział [0..1] w łącznym kg 2025
+// Proj. 2026 kg dla pak_kodu = udział × PLAN_2026_KG
+// Proj. 2026 kartonów = proj_kg / kgpk
 
-// Build pak code groups
-function groupZP() {
-  const groups = {
-    proste_maly: 0, pełne_maly: 0,
-    proste_duzy_sklad: 0, proste_duzy_klej: 0,
-    pelne_duzy_sklad: 0, pelne_duzy_klej: 0,
-    other: 0
-  };
-  ZP.forEach(z => {
-    const kart = z.kart_2025 || 0;
-    const typ = z.typ || ''; const rodzaj = z.rodzaj || ''; const rozm = z.rozmiar || '';
-    if (typ === 'PROSTE' && rozm === 'MAŁY') groups.proste_maly += kart;
-    else if (typ === 'PEŁNE' && rozm === 'MAŁY') groups.pełne_maly += kart;
-    else if (typ === 'PROSTE' && rozm === 'DUŻY' && rodzaj === 'SKŁADANY') groups.proste_duzy_sklad += kart;
-    else if (typ === 'PROSTE' && rozm === 'DUŻY' && rodzaj === 'KLEJONY') groups.proste_duzy_klej += kart;
-    else if (typ === 'PEŁNE' && rozm === 'DUŻY' && rodzaj === 'SKŁADANY') groups.pelne_duzy_sklad += kart;
-    else if (typ === 'PEŁNE' && rozm === 'DUŻY' && rodzaj === 'KLEJONY') groups.pelne_duzy_klej += kart;
-    else groups.other += kart;
-  });
-  return groups;
-}
-
-// Map named carton to ZP group
-function estCartonUsage2025(nazwa) {
-  const n = nazwa.toLowerCase();
-  const grp = groupZP();
-  if (n.includes('mały czarny') || n.includes('apla')) return grp.proste_maly;
-  if (n.includes('mały') && n.includes('biedronka')) return Math.round(grp.pełne_maly * 0.4);
-  if (n.includes('mały') && (n.includes('zielona') || n.includes('lidl'))) return Math.round(grp.pełne_maly * 0.6);
-  if (n.includes('duży czarny') && n.includes('klejony')) return grp.proste_duzy_klej;
-  if (n.includes('duży czarny') && n.includes('składania')) return grp.proste_duzy_sklad;
-  if (n.includes('duży') && n.includes('zielony') && n.includes('klejony')) return grp.pelne_duzy_klej;
-  if (n.includes('duży') && n.includes('zielony') && n.includes('składania')) return Math.round(grp.pelne_duzy_sklad * 0.5);
-  if (n.includes('duży') && n.includes('biedronka')) return Math.round(grp.pelne_duzy_sklad * 0.5);
-  if (n.includes('duży') && n.includes('szary')) return Math.round(grp.pelne_duzy_sklad * 0.3);
-  return null;  // no estimate
-}
-
-// For labels: estimate based on total label-type units from ZP
-// Each kg of fruit uses approx: 1000g/waga_g labels
-// Total labels per season from ZP
-function estLabelUsage2025Total() {
+// Grupowanie pak_kodów na named carton types
+function projCartonsForGroup(filterFn) {
   let total = 0;
   ZP.forEach(z => {
-    if (z.szt && z.waga_g && z.kg_2025) {
-      // labels = kg / (waga_g/1000) = kg * 1000/waga_g
-      total += z.kg_2025 * 1000 / z.waga_g;
-    }
+    if (!filterFn(z)) return;
+    const share = ZP_TOTAL_KG > 0 ? z.kg_2025 / ZP_TOTAL_KG : 0;
+    const proj_kg = share * PLAN_2026_KG;
+    const kgpk = z.kgpk || 0;
+    if (kgpk > 0) total += proj_kg / kgpk;
   });
   return Math.round(total);
 }
 
-const TOTAL_LABELS_2025 = estLabelUsage2025Total();
+// Proj. 2026 kartonów per named carton (stany mag name → filter ZP)
+function projCartons2026(nazwa) {
+  const n = nazwa.toLowerCase();
+  if (n.includes('mały czarny') || n.includes('apla'))
+    return projCartonsForGroup(z => z.typ === 'PROSTE' && z.rozmiar === 'MAŁY');
+  if (n.includes('mały') && n.includes('biedronka'))
+    return Math.round(projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'MAŁY') * 0.4);
+  if (n.includes('mały') && (n.includes('zielona') || n.includes('lidl')))
+    return Math.round(projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'MAŁY') * 0.6);
+  if (n.includes('duży czarny') && n.includes('klejony'))
+    return projCartonsForGroup(z => z.typ === 'PROSTE' && z.rozmiar === 'DUŻY' && z.rodzaj === 'KLEJONY');
+  if (n.includes('duży czarny') && n.includes('składania'))
+    return projCartonsForGroup(z => z.typ === 'PROSTE' && z.rozmiar === 'DUŻY' && z.rodzaj === 'SKŁADANY');
+  if (n.includes('duży') && n.includes('zielony') && n.includes('klejony'))
+    return projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'DUŻY' && z.rodzaj === 'KLEJONY');
+  if (n.includes('duży') && n.includes('zielony') && n.includes('składania'))
+    return Math.round(projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'DUŻY' && z.rodzaj === 'SKŁADANY') * 0.5);
+  if (n.includes('duży') && n.includes('biedronka'))
+    return Math.round(projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'DUŻY' && z.rodzaj === 'SKŁADANY') * 0.5);
+  if (n.includes('duży') && n.includes('szary'))
+    return Math.round(projCartonsForGroup(z => z.typ === 'PEŁNE' && z.rozmiar === 'DUŻY') * 0.15);
+  return null;
+}
 
-// For each label in stany, estimate its share of total label usage
-// We use current stock ratios as a proxy for demand ratio
-function estLabelUsage2025(indeks, totalLabelStany) {
-  // find item total stock
+// Proj. 2026 etykiet: łącznie
+// labels per kg = z ZP 2025: Σ(kg_2025 * szt/waga_g) / ZP_TOTAL_KG
+const ZP_LABELS_PER_KG = ZP_TOTAL_KG > 0
+  ? ZP.reduce((s, z) => {
+      if (z.szt && z.waga_g && z.kg_2025)
+        return s + z.kg_2025 * (z.szt / (z.waga_g / 1000)) / ZP_TOTAL_KG;
+      return s;
+    }, 0)
+  : 0;
+
+const PROJ_LABELS_2026_TOTAL = Math.round(PLAN_2026_KG * ZP_LABELS_PER_KG);
+
+// Per etykieta: proporcja ze stanów magazynowych
+function projLabels2026(indeks, totalLabelStany) {
   const item = SNAP_STANY.find(i => i.indeks === indeks);
-  if (!item || !totalLabelStany) return null;
-  // Proportional to stock ratio (rough estimate)
-  const share = item.total / totalLabelStany;
-  return Math.round(share * TOTAL_LABELS_2025);
+  if (!item || !totalLabelStany || PROJ_LABELS_2026_TOTAL === 0) return null;
+  return Math.round((item.total / totalLabelStany) * PROJ_LABELS_2026_TOTAL);
 }
 
 // ─── Build planning rows ───────────────────────────────────
 function buildRows(kategoria) {
-  const {wzrost, buforM} = getParam();
+  const {buforM} = getParam();
   const items = SNAP_STANY.filter(i => i.kategoria === kategoria);
 
-  // For labels: compute total stock of labels to compute proportions
   const totalLabelStany = kategoria === 'etykiety'
     ? items.reduce((s, i) => s + (i.total || 0), 0) : 0;
 
@@ -573,17 +565,16 @@ function buildRows(kategoria) {
     const stock = item.total || 0;
     const stockByMag = item.by_mag || {};
 
-    let est2025 = null;
+    let proj2026 = null;
     if (kategoria === 'kartony') {
-      est2025 = estCartonUsage2025(item.nazwa);
+      proj2026 = projCartons2026(item.nazwa);
     } else if (kategoria === 'etykiety') {
-      est2025 = estLabelUsage2025(item.indeks, totalLabelStany);
+      proj2026 = projLabels2026(item.indeks, totalLabelStany);
     }
 
-    const proj2026 = est2025 != null ? Math.round(est2025 * wzrost) : null;
     const monthlyNeed = proj2026 != null ? Math.round(proj2026 / SEASON_MONTHS) : null;
-    const bufferNeed = monthlyNeed != null ? monthlyNeed * buforM : null;
-    const toOrder = bufferNeed != null ? Math.max(0, bufferNeed - stock) : null;
+    const bufferNeed  = monthlyNeed != null ? monthlyNeed * buforM : null;
+    const toOrder     = bufferNeed != null ? Math.max(0, bufferNeed - stock) : null;
 
     let status = 'na';
     if (bufferNeed != null) {
@@ -593,17 +584,8 @@ function buildRows(kategoria) {
       else status = 'crit';
     }
 
-    return {
-      indeks: item.indeks,
-      nazwa: item.nazwa,
-      stockByMag,
-      stock,
-      est2025,
-      proj2026,
-      bufferNeed,
-      toOrder,
-      status
-    };
+    return { indeks: item.indeks, nazwa: item.nazwa, stockByMag, stock,
+             proj2026, bufferNeed, toOrder, status };
   });
 }
 
@@ -819,6 +801,10 @@ function refreshAll() {
 }
 
 // ═══════════════════════════════════════════════ INIT
+// Pokaż plan 2026 z PLAN_DATA
+document.getElementById('plan-display').textContent =
+  PLAN_2026_KG.toLocaleString('pl-PL', {maximumFractionDigits:0}) + ' kg';
+
 renderDashboard();
 </script>
 </body>
