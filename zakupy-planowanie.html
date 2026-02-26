@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Planowanie Zakupów i Opakowań — OvocxMalinovi</title>
 <script src="zuzycie-data.js"></script>
+<script src="stany-data.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -136,40 +137,36 @@ main{padding:28px 32px 48px;max-width:1600px;margin:0 auto}
 .sub-nav-arrow{font-size:16px;color:var(--text-muted)}
 
 /* ── Stan Magazynowy ─────────────────────────────────────────────────────── */
-.upload-zone{
-  border:2px dashed var(--border2);border-radius:10px;
-  padding:22px 16px;text-align:center;cursor:pointer;
-  transition:all .15s;background:var(--surface2);margin-bottom:16px
-}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--orange);background:rgba(250,66,17,.04)}
-.upload-icon{font-size:26px;margin-bottom:6px}
-.upload-text{font-size:12px;color:var(--text-dim);font-weight:500}
-.upload-sub{font-size:11px;color:var(--text-muted);margin-top:3px}
-input[type=file]#mag-file{display:none}
-
-.empty-hint{text-align:center;padding:8px 0 0}
-.empty-hint-icon{font-size:26px;margin-bottom:6px;opacity:.45}
-.empty-hint-text{font-size:12px;color:var(--text-muted);line-height:1.5}
-
-.stan-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:10px}
-.stan-date-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-family:'DM Mono',monospace;margin-bottom:4px}
-.stan-date-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--orange)}
+.stan-filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:flex-end}
+.stan-select{padding:5px 9px;border:1px solid var(--border2);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--white);cursor:pointer;outline:none;transition:border-color .15s}
+.stan-select:focus{border-color:var(--orange)}
+.stan-source-badge{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid}
+.source-preset{background:rgba(22,163,74,.07);color:var(--green);border-color:rgba(22,163,74,.25)}
+.source-upload{background:rgba(250,66,17,.07);color:var(--orange);border-color:rgba(250,66,17,.2)}
 
 /* Stats mini row */
-.stats-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stats-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .stat-mini{background:var(--surface2);border-radius:8px;padding:9px 11px;border:1px solid var(--border)}
 .stat-mini-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace;margin-bottom:3px}
 .stat-mini-val{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
 
 /* Table */
-.stan-table-wrap{overflow-x:auto;max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:9px}
+.stan-table-wrap{overflow-x:auto;max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:9px}
 .stan-table{width:100%;border-collapse:collapse;font-size:12px}
-.stan-table th{background:var(--surface2);color:var(--text-dim);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:7px 10px;text-align:left;position:sticky;top:0;border-bottom:1px solid var(--border);white-space:nowrap}
+.stan-table th{background:var(--surface2);color:var(--text-dim);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:7px 10px;text-align:left;position:sticky;top:0;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+.stan-table th:hover{background:#e9e7e2}
+.stan-table th.sort-asc::after{content:' ↑';color:var(--orange)}
+.stan-table th.sort-desc::after{content:' ↓';color:var(--orange)}
 .stan-table td{padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
 .stan-table tr:last-child td{border-bottom:none}
-.stan-table tr:hover td{background:var(--surface2)}
+.stan-table tr:hover td{background:rgba(250,66,17,.03)}
 .num-cell{font-family:'DM Mono',monospace;text-align:right}
 .stan-table-footer{padding:6px 12px;background:var(--surface2);border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;border-radius:0 0 9px 9px}
+
+/* Upload zone (secondary) */
+.upload-zone-mini{border:1.5px dashed var(--border2);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all .15s;background:var(--surface2);display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--text-dim)}
+.upload-zone-mini:hover{border-color:var(--orange);color:var(--orange);background:rgba(250,66,17,.04)}
+input[type=file]#mag-file{display:none}
 
 /* ── Zużycie ─────────────────────────────────────────────────────────────── */
 .zuz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
@@ -225,52 +222,53 @@ input[type=file]#mag-file{display:none}
 
       <div class="card-body">
 
-        <!-- ─── Stan: brak danych ─── -->
-        <div id="stan-empty">
-          <div class="upload-zone" id="upload-zone"
-               onclick="document.getElementById('mag-file').click()"
-               ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-            <div class="upload-icon">📂</div>
-            <div class="upload-text">Wgraj stany magazynowe</div>
-            <div class="upload-sub">.xlsx · .xls &nbsp;·&nbsp; przeciągnij lub kliknij</div>
-          </div>
-          <input type="file" id="mag-file" accept=".xlsx,.xls" onchange="handleFile(event)">
-          <div class="empty-hint">
-            <div class="empty-hint-icon">📋</div>
-            <div class="empty-hint-text">Brak wgranych danych.<br>Wgraj plik exportu ze StreamSoft.</div>
-          </div>
+        <!-- ─── Filtry ─── -->
+        <div class="stan-filters">
+          <select class="stan-select" id="stan-f-mag" onchange="renderStan()">
+            <option value="">Wszystkie magazyny</option>
+          </select>
+          <select class="stan-select" id="stan-f-grp" onchange="renderStan()">
+            <option value="">Wszystkie grupy</option>
+          </select>
+          <span class="stan-source-badge source-preset" id="stan-source-lbl">📅 25.02.2026</span>
         </div>
 
-        <!-- ─── Stan: dane wgrane ─── -->
-        <div id="stan-data" style="display:none">
-          <div class="stan-header">
-            <div>
-              <div class="stan-date-lbl">Stan na dzień</div>
-              <div class="stan-date-val" id="stan-date-val">—</div>
-            </div>
-            <button class="btn btn-sm" onclick="clearStan()">✕ Wyczyść</button>
-          </div>
-          <div class="stats-mini" id="stan-stats"></div>
-          <div class="stan-table-wrap">
-            <table class="stan-table">
-              <thead id="stan-thead"></thead>
-              <tbody id="stan-tbody"></tbody>
-            </table>
-          </div>
-          <div class="stan-table-footer" id="stan-footer"></div>
+        <!-- ─── Stats ─── -->
+        <div class="stats-mini" id="stan-stats"></div>
+
+        <!-- ─── Tabela ─── -->
+        <div class="stan-table-wrap">
+          <table class="stan-table">
+            <thead>
+              <tr>
+                <th onclick="stanSort('nazwa')">Nazwa</th>
+                <th onclick="stanSort('magazyn')">Magazyn</th>
+                <th onclick="stanSort('nazwa_grupy')">Grupa</th>
+                <th onclick="stanSort('stan')" style="text-align:right">Stan</th>
+                <th onclick="stanSort('jm')">Jm</th>
+              </tr>
+            </thead>
+            <tbody id="stan-tbody"></tbody>
+          </table>
         </div>
+        <div class="stan-table-footer" id="stan-footer"></div>
+
+        <!-- ─── Upload nowego pliku (secondary) ─── -->
+        <div class="upload-zone-mini" onclick="document.getElementById('mag-file').click()"
+             ondrop="handleDrop(event)" ondragover="event.preventDefault()" ondragleave="event.preventDefault()">
+          <span>📂</span>
+          <span id="upload-mini-lbl">Wgraj nowszy plik XLSX ze StreamSoft</span>
+        </div>
+        <input type="file" id="mag-file" accept=".xlsx,.xls" onchange="handleFile(event)">
 
       </div>
 
       <div class="card-footer">
-        <button class="btn btn-orange" onclick="document.getElementById('mag-file').click()">
-          ↑ Wgraj plik
-        </button>
-        <button class="btn btn-sm" id="stan-change-btn" style="display:none" onclick="document.getElementById('mag-file').click()">
-          ↺ Zmień
-        </button>
+        <span id="stan-custom-clear" style="display:none">
+          <button class="btn btn-sm" onclick="clearCustomStan()">✕ Usuń własny plik</button>
+        </span>
         <span style="flex:1"></span>
-        <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace">Excel / StreamSoft</span>
+        <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace" id="stan-total-lbl"></span>
       </div>
     </div>
 
@@ -411,13 +409,115 @@ if (window.ZUZYCIE_DATA) {
 }
 
 // ── Stan Magazynowy ──────────────────────────────────────────────────────────
-const LS_KEY = 'oxm_stan_mag_v2';
+const LS_KEY = 'oxm_stan_custom_v1';
 
-function handleDragOver(e)  { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag'); }
-function handleDragLeave()  { document.getElementById('upload-zone').classList.remove('drag'); }
+// Aktywny dataset — domyślnie preloaded, możliwy override z localStorage
+let stanData    = null;  // array of records
+let stanDate    = '';
+let stanSortCol = 'stan';
+let stanSortDir = -1;    // descending by default (highest stock first)
+
+function stanInit() {
+  // Check if user uploaded custom file
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const custom = JSON.parse(raw);
+      stanData = custom.rekordy;
+      stanDate = custom.date;
+      document.getElementById('stan-source-lbl').textContent = '📂 ' + custom.date + ' (własny plik)';
+      document.getElementById('stan-source-lbl').className = 'stan-source-badge source-upload';
+      document.getElementById('stan-custom-clear').style.display = 'inline';
+      document.getElementById('upload-mini-lbl').textContent = '↺ Zastąp plik nowszym z StreamSoft';
+    }
+  } catch(e){}
+
+  // Fallback to preloaded data
+  if (!stanData && window.STANY_DATA) {
+    stanData = window.STANY_DATA.rekordy;
+    stanDate = window.STANY_DATA.data;
+  }
+
+  if (!stanData) return;
+
+  // Populate filter dropdowns
+  const mags = [...new Set(stanData.map(r => r.magazyn))].sort((a,b) => a.localeCompare(b,'pl'));
+  const grps = [...new Set(stanData.map(r => r.nazwa_grupy))].sort((a,b) => a.localeCompare(b,'pl'));
+  const selMag = document.getElementById('stan-f-mag');
+  const selGrp = document.getElementById('stan-f-grp');
+  mags.forEach(m => { const o = new Option(m,m); selMag.appendChild(o); });
+  grps.forEach(g => { const o = new Option(g,g); selGrp.appendChild(o); });
+
+  document.getElementById('stan-badge').textContent = 'Stan: ' + stanDate;
+  renderStan();
+}
+
+function stanSort(col) {
+  stanSortDir = stanSortCol === col ? stanSortDir * -1 : (col === 'stan' ? -1 : 1);
+  stanSortCol = col;
+  document.querySelectorAll('.stan-table th').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+    if (th.getAttribute('onclick') === `stanSort('${col}')`)
+      th.classList.add(stanSortDir === 1 ? 'sort-asc' : 'sort-desc');
+  });
+  renderStan();
+}
+
+function renderStan() {
+  if (!stanData) return;
+  const mag = document.getElementById('stan-f-mag').value;
+  const grp = document.getElementById('stan-f-grp').value;
+
+  let rows = stanData.filter(r =>
+    (!mag || r.magazyn === mag) &&
+    (!grp || r.nazwa_grupy === grp)
+  );
+
+  rows.sort((a,b) => {
+    const av = a[stanSortCol], bv = b[stanSortCol];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1; if (bv == null) return -1;
+    return (typeof av === 'string' ? av.localeCompare(bv,'pl') : av - bv) * stanSortDir;
+  });
+
+  const totalStan = rows.reduce((s,r) => s + (r.stan||0), 0);
+  const mags      = new Set(rows.map(r => r.magazyn)).size;
+
+  document.getElementById('stan-stats').innerHTML = `
+    <div class="stat-mini"><div class="stat-mini-label">Rekordów</div><div class="stat-mini-val" style="color:var(--orange)">${rows.length}</div></div>
+    <div class="stat-mini"><div class="stat-mini-label">Magazyny</div><div class="stat-mini-val">${mags}</div></div>
+    <div class="stat-mini"><div class="stat-mini-label">Łącznie szt.</div><div class="stat-mini-val" style="font-size:13px">${totalStan.toLocaleString('pl-PL',{maximumFractionDigits:0})}</div></div>
+  `;
+
+  document.getElementById('stan-total-lbl').textContent =
+    'Łącznie: ' + totalStan.toLocaleString('pl-PL',{maximumFractionDigits:0}) + ' szt.';
+
+  const GRP_CLR = {
+    'Etykiety':'var(--purple)',
+    'Opakowania-Transportowe':'var(--orange)',
+    'Opakowania-Jednostkowe':'var(--blue)',
+    'Opakowania-Zbiorcze':'var(--green)',
+    'Opakowania-Wkładki absorpcyjne':'var(--yellow)'
+  };
+
+  document.getElementById('stan-tbody').innerHTML = rows.map(r => {
+    const clr = GRP_CLR[r.nazwa_grupy] || 'var(--text-dim)';
+    return `<tr>
+      <td title="${r.nazwa}" style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis">${r.nazwa||r.indeks||'—'}</td>
+      <td style="font-size:11px">${r.magazyn}</td>
+      <td><span style="font-size:10px;font-weight:700;color:${clr}">${r.nazwa_grupy||'—'}</span></td>
+      <td class="num-cell" style="font-weight:700">${(r.stan||0).toLocaleString('pl-PL',{maximumFractionDigits:0})}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${r.jm||''}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted)">Brak wyników</td></tr>';
+
+  document.getElementById('stan-footer').textContent =
+    'Wyświetlono ' + rows.length + ' z ' + stanData.length + ' rekordów · stan na ' + stanDate;
+}
+
+// ── Upload nowego pliku ────────────────────────────────────────────────────
 function handleDrop(e) {
   e.preventDefault();
-  document.getElementById('upload-zone').classList.remove('drag');
   const file = e.dataTransfer.files[0];
   if (file) processFile(file);
 }
@@ -430,20 +530,60 @@ function processFile(file) {
   const reader = new FileReader();
   reader.onload = function(ev) {
     try {
-      const wb  = XLSX.read(ev.target.result, { type:'array' });
-      const ws  = wb.Sheets[wb.SheetNames[0]];
-      const raw = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
-      if (!raw.length) return;
-
-      // Try to extract date from filename e.g. "Stany magazynowe na dn.25.02.2026.xlsx"
+      const wb = XLSX.read(ev.target.result, { type:'array' });
+      const allSheets = wb.SheetNames;
+      const rekordy = [];
       const m = file.name.match(/(\d{1,2}[.\-\/]\d{1,2}[.\-\/]\d{4})/);
-      const dateStr = m ? m[1].replace(/[-\/]/g, '.') : file.name.replace(/\.xlsx?$/i,'');
+      const dateStr = m ? m[1].replace(/[-\/]/g,'.') : file.name.replace(/\.xlsx?$/i,'');
 
-      const headers = raw[0].map(String).filter(Boolean);
-      const rows    = raw.slice(1).filter(r => r.some(c => c !== ''));
+      allSheets.forEach(sname => {
+        const ws  = wb.Sheets[sname];
+        const raw = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+        if (raw.length < 2) return;
+        const headers = raw[0].map(String);
+        const idxNazwa = headers.findIndex(h => h.toLowerCase().includes('nazwa'));
+        const idxStan  = headers.findIndex(h => h.toLowerCase() === 'stan');
+        const idxJm    = headers.findIndex(h => h.toLowerCase() === 'jm');
+        const idxGrp   = headers.findIndex(h => h.toLowerCase().includes('nazwa grupy') || h.toLowerCase().includes('nazwa_grupy'));
+        const idxKGrp  = headers.findIndex(h => h.toLowerCase().includes('kod grupy') || h.toLowerCase().includes('kod_grupy'));
+        const idxWart  = headers.findIndex(h => h.toLowerCase().includes('wartość zakupu') || h.toLowerCase().includes('wartosc'));
 
-      try { localStorage.setItem(LS_KEY, JSON.stringify({ date:dateStr, headers, rows:rows.slice(0,300) })); } catch(e){}
-      renderStan(dateStr, headers, rows);
+        raw.slice(1).forEach(row => {
+          if (!row.some(c => c !== '')) return;
+          rekordy.push({
+            indeks:      String(row[0]||'').trim(),
+            nazwa:       String(row[idxNazwa >= 0 ? idxNazwa : 2]||'').trim(),
+            stan:        typeof row[idxStan >= 0 ? idxStan : 3] === 'number' ? row[idxStan >= 0 ? idxStan : 3] : 0,
+            jm:          String(row[idxJm >= 0 ? idxJm : 10]||'szt.').trim(),
+            wartosc:     typeof row[idxWart >= 0 ? idxWart : 4] === 'number' ? Math.round(row[idxWart >= 0 ? idxWart : 4]*100)/100 : 0,
+            kod_grupy:   String(row[idxKGrp >= 0 ? idxKGrp : 12]||'').trim(),
+            nazwa_grupy: String(row[idxGrp >= 0 ? idxGrp : 13]||'').trim(),
+            magazyn:     sname.trim()
+          });
+        });
+      });
+
+      if (!rekordy.length) { alert('Nie znaleziono danych w pliku.'); return; }
+
+      try { localStorage.setItem(LS_KEY, JSON.stringify({ date:dateStr, rekordy })); } catch(e){}
+      stanData = rekordy;
+      stanDate = dateStr;
+
+      document.getElementById('stan-source-lbl').textContent = '📂 ' + dateStr + ' (własny plik)';
+      document.getElementById('stan-source-lbl').className = 'stan-source-badge source-upload';
+      document.getElementById('stan-badge').textContent = 'Stan: ' + dateStr;
+      document.getElementById('stan-custom-clear').style.display = 'inline';
+      document.getElementById('upload-mini-lbl').textContent = '↺ Zastąp plik nowszym z StreamSoft';
+
+      // Rebuild dropdowns
+      const selMag = document.getElementById('stan-f-mag');
+      const selGrp = document.getElementById('stan-f-grp');
+      selMag.innerHTML = '<option value="">Wszystkie magazyny</option>';
+      selGrp.innerHTML = '<option value="">Wszystkie grupy</option>';
+      [...new Set(rekordy.map(r => r.magazyn))].sort((a,b)=>a.localeCompare(b,'pl')).forEach(m => selMag.appendChild(new Option(m,m)));
+      [...new Set(rekordy.map(r => r.nazwa_grupy).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl')).forEach(g => selGrp.appendChild(new Option(g,g)));
+
+      renderStan();
     } catch(err) {
       alert('Błąd wczytywania pliku:\n' + err.message);
     }
@@ -451,61 +591,22 @@ function processFile(file) {
   reader.readAsArrayBuffer(file);
 }
 
-function renderStan(dateStr, headers, rows) {
-  document.getElementById('stan-empty').style.display = 'none';
-  document.getElementById('stan-data').style.display  = 'block';
-  document.getElementById('stan-change-btn').style.display = 'inline-flex';
-  document.getElementById('stan-date-val').textContent = dateStr;
-  document.getElementById('stan-badge').textContent   = 'Stan: ' + dateStr;
-
-  // Stats
-  const numCols = headers.reduce((acc, h, i) => {
-    if (rows.slice(0,10).some(r => typeof r[i] === 'number')) acc++;
-    return acc;
-  }, 0);
-  document.getElementById('stan-stats').innerHTML = `
-    <div class="stat-mini"><div class="stat-mini-label">Wiersze</div><div class="stat-mini-val" style="color:var(--orange)">${rows.length.toLocaleString('pl-PL')}</div></div>
-    <div class="stat-mini"><div class="stat-mini-label">Kolumny</div><div class="stat-mini-val">${headers.length}</div></div>
-    <div class="stat-mini"><div class="stat-mini-label">Num. kol.</div><div class="stat-mini-val">${numCols}</div></div>
-  `;
-
-  // Table — max 8 columns to fit nicely
-  const MAX_COLS = 8;
-  const dispHeaders = headers.slice(0, MAX_COLS);
-  document.getElementById('stan-thead').innerHTML =
-    '<tr>' + dispHeaders.map(h => `<th>${h}</th>`).join('') + '</tr>';
-
-  document.getElementById('stan-tbody').innerHTML = rows.slice(0, 60).map(row =>
-    '<tr>' + dispHeaders.map((h, i) => {
-      const v = row[i];
-      const isNum = typeof v === 'number';
-      return `<td class="${isNum ? 'num-cell' : ''}" title="${v}">${isNum ? v.toLocaleString('pl-PL') : (v || '')}</td>`;
-    }).join('') + '</tr>'
-  ).join('');
-
-  document.getElementById('stan-footer').textContent =
-    'Wyświetlono ' + Math.min(rows.length, 60) + ' z ' + rows.length + ' wierszy'
-    + (headers.length > MAX_COLS ? ' · ' + (headers.length - MAX_COLS) + ' kolumn ukrytych' : '');
-}
-
-function clearStan() {
+function clearCustomStan() {
   localStorage.removeItem(LS_KEY);
-  document.getElementById('stan-empty').style.display = 'block';
-  document.getElementById('stan-data').style.display  = 'none';
-  document.getElementById('stan-change-btn').style.display = 'none';
-  document.getElementById('stan-badge').textContent = 'Brak danych';
+  stanData = null; stanDate = '';
+  document.getElementById('stan-custom-clear').style.display = 'none';
+  document.getElementById('stan-source-lbl').textContent = '📅 25.02.2026';
+  document.getElementById('stan-source-lbl').className = 'stan-source-badge source-preset';
+  document.getElementById('upload-mini-lbl').textContent = 'Wgraj nowszy plik XLSX ze StreamSoft';
   document.getElementById('mag-file').value = '';
+  const selMag = document.getElementById('stan-f-mag');
+  const selGrp = document.getElementById('stan-f-grp');
+  selMag.innerHTML = '<option value="">Wszystkie magazyny</option>';
+  selGrp.innerHTML = '<option value="">Wszystkie grupy</option>';
+  stanInit();
 }
 
-// Load persisted data on init
-(function() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return;
-    const { date, headers, rows } = JSON.parse(raw);
-    renderStan(date, headers, rows);
-  } catch(e) {}
-})();
+stanInit();
 </script>
 </body>
 </html>
