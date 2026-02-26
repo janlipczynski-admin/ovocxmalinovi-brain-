@@ -1042,15 +1042,13 @@ function doPrint() {
 
   const tableRows = orderRows.map((r, i) => {
     const toOrder = Math.max(0, r.total_need - r.stan);
-    const fmts = [...new Set(r.formats)].join(', ');
     return `<tr>
       <td class="r">${i+1}</td>
       <td style="font-family:monospace"><strong>${r.indeks}</strong></td>
       <td>${r.nazwa}</td>
-      <td>${fmts}</td>
-      <td class="r">${fmt(r.total_need)}</td>
-      <td class="r">${fmt(r.stan)}</td>
       <td class="r"><strong>${fmt(toOrder)}</strong></td>
+      <td></td>
+      <td></td>
     </tr>`;
   }).join('');
 
@@ -1070,15 +1068,9 @@ function doPrint() {
         <div class="print-logo-txt">OvocxMalinovi sp. z o.o.</div>
         <div class="print-doc-title">Zapytanie ofertowe — Kartony Sezon 2026</div>
         <div class="print-meta">
-          Grupy klientów: <strong>${selGrps}</strong><br>
           Okres: <strong>${periodLbl}</strong><br>
           Data wygenerowania: ${today}
         </div>
-      </div>
-      <div class="print-renia">
-        ${RENIA_SVG}
-        <div style="margin-top:4px"><strong>Renia</strong></div>
-        <div>Specjalista ds. Rozliczeń</div>
       </div>
     </div>
     ${doBlock}
@@ -1091,22 +1083,26 @@ function doPrint() {
           <th class="r">Lp</th>
           <th>Kod</th>
           <th>Nazwa kartonu</th>
-          <th>Formaty op.</th>
-          <th class="r">Zapotrzeb.</th>
-          <th class="r">Stan mag.</th>
-          <th class="r" style="background:#fa4211">Do zamówienia</th>
+          <th class="r" style="background:#fa4211">Ilość (szt.)</th>
+          <th class="r">Cena jdn. NETTO</th>
+          <th class="r">Wartość NETTO</th>
         </tr>
       </thead>
       <tbody>
         ${tableRows}
         <tr class="total-row">
-          <td colspan="4"><strong>ŁĄCZNIE</strong></td>
-          <td class="r"><strong>${fmt(totalNeed)}</strong></td>
-          <td class="r" style="color:${totalStan >= totalNeed ? '#16a34a' : '#dc2626'}"><strong>${fmt(totalStan)}</strong></td>
-          <td class="r" style="color:${totalOrder === 0 ? '#16a34a' : '#dc2626'}"><strong>${totalOrder === 0 ? '✓ 0' : '− ' + fmt(totalOrder)}</strong></td>
+          <td colspan="3"><strong>ŁĄCZNIE</strong></td>
+          <td class="r"><strong>${fmt(totalOrder)}</strong></td>
+          <td></td>
+          <td></td>
         </tr>
       </tbody>
     </table>
+    <div class="print-notes" style="margin-top:16px">
+      Uprzejmie prosimy o uzupełnienie załączonego excela i przesłanie na adres:
+      <strong>renata.amanowicz@ovocmalinovi.pl</strong><br>
+      Można również załączyć wszelkie inne dokumenty dotyczące specyfikacji technicznej, certyfikatów i warunków zamówienia.
+    </div>
     <div class="print-notes">
       <strong>Warunki i uwagi:</strong><br>
       • Prosimy o wycenę przy zamówieniu jednorazowym (całość) oraz w 3 transzach w sezonie<br>
@@ -1116,7 +1112,7 @@ function doPrint() {
     </div>
     <div class="print-footer">
       OvocxMalinovi sp. z o.o. &nbsp;|&nbsp; Zapytanie wygenerowane przez OxM Brain &nbsp;|&nbsp;
-      Kontakt: Renia (Specjalista ds. Rozliczeń) &nbsp;|&nbsp; ${today}
+      renata.amanowicz@ovocmalinovi.pl &nbsp;|&nbsp; ${today}
     </div>`;
   window.print();
 }
@@ -1182,20 +1178,21 @@ function exportExcelStep3() {
     ['OvocxMalinovi sp. z o.o.'],
     ['ZAPYTANIE OFERTOWE — KARTONY SEZON 2026'],
     [],
-    ['Grupy klientów:', selGrps, '', '', 'Data:', today],
-    ['Okres:', periodLbl],
+    ['Okres:', periodLbl, '', 'Data:', today],
     ['Dostawca:', selD ? selD.nazwa : '— nie wybrano'],
     selD ? ['Adres:', [selD.adres,selD.miasto,selD.kraj].filter(Boolean).join(', ')] : [],
     selD ? ['E-mail:', selD.email||''] : [],
     [],
-    ['Lp','Kod kartonu','Nazwa kartonu','Formaty opakowań','Zapotrzebowanie','Stan magazynowy','Do zamówienia','Cena jdn. NETTO','Wartość NETTO','Uwagi']
+    ['Uprzejmie prosimy o uzupełnienie poniższej tabeli i przesłanie na adres: renata.amanowicz@ovocmalinovi.pl'],
+    ['Można również załączyć wszelkie inne dokumenty dotyczące specyfikacji technicznej, certyfikatów i warunków zamówienia.'],
+    [],
+    ['Lp','Kod kartonu','Nazwa kartonu','Ilość (szt.)','Cena jdn. NETTO','Wartość NETTO','Uwagi']
   ];
   orderRows.forEach((r, i) => {
     const toOrder = Math.max(0, r.total_need - r.stan);
-    wsRows.push([i+1, r.indeks, r.nazwa, [...new Set(r.formats)].join(', '),
-      r.total_need, r.stan, toOrder, '', '', '']);
+    wsRows.push([i+1, r.indeks, r.nazwa, toOrder, '', '', '']);
   });
-  wsRows.push(['', '', '', 'ŁĄCZNIE', totalNeed, totalStan, totalOrder, '', '', '']);
+  wsRows.push(['', '', 'ŁĄCZNIE', totalOrder, '', '', '']);
   wsRows.push([]);
   wsRows.push(['UWAGI DO ZAPYTANIA']);
   wsRows.push(['Proszę o wycenę jednorazową (cały sezon) oraz w 3 transzach']);
@@ -1204,8 +1201,8 @@ function exportExcelStep3() {
   wsRows.push(['Termin odpowiedzi: 7 dni']);
 
   const ws1 = XLSX.utils.aoa_to_sheet(wsRows);
-  ws1['!cols'] = [{wch:4},{wch:22},{wch:42},{wch:26},{wch:18},{wch:18},{wch:18},{wch:20},{wch:18},{wch:24}];
-  ws1['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}},{s:{r:1,c:0},e:{r:1,c:5}}];
+  ws1['!cols'] = [{wch:4},{wch:22},{wch:44},{wch:16},{wch:20},{wch:18},{wch:26}];
+  ws1['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}},{s:{r:1,c:0},e:{r:1,c:5}},{s:{r:8,c:0},e:{r:8,c:5}},{s:{r:9,c:0},e:{r:9,c:5}}];
   XLSX.utils.book_append_sheet(wb, ws1, 'Zapytanie ofertowe');
 
   // Arkusz 2 — per-grupa szczegóły (jak Step 2)
