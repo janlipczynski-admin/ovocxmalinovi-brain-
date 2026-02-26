@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="config.js"></script>
   <script src="firma-wiedza.js"></script>
+  <script src="opakowania-data.js" defer></script>
+  <script src="planowanie-data.js" defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -901,6 +903,151 @@ document.getElementById('sysFeed').innerHTML = SYSTEMS.map(function(s) {
     '</div>';
 }).join('');
 
+// ─── MALINOOVEK — buildMalContext ────────────────────────────────────────────
+function buildMalContext(msg) {
+  var q = msg.toLowerCase()
+    .replace(/ą/g,'a').replace(/ć/g,'c').replace(/ę/g,'e')
+    .replace(/ł/g,'l').replace(/ń/g,'n').replace(/ó/g,'o')
+    .replace(/ś/g,'s').replace(/ź/g,'z').replace(/ż/g,'z');
+
+  var dataKeywords = ['karton','opakow','kg','ton','ilosc','wolumen','prognoz','plan','zamow','sprzed','sezon','tygodnie','tyg','pakow','szt','jednostek'];
+  var priceKeywords = ['cen','pln','eur','zl','plac','porownaj','rozlicz','rt ','rt2025'];
+  var hasDataIntent = dataKeywords.some(function(k){ return q.includes(k); }) ||
+                      priceKeywords.some(function(k){ return q.includes(k); });
+  if (!hasDataIntent) return '';
+
+  var hasOpak = !!(window.OPAK_DATA && window.OPAK_DATA.rekordy);
+  var hasPlan = !!(window.PLAN_DATA && window.PLAN_DATA.length);
+  if (!hasOpak && !hasPlan) return '';
+
+  var ODBIORCY = hasOpak ? [...new Set(window.OPAK_DATA.rekordy.map(function(r){ return r.odbiorca; }))] : [];
+  var KLIENCI  = hasPlan  ? [...new Set(window.PLAN_DATA.filter(function(r){ return r.typ==='klient'; }).map(function(r){ return r.podmiot; }))] : [];
+  var RT_ODB   = (window.RT_SPRZEDAZ && window.RT_SPRZEDAZ.length) ? [...new Set(window.RT_SPRZEDAZ.map(function(r){ return r.odbiorca; }))] : [];
+  var ALL_NAMES = [...new Set([...ODBIORCY, ...KLIENCI, ...RT_ODB])];
+
+  function normN(s) {
+    return (s||'').toLowerCase()
+      .replace(/ą/g,'a').replace(/ć/g,'c').replace(/ę/g,'e')
+      .replace(/ł/g,'l').replace(/ń/g,'n').replace(/ó/g,'o')
+      .replace(/ś/g,'s').replace(/ź/g,'z').replace(/ż/g,'z');
+  }
+
+  var matchedName = null, bestScore = 0;
+  ALL_NAMES.forEach(function(name) {
+    var n = normN(name);
+    var words = n.split(/\s+/);
+    var score = words.filter(function(w){ return q.includes(w) && w.length > 2; }).length;
+    if (score > bestScore) { bestScore = score; matchedName = name; }
+  });
+
+  var matchedOwoc = null;
+  if (q.includes('malin')) matchedOwoc = 'Malina';
+  else if (q.includes('truskaw')) matchedOwoc = 'Truskawka tunelowa';
+
+  var MONTHS = {
+    'maj':[18,22],'czerw':[23,26],'lip':[27,30],'sierp':[31,35],
+    'wrzes':[36,39],'paz':[40,44],'listop':[45,46]
+  };
+  var matchedWeeks = null;
+  Object.keys(MONTHS).forEach(function(kw) {
+    if (!matchedWeeks && q.includes(kw)) matchedWeeks = MONTHS[kw];
+  });
+
+  var priceKw = ['cen','eur','pln','zl','zł','plac','platil','kosztow'];
+  var asksPrice = priceKw.some(function(k){ return q.includes(k); });
+
+  var ctx = '';
+
+  // ── RT 2025 — opakowania ──
+  if (hasOpak) {
+    var rekordy = window.OPAK_DATA.rekordy;
+    if (matchedName) rekordy = rekordy.filter(function(r){ return r.odbiorca === matchedName || normN(r.odbiorca) === normN(matchedName); });
+    if (matchedOwoc) rekordy = rekordy.filter(function(r){ return r.owoc === matchedOwoc; });
+    if (matchedWeeks) rekordy = rekordy.filter(function(r){ return r.tydzien >= matchedWeeks[0] && r.tydzien <= matchedWeeks[1]; });
+
+    if (rekordy.length > 0) {
+      var agg = {};
+      rekordy.forEach(function(r) {
+        if (!agg[r.pak]) agg[r.pak] = { kg:0, kartony:0, jednostki:0 };
+        agg[r.pak].kg        += r.wolumen_kg  || 0;
+        agg[r.pak].kartony   += r.kartonow    || 0;
+        agg[r.pak].jednostki += r.jednostek   || 0;
+      });
+      var rows = Object.entries(agg)
+        .sort(function(a,b){ return b[1].kartony - a[1].kartony; })
+        .slice(0,20)
+        .map(function(e){ return e[0]+': '+Math.round(e[1].kg)+' kg, '+e[1].kartony+' kart., '+e[1].jednostki+' jedn.'; })
+        .join('\n');
+      var totalKg      = rekordy.reduce(function(s,r){ return s+(r.wolumen_kg||0); }, 0);
+      var totalKartony = rekordy.reduce(function(s,r){ return s+(r.kartonow||0); }, 0);
+      ctx += '\n[DANE FIRMOWE — RT 2025';
+      if (matchedName) ctx += ', odbiorca: '+matchedName;
+      if (matchedOwoc) ctx += ', owoc: '+matchedOwoc;
+      if (matchedWeeks) ctx += ', tyg. '+matchedWeeks[0]+'–'+matchedWeeks[1];
+      ctx += ']\nŁącznie: '+Math.round(totalKg)+' kg, '+totalKartony+' kartonów\nWg opakowania:\n'+rows;
+    }
+  }
+
+  // ── RT 2025 — ceny sprzedaży ──
+  var hasRT = !!(window.RT_SPRZEDAZ && window.RT_SPRZEDAZ.length);
+  var asksRT = asksPrice || q.includes('porownaj') || q.includes('cen') || q.includes('rozlicz');
+  if (hasRT && asksRT) {
+    var rt = window.RT_SPRZEDAZ;
+    var isCompare = q.includes('porownaj');
+    if (!isCompare && matchedName) {
+      rt = rt.filter(function(r){ return normN(r.odbiorca).includes(normN(matchedName)) || normN(matchedName).includes(normN(r.odbiorca).split(' ')[0]); });
+    }
+    if (matchedOwoc) rt = rt.filter(function(r){ return r.owoc === matchedOwoc; });
+    if (matchedWeeks) rt = rt.filter(function(r){ return r.tydzien >= matchedWeeks[0] && r.tydzien <= matchedWeeks[1]; });
+
+    if (rt.length > 0) {
+      var rtAgg = {};
+      rt.forEach(function(r) {
+        var k = r.odbiorca+'|||'+r.owoc;
+        if (!rtAgg[k]) rtAgg[k] = { odbiorca:r.odbiorca, owoc:r.owoc, totalKg:0, totalPrzychod:0 };
+        rtAgg[k].totalKg       += r.kg;
+        rtAgg[k].totalPrzychod += r.przychod;
+      });
+      var rtRows = Object.values(rtAgg)
+        .sort(function(a,b){ return b.totalKg - a.totalKg; })
+        .slice(0,20)
+        .map(function(v){ return v.odbiorca+' / '+v.owoc+': '+Math.round(v.totalKg)+' kg, śr. cena '+(v.totalKg>0?(v.totalPrzychod/v.totalKg).toFixed(2):'—')+' PLN/kg'; })
+        .join('\n');
+      ctx += '\n\n[ROZLICZENIA RT 2025 — ceny sprzedaży';
+      if (!isCompare && matchedName) ctx += ', odbiorca: '+matchedName;
+      if (matchedOwoc) ctx += ', owoc: '+matchedOwoc;
+      if (matchedWeeks) ctx += ', tyg. '+matchedWeeks[0]+'–'+matchedWeeks[1];
+      ctx += ']\n'+rtRows;
+    }
+  }
+
+  // ── PLAN 2026 ──
+  if (hasPlan) {
+    var plan = window.PLAN_DATA.filter(function(r){ return r.typ==='klient'; });
+    if (matchedName) plan = plan.filter(function(r){ return r.podmiot===matchedName || normN(r.podmiot)===normN(matchedName); });
+    if (matchedOwoc) plan = plan.filter(function(r){ return r.owoc===matchedOwoc; });
+    if (matchedWeeks) plan = plan.filter(function(r){ return r.tydzien>=matchedWeeks[0] && r.tydzien<=matchedWeeks[1]; });
+
+    var planKw = ['plan','prognoz','2026','sezon'];
+    var asksPlan = planKw.some(function(k){ return q.includes(k); });
+
+    if (plan.length > 0 && asksPlan) {
+      var planKg = plan.reduce(function(s,r){ return s+(r.kg||0); }, 0);
+      var planGrp = {};
+      plan.forEach(function(r){ var k=r.podmiot+'/'+r.owoc; if(!planGrp[k]) planGrp[k]=0; planGrp[k]+=r.kg||0; });
+      var planRows = Object.entries(planGrp)
+        .sort(function(a,b){ return b[1]-a[1]; }).slice(0,10)
+        .map(function(e){ return e[0]+': '+Math.round(e[1])+' kg'; }).join('\n');
+      ctx += '\n\n[PLAN 2026';
+      if (matchedName) ctx += ', klient: '+matchedName;
+      if (matchedOwoc) ctx += ', owoc: '+matchedOwoc;
+      ctx += ']\nŁącznie: '+Math.round(planKg)+' kg\n'+planRows;
+    }
+  }
+
+  return ctx;
+}
+
 // ─── MALINOOVEK ──────────────────────────────────────────────────────────────
 var MAL_SYSTEM = 'Jesteś Malinoovkiem — asystentem AI firmy OvocxMalinovi sp. z o.o.\n' +
   'Twoja rola: wspierać zespół w codziennej pracy, optymalizacji procesów i zarządzaniu wiedzą firmową.\n' +
@@ -951,7 +1098,9 @@ async function malSend() {
   if (!key) return;
   inp.value = '';
   malAdd('user', q);
-  malHistory.push({ role: 'user', content: q });
+  var ctxData = buildMalContext(q);
+  var msgContent = ctxData ? q + '\n\n[Kontekst danych firmowych:' + ctxData + ']' : q;
+  malHistory.push({ role: 'user', content: msgContent });
 
   var typing = malAdd('bot', 'Malinoovek pisze\u2026');
   typing.classList.add('typing');
