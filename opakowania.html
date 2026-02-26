@@ -7,6 +7,7 @@
 <script src="opakowania-data.js"></script>
 <script src="planowanie-data.js"></script>
 <script src="zestawienie-proc-data.js"></script>
+<script src="zuzycie-data.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -127,6 +128,18 @@
   .toggle-btn{padding:5px 11px;border:1px solid var(--border2);border-radius:6px;font-size:11px;cursor:pointer;background:var(--white);color:var(--text-muted);font-family:'Plus Jakarta Sans',sans-serif;transition:all .12s}
   .toggle-btn.active{background:var(--grad);color:white;border-color:transparent}
 
+  /* MULTI-SELECT DROPDOWN */
+  .ms-wrap{position:relative;min-width:220px}
+  .ms-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--white);border:1px solid var(--border2);border-radius:7px;padding:6px 10px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);cursor:pointer;transition:border-color .15s;user-select:none}
+  .ms-trigger:hover{border-color:var(--orange)}
+  .ms-caret{font-size:10px;color:var(--text-muted);flex-shrink:0}
+  .ms-dropdown{position:absolute;top:calc(100% + 4px);left:0;min-width:100%;max-height:260px;background:var(--white);border:1px solid var(--border2);border-radius:8px;box-shadow:var(--shadow-md);z-index:300;overflow-y:auto;padding:6px 0}
+  .ms-all{display:flex;align-items:center;gap:7px;padding:5px 12px;font-size:11px;font-weight:600;color:var(--text-dim);cursor:pointer;border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:8px}
+  .ms-all:hover{color:var(--orange)}
+  .ms-item{display:flex;align-items:center;gap:7px;padding:4px 12px;font-size:11px;color:var(--text);cursor:pointer;white-space:nowrap}
+  .ms-item:hover{background:var(--surface2);color:var(--orange)}
+  .ms-all input,.ms-item input{accent-color:var(--orange);cursor:pointer;flex-shrink:0}
+
   /* RESPONSIVE */
   @media(max-width:900px){
     main{padding:14px 16px}
@@ -172,6 +185,10 @@
   <div class="tab" data-tab="zp2025" onclick="switchTab('zp2025')">
     📊 Zest. Proc. 2025
     <span class="tab-badge" id="badge-zp2025">—</span>
+  </div>
+  <div class="tab" data-tab="zuzycie2025" onclick="switchTab('zuzycie2025')">
+    🏭 Zużycie materiałów 2025
+    <span class="tab-badge" id="badge-zuzycie">—</span>
   </div>
 </div>
 
@@ -548,6 +565,100 @@
       </table>
     </div>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 6: ZUŻYCIE MATERIAŁÓW 2025 -->
+<div id="tab-zuzycie2025" class="tab-content">
+
+  <div class="filters">
+    <div class="filter-group">
+      <div class="filter-label">Miesiąc</div>
+      <select id="zm-miesiac" onchange="renderZuzycie()">
+        <option value="">Wszystkie</option>
+        <option value="1">Styczeń</option>
+        <option value="2">Luty</option>
+        <option value="3">Marzec</option>
+        <option value="4">Kwiecień</option>
+        <option value="5">Maj</option>
+        <option value="6">Czerwiec</option>
+        <option value="7">Lipiec</option>
+        <option value="8">Sierpień</option>
+        <option value="9">Wrzesień</option>
+        <option value="10">Październik</option>
+        <option value="11">Listopad</option>
+        <option value="12">Grudzień</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Magazyn / Producent</div>
+      <select id="zm-magazyn" onchange="renderZuzycie()" style="min-width:220px">
+        <option value="">Wszystkie</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Kartony</div>
+      <div class="ms-wrap" id="zm-pak-wrap">
+        <div class="ms-trigger" onclick="toggleMsPak()" id="zm-pak-trigger">
+          <span id="zm-pak-label">Wszystkie kartony</span>
+          <span class="ms-caret">▾</span>
+        </div>
+        <div class="ms-dropdown" id="zm-pak-dropdown" style="display:none">
+          <label class="ms-all"><input type="checkbox" id="zm-pak-all" checked onchange="zmToggleAll()"> Zaznacz wszystkie</label>
+          <div id="zm-pak-items"></div>
+        </div>
+      </div>
+    </div>
+    <div class="filter-sep"></div>
+    <button class="btn" onclick="resetZuzycie()">Resetuj filtry</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Łączny wolumen</div>
+      <div class="stat-val grad" id="zm-s-vol">—</div>
+      <div class="stat-sub">kg (01.01–26.11.2025)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Łączne kartony</div>
+      <div class="stat-val" id="zm-s-kart">—</div>
+      <div class="stat-sub">szt. zużytych kartonów</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Lokalizacji</div>
+      <div class="stat-val" id="zm-s-mag">—</div>
+      <div class="stat-sub">magazynów / producentów</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Unikalnych kodów</div>
+      <div class="stat-val" id="zm-s-kody">—</div>
+      <div class="stat-sub">typów opakowań</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Zużycie kartonów — per magazyn × miesiąc</span>
+      <span class="table-count" id="zm-count">—</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="zmSort('pak')">Kod opakowania</th>
+            <th>Typ</th>
+            <th>Jedn.</th>
+            <th onclick="zmSort('magazyn')">Magazyn / Producent</th>
+            <th onclick="zmSort('miesiac')">Miesiąc</th>
+            <th class="num" onclick="zmSort('wolumen_kg')">Wolumen [kg]</th>
+            <th class="num" onclick="zmSort('kartonow')">Kartonów</th>
+            <th>Udział</th>
+          </tr>
+        </thead>
+        <tbody id="zm-body"></tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
 </main>
@@ -1247,6 +1358,165 @@ function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
   if (name === 'miesieczna') renderMiesieczna();
   if (name === 'zp2025') renderZP();
+  if (name === 'zuzycie2025') renderZuzycie();
+}
+
+// ═══════════════════════════════════════════════════════ ZUŻYCIE MATERIAŁÓW 2025
+
+let zmSortCol = 'kartonow';
+let zmSortDir = -1;
+
+function initZuzycie() {
+  if (!window.ZUZYCIE_DATA) return;
+  const rek = window.ZUZYCIE_DATA.rekordy;
+
+  // Populate magazyn select
+  const mags = [...new Set(rek.map(r => r.magazyn).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pl'));
+  const selMag = document.getElementById('zm-magazyn');
+  mags.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m;
+    selMag.appendChild(o);
+  });
+
+  // Populate pak checkboxes
+  const paki = [...new Set(rek.map(r => r.pak).filter(Boolean))].sort();
+  const container = document.getElementById('zm-pak-items');
+  container.innerHTML = paki.map(pak =>
+    `<label class="ms-item"><input type="checkbox" value="${pak}" checked onchange="zmOnPakChange()"> ${pak}</label>`
+  ).join('');
+
+  updateZmPakLabel();
+  renderZuzycie();
+}
+
+function toggleMsPak() {
+  const dd = document.getElementById('zm-pak-dropdown');
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('zm-pak-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('zm-pak-dropdown').style.display = 'none';
+  }
+});
+
+function zmToggleAll() {
+  const allCb = document.getElementById('zm-pak-all');
+  document.querySelectorAll('#zm-pak-items input').forEach(cb => cb.checked = allCb.checked);
+  updateZmPakLabel();
+  renderZuzycie();
+}
+
+function zmOnPakChange() {
+  const all = document.querySelectorAll('#zm-pak-items input');
+  const checked = [...all].filter(cb => cb.checked);
+  document.getElementById('zm-pak-all').checked = checked.length === all.length;
+  updateZmPakLabel();
+  renderZuzycie();
+}
+
+function updateZmPakLabel() {
+  const all = document.querySelectorAll('#zm-pak-items input');
+  const checked = [...all].filter(cb => cb.checked);
+  const label = document.getElementById('zm-pak-label');
+  if (!all.length || checked.length === all.length) {
+    label.textContent = 'Wszystkie kartony';
+  } else if (checked.length === 0) {
+    label.textContent = 'Żaden nie wybrany';
+  } else {
+    label.textContent = checked.length + ' wybranych';
+  }
+}
+
+function resetZuzycie() {
+  document.getElementById('zm-miesiac').value = '';
+  document.getElementById('zm-magazyn').value = '';
+  document.querySelectorAll('#zm-pak-items input').forEach(cb => cb.checked = true);
+  document.getElementById('zm-pak-all').checked = true;
+  updateZmPakLabel();
+  renderZuzycie();
+}
+
+function zmSort(col) {
+  if (zmSortCol === col) { zmSortDir *= -1; }
+  else { zmSortCol = col; zmSortDir = col === 'pak' || col === 'magazyn' ? 1 : -1; }
+  document.querySelectorAll('#tab-zuzycie2025 th').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.getAttribute('onclick') === `zmSort('${col}')`) {
+      th.classList.add(zmSortDir === 1 ? 'sort-asc' : 'sort-desc');
+    }
+  });
+  renderZuzycie();
+}
+
+function renderZuzycie() {
+  if (!window.ZUZYCIE_DATA) return;
+  const miesiac = document.getElementById('zm-miesiac').value;
+  const magazyn = document.getElementById('zm-magazyn').value;
+  const pakItems = document.querySelectorAll('#zm-pak-items input');
+  const selectedPak = new Set([...pakItems].filter(cb => cb.checked).map(cb => cb.value));
+  const allPakSelected = pakItems.length > 0 && selectedPak.size === pakItems.length;
+
+  let rows = window.ZUZYCIE_DATA.rekordy.filter(r => {
+    if (miesiac && r.miesiac != miesiac) return false;
+    if (magazyn && r.magazyn !== magazyn) return false;
+    if (!allPakSelected && !selectedPak.has(r.pak)) return false;
+    return true;
+  });
+
+  rows.sort((a, b) => {
+    const av = a[zmSortCol], bv = b[zmSortCol];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1; if (bv == null) return -1;
+    if (typeof av === 'string') return av.localeCompare(bv, 'pl') * zmSortDir;
+    return (av - bv) * zmSortDir;
+  });
+
+  const totVol  = rows.reduce((s, r) => s + (r.wolumen_kg || 0), 0);
+  const totKart = rows.reduce((s, r) => s + (r.kartonow || 0), 0);
+  const uniqMag = new Set(rows.map(r => r.magazyn)).size;
+  const uniqPak = new Set(rows.map(r => r.pak)).size;
+
+  document.getElementById('zm-s-vol').textContent  = fmtKg(totVol) + ' kg';
+  document.getElementById('zm-s-kart').textContent = fmtNum(Math.round(totKart));
+  document.getElementById('zm-s-mag').textContent  = uniqMag;
+  document.getElementById('zm-s-kody').textContent = uniqPak;
+  document.getElementById('zm-count').textContent  = rows.length + ' wierszy';
+  document.getElementById('badge-zuzycie').textContent = rows.length;
+
+  const MIES = ['','Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
+
+  const tbody = document.getElementById('zm-body');
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Brak wyników dla wybranych filtrów</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const pct = totKart > 0 ? (r.kartonow / totKart * 100) : 0;
+    const jedn = r.waga_g ? `${r.waga_g}g × ${r.szt_w_kartonie}` : '—';
+    const magLabel = r.magazyn === 'Brak danych'
+      ? '<span style="color:var(--text-muted);font-style:italic">Brak danych</span>'
+      : '<span style="font-size:11px">' + r.magazyn + '</span>';
+    return `<tr>
+      <td>${kodCell(r.pak)}</td>
+      <td>${r.typ_kartonu ? typBadge(r.typ_kartonu) : '—'}</td>
+      <td><span class="num-muted">${jedn}</span></td>
+      <td>${magLabel}</td>
+      <td><span class="code-chip">${MIES[r.miesiac] || r.miesiac}</span></td>
+      <td class="num"><span class="num-big">${fmtKg(r.wolumen_kg)}</span></td>
+      <td class="num"><span class="num-big">${fmtNum(r.kartonow ? Math.round(r.kartonow) : null)}</span></td>
+      <td>
+        <div class="bar-cell">
+          <div class="bar-bg"><div class="bar-fill" style="width:${Math.round(pct)}%"></div></div>
+          <span class="bar-pct">${pct.toFixed(1)}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
 // ═══════════════════════════════════════════════════════ INIT
@@ -1254,6 +1524,7 @@ renderZestawienie();
 buildPrognoza();
 renderPrognoza();
 renderZP();
+initZuzycie();
 </script>
 </body>
 </html>
