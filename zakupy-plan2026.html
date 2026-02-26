@@ -171,6 +171,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   <!-- ── KPI row ── -->
   <div class="kpi-row">
     <div class="kpi">
+      <div class="kpi-label">Sprzedano 2025 (RT)</div>
+      <div class="kpi-val" id="kpi-kg-rt" style="color:var(--text-dim)">—</div>
+      <div class="kpi-sub">kg — rzeczywiste dostawy do klientów</div>
+    </div>
+    <div class="kpi">
       <div class="kpi-label">Plan sprzedaży 2026</div>
       <div class="kpi-val" id="kpi-kg" style="color:var(--orange)">—</div>
       <div class="kpi-sub">kg (suma klientów z planem)</div>
@@ -178,7 +183,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="kpi">
       <div class="kpi-label">Szac. kartonów 2026</div>
       <div class="kpi-val" id="kpi-kart" style="color:var(--blue)">—</div>
-      <div class="kpi-sub">na podstawie proporcji 2025</div>
+      <div class="kpi-sub">proporcje ZP 2025 × ratio plan/RT</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Klientów z planem</div>
@@ -186,7 +191,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="kpi-sub">z <span id="kpi-total-kl"></span> zmapowanych</div>
     </div>
     <div class="kpi">
-      <div class="kpi-label">Baza historyczna</div>
+      <div class="kpi-label">Kart. baza 2025 (ZP)</div>
       <div class="kpi-val" id="kpi-hist" style="font-size:16px;color:var(--text-dim)">—</div>
       <div class="kpi-sub">kartony faktyczne 2025</div>
     </div>
@@ -211,7 +216,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           <th style="width:24px"></th>
           <th>Klient</th>
           <th>Owoc</th>
-          <th class="num">Kg 2025</th>
+          <th class="num">Kg sprzedano 2025 (RT)</th>
           <th class="num">Kg plan 2026</th>
           <th class="num" style="width:80px">Zmiana</th>
           <th class="num">Kart. 2025</th>
@@ -263,12 +268,14 @@ function renderKPIs() {
   const { totals, group_totals, rows } = D;
   const klienci_z_planem = [...new Set(rows.filter(r=>r.kartony_2026).map(r=>r.klient))].length;
   const total_klienci    = [...new Set(rows.map(r=>r.klient))].length;
+  const rt_total = rows.reduce((s,r)=>s+(r.kg_rt_2025||0),0);
 
-  document.getElementById('kpi-kg').textContent   = fmt(totals.kg_plan_2026);
-  document.getElementById('kpi-kart').textContent = fmt(totals.kartony_2026);
+  document.getElementById('kpi-kg-rt').textContent = fmt(rt_total);
+  document.getElementById('kpi-kg').textContent    = fmt(totals.kg_plan_2026);
+  document.getElementById('kpi-kart').textContent  = fmt(totals.kartony_2026);
   document.getElementById('kpi-klienci').textContent = klienci_z_planem;
   document.getElementById('kpi-total-kl').textContent = total_klienci;
-  document.getElementById('kpi-hist').textContent = fmt(totals.kartony_2025);
+  document.getElementById('kpi-hist').textContent  = fmt(totals.kartony_2025);
   document.getElementById('nav-date-badge').textContent = 'Sezon 2026 · ' + D.wygenerowano;
 }
 
@@ -321,7 +328,7 @@ function renderTable() {
       <td><span class="expand-icon">▶</span></td>
       <td>${gStrip(r.group)}<strong>${r.klient}</strong></td>
       <td>${owocChip(r.owoc)}</td>
-      <td class="num-cell">${fmt(r.kg_2025)}</td>
+      <td class="num-cell">${fmt(r.kg_rt_2025)}</td>
       <td class="num-cell">${hasP ? fmt(r.kg_2026) : '<span class="no-plan-note">brak planu</span>'}</td>
       <td class="num-cell">${ratioBadge(r.ratio)}</td>
       <td class="num-cell">${fmt(r.kartony_2025)}</td>
@@ -385,12 +392,13 @@ function renderAlert() {
   const totalKl   = [...new Set(rows.map(r=>r.klient))].length;
   const zPlanem   = [...new Set(rows.filter(r=>r.kartony_2026).map(r=>r.klient))].length;
 
-  let txt = `Plan bazuje na danych historycznych ZP 2025 (${D.zrodlo_historyczne}).`;
+  let txt = `Ratio = kg_plan_2026 / kg_sprzedano_2025_RT. Baza historyczna wolumenu: ${D.zrodlo_historyczne_rt}. Proporcje kartonów: ${D.zrodlo_historyczne_zp}.`;
   if (brakPlanu.length > 0) {
     const brakKl = [...new Set(brakPlanu.map(r=>r.klient+'|'+r.owoc))];
-    txt += ` Brak planu 2026 dla ${brakKl.length} kombinacji klient/owoc: ${brakKl.slice(0,4).join(', ')}${brakKl.length>4?'…':''}.`;
+    txt += ` Brak planu 2026 dla ${brakKl.length} kombinacji: ${brakKl.slice(0,5).join(', ')}${brakKl.length>5?'…':''} — uzupełnij w `;
+  } else {
+    txt += ' Uzupełnij lub zmień plan w ';
   }
-  txt += ` Ratios (kg_plan_2026 / kg_2025) mogą być <1.0 jeśli plan jest wstępny lub niepełny — zaktualizuj dane w `;
   document.getElementById('plan-alert-text').innerHTML = txt +
     '<a href="planowanie-i-sprzedaz.html" target="_blank" style="color:#92400e;text-decoration:underline">planowanie-i-sprzedaz.html</a>.';
 }
