@@ -545,40 +545,66 @@
 <div id="tab-zuzycie2025" class="tab-content">
 
   <div class="filters">
+    <!-- Miesiąc: multi-checkbox dropdown -->
     <div class="filter-group">
       <div class="filter-label">Miesiąc</div>
-      <select id="zm-miesiac" onchange="renderZuzycie()">
-        <option value="">Wszystkie</option>
-        <option value="1">Styczeń</option>
-        <option value="2">Luty</option>
-        <option value="3">Marzec</option>
-        <option value="4">Kwiecień</option>
-        <option value="5">Maj</option>
-        <option value="6">Czerwiec</option>
-        <option value="7">Lipiec</option>
-        <option value="8">Sierpień</option>
-        <option value="9">Wrzesień</option>
-        <option value="10">Październik</option>
-        <option value="11">Listopad</option>
-        <option value="12">Grudzień</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <div class="filter-label">Magazyn / Producent</div>
-      <select id="zm-magazyn" onchange="renderZuzycie()" style="min-width:220px">
-        <option value="">Wszystkie</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <div class="filter-label">Kartony</div>
-      <div class="ms-wrap" id="zm-pak-wrap">
-        <div class="ms-trigger" onclick="toggleMsPak()">
-          <span id="zm-pak-label">Wszystkie kartony</span>
+      <div class="ms-wrap" id="zm-mies-wrap">
+        <div class="ms-trigger" onclick="zmToggleDropdown('zm-mies-dropdown','zm-mies-wrap')">
+          <span id="zm-mies-label">Wszystkie miesiące</span>
           <span class="ms-caret">▾</span>
         </div>
-        <div class="ms-dropdown" id="zm-pak-dropdown" style="display:none">
-          <label class="ms-all-item"><input type="checkbox" id="zm-pak-all" checked onchange="zmToggleAll()"> Zaznacz wszystkie</label>
-          <div id="zm-pak-items"></div>
+        <div class="ms-dropdown" id="zm-mies-dropdown" style="display:none">
+          <label class="ms-all-item"><input type="checkbox" id="zm-mies-all" checked onchange="zmToggleGroup('mies')"> Zaznacz wszystkie</label>
+          <div id="zm-mies-items">
+            <label class="ms-item"><input type="checkbox" value="4"  checked onchange="zmOnGroupChange('mies')"> Kwiecień</label>
+            <label class="ms-item"><input type="checkbox" value="5"  checked onchange="zmOnGroupChange('mies')"> Maj</label>
+            <label class="ms-item"><input type="checkbox" value="6"  checked onchange="zmOnGroupChange('mies')"> Czerwiec</label>
+            <label class="ms-item"><input type="checkbox" value="7"  checked onchange="zmOnGroupChange('mies')"> Lipiec</label>
+            <label class="ms-item"><input type="checkbox" value="8"  checked onchange="zmOnGroupChange('mies')"> Sierpień</label>
+            <label class="ms-item"><input type="checkbox" value="9"  checked onchange="zmOnGroupChange('mies')"> Wrzesień</label>
+            <label class="ms-item"><input type="checkbox" value="10" checked onchange="zmOnGroupChange('mies')"> Październik</label>
+            <label class="ms-item"><input type="checkbox" value="11" checked onchange="zmOnGroupChange('mies')"> Listopad</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Magazyn: select tylko z prawdziwych magazynów -->
+    <div class="filter-group">
+      <div class="filter-label">Magazyn</div>
+      <select id="zm-magazyn" onchange="renderZuzycie()" style="min-width:180px">
+        <option value="">Wszystkie magazyny</option>
+        <option>Chodzież</option>
+        <option>Justynów</option>
+        <option>Stróżewo</option>
+        <option>Unisad</option>
+        <option>Wyszynki</option>
+        <option>Łobżenica</option>
+      </select>
+    </div>
+    <!-- Typ materiału -->
+    <div class="filter-group">
+      <div class="filter-label">Typ materiału</div>
+      <select id="zm-typ" onchange="zmTypChanged()">
+        <option value="">Wszystkie</option>
+        <option>Karton</option>
+        <option>Etykieta</option>
+        <option>Taśma</option>
+        <option>Zapinka</option>
+        <option>Kątownik</option>
+        <option>Inne</option>
+      </select>
+    </div>
+    <!-- Materiał: multi-checkbox dropdown -->
+    <div class="filter-group">
+      <div class="filter-label">Materiał</div>
+      <div class="ms-wrap" id="zm-mat-wrap">
+        <div class="ms-trigger" onclick="zmToggleDropdown('zm-mat-dropdown','zm-mat-wrap')">
+          <span id="zm-mat-label">Wszystkie materiały</span>
+          <span class="ms-caret">▾</span>
+        </div>
+        <div class="ms-dropdown" id="zm-mat-dropdown" style="display:none">
+          <label class="ms-all-item"><input type="checkbox" id="zm-mat-all" checked onchange="zmToggleGroup('mat')"> Zaznacz wszystkie</label>
+          <div id="zm-mat-items"></div>
         </div>
       </div>
     </div>
@@ -588,43 +614,41 @@
 
   <div class="alert-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
     <div class="alert-card">
-      <div class="alert-label">Łączny wolumen</div>
-      <div class="alert-val" id="zm-s-vol" style="font-size:20px">—</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">kg (01.01–26.11.2025)</div>
+      <div class="alert-label">Łączna ilość</div>
+      <div class="alert-val" id="zm-s-ilosc" style="font-size:20px">—</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">jm. (01.01–26.11.2025)</div>
     </div>
     <div class="alert-card">
-      <div class="alert-label">Łączne kartony</div>
-      <div class="alert-val" id="zm-s-kart" style="font-size:20px">—</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">szt. zużytych kartonów</div>
-    </div>
-    <div class="alert-card">
-      <div class="alert-label">Lokalizacji</div>
+      <div class="alert-label">Magazynów</div>
       <div class="alert-val" id="zm-s-mag" style="font-size:20px">—</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">magazynów / producentów</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">aktywnych lokalizacji</div>
     </div>
     <div class="alert-card">
-      <div class="alert-label">Unikalnych kodów</div>
-      <div class="alert-val" id="zm-s-kody" style="font-size:20px">—</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">typów opakowań</div>
+      <div class="alert-label">Typów materiałów</div>
+      <div class="alert-val" id="zm-s-typy" style="font-size:20px">—</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">kategorii</div>
+    </div>
+    <div class="alert-card">
+      <div class="alert-label">Unikalnych surowców</div>
+      <div class="alert-val" id="zm-s-sur" style="font-size:20px">—</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">nazw materiałów</div>
     </div>
   </div>
 
   <div class="table-wrap">
     <div class="table-header">
-      <span class="table-title">Zużycie kartonów — per magazyn × miesiąc</span>
+      <span class="table-title">Zużycie materiałów — per magazyn × miesiąc (ZP 2025)</span>
       <span class="table-count" id="zm-count">—</span>
     </div>
     <div style="overflow-x:auto">
       <table>
         <thead>
           <tr>
-            <th onclick="zmSort('pak')">Kod opakowania</th>
-            <th>Typ</th>
-            <th>Jedn.</th>
-            <th onclick="zmSort('magazyn')">Magazyn / Producent</th>
+            <th onclick="zmSort('surowiec_nazwa')">Materiał (Surowiec Nazwa)</th>
+            <th onclick="zmSort('typ_materialu')">Typ</th>
+            <th onclick="zmSort('magazyn')">Magazyn</th>
             <th onclick="zmSort('miesiac')">Miesiąc</th>
-            <th class="num" onclick="zmSort('wolumen_kg')">Wolumen [kg]</th>
-            <th class="num" onclick="zmSort('kartonow')">Kartonów</th>
+            <th class="num" onclick="zmSort('ilosc')">Ilość [jm.]</th>
             <th>Udział</th>
           </tr>
         </thead>
@@ -1013,61 +1037,90 @@ function renderArkusz() {
 
 // ═══════════════════════════════════════════════ ZUŻYCIE MATERIAŁÓW 2025
 
-let zmSortCol = 'kartonow';
+let zmSortCol = 'ilosc';
 let zmSortDir = -1;
+
+// Zamknij wszystkie dropdowny zużycia przy kliknięciu poza nimi
+document.addEventListener('click', function(e) {
+  ['zm-mies-wrap','zm-mat-wrap'].forEach(id => {
+    const wrap = document.getElementById(id);
+    if (wrap && !wrap.contains(e.target)) {
+      const dd = wrap.querySelector('.ms-dropdown');
+      if (dd) dd.style.display = 'none';
+    }
+  });
+});
+
+function zmToggleDropdown(ddId, wrapId) {
+  const dd = document.getElementById(ddId);
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+// Generyczna obsługa grup checkboxów (mies / mat)
+function zmToggleGroup(grp) {
+  const checked = document.getElementById('zm-'+grp+'-all').checked;
+  document.querySelectorAll('#zm-'+grp+'-items input').forEach(cb => cb.checked = checked);
+  zmUpdateLabel(grp);
+  renderZuzycie();
+}
+function zmOnGroupChange(grp) {
+  const all = document.querySelectorAll('#zm-'+grp+'-items input');
+  document.getElementById('zm-'+grp+'-all').checked = [...all].every(cb => cb.checked);
+  zmUpdateLabel(grp);
+  renderZuzycie();
+}
+function zmUpdateLabel(grp) {
+  const all = document.querySelectorAll('#zm-'+grp+'-items input');
+  const cnt = [...all].filter(cb => cb.checked).length;
+  const lbl = document.getElementById('zm-'+grp+'-label');
+  const names = {mies:'miesiące', mat:'materiały'};
+  if (!all.length || cnt === all.length) lbl.textContent = 'Wszystkie ' + names[grp];
+  else if (cnt === 0) lbl.textContent = 'Żaden nie wybrany';
+  else lbl.textContent = cnt + ' wybranych';
+}
+
+// Zmiana typu filtruje listę materiałów
+function zmTypChanged() {
+  if (!window.ZUZYCIE_DATA) return;
+  const typ = document.getElementById('zm-typ').value;
+  const rek = window.ZUZYCIE_DATA.rekordy;
+  const allNazwy = [...new Set(
+    rek.filter(r => !typ || r.typ_materialu === typ).map(r => r.surowiec_nazwa)
+  )].sort((a,b) => a.localeCompare(b,'pl'));
+  const cont = document.getElementById('zm-mat-items');
+  cont.innerHTML = allNazwy.map(n =>
+    `<label class="ms-item"><input type="checkbox" value="${n}" checked onchange="zmOnGroupChange('mat')"> ${n}</label>`
+  ).join('');
+  document.getElementById('zm-mat-all').checked = true;
+  zmUpdateLabel('mat');
+  renderZuzycie();
+}
 
 function initZuzycie() {
   if (!window.ZUZYCIE_DATA) return;
   const rek = window.ZUZYCIE_DATA.rekordy;
-
-  const mags = [...new Set(rek.map(r => r.magazyn).filter(Boolean))].sort((a,b) => a.localeCompare(b,'pl'));
-  const selMag = document.getElementById('zm-magazyn');
-  mags.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = m; selMag.appendChild(o); });
-
-  const paki = [...new Set(rek.map(r => r.pak).filter(Boolean))].sort();
-  const container = document.getElementById('zm-pak-items');
-  container.innerHTML = paki.map(pak =>
-    `<label class="ms-item"><input type="checkbox" value="${pak}" checked onchange="zmOnPakChange()"> ${pak}</label>`
+  // Wypełnij listę materiałów (wszystkie typy)
+  const allNazwy = [...new Set(rek.map(r => r.surowiec_nazwa).filter(Boolean))].sort((a,b) => a.localeCompare(b,'pl'));
+  const cont = document.getElementById('zm-mat-items');
+  cont.innerHTML = allNazwy.map(n =>
+    `<label class="ms-item"><input type="checkbox" value="${n}" checked onchange="zmOnGroupChange('mat')"> ${n}</label>`
   ).join('');
-
-  updateZmPakLabel();
+  zmUpdateLabel('mies');
+  zmUpdateLabel('mat');
   renderZuzycie();
 }
 
-function toggleMsPak() {
-  const dd = document.getElementById('zm-pak-dropdown');
-  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
-}
-document.addEventListener('click', function(e) {
-  const wrap = document.getElementById('zm-pak-wrap');
-  if (wrap && !wrap.contains(e.target)) document.getElementById('zm-pak-dropdown').style.display = 'none';
-});
-
-function zmToggleAll() {
-  const checked = document.getElementById('zm-pak-all').checked;
-  document.querySelectorAll('#zm-pak-items input').forEach(cb => cb.checked = checked);
-  updateZmPakLabel(); renderZuzycie();
-}
-function zmOnPakChange() {
-  const all = document.querySelectorAll('#zm-pak-items input');
-  document.getElementById('zm-pak-all').checked = [...all].every(cb => cb.checked);
-  updateZmPakLabel(); renderZuzycie();
-}
-function updateZmPakLabel() {
-  const all = document.querySelectorAll('#zm-pak-items input');
-  const cnt = [...all].filter(cb => cb.checked).length;
-  const lbl = document.getElementById('zm-pak-label');
-  lbl.textContent = (!all.length || cnt === all.length) ? 'Wszystkie kartony' : cnt === 0 ? 'Żaden nie wybrany' : cnt + ' wybranych';
-}
 function resetZuzycie() {
-  document.getElementById('zm-miesiac').value = '';
   document.getElementById('zm-magazyn').value = '';
-  document.querySelectorAll('#zm-pak-items input').forEach(cb => cb.checked = true);
-  document.getElementById('zm-pak-all').checked = true;
-  updateZmPakLabel(); renderZuzycie();
+  document.getElementById('zm-typ').value = '';
+  document.querySelectorAll('#zm-mies-items input').forEach(cb => cb.checked = true);
+  document.getElementById('zm-mies-all').checked = true;
+  zmTypChanged(); // odbuduje listę materiałów
+  zmUpdateLabel('mies');
 }
+
 function zmSort(col) {
-  zmSortDir = zmSortCol === col ? zmSortDir * -1 : (col === 'pak' || col === 'magazyn' ? 1 : -1);
+  zmSortDir = zmSortCol === col ? zmSortDir * -1 : (col === 'surowiec_nazwa' || col === 'magazyn' || col === 'typ_materialu' ? 1 : -1);
   zmSortCol = col;
   document.querySelectorAll('#tab-zuzycie2025 th').forEach(th => {
     th.classList.remove('sort-asc','sort-desc');
@@ -1078,16 +1131,22 @@ function zmSort(col) {
 
 function renderZuzycie() {
   if (!window.ZUZYCIE_DATA) return;
-  const miesiac = document.getElementById('zm-miesiac').value;
-  const magazyn = document.getElementById('zm-magazyn').value;
-  const pakItems = document.querySelectorAll('#zm-pak-items input');
-  const selPak = new Set([...pakItems].filter(cb => cb.checked).map(cb => cb.value));
-  const allPak = pakItems.length > 0 && selPak.size === pakItems.length;
+  const magazyn  = document.getElementById('zm-magazyn').value;
+  const typ      = document.getElementById('zm-typ').value;
+
+  const miesItems = document.querySelectorAll('#zm-mies-items input');
+  const selMies   = new Set([...miesItems].filter(cb => cb.checked).map(cb => Number(cb.value)));
+  const allMies   = miesItems.length > 0 && selMies.size === miesItems.length;
+
+  const matItems  = document.querySelectorAll('#zm-mat-items input');
+  const selMat    = new Set([...matItems].filter(cb => cb.checked).map(cb => cb.value));
+  const allMat    = matItems.length > 0 && selMat.size === matItems.length;
 
   let rows = window.ZUZYCIE_DATA.rekordy.filter(r => {
-    if (miesiac && r.miesiac != miesiac) return false;
+    if (!allMies && !selMies.has(r.miesiac)) return false;
     if (magazyn && r.magazyn !== magazyn) return false;
-    if (!allPak && !selPak.has(r.pak)) return false;
+    if (typ && r.typ_materialu !== typ) return false;
+    if (!allMat && !selMat.has(r.surowiec_nazwa)) return false;
     return true;
   });
 
@@ -1098,35 +1157,32 @@ function renderZuzycie() {
     return (typeof av === 'string' ? av.localeCompare(bv,'pl') : av - bv) * zmSortDir;
   });
 
-  const totVol  = rows.reduce((s,r) => s + (r.wolumen_kg||0), 0);
-  const totKart = rows.reduce((s,r) => s + (r.kartonow||0), 0);
-  document.getElementById('zm-s-vol').textContent  = fmtN(totVol) + ' kg';
-  document.getElementById('zm-s-kart').textContent = fmtN(totKart);
-  document.getElementById('zm-s-mag').textContent  = new Set(rows.map(r=>r.magazyn)).size;
-  document.getElementById('zm-s-kody').textContent = new Set(rows.map(r=>r.pak)).size;
-  document.getElementById('zm-count').textContent  = rows.length + ' wierszy';
+  const totIlosc = rows.reduce((s,r) => s + (r.ilosc||0), 0);
+  document.getElementById('zm-s-ilosc').textContent = fmtN(totIlosc);
+  document.getElementById('zm-s-mag').textContent   = new Set(rows.map(r=>r.magazyn)).size;
+  document.getElementById('zm-s-typy').textContent  = new Set(rows.map(r=>r.typ_materialu)).size;
+  document.getElementById('zm-s-sur').textContent   = new Set(rows.map(r=>r.surowiec_nazwa)).size;
+  document.getElementById('zm-count').textContent   = rows.length + ' wierszy';
   document.getElementById('badge-zuzycie').textContent = rows.length;
 
   const MIES = ['','Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
-  const typColors = {PEŁNE:'var(--orange)',PROSTE:'var(--blue,#2563eb)'};
+  const TYP_CLR = {Karton:'var(--orange)',Etykieta:'var(--purple,#9013fe)',Taśma:'var(--blue,#2563eb)',Zapinka:'var(--green)',Kątownik:'var(--yellow,#d97706)'};
+
   const tbody = document.getElementById('zm-body');
-  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Brak wyników dla wybranych filtrów</td></tr>'; return; }
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Brak wyników dla wybranych filtrów</td></tr>'; return; }
 
   tbody.innerHTML = rows.map(r => {
-    const pct = totKart > 0 ? Math.min(100, r.kartonow / totKart * 100) : 0;
-    const jedn = r.waga_g ? `${r.waga_g}g × ${r.szt_w_kartonie}` : '—';
-    const typC = typColors[r.typ_kartonu] || 'var(--text-dim)';
-    const magLabel = r.magazyn === 'Brak danych'
-      ? '<span style="color:var(--text-muted);font-style:italic">Brak danych</span>'
+    const pct = totIlosc > 0 ? Math.min(100, r.ilosc / totIlosc * 100) : 0;
+    const typC = TYP_CLR[r.typ_materialu] || 'var(--text-dim)';
+    const magLabel = r.magazyn === 'Nieokreślony'
+      ? '<span style="color:var(--text-muted);font-style:italic">Nieokreślony</span>'
       : `<span style="font-size:11px">${r.magazyn}</span>`;
     return `<tr>
-      <td><span class="code-chip">${r.pak}</span></td>
-      <td><span style="font-size:10px;font-weight:600;color:${typC}">${r.typ_kartonu||'—'}</span></td>
-      <td><span class="num-muted">${jedn}</span></td>
+      <td style="font-size:11px;font-weight:500;max-width:260px">${r.surowiec_nazwa||'—'}</td>
+      <td><span style="font-size:10px;font-weight:700;color:${typC};white-space:nowrap">${r.typ_materialu||'—'}</span></td>
       <td>${magLabel}</td>
       <td><span class="code-chip">${MIES[r.miesiac]||r.miesiac}</span></td>
-      <td class="num"><span class="num-big">${fmtN(r.wolumen_kg)}</span></td>
-      <td class="num"><span class="num-big">${fmtN(r.kartonow)}</span></td>
+      <td class="num"><span class="num-big">${fmtN(r.ilosc)}</span></td>
       <td>
         <div class="bar-cell">
           <div class="bar-bg"><div class="bar-fill-orange" style="width:${Math.round(pct)}%"></div></div>
@@ -1162,6 +1218,7 @@ document.getElementById('plan-display').textContent =
   PLAN_2026_KG.toLocaleString('pl-PL', {maximumFractionDigits:0}) + ' kg';
 
 renderDashboard();
+initZuzycie();
 </script>
 </body>
 </html>
