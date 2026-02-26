@@ -392,15 +392,18 @@ function renderAlert() {
   const totalKl   = [...new Set(rows.map(r=>r.klient))].length;
   const zPlanem   = [...new Set(rows.filter(r=>r.kartony_2026).map(r=>r.klient))].length;
 
-  let txt = `Ratio = kg_plan_2026 / kg_sprzedano_2025_RT. Baza historyczna wolumenu: ${D.zrodlo_historyczne_rt}. Proporcje kartonów: ${D.zrodlo_historyczne_zp}.`;
-  if (brakPlanu.length > 0) {
-    const brakKl = [...new Set(brakPlanu.map(r=>r.klient+'|'+r.owoc))];
-    txt += ` Brak planu 2026 dla ${brakKl.length} kombinacji: ${brakKl.slice(0,5).join(', ')}${brakKl.length>5?'…':''} — uzupełnij w `;
-  } else {
-    txt += ' Uzupełnij lub zmień plan w ';
-  }
-  document.getElementById('plan-alert-text').innerHTML = txt +
-    '<a href="planowanie-i-sprzedaz.html" target="_blank" style="color:#92400e;text-decoration:underline">planowanie-i-sprzedaz.html</a>.';
+  const brakKl = [...new Set(brakPlanu.map(r=>r.klient+'|'+r.owoc))];
+  const brakTxt = brakKl.length > 0
+    ? ` Brak planu dla ${brakKl.length} kombinacji (${brakKl.slice(0,4).join(', ')}${brakKl.length>4?'…':''}) — uzupełnij w `
+    : ' Zmień plan w ';
+  document.getElementById('plan-alert-text').innerHTML =
+    '<strong>Jak liczone:</strong> '
+    + 'Kartony 2026 = kg z planu × udział formatu (ZP 2025) ÷ kg/karton. '
+    + 'Reguła: 1 karton = szt × waga, np. <strong>12×125g = 1,5 kg</strong>, 10×200g = 2,0 kg, 10×250g = 2,5 kg, 6×750g = 4,5 kg. '
+    + 'Proporcje formatów: ' + D.zrodlo_historyczne_zp + '. '
+    + 'Wolumen 2025: ' + D.zrodlo_historyczne_rt + '. '
+    + brakTxt
+    + '<a href="planowanie-i-sprzedaz.html" target="_blank" style="color:#92400e;text-decoration:underline">planowanie-i-sprzedaz.html</a>.';
 }
 
 // ── Init ─────────────────────────────────────────────────────
