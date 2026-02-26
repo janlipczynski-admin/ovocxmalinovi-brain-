@@ -7,6 +7,8 @@
 <script src="plan-zakupow-2026-data.js"></script>
 <script src="planowanie-data.js"></script>
 <script src="zakupy-data.js"></script>
+<script src="dostawcy-data.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -592,8 +594,9 @@ const WZ = {
   groups:       { OGL: true, Jeronimo: true, Pozostali: true },
   periodType:   'season',
   selMonths:    new Set([5,6,7,8,9,10,11]),
-  assignments:  {},   // pak_code → K-xxx indeks
-  computed:     null, // result of computeNeeds()
+  assignments:  {},       // "GROUP||pak_code" → K-xxx indeks
+  computed:     null,     // { group: { pak: data } }
+  selDostawca:  null,     // id dostawcy wybranego na Step 3
   printData:    null
 };
 
@@ -634,11 +637,12 @@ function planLookup() {
 }
 
 // ── Core computation ─────────────────────────────────────────
+// Returns: { OGL: { pak_code: {...data, kartony_period} }, Jeronimo: {...}, Pozostali: {...} }
 function computeNeeds() {
   const weeks  = selectedWeeks();
   const pl     = planLookup();
   const selGrp = Object.entries(WZ.groups).filter(([,v]) => v).map(([g]) => g);
-  const pakMap = {};
+  const result = {}; // group → pakMap
 
   window.PLAN2026_DATA.rows
     .filter(r => r.kartony_2026 && selGrp.includes(r.group))
@@ -652,19 +656,17 @@ function computeNeeds() {
           periodKg += pl[`${r.klient}||${r.owoc}||${w}`] || 0;
         }
       });
-      // Fallback proportional if no weekly data found
       if (periodKg === 0 && r.kg_2026) periodKg = r.kg_2026 * (weeks.size / ALL_WEEKS.size);
 
+      if (!result[r.group]) result[r.group] = {};
+      const pakMap = result[r.group];
       r.paks.forEach(p => {
-        if (!pakMap[p.pak]) {
-          pakMap[p.pak] = { ...p, kartony_period: 0, kg_period: 0 };
-        }
-        const k = Math.round(periodKg * (p.udzial / 100) / p.kgpk);
-        pakMap[p.pak].kartony_period += k;
+        if (!pakMap[p.pak]) pakMap[p.pak] = { ...p, kartony_period: 0, kg_period: 0 };
+        pakMap[p.pak].kartony_period += Math.round(periodKg * (p.udzial / 100) / p.kgpk);
         pakMap[p.pak].kg_period      += Math.round(periodKg * (p.udzial / 100));
       });
     });
-  return pakMap;
+  return result; // { OGL: {pak: data}, Jeronimo: {...}, Pozostali: {...} }
 }
 
 // ── Step indicator update ─────────────────────────────────────
@@ -764,77 +766,102 @@ function goStep2() {
   if (!Object.values(WZ.groups).some(v => v)) { alert('Wybierz co najmniej jedną grupę klientów.'); return; }
   if (WZ.periodType === 'months' && WZ.selMonths.size === 0) { alert('Wybierz co najmniej jeden miesiąc.'); return; }
   WZ.step = 2;
-  WZ.computed = computeNeeds();
-  // Default assignments by carton size
-  Object.entries(WZ.computed).forEach(([pak, d]) => {
-    if (!WZ.assignments[pak]) {
-      WZ.assignments[pak] = d.rozmiar === 'MAŁY' ? 'K-380X300X90' : 'K-600X400X100';
-    }
+  WZ.computed = computeNeeds(); // { group: { pak: data } }
+  // Default assignments by carton size — key: "GROUP||pak_code"
+  Object.entries(WZ.computed).forEach(([grp, pakMap]) => {
+    Object.entries(pakMap).forEach(([pak, d]) => {
+      const key = grp + '||' + pak;
+      if (!WZ.assignments[key]) {
+        WZ.assignments[key] = d.rozmiar === 'MAŁY' ? 'K-380X300X90' : 'K-600X400X100';
+      }
+    });
   });
   renderStep2();
 }
 
+const GRP_CFG = {
+  OGL:       { color: 'var(--orange)', bg: 'rgba(250,66,17,.06)',  icon: '🍃', label: 'OGL' },
+  Jeronimo:  { color: 'var(--purple)', bg: 'rgba(144,19,254,.06)', icon: '🫐', label: 'Jeronimo (Biedronka)' },
+  Pozostali: { color: 'var(--blue)',   bg: 'rgba(37,99,235,.06)',  icon: '🌍', label: 'Pozostali' }
+};
+
 function renderStep2() {
   setDots(2);
-  const stanyMap = getStanyMap();
-  const opts     = kartonOptions();
-  const selGrps  = Object.entries(WZ.groups).filter(([,v]) => v).map(([g]) => g).join(', ');
+  const stanyMap  = getStanyMap();
+  const opts      = kartonOptions();
+  const selGrpArr = Object.entries(WZ.groups).filter(([,v]) => v).map(([g]) => g);
+  const selGrps   = selGrpArr.join(', ');
   const periodLbl = WZ.periodType === 'season' ? 'Cały sezon (W18–W46)'
     : MONTHS_INFO.filter(mi => WZ.selMonths.has(mi.m)).map(mi => mi.short).join(', ') || '(brak wyboru)';
 
-  const entries = Object.entries(WZ.computed).sort((a,b) => b[1].kartony_period - a[1].kartony_period);
-
-  const rows = entries.map(([pak, d]) => {
-    const assigned = WZ.assignments[pak] || '';
-    const stan     = assigned ? (stanyMap[assigned]?.total || 0) : null;
-    const doZam    = stan != null ? Math.max(0, d.kartony_period - stan) : null;
-    const stanCls  = stan > 0 ? 'val-ok' : 'val-warn';
-    const zasCls   = doZam > 0 ? 'val-order' : (doZam === 0 ? 'val-ok' : '');
-    return `<tr>
-      <td>
-        <div style="font-weight:700;font-size:11px">${d.waga_g}g × ${d.szt} szt &nbsp;<span style="font-size:9px;color:var(--text-muted)">${d.topseal?'topseal':''}</span></div>
-        <div style="font-size:9px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-top:2px">${pak.replace(/_/g,' ')}</div>
-      </td>
-      <td class="r val-need">${fmt(d.kartony_period)}</td>
-      <td>
-        <select class="assign-sel" data-pak="${pak.replace(/"/g,'&quot;')}"
-          onchange="setAsgn(this.dataset.pak,this.value)">
-          <option value="">— wybierz —</option>
-          ${opts}
-        </select>
-      </td>
-      <td class="r ${stanCls}">${stan != null ? fmt(stan) : '—'}</td>
-      <td class="r ${zasCls}">${doZam != null ? fmt(doZam) : '—'}</td>
-    </tr>`;
-  }).join('');
-
-  const totalNeed = entries.reduce((s,[,d]) => s + d.kartony_period, 0);
-
-  document.getElementById('wz-body').innerHTML = `
-  <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px">
+  let totalNeed = 0;
+  let bodyHtml  = `<p style="font-size:11px;color:var(--text-dim);margin-bottom:14px">
     Dla każdego formatu opakowania (ZP 2025) wybierz karton ze stanu magazynowego.
-    Stan magazynowy zostanie odjęty od zapotrzebowania.
-    <strong>Domyślnie przypisano kartony wg rozmiaru (Mały/Duży).</strong>
-  </p>
-  <div class="assign-wrap">
-    <table class="assign-table">
-      <thead>
-        <tr>
-          <th style="width:38%">Format opakowania (ZP 2025)</th>
-          <th class="r">Zapotrzeb.</th>
-          <th>Karton ze stanu ↓ przypisz</th>
-          <th class="r">Stan mag.</th>
-          <th class="r">Do zamówienia</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-  </div>`;
+    Klucz przypisania: <strong>Mały → K-380X300X90</strong>, <strong>Duży → K-600X400X100</strong> (domyślnie, zmień w razie potrzeby).
+  </p>`;
 
-  // Set select values after render
-  entries.forEach(([pak]) => {
-    const sel = document.querySelector(`select[data-pak="${pak.replace(/"/g,'&quot;')}"]`);
-    if (sel && WZ.assignments[pak]) sel.value = WZ.assignments[pak];
+  selGrpArr.forEach((grp, gi) => {
+    const cfg     = GRP_CFG[grp] || { color:'var(--text)', bg:'transparent', icon:'', label:grp };
+    const pakMap  = WZ.computed[grp] || {};
+    const entries = Object.entries(pakMap).sort((a,b) => b[1].kartony_period - a[1].kartony_period);
+    const grpTot  = entries.reduce((s,[,d]) => s + d.kartony_period, 0);
+    totalNeed    += grpTot;
+
+    const rows = entries.map(([pak, d]) => {
+      const key      = grp + '||' + pak;
+      const assigned = WZ.assignments[key] || '';
+      const stan     = assigned ? (stanyMap[assigned]?.total || 0) : null;
+      const doZam    = stan != null ? Math.max(0, d.kartony_period - stan) : null;
+      const pakSafe  = pak.replace(/"/g,'&quot;');
+      return `<tr>
+        <td>
+          <div style="font-weight:700;font-size:11px">${d.waga_g}g × ${d.szt} szt${d.topseal?' <span style="font-size:9px;color:var(--text-muted)">topseal</span>':''}</div>
+          <div style="font-size:9px;color:var(--text-muted);font-family:\'DM Mono\',monospace;margin-top:1px">${pak.replace(/_/g,' ')}</div>
+        </td>
+        <td class="r val-need">${fmt(d.kartony_period)}</td>
+        <td>
+          <select class="assign-sel" data-grp="${grp}" data-pak="${pakSafe}"
+            onchange="setAsgn(this.dataset.grp,this.dataset.pak,this.value)">
+            <option value="">— wybierz —</option>
+            ${opts}
+          </select>
+        </td>
+        <td class="r ${stan > 0 ? 'val-ok' : 'val-warn'}">${stan != null ? fmt(stan) : '—'}</td>
+        <td class="r ${doZam > 0 ? 'val-order' : doZam === 0 ? 'val-ok' : ''}">${doZam != null ? fmt(doZam) : '—'}</td>
+      </tr>`;
+    }).join('');
+
+    bodyHtml += `
+    <div style="margin:${gi > 0 ? '20px' : '0'} 0 8px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:13px;font-weight:800;color:${cfg.color}">${cfg.icon} ${cfg.label}</span>
+      <span style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--text-muted)">${fmt(grpTot)} kart.</span>
+      <span style="flex:1;height:1px;background:${cfg.color};opacity:.25"></span>
+    </div>
+    <div class="assign-wrap">
+      <table class="assign-table">
+        <thead>
+          <tr>
+            <th style="width:36%">Format opakowania (ZP 2025)</th>
+            <th class="r">Zapotrzeb.</th>
+            <th>Karton ze stanu ↓ przypisz</th>
+            <th class="r">Stan mag.</th>
+            <th class="r">Do zamówienia</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  });
+
+  document.getElementById('wz-body').innerHTML = bodyHtml;
+
+  // Set <select> values after DOM render
+  selGrpArr.forEach(grp => {
+    Object.keys(WZ.computed[grp] || {}).forEach(pak => {
+      const key = grp + '||' + pak;
+      const sel = document.querySelector(`select[data-grp="${grp}"][data-pak="${pak.replace(/"/g,'&quot;')}"]`);
+      if (sel && WZ.assignments[key]) sel.value = WZ.assignments[key];
+    });
   });
 
   document.getElementById('wz-footer').innerHTML = `
@@ -845,29 +872,24 @@ function renderStep2() {
     </div>
     <div style="display:flex;gap:8px">
       <button class="wz-btn wz-btn-ghost" onclick="WZ.step=1;renderStep1()">← Wstecz</button>
+      <button class="wz-btn wz-btn-ghost" onclick="exportExcelStep2()" title="Eksportuj tabelę przypisań do Excel">📊 Excel</button>
       <button class="wz-btn wz-btn-green" onclick="goStep3()">Generuj podsumowanie →</button>
     </div>`;
 }
 
-function setAsgn(pak, indeks) {
-  WZ.assignments[pak] = indeks;
-  // Refresh only the cells that changed to avoid full re-render (performance)
+function setAsgn(grp, pak, indeks) {
+  const key = grp + '||' + pak;
+  WZ.assignments[key] = indeks;
   const stanyMap = getStanyMap();
-  const d = WZ.computed[pak];
+  const d = (WZ.computed[grp] || {})[pak];
   if (!d) return;
-  const row = document.querySelector(`select[data-pak="${pak.replace(/"/g,'&quot;')}"]`)?.closest('tr');
+  const row = document.querySelector(`select[data-grp="${grp}"][data-pak="${pak.replace(/"/g,'&quot;')}"]`)?.closest('tr');
   if (!row) return;
   const stan  = indeks ? (stanyMap[indeks]?.total || 0) : null;
   const doZam = stan != null ? Math.max(0, d.kartony_period - stan) : null;
   const cells = row.querySelectorAll('td');
-  if (cells[3]) {
-    cells[3].textContent = stan != null ? fmt(stan) : '—';
-    cells[3].className   = 'r ' + (stan > 0 ? 'val-ok' : 'val-warn');
-  }
-  if (cells[4]) {
-    cells[4].textContent = doZam != null ? fmt(doZam) : '—';
-    cells[4].className   = 'r ' + (doZam > 0 ? 'val-order' : doZam === 0 ? 'val-ok' : '');
-  }
+  if (cells[3]) { cells[3].textContent = stan != null ? fmt(stan) : '—'; cells[3].className = 'r '+(stan>0?'val-ok':'val-warn'); }
+  if (cells[4]) { cells[4].textContent = doZam != null ? fmt(doZam) : '—'; cells[4].className = 'r '+(doZam>0?'val-order':doZam===0?'val-ok':''); }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -885,17 +907,19 @@ function renderStep3() {
   const periodLbl = WZ.periodType === 'season' ? 'Cały sezon 2026 (kwiecień–listopad)'
     : MONTHS_INFO.filter(mi => WZ.selMonths.has(mi.m)).map(mi => mi.name).join(', ');
 
-  // Aggregate by assigned carton code
+  // Aggregate by assigned carton code — key: "GROUP||pak_code"
   const orderMap = {};
-  Object.entries(WZ.computed).forEach(([pak, d]) => {
-    const asgn = WZ.assignments[pak];
-    if (!asgn) return;
-    if (!orderMap[asgn]) {
-      const s = stanyMap[asgn] || {};
-      orderMap[asgn] = { indeks: asgn, nazwa: s.nazwa||asgn, total_need: 0, stan: s.total||0, formats: [] };
-    }
-    orderMap[asgn].total_need += d.kartony_period;
-    orderMap[asgn].formats.push(`${d.waga_g}g×${d.szt}`);
+  Object.entries(WZ.computed).forEach(([grp, pakMap]) => {
+    Object.entries(pakMap).forEach(([pak, d]) => {
+      const asgn = WZ.assignments[grp + '||' + pak];
+      if (!asgn) return;
+      if (!orderMap[asgn]) {
+        const s = stanyMap[asgn] || {};
+        orderMap[asgn] = { indeks: asgn, nazwa: s.nazwa||asgn, total_need: 0, stan: s.total||0, formats: [] };
+      }
+      orderMap[asgn].total_need += d.kartony_period;
+      orderMap[asgn].formats.push(`${d.waga_g}g×${d.szt}`);
+    });
   });
 
   const orderRows = Object.values(orderMap).sort((a,b) => b.total_need - a.total_need);
@@ -918,6 +942,23 @@ function renderStep3() {
     </tr>`;
   }).join('');
 
+  // ── Supplier chips ──────────────────────────────────────────
+  const dostawcyList = (window.DOSTAWCY_DATA?.dostawcy || []).filter(d => d.aktywny && d.id !== 'INNY');
+  const selD = WZ.selDostawca ? dostawcyList.find(d => d.id === WZ.selDostawca) : null;
+  const supChips = dostawcyList.map(d => {
+    const on = WZ.selDostawca === d.id;
+    return `<button style="padding:6px 13px;border:2px solid ${on ? d.kolor : 'var(--border2)'};border-radius:8px;background:${on ? d.kolor+'18' : 'transparent'};color:${on ? d.kolor : 'var(--text-muted)'};font-size:11px;font-weight:700;cursor:pointer;font-family:\'Plus Jakarta Sans\',sans-serif;transition:all .15s"
+      onclick="WZ.selDostawca='${d.id}';renderStep3()">${d.skrot}</button>`;
+  }).join('');
+  const supDetail = selD
+    ? `<div style="font-size:11px;color:var(--text-dim);margin-top:8px;padding:9px 12px;background:var(--surface2);border-radius:8px;display:flex;gap:16px;flex-wrap:wrap">
+        <span><strong>${selD.nazwa}</strong></span>
+        <span>${[selD.adres, selD.miasto, selD.kraj].filter(Boolean).join(', ')}</span>
+        ${selD.email && selD.email !== 'do uzupełnienia' ? `<span>✉️ ${selD.email}</span>` : ''}
+        ${selD.telefon && selD.telefon !== 'do uzupełnienia' ? `<span>📞 ${selD.telefon}</span>` : ''}
+       </div>`
+    : `<div style="font-size:11px;color:var(--text-muted);margin-top:6px;font-style:italic">Wybierz dostawcę — jego dane pojawią się w nagłówku PDF.</div>`;
+
   document.getElementById('wz-body').innerHTML = `
   <div class="rfq-head">
     <div class="rfq-avatar">${RENIA_SVG}</div>
@@ -927,6 +968,13 @@ function renderStep3() {
       <p>Grupy: <strong>${selGrps}</strong> &nbsp;·&nbsp; Okres: <strong>${periodLbl}</strong></p>
       <p>Przygotowała: <strong>Renia</strong> — Specjalista ds. Rozliczeń &nbsp;·&nbsp; 26.02.2026</p>
     </div>
+  </div>
+  <div style="margin-bottom:16px;padding:12px 14px;border:2px solid ${WZ.selDostawca ? 'rgba(250,66,17,.3)' : 'var(--border)'};border-radius:10px;background:${WZ.selDostawca ? 'rgba(250,66,17,.03)' : 'transparent'}">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:8px">
+      📤 DO: Dostawca (wybierz dla kogo generujesz zapytanie)
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${supChips}</div>
+    ${supDetail}
   </div>
   <div class="sum-wrap">
     <table class="sum-table">
@@ -946,8 +994,12 @@ function renderStep3() {
         <tr class="total-row">
           <td colspan="4" style="font-weight:800">ŁĄCZNIE</td>
           <td class="r">${fmt(totalNeed)}</td>
-          <td class="r">${fmt(totalStan)}</td>
-          <td class="r"><span class="big-qty">${fmt(totalOrder)}</span></td>
+          <td class="r ${totalStan >= totalNeed ? 'val-ok' : 'val-warn'}">${fmt(totalStan)}</td>
+          <td class="r" style="background:${totalOrder === 0 ? 'rgba(22,163,74,.08)' : 'rgba(220,38,38,.08)'}">
+            <span style="font-family:\'DM Mono\',monospace;font-size:16px;font-weight:900;color:${totalOrder === 0 ? 'var(--green)' : '#dc2626'}">
+              ${totalOrder === 0 ? '✓ 0' : '−\u200b' + fmt(totalOrder)}
+            </span>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -964,6 +1016,7 @@ function renderStep3() {
     <button class="wz-btn wz-btn-ghost" onclick="WZ.step=2;renderStep2()">← Wstecz</button>
     <div style="display:flex;gap:8px">
       <button class="wz-btn wz-btn-ghost" onclick="copyRFQ()">📋 Kopiuj tekst</button>
+      <button class="wz-btn wz-btn-ghost" onclick="exportExcelStep3()" title="Eksportuj RFQ do pliku Excel">📊 Excel</button>
       <button class="wz-btn wz-btn-blue" onclick="doPrint()">🖨️ Drukuj / PDF</button>
     </div>`;
 }
@@ -973,6 +1026,9 @@ function doPrint() {
   if (!WZ.printData) return;
   const { orderRows, totalNeed, totalStan, totalOrder, selGrps, periodLbl } = WZ.printData;
   const today = '26.02.2026';
+  const selD = WZ.selDostawca
+    ? (window.DOSTAWCY_DATA?.dostawcy || []).find(d => d.id === WZ.selDostawca)
+    : null;
 
   const tableRows = orderRows.map((r, i) => {
     const toOrder = Math.max(0, r.total_need - r.stan);
@@ -988,9 +1044,19 @@ function doPrint() {
     </tr>`;
   }).join('');
 
+  const doBlock = selD ? `
+    <div style="margin:14px 0;padding:10px 12px;border:1px solid #e8e6e1;border-radius:6px;font-size:11px">
+      <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:4px">Do:</div>
+      <div style="font-weight:700;font-size:12px">${selD.nazwa}</div>
+      <div>${[selD.adres, selD.miasto, selD.kraj].filter(Boolean).join(', ')}</div>
+      ${selD.email && selD.email !== 'do uzupełnienia' ? `<div>✉️ ${selD.email}</div>` : ''}
+      ${selD.telefon && selD.telefon !== 'do uzupełnienia' ? `<div>📞 ${selD.telefon}</div>` : ''}
+      ${selD.nip ? `<div style="color:#888;font-size:10px">NIP: ${selD.nip}</div>` : ''}
+    </div>` : '';
+
   document.getElementById('print-area').innerHTML = `
     <div class="print-header">
-      <div>
+      <div style="flex:1">
         <div class="print-logo-txt">OvocxMalinovi sp. z o.o.</div>
         <div class="print-doc-title">Zapytanie ofertowe — Kartony Sezon 2026</div>
         <div class="print-meta">
@@ -1005,6 +1071,7 @@ function doPrint() {
         <div>Specjalista ds. Rozliczeń</div>
       </div>
     </div>
+    ${doBlock}
     <p style="font-size:12px;margin-bottom:10px">
       Prosimy o przedstawienie oferty cenowej na dostawę kartonów opakowaniowych sezon 2026:
     </p>
@@ -1025,8 +1092,8 @@ function doPrint() {
         <tr class="total-row">
           <td colspan="4"><strong>ŁĄCZNIE</strong></td>
           <td class="r"><strong>${fmt(totalNeed)}</strong></td>
-          <td class="r"><strong>${fmt(totalStan)}</strong></td>
-          <td class="r">${fmt(totalOrder)}</td>
+          <td class="r" style="color:${totalStan >= totalNeed ? '#16a34a' : '#dc2626'}"><strong>${fmt(totalStan)}</strong></td>
+          <td class="r" style="color:${totalOrder === 0 ? '#16a34a' : '#dc2626'}"><strong>${totalOrder === 0 ? '✓ 0' : '− ' + fmt(totalOrder)}</strong></td>
         </tr>
       </tbody>
     </table>
@@ -1044,11 +1111,123 @@ function doPrint() {
   window.print();
 }
 
+// ── Excel exports ─────────────────────────────────────────────
+function xlsxCheck() {
+  if (!window.XLSX) { alert('Biblioteka Excel (SheetJS) nie załadowała się — sprawdź połączenie z internetem.'); return false; }
+  return true;
+}
+
+// Step 2 — tabela przypisań per format / per grupa
+function exportExcelStep2() {
+  if (!xlsxCheck() || !WZ.computed) return;
+  const XLSX = window.XLSX;
+  const wb   = XLSX.utils.book_new();
+  const stanyMap = getStanyMap();
+  const selGrpArr = Object.entries(WZ.groups).filter(([,v]) => v).map(([g]) => g);
+  const periodLbl = WZ.periodType === 'season' ? 'Cały sezon 2026 (W18–W46)'
+    : MONTHS_INFO.filter(mi => WZ.selMonths.has(mi.m)).map(mi => mi.short).join(', ');
+  const today = '26.02.2026';
+
+  const rows = [
+    ['OvocxMalinovi sp. z o.o. — Przypisanie kartonów do formatów opakowań'],
+    ['Grupy klientów:', selGrpArr.join(', '), '', 'Okres:', periodLbl, '', 'Data:', today],
+    [],
+    ['Grupa', 'Format (ZP 2025)', 'Waga×Szt', 'Zapotrzebowanie (kart.)', 'Przypisany karton (K-xxx)', 'Nazwa kartonu', 'Stan magazynowy (szt.)', 'Do zamówienia (szt.)']
+  ];
+
+  selGrpArr.forEach(grp => {
+    const pakMap = WZ.computed[grp] || {};
+    Object.entries(pakMap)
+      .sort((a,b) => b[1].kartony_period - a[1].kartony_period)
+      .forEach(([pak, d]) => {
+        const key    = grp + '||' + pak;
+        const asgn   = WZ.assignments[key] || '';
+        const stan   = asgn ? (stanyMap[asgn]?.total || 0) : '';
+        const doZam  = asgn ? Math.max(0, d.kartony_period - (stanyMap[asgn]?.total || 0)) : '';
+        const nazwa  = asgn ? (stanyMap[asgn]?.nazwa || '') : '';
+        rows.push([grp, pak.replace(/_/g,' '), `${d.waga_g}g×${d.szt}`,
+          d.kartony_period, asgn, nazwa, stan, doZam]);
+      });
+    rows.push([]); // spacer between groups
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:14},{wch:40},{wch:12},{wch:20},{wch:22},{wch:44},{wch:20},{wch:18}];
+  ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:6}}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Przypisanie kartonów');
+  XLSX.writeFile(wb, `Przypisanie_kartonow_${today.replace(/\./g,'')}.xlsx`);
+}
+
+// Step 3 — zestawienie RFQ (jak PDF ale w Excel)
+function exportExcelStep3() {
+  if (!xlsxCheck() || !WZ.printData) return;
+  const XLSX = window.XLSX;
+  const { orderRows, totalNeed, totalStan, totalOrder, selGrps, periodLbl } = WZ.printData;
+  const selD  = WZ.selDostawca ? (window.DOSTAWCY_DATA?.dostawcy||[]).find(d=>d.id===WZ.selDostawca) : null;
+  const today = '26.02.2026';
+  const wb    = XLSX.utils.book_new();
+
+  // Arkusz 1 — RFQ
+  const wsRows = [
+    ['OvocxMalinovi sp. z o.o.'],
+    ['ZAPYTANIE OFERTOWE — KARTONY SEZON 2026'],
+    [],
+    ['Grupy klientów:', selGrps, '', '', 'Data:', today],
+    ['Okres:', periodLbl],
+    ['Dostawca:', selD ? selD.nazwa : '— nie wybrano'],
+    selD ? ['Adres:', [selD.adres,selD.miasto,selD.kraj].filter(Boolean).join(', ')] : [],
+    selD ? ['E-mail:', selD.email||''] : [],
+    [],
+    ['Lp','Kod kartonu','Nazwa kartonu','Formaty opakowań','Zapotrzebowanie','Stan magazynowy','Do zamówienia','Cena jdn. NETTO','Wartość NETTO','Uwagi']
+  ];
+  orderRows.forEach((r, i) => {
+    const toOrder = Math.max(0, r.total_need - r.stan);
+    wsRows.push([i+1, r.indeks, r.nazwa, [...new Set(r.formats)].join(', '),
+      r.total_need, r.stan, toOrder, '', '', '']);
+  });
+  wsRows.push(['', '', '', 'ŁĄCZNIE', totalNeed, totalStan, totalOrder, '', '', '']);
+  wsRows.push([]);
+  wsRows.push(['UWAGI DO ZAPYTANIA']);
+  wsRows.push(['Proszę o wycenę jednorazową (cały sezon) oraz w 3 transzach']);
+  wsRows.push(['Dostawy: Chodzież, Łobżenica, Stróżewo, Wyszynki']);
+  wsRows.push(['Wymagania: odporność na wilgoć, HACCP, kartony dla owoców miękkich']);
+  wsRows.push(['Termin odpowiedzi: 7 dni']);
+
+  const ws1 = XLSX.utils.aoa_to_sheet(wsRows);
+  ws1['!cols'] = [{wch:4},{wch:22},{wch:42},{wch:26},{wch:18},{wch:18},{wch:18},{wch:20},{wch:18},{wch:24}];
+  ws1['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}},{s:{r:1,c:0},e:{r:1,c:5}}];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Zapytanie ofertowe');
+
+  // Arkusz 2 — per-grupa szczegóły (jak Step 2)
+  const rows2 = [['Szczegóły zapotrzebowania per format (ZP 2025)'],[]];
+  const stanyMap  = getStanyMap();
+  const selGrpArr = Object.entries(WZ.groups).filter(([,v])=>v).map(([g])=>g);
+  rows2.push(['Grupa','Format ZP','Waga×Szt','Zapotrzeb. (kart.)','Przypisany K-xxx','Stan mag.','Do zamów.']);
+  selGrpArr.forEach(grp => {
+    const pakMap = WZ.computed[grp]||{};
+    Object.entries(pakMap).sort((a,b)=>b[1].kartony_period-a[1].kartony_period).forEach(([pak,d])=>{
+      const key=grp+'||'+pak, asgn=WZ.assignments[key]||'';
+      const stan=asgn?(stanyMap[asgn]?.total||0):'';
+      rows2.push([grp,pak.replace(/_/g,' '),`${d.waga_g}g×${d.szt}`,d.kartony_period,asgn,stan,
+        asgn?Math.max(0,d.kartony_period-(stanyMap[asgn]?.total||0)):'']);
+    });
+    rows2.push([]);
+  });
+  const ws2 = XLSX.utils.aoa_to_sheet(rows2);
+  ws2['!cols'] = [{wch:14},{wch:40},{wch:12},{wch:18},{wch:22},{wch:16},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Szczegóły per format');
+
+  const fname = `RFQ_Kartony_2026_${selD?selD.skrot+'_':''}${today.replace(/\./g,'')}.xlsx`;
+  XLSX.writeFile(wb, fname);
+}
+
 // ── Copy to clipboard ─────────────────────────────────────────
 function copyRFQ() {
   if (!WZ.printData) return;
   const { orderRows, totalOrder, selGrps, periodLbl } = WZ.printData;
-  let t = `ZAPYTANIE OFERTOWE — KARTONY SEZON 2026\nOvocxMalinovi sp. z o.o.\nGrupy: ${selGrps} | Okres: ${periodLbl}\n\n`;
+  const selD = WZ.selDostawca ? (window.DOSTAWCY_DATA?.dostawcy||[]).find(d=>d.id===WZ.selDostawca) : null;
+  const doLine = selD ? `DO: ${selD.nazwa} · ${[selD.adres,selD.miasto].filter(Boolean).join(', ')}\n` : '';
+  let t = `ZAPYTANIE OFERTOWE — KARTONY SEZON 2026\nOvocxMalinovi sp. z o.o.\n${doLine}Grupy: ${selGrps} | Okres: ${periodLbl}\n\n`;
   t += 'Kod'.padEnd(26) + 'Nazwa'.padEnd(48) + 'Do zamówienia\n' + '─'.repeat(90) + '\n';
   orderRows.forEach(r => {
     t += r.indeks.padEnd(26) + r.nazwa.slice(0,46).padEnd(48) + fmt(Math.max(0,r.total_need-r.stan)) + '\n';
