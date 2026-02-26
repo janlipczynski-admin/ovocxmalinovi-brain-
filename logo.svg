@@ -1,62 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 148" width="120" height="148">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 102 108">
   <defs>
-    <!-- Gradient spans full berry width (x=19..101) -->
-    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="19" y1="0" x2="101" y2="0">
-      <stop offset="0%"   stop-color="#E84020"/>
-      <stop offset="40%"  stop-color="#C82070"/>
-      <stop offset="100%" stop-color="#8C2FCC"/>
+    <!-- Gradient spans full berry width left→right -->
+    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="6" y1="0" x2="96" y2="0">
+      <stop offset="0%"   stop-color="#E94020"/>
+      <stop offset="38%"  stop-color="#CC2072"/>
+      <stop offset="100%" stop-color="#8B2FCC"/>
     </linearGradient>
   </defs>
 
-  <rect width="120" height="148" fill="white"/>
+  <rect width="102" height="108" fill="white"/>
 
-  <!-- Leaves — drawn first so circles sit on top -->
-  <path d="M50,18 Q41,5 47,1 Q53,8 50,18Z"  fill="url(#g)"/>
-  <path d="M60,17 Q57,3 60,0 Q63,3 60,17Z"  fill="url(#g)"/>
-  <path d="M70,18 Q79,5 73,1 Q67,8 70,18Z"  fill="url(#g)"/>
+  <!-- ── Leaves (drawn before circles so circles sit on top) ── -->
+  <!-- Left leaf -->
+  <path d="M36,28 Q26,13 31,5 Q38,11 36,28Z" fill="url(#g)"/>
+  <!-- Centre leaf -->
+  <path d="M51,22 Q48,7 51,0 Q54,7 51,22Z" fill="url(#g)"/>
+  <!-- Right leaf -->
+  <path d="M66,28 Q76,13 71,5 Q64,11 66,28Z" fill="url(#g)"/>
 
-  <!-- Stem -->
-  <path d="M60,4 Q67,0 70,2" stroke="#9030CC" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Stem — thin purple hook -->
+  <path d="M51,5 Q58,0 63,2" stroke="#9030CC" stroke-width="2" fill="none" stroke-linecap="round"/>
 
-  <!-- Drupelets  r=11  dx=20 (2 px overlap)  dy=16 (diagonal overlap ~3 px) -->
-  <!-- Row 1 — 1 -->
-  <circle cx="60"  cy="18"  r="11" fill="url(#g)"/>
-  <!-- Row 2 — 2 -->
-  <circle cx="50"  cy="34"  r="11" fill="url(#g)"/>
-  <circle cx="70"  cy="34"  r="11" fill="url(#g)"/>
-  <!-- Row 3 — 3 -->
-  <circle cx="40"  cy="50"  r="11" fill="url(#g)"/>
-  <circle cx="60"  cy="50"  r="11" fill="url(#g)"/>
-  <circle cx="80"  cy="50"  r="11" fill="url(#g)"/>
-  <!-- Row 4 — 4 (widest) -->
-  <circle cx="30"  cy="66"  r="11" fill="url(#g)"/>
-  <circle cx="50"  cy="66"  r="11" fill="url(#g)"/>
-  <circle cx="70"  cy="66"  r="11" fill="url(#g)"/>
-  <circle cx="90"  cy="66"  r="11" fill="url(#g)"/>
-  <!-- Row 5 — 4 -->
-  <circle cx="30"  cy="82"  r="11" fill="url(#g)"/>
-  <circle cx="50"  cy="82"  r="11" fill="url(#g)"/>
-  <circle cx="70"  cy="82"  r="11" fill="url(#g)"/>
-  <circle cx="90"  cy="82"  r="11" fill="url(#g)"/>
-  <!-- Row 6 — 3 -->
-  <circle cx="40"  cy="98"  r="11" fill="url(#g)"/>
-  <circle cx="60"  cy="98"  r="11" fill="url(#g)"/>
-  <circle cx="80"  cy="98"  r="11" fill="url(#g)"/>
-  <!-- Row 7 — 2 -->
-  <circle cx="50"  cy="112" r="11" fill="url(#g)"/>
-  <circle cx="70"  cy="112" r="11" fill="url(#g)"/>
-  <!-- Row 8 — 1 (tip) -->
-  <circle cx="60"  cy="125" r="10" fill="url(#g)"/>
+  <!--
+    7 drupelets — r=15, dx=30 (circles just touch horizontally),
+    dy=18 (diagonal overlap ~6.6 px → visible grooves between drupelets).
 
-  <!-- Separator -->
-  <line x1="8" y1="139" x2="112" y2="139" stroke="#1a1a18" stroke-width="0.8"/>
+    Row 1  y=28  ·  2 circles
+    Row 2  y=46  ·  3 circles  (widest)
+    Row 3  y=64  ·  2 circles
+  -->
 
-  <!-- Company name -->
-  <text x="60" y="147"
+  <!-- Row 1 -->
+  <circle cx="36" cy="28" r="15" fill="url(#g)"/>
+  <circle cx="66" cy="28" r="15" fill="url(#g)"/>
+
+  <!-- Row 2 -->
+  <circle cx="21" cy="46" r="15" fill="url(#g)"/>
+  <circle cx="51" cy="46" r="15" fill="url(#g)"/>
+  <circle cx="81" cy="46" r="15" fill="url(#g)"/>
+
+  <!-- Row 3 -->
+  <circle cx="36" cy="64" r="15" fill="url(#g)"/>
+  <circle cx="66" cy="64" r="15" fill="url(#g)"/>
+
+  <!-- ── Separator ── -->
+  <line x1="8" y1="88" x2="94" y2="88" stroke="#1a1a18" stroke-width="0.7"/>
+
+  <!-- ── Company name ── -->
+  <text x="51" y="101"
         text-anchor="middle"
         font-family="'Plus Jakarta Sans','Helvetica Neue',Helvetica,Arial,sans-serif"
-        font-size="9.5"
+        font-size="9"
         font-weight="300"
-        letter-spacing="2"
+        letter-spacing="1.8"
         fill="#1a1a18">Ovoc x Malinovi</text>
 </svg>
