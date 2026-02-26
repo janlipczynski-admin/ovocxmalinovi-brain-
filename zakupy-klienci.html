@@ -8,12 +8,12 @@
 <script src="planowanie-data.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--orange:#fa4211;--purple:#9013fe;--grad:linear-gradient(135deg,#fa4211,#9013fe);--bg:#f7f7f5;--white:#fff;--border:#e8e6e1;--border2:#d8d5ce;--text:#1a1a18;--text-dim:#6b6b65;--text-muted:#a8a8a0;--surface2:#f2f0eb;--green:#16a34a;--green-bg:rgba(22,163,74,.08);--yellow:#d97706;--yellow-bg:rgba(217,119,6,.08);--red:#dc2626;--red-bg:rgba(220,38,38,.08);--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
+:root{--orange:#fa4211;--purple:#9013fe;--grad:linear-gradient(135deg,#fa4211,#9013fe);--bg:#f7f7f5;--white:#fff;--border:#e8e6e1;--border2:#d8d5ce;--text:#1a1a18;--text-dim:#6b6b65;--text-muted:#a8a8a0;--surface2:#f2f0eb;--green:#16a34a;--green-bg:rgba(22,163,74,.08);--green-border:rgba(22,163,74,.2);--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;font-size:14px}
 
 header{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:var(--shadow);gap:12px}
-.back-btn{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:color .15s;white-space:nowrap}
+.back-btn{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:color .15s}
 .back-btn:hover{color:var(--orange)}
 .page-title{font-size:15px;font-weight:700}
 .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .15s;border:1px solid var(--border2);background:var(--white);color:var(--text-dim);font-weight:500}
@@ -21,75 +21,82 @@ header{display:flex;align-items:center;justify-content:space-between;padding:12p
 .btn-primary{background:var(--grad);color:#fff;border:none;font-weight:600}
 .btn-primary:hover{opacity:.9}
 
-.mod-nav{display:flex;background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;gap:2px}
+.mod-nav{display:flex;background:var(--white);border-bottom:1px solid var(--border);padding:0 32px}
 .mod-nav a{display:inline-flex;align-items:center;gap:5px;padding:9px 16px;font-size:12px;font-weight:500;color:var(--text-muted);text-decoration:none;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
 .mod-nav a:hover{color:var(--text-dim)}
 .mod-nav a.active{color:var(--orange);border-bottom-color:var(--orange);font-weight:600}
 
-.tabs-bar{display:flex;background:var(--white);border-bottom:1px solid var(--border);padding:0 32px}
-.tab{display:flex;align-items:center;gap:6px;padding:11px 16px;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
-.tab:hover{color:var(--text-dim)}
-.tab.active{color:var(--orange);border-bottom-color:var(--orange)}
-
 main{padding:20px 32px 100px;max-width:1400px;margin:0 auto}
-.tab-content{display:none}
-.tab-content.active{display:block}
-
-.page-desc{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 20px;margin-bottom:20px;font-size:13px;color:var(--text-dim);line-height:1.6}
-.page-desc strong{color:var(--text)}
 
 /* CLIENT CARDS */
-.client-grid{display:flex;flex-direction:column;gap:12px}
+.client-grid{display:flex;flex-direction:column;gap:10px}
 .client-card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
-.client-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none;gap:16px;transition:background .12s}
+
+/* HEADER */
+.client-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none;transition:background .12s;gap:16px}
 .client-head:hover{background:var(--surface2)}
 .ch-left{display:flex;align-items:center;gap:10px}
-.client-name{font-size:15px;font-weight:700}
-.badge-avg{font-size:9px;background:#fef9c3;border:1px solid #fde047;color:#854d0e;padding:2px 7px;border-radius:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.ch-right{display:flex;align-items:center;gap:20px;font-size:12px;color:var(--text-dim)}
-.ch-right strong{color:var(--text);font-variant-numeric:tabular-nums}
+.client-name{font-size:16px;font-weight:700}
+.no-zp-badge{font-size:9px;background:#fef9c3;border:1px solid #fde047;color:#854d0e;padding:2px 7px;border-radius:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.ch-meta{display:flex;align-items:center;gap:24px;font-size:12px;color:var(--text-dim)}
+.ch-meta strong{color:var(--text);font-variant-numeric:tabular-nums}
 .ch-toggle{font-size:10px;color:var(--text-muted);transition:transform .18s;margin-left:4px}
 .client-card.open .ch-toggle{transform:rotate(180deg)}
 .client-body{display:none;border-top:1px solid var(--border)}
 .client-card.open .client-body{display:block}
 
-.pak-table{width:100%;border-collapse:collapse}
-.pak-table th{padding:8px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border)}
-.pak-table td{padding:8px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
-.pak-table tbody tr:last-child td{border-bottom:none}
-.pak-table tfoot td{background:var(--surface2);font-weight:600;font-size:12px;padding:9px 14px;border-top:1px solid var(--border2)}
-.pak-dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px;vertical-align:middle;flex-shrink:0}
-.pak-name-cell{max-width:360px}
-.pak-label{font-weight:500}
-.pak-code{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);display:block;margin-top:1px}
-.share-wrap{display:flex;align-items:center;gap:4px}
-.share-input{width:70px;padding:4px 8px;border:1px solid var(--border2);border-radius:5px;font-family:'DM Mono',monospace;font-size:12px;text-align:right;color:var(--text);background:var(--white);transition:border-color .15s}
-.share-input:focus{outline:none;border-color:var(--orange)}
-.pct-sign{font-size:11px;color:var(--text-muted)}
-.num-cell{font-family:'DM Mono',monospace;font-size:12px}
-.sum-warn{font-size:11px;color:var(--red);background:var(--red-bg);padding:6px 14px;display:none}
+/* SECTIONS */
+.section{border-bottom:1px solid var(--border)}
+.section:last-child{border-bottom:none}
+.section-head{display:flex;align-items:center;gap:8px;padding:10px 20px;background:var(--surface2);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);font-weight:700}
+.section-dot{width:7px;height:7px;border-radius:2px}
 
-/* ETYKIETY TAB */
-.label-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
-.label-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px}
-.label-title{font-size:13px;font-weight:600;margin-bottom:2px}
-.label-indeks{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-bottom:8px}
-.label-clients{display:flex;flex-wrap:wrap;gap:5px}
-.client-chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;transition:all .12s;border:1px solid var(--border2);background:var(--surface2);color:var(--text-dim);user-select:none}
-.client-chip.selected{background:rgba(250,66,17,.1);border-color:rgba(250,66,17,.3);color:var(--orange);font-weight:600}
-.client-chip:hover:not(.selected){border-color:var(--border2);background:var(--bg)}
+/* KARTONY TABLE */
+.pak-table{width:100%;border-collapse:collapse}
+.pak-table th{padding:7px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:600;text-align:right;background:var(--white);border-bottom:1px solid var(--border)}
+.pak-table th:first-child{text-align:left}
+.pak-table td{padding:8px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;text-align:right}
+.pak-table td:first-child{text-align:left}
+.pak-table tbody tr:last-child td{border-bottom:none}
+.pak-table tbody tr:hover td{background:rgba(0,0,0,.02)}
+.pak-table tfoot td{background:var(--surface2);font-weight:700;font-size:12px;padding:8px 14px;text-align:right;border-top:1px solid var(--border2)}
+.pak-table tfoot td:first-child{text-align:left}
+.num{font-family:'DM Mono',monospace;font-size:12px}
+.pak-dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px;vertical-align:middle;flex-shrink:0}
+.pak-label-main{font-weight:500}
+.pak-code-small{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);display:block;margin-top:1px}
+.proj-col{color:var(--orange);font-weight:600}
+.col-dim{color:var(--text-muted)}
+
+/* PUNNETY */
+.punnets-row{display:flex;flex-wrap:wrap;gap:8px;padding:12px 20px}
+.punnet-chip{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;font-size:12px}
+.punnet-waga{font-weight:700;color:var(--text)}
+.punnet-szt{font-family:'DM Mono',monospace;color:var(--text-dim)}
+.punnet-proj{font-family:'DM Mono',monospace;color:var(--orange);font-size:11px}
+.punnet-arrow{color:var(--text-muted);font-size:10px}
+
+/* ETYKIETY */
+.etyk-section{padding:12px 20px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.etyk-empty{font-size:12px;color:var(--text-muted);font-style:italic}
+.etyk-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;transition:all .12s;border:1px solid var(--border2);background:var(--surface2);color:var(--text-dim);user-select:none;gap:4px}
+.etyk-chip.assigned{background:var(--green-bg);border-color:var(--green-border);color:var(--green);font-weight:600}
+.etyk-chip:hover{border-color:var(--border2);background:var(--bg)}
+.etyk-chip.assigned:hover{background:var(--green-bg);opacity:.8}
+.etyk-add-btn{font-size:11px;color:var(--text-muted);background:none;border:1px dashed var(--border2);border-radius:20px;padding:4px 10px;cursor:pointer;transition:all .12s}
+.etyk-add-btn:hover{border-color:var(--orange);color:var(--orange)}
 
 /* SAVE BAR */
 .save-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-top:1px solid var(--border);padding:12px 32px;display:flex;align-items:center;gap:10px;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,.05)}
 .save-status{font-size:12px;color:var(--green);margin-right:auto;font-weight:500}
-.save-status.unsaved{color:var(--yellow)}
+.save-status.unsaved{color:#d97706}
 </style>
 </head>
 <body>
 
 <header>
   <a href="index.html" class="back-btn">← Baza wiedzy</a>
-  <span class="page-title">Konfekcja per klient</span>
+  <span class="page-title">Konfekcja per klient — ZP 2025</span>
   <span></span>
 </header>
 
@@ -99,221 +106,260 @@ main{padding:20px 32px 100px;max-width:1400px;margin:0 auto}
   <a href="zakupy-harmonogram.html">📅 Harmonogram zakupów</a>
 </nav>
 
-<div class="tabs-bar">
-  <div class="tab active" data-tab="kartony" onclick="switchTab('kartony')">📦 Kartony i konfekcja</div>
-  <div class="tab" data-tab="etykiety" onclick="switchTab('etykiety')">🏷 Etykiety</div>
-</div>
-
 <main>
-
-<!-- TAB: KARTONY -->
-<div id="tab-kartony" class="tab-content active">
-  <div class="page-desc">
-    Miks konfekcji (kartonów) per klient — domyślnie z zestawień ZP 2025.
-    <strong>Udziały % możesz zmienić</strong> — zostaną zapisane w przeglądarce i użyte do obliczeń w Harmonogramie zakupów.<br>
-    Klienci bez historii w ZP 2025 mają przypisany średni miks ze wszystkich klientów.
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 20px;margin-bottom:16px;font-size:13px;color:var(--text-dim);line-height:1.6">
+    Zestawienie kartonów, opakowań jednorazowych i etykiet wykorzystanych w sezonie <strong>2025</strong> per klient (źródło: ZP)
+    oraz prognoza na <strong>2026</strong> z planu sprzedaży.<br>
+    <strong>Etykiety</strong> — kliknij aby przypisać/odpiąć klientowi. Zmiany zapisywane w przeglądarce.
   </div>
   <div class="client-grid" id="client-grid"></div>
-</div>
-
-<!-- TAB: ETYKIETY -->
-<div id="tab-etykiety" class="tab-content">
-  <div class="page-desc">
-    Przypisanie etykiet do klientów — informacyjnie, do planowania stanów buforowych.
-    <strong>Kliknij klienta</strong> aby zaznaczyć lub odznaczyć. Zmiany zapisywane razem z kartą konfekcji.
-  </div>
-  <div class="label-grid" id="label-grid"></div>
-</div>
-
 </main>
 
 <div class="save-bar">
   <span class="save-status" id="save-status"></span>
-  <button class="btn" onclick="resetAll()">↺ Przywróć z ZP 2025</button>
-  <button class="btn btn-primary" onclick="saveAll()">💾 Zapisz zmiany</button>
+  <button class="btn btn-primary" onclick="saveEtyk()">💾 Zapisz przypisania etykiet</button>
 </div>
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────────────
-const ZCP_DEFAULT = (window.ZAKUPY_DATA || {}).zp_client_pak || {};
-const SNAP_LABELS = ((window.ZAKUPY_DATA || {}).stany || []).filter(s => s.kategoria === 'etykiety');
-const LS_PAK  = 'oxm_klient_pak_v1';
+const ZS    = (window.ZAKUPY_DATA || {}).zp_client_stats || {};   // per-client 2025 actuals
+const ZCP   = (window.ZAKUPY_DATA || {}).zp_client_pak   || {};   // for share computation
+const SNAPS = ((window.ZAKUPY_DATA || {}).stany || []).filter(s => s.kategoria === 'etykiety');
 const LS_ETYK = 'oxm_klient_etyk_v1';
 
+// PLAN 2026 per client
 const PLAN_DATA_ALL = window.PLAN_DATA || [];
 const PLAN_2026 = {};
 PLAN_DATA_ALL.filter(r => r.typ === 'klient').forEach(r => {
   PLAN_2026[r.podmiot] = (PLAN_2026[r.podmiot] || 0) + (r.kg || 0);
 });
-const CLIENTS = Object.keys(PLAN_2026).sort((a, b) =>
-  (PLAN_2026[b] || 0) - (PLAN_2026[a] || 0)  // sort by plan volume desc
-);
+const CLIENTS = Object.keys(PLAN_2026).sort((a, b) => (PLAN_2026[b] || 0) - (PLAN_2026[a] || 0));
 
-// ── DEFAULT ASSIGNMENTS ───────────────────────────────────────────────────────
-function zcpToShares(paks) {
-  const total = paks.reduce((s, v) => s + v.kg_zp, 0);
-  return paks
-    .map(v => ({ pak: v.pak, kgpk: v.kgpk, share: total > 0 ? +(v.kg_zp / total * 100).toFixed(2) : 0 }))
-    .sort((a, b) => b.share - a.share);
-}
-
-function buildAvgMix() {
-  const avg = {};
-  Object.values(ZCP_DEFAULT).forEach(paks => {
-    paks.forEach(v => {
-      if (!avg[v.pak]) avg[v.pak] = { kg: 0, kgpk: v.kgpk };
-      avg[v.pak].kg += v.kg_zp;
-      if (!avg[v.pak].kgpk) avg[v.pak].kgpk = v.kgpk;
-    });
-  });
-  const total = Object.values(avg).reduce((s, v) => s + v.kg, 0);
-  return Object.entries(avg)
-    .map(([pak, v]) => ({ pak, kgpk: v.kgpk, share: total > 0 ? +(v.kg / total * 100).toFixed(2) : 0 }))
-    .sort((a, b) => b.share - a.share);
-}
-const AVG_MIX = buildAvgMix();
-
-function defaultPak() {
-  const r = {};
-  CLIENTS.forEach(c => {
-    r[c] = ZCP_DEFAULT[c]
-      ? zcpToShares(ZCP_DEFAULT[c])
-      : JSON.parse(JSON.stringify(AVG_MIX));
-  });
-  return r;
-}
-
+// ── LABEL ASSIGNMENTS ─────────────────────────────────────────────────────────
 function defaultEtyk() {
   const r = {};
-  SNAP_LABELS.forEach(l => {
+  SNAPS.forEach(l => {
     const n = (l.nazwa || '').toLowerCase();
-    const assigned = [];
-    if (n.includes('biedronka'))           assigned.push('Biedronka');
-    if (n.includes('sanlucar'))            assigned.push('SanLucar');
-    if (n.includes('aldi') && n.includes('sanlucar')) { if (!assigned.includes('SanLucar')) assigned.push('SanLucar'); }
-    if (n.includes('frutania') || n.includes('rewe'))  assigned.push('Frutania');
-    if (n.includes('colruyt') || n.includes('maxima') ||
-       (n.includes('aldi') && n.includes('frambozen')) ||
-        n.includes('carrefour') || n.includes('60x65') || n.includes('60x80')) {
-      if (!assigned.includes('Special Fruit')) assigned.push('Special Fruit');
-    }
-    if (n.includes('kaufland')) assigned.push('Kaufland');
-    if (n.includes('intermarche') || n.includes('inter.') || n.includes('z sadów')) assigned.push('InterMarche');
-    if (n.includes('berry') || n.includes('pirkka')) assigned.push('Berry World');
-    if (n.includes('lidl'))               assigned.push('Garden Frutta');
-    r[l.indeks] = assigned;
+    const a = [];
+    if (n.includes('biedronka'))  a.push('Biedronka');
+    if (n.includes('sanlucar'))   a.push('SanLucar');
+    if (n.includes('frutania') || n.includes('rewe')) a.push('Frutania');
+    if (n.includes('colruyt') || n.includes('maxima') || n.includes('carrefour') ||
+        (n.includes('aldi') && n.includes('frambozen')) || n.includes('60x65') || n.includes('60x80'))
+      { if (!a.includes('Special Fruit')) a.push('Special Fruit'); }
+    if (n.includes('kaufland'))   a.push('Kaufland');
+    if (n.includes('inter') || n.includes('z sadów')) a.push('InterMarche');
+    if (n.includes('berry') || n.includes('pirkka'))  a.push('Berry World');
+    if (n.includes('lidl'))       a.push('Garden Frutta');
+    r[l.indeks] = a;
   });
   return r;
 }
-
-let PAK = {}, ETYK = {};
-try { PAK  = JSON.parse(localStorage.getItem(LS_PAK))  || defaultPak(); } catch(e) { PAK  = defaultPak(); }
+let ETYK = {};
 try { ETYK = JSON.parse(localStorage.getItem(LS_ETYK)) || defaultEtyk(); } catch(e) { ETYK = defaultEtyk(); }
-if (!PAK || typeof PAK !== 'object') PAK = defaultPak();
 if (!ETYK || typeof ETYK !== 'object') ETYK = defaultEtyk();
-CLIENTS.forEach(c => { if (!PAK[c]) PAK[c] = JSON.parse(JSON.stringify(AVG_MIX)); });
 
-// ── HELPERS ────────────────────────────────────────────────────────────────────
+// ── HELPERS ───────────────────────────────────────────────────────────────────
 function esc(s) {
-  return String(s).replace(/[&<>"']/g, c =>
-    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])
-  );
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function cid(s) { return s.replace(/[^a-zA-Z0-9]/g, '_'); }
+function fN(n) { return Math.round(n).toLocaleString('pl-PL'); }
 
-function pakLabel(pak) {
+function parsePak(pak) {
+  const m = pak.match(/__(\d+)X(\d+)/);
+  const wagaG   = m ? parseInt(m[1]) : 0;
+  const sztPKrt = m ? parseInt(m[2]) : 0;
   const typ  = pak.startsWith('PEŁNE')  ? 'Ziel.' : 'Czar.';
   const rodz = pak.includes('KLEJONY') ? 'klej.' : 'skł.';
   const roz  = pak.includes('MAŁY')    ? 'Mały'  : 'Duży';
   const ts   = pak.includes('TOPSEAL') ? ' TS'   : '';
-  const m    = pak.match(/__(\d+)X(\d+)/);
-  return m ? `${roz} ${m[1]}g × ${m[2]} szt/k (${typ} ${rodz}${ts})` : pak;
+  const label = wagaG
+    ? `${roz} ${wagaG}g\u00D7${sztPKrt} szt/k (${typ} ${rodz}${ts})`
+    : pak;
+  return { wagaG, sztPKrt, label, typ, rodz, roz };
 }
 
 function pakColor(pak) {
   if (pak.startsWith('PEŁNE')  && pak.includes('MAŁY')) return '#16a34a';
   if (pak.startsWith('PEŁNE')  && pak.includes('DUŻY')) return '#2563eb';
   if (pak.startsWith('PROSTE') && pak.includes('MAŁY')) return '#6b7280';
-  if (pak.startsWith('PROSTE') && pak.includes('DUŻY')) return '#9013fe';
-  return '#a8a8a0';
+  return '#9013fe';
 }
 
-function projCartons(planKg, share, kgpk) {
-  return kgpk > 0 ? Math.round(planKg * (share / 100) / kgpk) : 0;
+// Compute 2026 projected cartons for a client's pak given planKg
+function projKarton(pak_entry, planKg, totalKgZP) {
+  const share = totalKgZP > 0 ? pak_entry.kg_2025 / totalKgZP : 0;
+  return pak_entry.kgpk > 0 ? Math.round(planKg * share / pak_entry.kgpk) : 0;
 }
 
-// ── KARTONY TAB ────────────────────────────────────────────────────────────────
-function renderKartons() {
-  const grid = document.getElementById('client-grid');
-  grid.innerHTML = CLIENTS.map(c => clientCardHTML(c)).join('');
-  // Open first card by default
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() {
+  document.getElementById('client-grid').innerHTML = CLIENTS.map(c => clientCard(c)).join('');
+  // Auto-open first card
   if (CLIENTS[0]) {
-    const body = document.getElementById('cb_' + cid(CLIENTS[0]));
     const card = document.getElementById('cc_' + cid(CLIENTS[0]));
-    if (body && card) { body.style.display = 'block'; card.classList.add('open'); }
+    const body = document.getElementById('cb_' + cid(CLIENTS[0]));
+    if (card && body) { card.classList.add('open'); body.style.display = 'block'; }
   }
 }
 
-function clientCardHTML(c) {
-  const paks   = PAK[c] || [];
-  const planKg = PLAN_2026[c] || 0;
-  const isAvg  = !ZCP_DEFAULT[c];
-  const sum100 = Math.abs(paks.reduce((s, v) => s + v.share, 0) - 100) < 1;
-  const totalK = paks.reduce((s, v) => s + projCartons(planKg, v.share, v.kgpk), 0);
+function clientCard(c) {
+  const planKg  = PLAN_2026[c] || 0;
+  const stats   = ZS[c];
+  const hasZP   = stats && stats.paks && stats.paks.length > 0;
 
-  const rows = paks.map((v, i) => {
-    const k = projCartons(planKg, v.share, v.kgpk);
-    return `<tr>
-      <td class="pak-name-cell">
-        <span class="pak-dot" style="background:${pakColor(v.pak)}"></span>
-        <span class="pak-label">${esc(pakLabel(v.pak))}</span>
-        <span class="pak-code">${esc(v.pak)}</span>
-      </td>
-      <td>
-        <div class="share-wrap">
-          <input type="number" class="share-input" min="0" max="100" step="0.1" value="${v.share.toFixed(1)}"
-            oninput="onShareChange('${esc(c)}',${i},this.value)">
-          <span class="pct-sign">%</span>
-        </div>
-      </td>
-      <td class="num-cell">${v.kgpk}</td>
-      <td class="num-cell" id="proj_${cid(c)}_${i}">${k.toLocaleString('pl-PL')}</td>
-    </tr>`;
-  }).join('');
+  // Header meta
+  const kart2025 = hasZP ? stats.total_kart : 0;
+  const kg2025   = hasZP ? stats.total_kg   : 0;
+  const proj2026 = hasZP
+    ? stats.paks.reduce((s, v) => s + projKarton(v, planKg, stats.total_kg), 0)
+    : 0;
 
   return `<div class="client-card" id="cc_${cid(c)}">
     <div class="client-head" onclick="toggleCard('${esc(c)}')">
       <div class="ch-left">
         <span class="client-name">${esc(c)}</span>
-        ${isAvg ? '<span class="badge-avg">avg mix</span>' : ''}
+        ${!hasZP ? '<span class="no-zp-badge">brak w ZP 2025</span>' : ''}
       </div>
-      <div class="ch-right">
-        <span>Plan 2026: <strong>${Math.round(planKg).toLocaleString('pl-PL')} kg</strong></span>
-        <span>Prognoza: <strong id="ch_tot_${cid(c)}">${totalK.toLocaleString('pl-PL')}</strong> kartonów</span>
+      <div class="ch-meta">
+        ${hasZP ? `<span>ZP 2025: <strong>${fN(kart2025)}</strong> kart. · <strong>${fN(kg2025)}</strong> kg</span>` : ''}
+        <span>Plan 2026: <strong>${fN(planKg)}</strong> kg</span>
+        ${hasZP ? `<span>Prognoza 2026: <strong style="color:var(--orange)">${fN(proj2026)}</strong> kart.</span>` : ''}
         <span class="ch-toggle">▼</span>
       </div>
     </div>
     <div class="client-body" id="cb_${cid(c)}">
-      <div class="sum-warn" id="sumwarn_${cid(c)}"${sum100 ? '' : ' style="display:block"'}>
-        ⚠ Suma udziałów ≠ 100% — sprawdź wartości
-      </div>
-      <table class="pak-table">
-        <thead><tr>
-          <th>Konfekcja / karton</th>
-          <th style="width:130px">Udział %</th>
-          <th style="width:80px">kg/krt</th>
-          <th style="width:110px">Kart. 2026</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-        <tfoot><tr>
-          <td colspan="3" style="text-align:right;padding-right:20px;color:var(--text-dim)">Łącznie:</td>
-          <td class="num-cell" id="tf_${cid(c)}">${totalK.toLocaleString('pl-PL')}</td>
-        </tr></tfoot>
-      </table>
+      ${kartonySection(c, stats, planKg)}
+      ${punnetySection(c, stats, planKg)}
+      ${etykietySection(c)}
     </div>
   </div>`;
 }
 
+function kartonySection(c, stats, planKg) {
+  if (!stats || !stats.paks || stats.paks.length === 0) {
+    return `<div class="section">
+      <div class="section-head"><span class="section-dot" style="background:#6b7280"></span>KARTONY</div>
+      <div style="padding:14px 20px;font-size:12px;color:var(--text-muted);font-style:italic">
+        Brak danych w ZP 2025. Prognoza bazuje na średnim miksie ze wszystkich klientów.
+      </div>
+    </div>`;
+  }
+
+  const totalKg   = stats.total_kg;
+  const totalKart = stats.total_kart;
+  const totalProj = stats.paks.reduce((s, v) => s + projKarton(v, planKg, totalKg), 0);
+
+  const rows = stats.paks.map(v => {
+    const { label, wagaG } = parsePak(v.pak);
+    const color = pakColor(v.pak);
+    const pct   = totalKg > 0 ? (v.kg_2025 / totalKg * 100).toFixed(1) : '0.0';
+    const proj  = projKarton(v, planKg, totalKg);
+    return `<tr>
+      <td>
+        <span class="pak-dot" style="background:${color}"></span>
+        <span class="pak-label-main">${esc(label)}</span>
+        <span class="pak-code-small">${esc(v.pak)}</span>
+      </td>
+      <td class="num">${fN(v.kart_2025)}</td>
+      <td class="num col-dim">${fN(v.kg_2025)}</td>
+      <td class="num col-dim">${pct}%</td>
+      <td class="num proj-col">${fN(proj)}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="section">
+    <div class="section-head"><span class="section-dot" style="background:#2563eb"></span>KARTONY</div>
+    <table class="pak-table">
+      <thead><tr>
+        <th>Format</th>
+        <th>Kart. 2025</th>
+        <th>kg 2025</th>
+        <th>% vol.</th>
+        <th style="color:var(--orange)">Prognoza 2026</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr>
+        <td>Razem</td>
+        <td>${fN(totalKart)}</td>
+        <td>${fN(totalKg)}</td>
+        <td>100%</td>
+        <td style="color:var(--orange)">${fN(totalProj)}</td>
+      </tr></tfoot>
+    </table>
+  </div>`;
+}
+
+function punnetySection(c, stats, planKg) {
+  if (!stats || !stats.paks || stats.paks.length === 0) return '';
+
+  const totalKg = stats.total_kg;
+
+  // Aggregate by wagaG → {szt2025, proj2026}
+  const agg = {};
+  stats.paks.forEach(v => {
+    const { wagaG, sztPKrt } = parsePak(v.pak);
+    if (!wagaG || !sztPKrt) return;
+    if (!agg[wagaG]) agg[wagaG] = { szt2025: 0, proj2026: 0 };
+    agg[wagaG].szt2025  += v.kart_2025 * sztPKrt;
+    const proj = projKarton(v, planKg, totalKg);
+    agg[wagaG].proj2026 += proj * sztPKrt;
+  });
+
+  const entries = Object.entries(agg)
+    .filter(([, v]) => v.szt2025 > 0)
+    .sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+
+  if (entries.length === 0) return '';
+
+  const chips = entries.map(([wagaG, v]) => `
+    <div class="punnet-chip">
+      <span class="punnet-waga">${wagaG}g</span>
+      <span class="punnet-szt">${fN(v.szt2025)} szt (2025)</span>
+      <span class="punnet-arrow">→</span>
+      <span class="punnet-proj">~${fN(v.proj2026)} (2026)</span>
+    </div>`).join('');
+
+  return `<div class="section">
+    <div class="section-head"><span class="section-dot" style="background:#f97316"></span>OPAKOWANIA JEDNORAZOWE (punnety)</div>
+    <div class="punnets-row">${chips}</div>
+  </div>`;
+}
+
+function etykietySection(c) {
+  // Labels assigned to this client
+  const assigned = SNAPS.filter(l => (ETYK[l.indeks] || []).includes(c));
+  // Labels not assigned (for adding)
+  const others   = SNAPS.filter(l => !(ETYK[l.indeks] || []).includes(c));
+
+  const assignedChips = assigned.map(l =>
+    `<span class="etyk-chip assigned" onclick="toggleEtyk('${esc(l.indeks)}','${esc(c)}')" title="${esc(l.indeks)}">
+      ✓ ${esc(l.nazwa)}
+    </span>`
+  ).join('');
+
+  // Show "Dodaj etykietę" dropdown — render as expandable
+  const addId = 'etyk_add_' + cid(c);
+
+  return `<div class="section">
+    <div class="section-head"><span class="section-dot" style="background:#16a34a"></span>ETYKIETY</div>
+    <div class="etyk-section" id="etyk_${cid(c)}">
+      ${assignedChips || '<span class="etyk-empty">Brak przypisanych etykiet</span>'}
+      <button class="etyk-add-btn" onclick="toggleAddEtyk('${esc(c)}')" title="Przypisz etykietę">+ Dodaj</button>
+    </div>
+    <div id="${addId}" style="display:none;padding:10px 20px;border-top:1px dashed var(--border2);display:none">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Kliknij etykietę aby przypisać:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${others.map(l =>
+          `<span class="etyk-chip" onclick="addEtyk('${esc(l.indeks)}','${esc(c)}')" title="${esc(l.indeks)}">${esc(l.nazwa)}</span>`
+        ).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── INTERACTIONS ──────────────────────────────────────────────────────────────
 function toggleCard(c) {
   const card = document.getElementById('cc_' + cid(c));
   const body = document.getElementById('cb_' + cid(c));
@@ -323,99 +369,54 @@ function toggleCard(c) {
   body.style.display = opening ? 'block' : 'none';
 }
 
-function onShareChange(c, idx, val) {
-  const paks = PAK[c];
-  if (!paks || !paks[idx]) return;
-  paks[idx].share = parseFloat(val) || 0;
-  const planKg = PLAN_2026[c] || 0;
-
-  // Update this row's projection
-  const k = projCartons(planKg, paks[idx].share, paks[idx].kgpk);
-  const projEl = document.getElementById('proj_' + cid(c) + '_' + idx);
-  if (projEl) projEl.textContent = k.toLocaleString('pl-PL');
-
-  // Update totals
-  const totalK = paks.reduce((s, v) => s + projCartons(planKg, v.share, v.kgpk), 0);
-  const el1 = document.getElementById('ch_tot_' + cid(c));
-  const el2 = document.getElementById('tf_' + cid(c));
-  if (el1) el1.textContent = totalK.toLocaleString('pl-PL');
-  if (el2) el2.textContent = totalK.toLocaleString('pl-PL');
-
-  // Sum validation
-  const sumShares = paks.reduce((s, v) => s + v.share, 0);
-  const warn = document.getElementById('sumwarn_' + cid(c));
-  if (warn) warn.style.display = Math.abs(sumShares - 100) > 1 ? 'block' : 'none';
-
-  markUnsaved();
-}
-
-// ── ETYKIETY TAB ──────────────────────────────────────────────────────────────
-function renderLabels() {
-  const grid = document.getElementById('label-grid');
-  grid.innerHTML = SNAP_LABELS.map(l => {
-    const assigned = ETYK[l.indeks] || [];
-    const chips = CLIENTS.map(c =>
-      `<span class="client-chip${assigned.includes(c) ? ' selected' : ''}"
-        onclick="toggleLabel('${esc(l.indeks)}','${esc(c)}')">${esc(c)}</span>`
-    ).join('');
-    return `<div class="label-card">
-      <div class="label-title">${esc(l.nazwa)}</div>
-      <div class="label-indeks">${esc(l.indeks)}</div>
-      <div class="label-clients" id="lc_${cid(l.indeks)}">${chips}</div>
-    </div>`;
-  }).join('');
-}
-
-function toggleLabel(indeks, client) {
+function toggleEtyk(indeks, client) {
   if (!ETYK[indeks]) ETYK[indeks] = [];
   const arr = ETYK[indeks];
   const i = arr.indexOf(client);
-  if (i >= 0) arr.splice(i, 1); else arr.push(client);
-  const container = document.getElementById('lc_' + cid(indeks));
-  if (container) {
-    const chips = container.querySelectorAll('.client-chip');
-    CLIENTS.forEach((c, ci) => {
-      if (chips[ci]) chips[ci].classList.toggle('selected', arr.includes(c));
-    });
-  }
+  if (i >= 0) arr.splice(i, 1);
+  else arr.push(client);
+  refreshEtykSection(client);
   markUnsaved();
 }
 
-// ── TABS ──────────────────────────────────────────────────────────────────────
-function switchTab(id) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  document.querySelector('[data-tab="' + id + '"]').classList.add('active');
+function addEtyk(indeks, client) {
+  if (!ETYK[indeks]) ETYK[indeks] = [];
+  if (!ETYK[indeks].includes(client)) ETYK[indeks].push(client);
+  refreshEtykSection(client);
+  document.getElementById('etyk_add_' + cid(client)).style.display = 'none';
+  markUnsaved();
 }
 
-// ── SAVE / RESET ──────────────────────────────────────────────────────────────
+function toggleAddEtyk(c) {
+  const el = document.getElementById('etyk_add_' + cid(c));
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function refreshEtykSection(c) {
+  // Re-render just the etyk section inside the card
+  const body = document.getElementById('cb_' + cid(c));
+  if (!body) return;
+  const oldEtyk = body.querySelector('.section:last-child');
+  if (!oldEtyk) return;
+  oldEtyk.outerHTML = etykietySection(c);
+}
+
+// ── SAVE ──────────────────────────────────────────────────────────────────────
 function markUnsaved() {
   const el = document.getElementById('save-status');
   if (el) { el.textContent = 'Niezapisane zmiany'; el.className = 'save-status unsaved'; }
 }
 
-function saveAll() {
-  localStorage.setItem(LS_PAK,  JSON.stringify(PAK));
+function saveEtyk() {
   localStorage.setItem(LS_ETYK, JSON.stringify(ETYK));
   const el = document.getElementById('save-status');
   if (el) { el.textContent = 'Zapisano!'; el.className = 'save-status'; }
   setTimeout(() => { if (el) el.textContent = ''; }, 2500);
 }
 
-function resetAll() {
-  if (!confirm('Przywrócić udziały i etykiety z ZP 2025?\nTwoje zmiany zostaną utracone.')) return;
-  localStorage.removeItem(LS_PAK);
-  localStorage.removeItem(LS_ETYK);
-  PAK  = defaultPak();
-  ETYK = defaultEtyk();
-  renderKartons();
-  renderLabels();
-}
-
 // ── INIT ──────────────────────────────────────────────────────────────────────
-renderKartons();
-renderLabels();
+render();
 </script>
 </body>
 </html>
