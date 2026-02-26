@@ -12,7 +12,6 @@
 <style>
 :root {
   --orange:#fa4211; --purple:#9013fe; --green:#16a34a; --blue:#2563eb; --yellow:#d97706;
-  --teal:#0891b2; --rose:#e11d48;
   --grad:linear-gradient(135deg,#fa4211,#9013fe);
   --bg:#f4f3f0; --white:#fff;
   --border:#e8e6e1; --border2:#d8d5ce;
@@ -20,17 +19,12 @@
   --surface2:#f2f0eb;
   --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
   --shadow-md:0 4px 16px rgba(0,0,0,.09),0 2px 4px rgba(0,0,0,.04);
-  --shadow-lg:0 8px 32px rgba(0,0,0,.12),0 4px 8px rgba(0,0,0,.05);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;font-size:14px}
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:13px 32px;background:var(--white);border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:200;box-shadow:var(--shadow);gap:12px
-}
+header{display:flex;align-items:center;justify-content:space-between;padding:13px 32px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:var(--shadow);gap:12px}
 .back-btn{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:color .15s;white-space:nowrap}
 .back-btn:hover{color:var(--orange)}
 .h-center{display:flex;align-items:center;gap:8px;flex:1;justify-content:center}
@@ -38,130 +32,62 @@ header{
 .date-pill{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border2);padding:3px 10px;border-radius:20px;white-space:nowrap}
 
 /* ── Main ────────────────────────────────────────────────────────────────── */
-main{padding:28px 32px 56px;max-width:1600px;margin:0 auto}
+main{padding:24px 32px 56px;max-width:1600px;margin:0 auto}
 
 /* ── Page intro ───────────────────────────────────────────────────────────── */
-.page-intro{
-  display:flex;align-items:center;gap:20px;
-  margin-bottom:28px;padding:20px 24px;
-  background:var(--white);border:1px solid var(--border);border-radius:16px;
-  box-shadow:var(--shadow)
-}
-.page-intro img{height:44px;flex-shrink:0}
-.page-intro-divider{width:1px;height:36px;background:var(--border2);flex-shrink:0}
-.page-intro-text h1{font-size:20px;font-weight:800;letter-spacing:-.3px;margin-bottom:2px}
+.page-intro{display:flex;align-items:center;gap:20px;margin-bottom:20px;padding:18px 22px;background:var(--white);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow)}
+.page-intro img{height:42px;flex-shrink:0}
+.page-intro-divider{width:1px;height:34px;background:var(--border2);flex-shrink:0}
+.page-intro-text h1{font-size:19px;font-weight:800;letter-spacing:-.3px;margin-bottom:2px}
 .page-intro-text p{font-size:12px;color:var(--text-dim);line-height:1.5}
 .page-intro-stats{display:flex;gap:20px;margin-left:auto;flex-shrink:0}
 .pi-stat{text-align:center}
-.pi-stat-val{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums;line-height:1}
+.pi-stat-val{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;line-height:1}
 .pi-stat-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
 
-/* ── Category Section ─────────────────────────────────────────────────────── */
-.cat-section{
-  background:var(--white);border:1px solid var(--border);border-radius:20px;
-  margin-bottom:20px;overflow:hidden;box-shadow:var(--shadow);
-  transition:box-shadow .2s
-}
-.cat-section:hover{box-shadow:var(--shadow-md)}
+/* ── Stan Magazynowy — top widget ────────────────────────────────────────── */
+.stan-widget{background:var(--white);border:1px solid var(--border);border-radius:16px;margin-bottom:20px;overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .2s;position:relative}
+.stan-widget::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--orange);border-radius:0}
+.stan-widget:hover{box-shadow:var(--shadow-md)}
 
-.cat-header{
-  display:flex;align-items:center;gap:16px;
-  padding:18px 28px 18px 0;
-  border-bottom:1px solid var(--border);
-  background:var(--white);
-  cursor:default;
-  position:relative
-}
-/* Left accent stripe */
-.cat-header::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:0
-}
-.cat-orange .cat-header::before{background:var(--orange)}
-.cat-blue   .cat-header::before{background:var(--blue)}
-.cat-green  .cat-header::before{background:var(--green)}
-.cat-purple .cat-header::before{background:var(--purple)}
+.stan-widget-header{display:flex;align-items:center;gap:12px;padding:14px 20px 14px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.sw-icon{width:38px;height:38px;border-radius:10px;background:rgba(250,66,17,.1);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.sw-title-group{min-width:0}
+.sw-title{font-size:14px;font-weight:700;letter-spacing:-.15px}
+.sw-desc{font-size:11px;color:var(--text-muted);margin-top:1px}
+.sw-filters{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap}
+.sw-stats{display:flex;gap:8px;flex-shrink:0}
+.sw-stat{background:var(--surface2);border-radius:7px;padding:7px 11px;border:1px solid var(--border);text-align:center;min-width:76px}
+.sw-stat-label{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace;margin-bottom:3px}
+.sw-stat-val{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
 
-.cat-icon{
-  width:52px;height:52px;border-radius:14px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:24px;flex-shrink:0;margin-left:20px
-}
-.ci-orange{background:rgba(250,66,17,.10)}
-.ci-blue  {background:rgba(37,99,235,.10)}
-.ci-green {background:rgba(22,163,74,.10)}
-.ci-purple{background:rgba(144,19,254,.10)}
+.stan-widget-body{padding:0}
+.stan-widget-footer{padding:10px 20px;border-top:1px solid var(--border);background:var(--surface2);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
-.cat-info{flex:1}
-.cat-title{
-  font-size:17px;font-weight:800;letter-spacing:-.25px;margin-bottom:2px
-}
-.cat-desc{font-size:12px;color:var(--text-dim);line-height:1.4}
+/* ── Stan table ─────────────────────────────────────────────────────────── */
+.stan-select{padding:5px 9px;border:1px solid var(--border2);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--white);cursor:pointer;outline:none;transition:border-color .15s}
+.stan-select:focus{border-color:var(--orange)}
+.stan-source-badge{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid}
+.source-preset{background:rgba(22,163,74,.07);color:var(--green);border-color:rgba(22,163,74,.25)}
+.source-upload{background:rgba(250,66,17,.07);color:var(--orange);border-color:rgba(250,66,17,.2)}
 
-.cat-badge{
-  display:inline-flex;align-items:center;gap:4px;
-  font-family:'DM Mono',monospace;font-size:10px;
-  padding:4px 11px;border-radius:20px;border:1px solid;
-  white-space:nowrap;flex-shrink:0;margin-right:24px
-}
-.badge-active {background:rgba(22,163,74,.07); color:var(--green); border-color:rgba(22,163,74,.25)}
-.badge-orange  {background:rgba(250,66,17,.07); color:var(--orange);border-color:rgba(250,66,17,.2)}
-.badge-pending{background:var(--surface2);      color:var(--text-muted);border-color:var(--border2)}
-.badge-locked {background:rgba(22,163,74,.07);  color:var(--green); border-color:rgba(22,163,74,.25)}
-.badge-purple {background:rgba(144,19,254,.07); color:var(--purple);border-color:rgba(144,19,254,.2)}
-
-/* ── Tools grid inside Box 1 ─────────────────────────────────────────────── */
-.cat-body{padding:22px 24px}
-.cat-tools-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:16px;
-  align-items:start
-}
-@media(max-width:1100px){.cat-tools-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:700px) {.cat-tools-grid{grid-template-columns:1fr}}
-
-/* ── Cards (inside Box 1) ────────────────────────────────────────────────── */
-.dash-card{
-  background:var(--white);border:1.5px solid var(--border);border-radius:14px;
-  overflow:hidden;display:flex;flex-direction:column;
-  box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s
-}
-.dash-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-
-.dash-card .card-top{position:relative;padding:16px 18px 14px 20px;border-bottom:1px solid var(--border)}
-.dash-card .card-top::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0}
-.card-orange .card-top::before{background:var(--orange)}
-.card-purple .card-top::before{background:var(--purple)}
-.card-blue   .card-top::before{background:var(--blue)}
-
-.card-icon-wrap{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px;flex-shrink:0}
-.icon-orange{background:rgba(250,66,17,.1)}
-.icon-purple{background:rgba(144,19,254,.1)}
-.icon-blue{background:rgba(37,99,235,.1)}
-
-.card-title{font-size:14px;font-weight:700;margin-bottom:3px;letter-spacing:-.15px}
-.card-desc{font-size:11px;color:var(--text-dim);line-height:1.4;margin-bottom:8px}
-
-.card-badge{
-  display:inline-flex;align-items:center;gap:4px;
-  font-family:'DM Mono',monospace;font-size:10px;
-  padding:3px 9px;border-radius:20px;border:1px solid
-}
-.card-body{padding:14px 18px;flex:1}
-.card-footer{
-  padding:10px 18px;border-top:1px solid var(--border);
-  background:var(--surface2);display:flex;gap:8px;flex-wrap:wrap;align-items:center
-}
+.stan-table-wrap{overflow-x:auto;max-height:300px;overflow-y:auto}
+.stan-table{width:100%;border-collapse:collapse;font-size:12px}
+.stan-table th{background:var(--surface2);color:var(--text-dim);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:7px 10px;text-align:left;position:sticky;top:0;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+.stan-table th:hover{background:#e9e7e2}
+.stan-table th.sort-asc::after{content:' ↑';color:var(--orange)}
+.stan-table th.sort-desc::after{content:' ↓';color:var(--orange)}
+.stan-table td{padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stan-table tr:last-child td{border-bottom:none}
+.stan-table tr:hover td{background:rgba(250,66,17,.03)}
+.num-cell{font-family:'DM Mono',monospace;text-align:right}
+.stan-table-footer{padding:6px 12px;background:var(--surface2);border-top:1px solid var(--border);font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace}
+.upload-zone-mini{border:1.5px dashed var(--border2);border-radius:8px;padding:8px 12px;cursor:pointer;transition:all .15s;background:var(--white);display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-dim);flex:1;min-width:200px}
+.upload-zone-mini:hover{border-color:var(--orange);color:var(--orange);background:rgba(250,66,17,.04)}
+input[type=file]#mag-file{display:none}
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
-.btn{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:7px 14px;border-radius:8px;font-size:12px;
-  font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;
-  transition:all .15s;border:1px solid var(--border2);
-  background:var(--white);color:var(--text-dim);font-weight:500;
-  text-decoration:none;white-space:nowrap
-}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .15s;border:1px solid var(--border2);background:var(--white);color:var(--text-dim);font-weight:500;text-decoration:none;white-space:nowrap}
 .btn:hover{background:var(--surface2)}
 .btn-orange{background:rgba(250,66,17,.07);color:var(--orange);border-color:rgba(250,66,17,.2)}
 .btn-orange:hover{background:rgba(250,66,17,.12)}
@@ -171,17 +97,56 @@ main{padding:28px 32px 56px;max-width:1600px;margin:0 auto}
 .btn-blue:hover{background:rgba(37,99,235,.12)}
 .btn-sm{padding:5px 10px;font-size:11px}
 
+/* ── Category Section ─────────────────────────────────────────────────────── */
+.cat-section{background:var(--white);border:1px solid var(--border);border-radius:20px;margin-bottom:20px;overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .2s}
+.cat-section:hover{box-shadow:var(--shadow-md)}
+.cat-header{display:flex;align-items:center;gap:16px;padding:18px 28px 18px 0;border-bottom:1px solid var(--border);background:var(--white);position:relative}
+.cat-header::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:0}
+.cat-orange .cat-header::before{background:var(--orange)}
+.cat-blue   .cat-header::before{background:var(--blue)}
+.cat-green  .cat-header::before{background:var(--green)}
+.cat-purple .cat-header::before{background:var(--purple)}
+.cat-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;margin-left:20px}
+.ci-orange{background:rgba(250,66,17,.10)}
+.ci-blue  {background:rgba(37,99,235,.10)}
+.ci-green {background:rgba(22,163,74,.10)}
+.ci-purple{background:rgba(144,19,254,.10)}
+.cat-info{flex:1}
+.cat-title{font-size:17px;font-weight:800;letter-spacing:-.25px;margin-bottom:2px}
+.cat-desc{font-size:12px;color:var(--text-dim);line-height:1.4}
+.cat-badge{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:10px;padding:4px 11px;border-radius:20px;border:1px solid;white-space:nowrap;flex-shrink:0;margin-right:24px}
+.badge-active{background:rgba(22,163,74,.07);color:var(--green);border-color:rgba(22,163,74,.25)}
+.badge-orange{background:rgba(250,66,17,.07);color:var(--orange);border-color:rgba(250,66,17,.2)}
+.badge-pending{background:var(--surface2);color:var(--text-muted);border-color:var(--border2)}
+.badge-locked{background:rgba(22,163,74,.07);color:var(--green);border-color:rgba(22,163,74,.25)}
+.badge-purple{background:rgba(144,19,254,.07);color:var(--purple);border-color:rgba(144,19,254,.2)}
+
+/* ── Tools grid inside boxes ─────────────────────────────────────────────── */
+.cat-body{padding:22px 24px}
+.cat-tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;align-items:start}
+@media(max-width:900px){.cat-tools-grid{grid-template-columns:1fr}}
+
+/* ── Inner cards ─────────────────────────────────────────────────────────── */
+.dash-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s}
+.dash-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.dash-card .card-top{position:relative;padding:16px 18px 14px 20px;border-bottom:1px solid var(--border)}
+.dash-card .card-top::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0}
+.card-purple .card-top::before{background:var(--purple)}
+.card-blue   .card-top::before{background:var(--blue)}
+.card-icon-wrap{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px;flex-shrink:0}
+.icon-purple{background:rgba(144,19,254,.1)}
+.icon-blue{background:rgba(37,99,235,.1)}
+.card-title{font-size:14px;font-weight:700;margin-bottom:3px;letter-spacing:-.15px}
+.card-desc{font-size:11px;color:var(--text-dim);line-height:1.4;margin-bottom:8px}
+.card-badge{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid}
+.card-body{padding:14px 18px;flex:1}
+.card-footer{padding:10px 18px;border-top:1px solid var(--border);background:var(--surface2);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
 /* ── Sub-nav items ──────────────────────────────────────────────────────── */
-.sub-nav-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:11px 12px;border:1px solid var(--border);border-radius:10px;
-  margin-bottom:8px;text-decoration:none;color:var(--text);
-  transition:all .2s;background:var(--white)
-}
+.sub-nav-item{display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;text-decoration:none;color:var(--text);transition:all .2s;background:var(--white)}
 .sub-nav-item:hover{border-color:var(--border2);box-shadow:var(--shadow-md);transform:translateY(-1px)}
 .sub-nav-item:last-child{margin-bottom:0}
-.sub-nav-item.disabled{opacity:.5;pointer-events:none;cursor:default}
-
+.sub-nav-item.disabled{opacity:.5;pointer-events:none}
 .sub-nav-left{display:flex;align-items:center;gap:10px}
 .sub-nav-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .sni-purple{background:rgba(144,19,254,.1)}
@@ -189,71 +154,31 @@ main{padding:28px 32px 56px;max-width:1600px;margin:0 auto}
 .sni-orange{background:rgba(250,66,17,.1)}
 .sni-blue{background:rgba(37,99,235,.1)}
 .sni-green{background:rgba(22,163,74,.1)}
-
 .sub-nav-title{font-size:12px;font-weight:600;margin-bottom:1px}
 .sub-nav-meta{font-size:10px;color:var(--text-muted)}
 .sub-nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .sub-nav-arrow{font-size:16px;color:var(--text-muted)}
 
-/* ── Stan Magazynowy ─────────────────────────────────────────────────────── */
-.stan-filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:flex-end}
-.stan-select{padding:5px 9px;border:1px solid var(--border2);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--white);cursor:pointer;outline:none;transition:border-color .15s}
-.stan-select:focus{border-color:var(--orange)}
-.stan-source-badge{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid}
-.source-preset{background:rgba(22,163,74,.07);color:var(--green);border-color:rgba(22,163,74,.25)}
-.source-upload{background:rgba(250,66,17,.07);color:var(--orange);border-color:rgba(250,66,17,.2)}
+/* ── Zużycie ─────────────────────────────────────────────────────────────── */
+.zuz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.zuz-stat{background:var(--surface2);border-radius:8px;padding:10px;border:1px solid var(--border);text-align:center}
+.zuz-stat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace;margin-bottom:4px}
+.zuz-stat-val{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
 
-/* Stats mini row */
+/* ── Stats mini ──────────────────────────────────────────────────────────── */
 .stats-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .stat-mini{background:var(--surface2);border-radius:8px;padding:9px 11px;border:1px solid var(--border)}
 .stat-mini-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace;margin-bottom:3px}
 .stat-mini-val{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
 
-/* Table */
-.stan-table-wrap{overflow-x:auto;max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:9px}
-.stan-table{width:100%;border-collapse:collapse;font-size:11px}
-.stan-table th{background:var(--surface2);color:var(--text-dim);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:6px 9px;text-align:left;position:sticky;top:0;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
-.stan-table th:hover{background:#e9e7e2}
-.stan-table th.sort-asc::after{content:' ↑';color:var(--orange)}
-.stan-table th.sort-desc::after{content:' ↓';color:var(--orange)}
-.stan-table td{padding:5px 9px;border-bottom:1px solid var(--border);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
-.stan-table tr:last-child td{border-bottom:none}
-.stan-table tr:hover td{background:rgba(250,66,17,.03)}
-.num-cell{font-family:'DM Mono',monospace;text-align:right}
-.stan-table-footer{padding:5px 11px;background:var(--surface2);border-top:1px solid var(--border);font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace;border-radius:0 0 9px 9px}
-
-/* Upload zone */
-.upload-zone-mini{border:1.5px dashed var(--border2);border-radius:8px;padding:9px 12px;cursor:pointer;transition:all .15s;background:var(--surface2);display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--text-dim)}
-.upload-zone-mini:hover{border-color:var(--orange);color:var(--orange);background:rgba(250,66,17,.04)}
-input[type=file]#mag-file{display:none}
-
-/* ── Zużycie ─────────────────────────────────────────────────────────────── */
-.zuz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-.zuz-stat{background:var(--surface2);border-radius:8px;padding:10px 10px;border:1px solid var(--border);text-align:center}
-.zuz-stat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace;margin-bottom:4px}
-.zuz-stat-val{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
-
 /* ── Placeholder sections ────────────────────────────────────────────────── */
-.placeholder-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:12px
-}
+.placeholder-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 @media(max-width:900px){.placeholder-grid{grid-template-columns:repeat(2,1fr)}}
-.ph-slot{
-  border:1.5px dashed var(--border2);border-radius:12px;
-  padding:18px 16px;background:var(--surface2);
-  display:flex;flex-direction:column;align-items:center;
-  text-align:center;gap:8px;min-height:90px;justify-content:center
-}
+.ph-slot{border:1.5px dashed var(--border2);border-radius:12px;padding:18px 16px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;min-height:90px;justify-content:center}
 .ph-slot-icon{font-size:22px;opacity:.4}
 .ph-slot-title{font-size:12px;font-weight:600;color:var(--text-dim)}
 .ph-slot-meta{font-size:10px;color:var(--text-muted)}
-.ph-note{
-  margin-top:16px;padding:12px 16px;
-  border-radius:10px;border:1px solid var(--border);
-  background:var(--surface2);font-size:11px;color:var(--text-muted);
-  display:flex;align-items:center;gap:8px
-}
-
+.ph-note{margin-top:16px;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:8px}
 .section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:8px;font-family:'DM Mono',monospace}
 </style>
 </head>
@@ -297,76 +222,92 @@ input[type=file]#mag-file{display:none}
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════════════
+       STAN MAGAZYNOWY — pełny magazyn, na górze strony
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="stan-widget">
+
+    <div class="stan-widget-header">
+      <div class="sw-icon">📦</div>
+      <div class="sw-title-group">
+        <div class="sw-title">Stan Magazynowy</div>
+        <div class="sw-desc">Wszystkie opakowania — wszystkie magazyny</div>
+      </div>
+      <span class="stan-source-badge source-preset" id="stan-source-lbl">📅 25.02.2026</span>
+      <div class="sw-filters">
+        <select class="stan-select" id="stan-f-mag" onchange="renderStan()">
+          <option value="">Wszystkie magazyny</option>
+        </select>
+        <select class="stan-select" id="stan-f-grp" onchange="renderStan()">
+          <option value="">Wszystkie grupy</option>
+        </select>
+        <a href="zakupy-stan.html" class="btn btn-orange btn-sm">→ Pełny widok</a>
+      </div>
+      <div class="sw-stats">
+        <div class="sw-stat">
+          <div class="sw-stat-label">Rekordów</div>
+          <div class="sw-stat-val" style="color:var(--orange)" id="sw-rec">—</div>
+        </div>
+        <div class="sw-stat">
+          <div class="sw-stat-label">Magazyny</div>
+          <div class="sw-stat-val" id="sw-mag">—</div>
+        </div>
+        <div class="sw-stat">
+          <div class="sw-stat-label">Łącznie szt.</div>
+          <div class="sw-stat-val" style="font-size:12px" id="sw-szt">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stan-widget-body">
+      <div class="stan-table-wrap">
+        <table class="stan-table">
+          <thead>
+            <tr>
+              <th onclick="stanSort('nazwa')">Nazwa</th>
+              <th onclick="stanSort('indeks')">Indeks</th>
+              <th onclick="stanSort('magazyn')">Magazyn</th>
+              <th onclick="stanSort('nazwa_grupy')">Grupa</th>
+              <th onclick="stanSort('stan')" style="text-align:right">Stan</th>
+              <th onclick="stanSort('jm')">Jm</th>
+            </tr>
+          </thead>
+          <tbody id="stan-tbody"></tbody>
+        </table>
+      </div>
+      <div class="stan-table-footer" id="stan-footer"></div>
+    </div>
+
+    <div class="stan-widget-footer">
+      <span id="stan-custom-clear" style="display:none">
+        <button class="btn btn-sm" onclick="clearCustomStan()">✕ Usuń własny plik</button>
+      </span>
+      <div class="upload-zone-mini" onclick="document.getElementById('mag-file').click()"
+           ondrop="handleDrop(event)" ondragover="event.preventDefault()" ondragleave="event.preventDefault()">
+        <span>📂</span>
+        <span id="upload-mini-lbl">Wgraj nowszy plik XLSX ze StreamSoft</span>
+      </div>
+      <input type="file" id="mag-file" accept=".xlsx,.xls" onchange="handleFile(event)">
+      <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;white-space:nowrap" id="stan-total-lbl"></span>
+    </div>
+
+  </div><!-- /stan-widget -->
+
+  <!-- ══════════════════════════════════════════════════════════════════════
        BOX 1 — KARTONY / OPAKOWANIA ZBIORCZE
   ═══════════════════════════════════════════════════════════════════════ -->
   <section class="cat-section cat-orange">
-
     <div class="cat-header">
       <div class="cat-icon ci-orange">📦</div>
       <div class="cat-info">
         <div class="cat-title">Kartony / Opakowania Zbiorcze</div>
-        <div class="cat-desc">Kartony wysyłkowe i transportowe dla owoców miękkich — stany, zużycie historyczne, planowanie zakupów na sezon 2026</div>
+        <div class="cat-desc">Kartony wysyłkowe i transportowe dla owoców miękkich — zużycie historyczne, planowanie i zakup na sezon 2026</div>
       </div>
       <span class="cat-badge badge-active">✓ Aktywny moduł</span>
     </div>
-
     <div class="cat-body">
       <div class="cat-tools-grid">
 
-        <!-- ─ Karta 1: Stan Magazynowy ─────────────────────────────────── -->
-        <div class="dash-card card-orange">
-          <div class="card-top">
-            <div class="card-icon-wrap icon-orange">📦</div>
-            <div class="card-title"><a href="zakupy-stan.html" style="color:inherit;text-decoration:none">Stan Magazynowy ›</a></div>
-            <div class="card-desc">Stany opakowań w magazynach na wybrany dzień — wgraj plik z exportu StreamSoft</div>
-            <div class="card-badge badge-orange" id="stan-badge">Brak danych</div>
-          </div>
-
-          <div class="card-body">
-            <div class="stan-filters">
-              <select class="stan-select" id="stan-f-mag" onchange="renderStan()">
-                <option value="">Wszystkie magazyny</option>
-              </select>
-              <select class="stan-select" id="stan-f-grp" onchange="renderStan()">
-                <option value="">Wszystkie grupy</option>
-              </select>
-              <span class="stan-source-badge source-preset" id="stan-source-lbl">📅 25.02.2026</span>
-            </div>
-            <div class="stats-mini" id="stan-stats"></div>
-            <div class="stan-table-wrap">
-              <table class="stan-table">
-                <thead>
-                  <tr>
-                    <th onclick="stanSort('nazwa')">Nazwa</th>
-                    <th onclick="stanSort('magazyn')">Magazyn</th>
-                    <th onclick="stanSort('nazwa_grupy')">Grupa</th>
-                    <th onclick="stanSort('stan')" style="text-align:right">Stan</th>
-                    <th onclick="stanSort('jm')">Jm</th>
-                  </tr>
-                </thead>
-                <tbody id="stan-tbody"></tbody>
-              </table>
-            </div>
-            <div class="stan-table-footer" id="stan-footer"></div>
-            <div class="upload-zone-mini" onclick="document.getElementById('mag-file').click()"
-                 ondrop="handleDrop(event)" ondragover="event.preventDefault()" ondragleave="event.preventDefault()">
-              <span>📂</span>
-              <span id="upload-mini-lbl">Wgraj nowszy plik XLSX ze StreamSoft</span>
-            </div>
-            <input type="file" id="mag-file" accept=".xlsx,.xls" onchange="handleFile(event)">
-          </div>
-
-          <div class="card-footer">
-            <span id="stan-custom-clear" style="display:none">
-              <button class="btn btn-sm" onclick="clearCustomStan()">✕ Usuń własny plik</button>
-            </span>
-            <span style="flex:1"></span>
-            <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace" id="stan-total-lbl"></span>
-            <a href="zakupy-stan.html" class="btn btn-orange">→ Pełny widok</a>
-          </div>
-        </div>
-
-        <!-- ─ Karta 2: Zużycie Materiałów ────────────────────────────── -->
+        <!-- Karta: Zużycie Materiałów -->
         <div class="dash-card card-purple">
           <div class="card-top">
             <div class="card-icon-wrap icon-purple">📊</div>
@@ -422,7 +363,7 @@ input[type=file]#mag-file{display:none}
           </div>
         </div>
 
-        <!-- ─ Karta 3: Planowanie Zakupów 2026 ────────────────────────── -->
+        <!-- Karta: Planowanie Zakupów 2026 -->
         <div class="dash-card card-blue">
           <div class="card-top">
             <div class="card-icon-wrap icon-blue">🛒</div>
@@ -490,7 +431,7 @@ input[type=file]#mag-file{display:none}
         </div>
 
       </div><!-- /cat-tools-grid -->
-    </div><!-- /cat-body -->
+    </div>
   </section>
 
   <!-- ══════════════════════════════════════════════════════════════════════
@@ -507,26 +448,11 @@ input[type=file]#mag-file{display:none}
     </div>
     <div class="cat-body">
       <div class="placeholder-grid">
-        <div class="ph-slot">
-          <div class="ph-slot-icon">📊</div>
-          <div class="ph-slot-title">Stan magazynowy OJ</div>
-          <div class="ph-slot-meta">Etykiety, tacki, folie</div>
-        </div>
-        <div class="ph-slot">
-          <div class="ph-slot-icon">📈</div>
-          <div class="ph-slot-title">Zużycie OJ 2025</div>
-          <div class="ph-slot-meta">Per magazyn i format</div>
-        </div>
-        <div class="ph-slot">
-          <div class="ph-slot-icon">🛒</div>
-          <div class="ph-slot-title">Planowanie zakupów OJ</div>
-          <div class="ph-slot-meta">RFQ — opakowania jednostkowe</div>
-        </div>
+        <div class="ph-slot"><div class="ph-slot-icon">📊</div><div class="ph-slot-title">Stan magazynowy OJ</div><div class="ph-slot-meta">Etykiety, tacki, folie</div></div>
+        <div class="ph-slot"><div class="ph-slot-icon">📈</div><div class="ph-slot-title">Zużycie OJ 2025</div><div class="ph-slot-meta">Per magazyn i format</div></div>
+        <div class="ph-slot"><div class="ph-slot-icon">🛒</div><div class="ph-slot-title">Planowanie zakupów OJ</div><div class="ph-slot-meta">RFQ — opakowania jednostkowe</div></div>
       </div>
-      <div class="ph-note">
-        <span>ℹ️</span>
-        <span>Moduł w przygotowaniu — dane historyczne z ZP 2025 dostępne w sekcji Zużycie 2025 (filtr: Opakowania-Jednostkowe)</span>
-      </div>
+      <div class="ph-note"><span>ℹ️</span><span>Dane historyczne dostępne w Zużycie 2025 (filtr: Opakowania-Jednostkowe)</span></div>
     </div>
   </section>
 
@@ -544,26 +470,11 @@ input[type=file]#mag-file{display:none}
     </div>
     <div class="cat-body">
       <div class="placeholder-grid">
-        <div class="ph-slot">
-          <div class="ph-slot-icon">📊</div>
-          <div class="ph-slot-title">Stan magazynowy</div>
-          <div class="ph-slot-meta">Zapinki, taśmy, wkładki</div>
-        </div>
-        <div class="ph-slot">
-          <div class="ph-slot-icon">🛒</div>
-          <div class="ph-slot-title">Planowanie zakupów</div>
-          <div class="ph-slot-meta">RFQ — materiały pomocnicze</div>
-        </div>
-        <div class="ph-slot">
-          <div class="ph-slot-icon">📋</div>
-          <div class="ph-slot-title">Normatywy zużycia</div>
-          <div class="ph-slot-meta">Ilość na karton / na kg</div>
-        </div>
+        <div class="ph-slot"><div class="ph-slot-icon">📊</div><div class="ph-slot-title">Stan magazynowy</div><div class="ph-slot-meta">Zapinki, taśmy, wkładki</div></div>
+        <div class="ph-slot"><div class="ph-slot-icon">🛒</div><div class="ph-slot-title">Planowanie zakupów</div><div class="ph-slot-meta">RFQ — materiały pomocnicze</div></div>
+        <div class="ph-slot"><div class="ph-slot-icon">📋</div><div class="ph-slot-title">Normatywy zużycia</div><div class="ph-slot-meta">Ilość na karton / na kg</div></div>
       </div>
-      <div class="ph-note">
-        <span>ℹ️</span>
-        <span>Moduł w przygotowaniu — dane historyczne dostępne w Zużycie 2025 (filtr: Opakowania-Wkładki absorpcyjne)</span>
-      </div>
+      <div class="ph-note"><span>ℹ️</span><span>Dane historyczne dostępne w Zużycie 2025 (filtr: Opakowania-Wkładki absorpcyjne)</span></div>
     </div>
   </section>
 
@@ -581,26 +492,11 @@ input[type=file]#mag-file{display:none}
     </div>
     <div class="cat-body">
       <div class="placeholder-grid">
-        <div class="ph-slot">
-          <div class="ph-slot-icon">📊</div>
-          <div class="ph-slot-title">Stan palet</div>
-          <div class="ph-slot-meta">Per magazyn i typ</div>
-        </div>
-        <div class="ph-slot">
-          <div class="ph-slot-icon">🔄</div>
-          <div class="ph-slot-title">Rotacja palet</div>
-          <div class="ph-slot-meta">Wydania / przyjęcia</div>
-        </div>
-        <div class="ph-slot">
-          <div class="ph-slot-icon">🛒</div>
-          <div class="ph-slot-title">Planowanie zakupów</div>
-          <div class="ph-slot-meta">RFQ — palety sezon 2026</div>
-        </div>
+        <div class="ph-slot"><div class="ph-slot-icon">📊</div><div class="ph-slot-title">Stan palet</div><div class="ph-slot-meta">Per magazyn i typ</div></div>
+        <div class="ph-slot"><div class="ph-slot-icon">🔄</div><div class="ph-slot-title">Rotacja palet</div><div class="ph-slot-meta">Wydania / przyjęcia</div></div>
+        <div class="ph-slot"><div class="ph-slot-icon">🛒</div><div class="ph-slot-title">Planowanie zakupów</div><div class="ph-slot-meta">RFQ — palety sezon 2026</div></div>
       </div>
-      <div class="ph-note">
-        <span>ℹ️</span>
-        <span>Moduł w przygotowaniu — rozliczenia palet prowadzone aktualnie poza systemem OxM Brain</span>
-      </div>
+      <div class="ph-note"><span>ℹ️</span><span>Moduł w przygotowaniu — rozliczenia palet prowadzone aktualnie poza systemem OxM Brain</span></div>
     </div>
   </section>
 
@@ -651,7 +547,6 @@ function stanInit() {
   const selGrp = document.getElementById('stan-f-grp');
   mags.forEach(m => selMag.appendChild(new Option(m,m)));
   grps.forEach(g => selGrp.appendChild(new Option(g,g)));
-  document.getElementById('stan-badge').textContent = 'Stan: ' + stanDate;
   document.getElementById('pi-stan').textContent = stanData.length.toLocaleString('pl-PL');
   renderStan();
 }
@@ -680,13 +575,13 @@ function renderStan() {
   });
   const totalStan = rows.reduce((s,r) => s + (r.stan||0), 0);
   const magsN = new Set(rows.map(r => r.magazyn)).size;
-  document.getElementById('stan-stats').innerHTML = `
-    <div class="stat-mini"><div class="stat-mini-label">Rekordów</div><div class="stat-mini-val" style="color:var(--orange)">${rows.length}</div></div>
-    <div class="stat-mini"><div class="stat-mini-label">Magazyny</div><div class="stat-mini-val">${magsN}</div></div>
-    <div class="stat-mini"><div class="stat-mini-label">Łącznie szt.</div><div class="stat-mini-val" style="font-size:13px">${totalStan.toLocaleString('pl-PL',{maximumFractionDigits:0})}</div></div>
-  `;
+
+  document.getElementById('sw-rec').textContent = rows.length.toLocaleString('pl-PL');
+  document.getElementById('sw-mag').textContent = magsN;
+  document.getElementById('sw-szt').textContent = totalStan.toLocaleString('pl-PL',{maximumFractionDigits:0});
   document.getElementById('stan-total-lbl').textContent =
     'Łącznie: ' + totalStan.toLocaleString('pl-PL',{maximumFractionDigits:0}) + ' szt.';
+
   const GRP_CLR = {
     'Etykiety':'var(--purple)',
     'Opakowania-Transportowe':'var(--orange)',
@@ -697,13 +592,15 @@ function renderStan() {
   document.getElementById('stan-tbody').innerHTML = rows.map(r => {
     const clr = GRP_CLR[r.nazwa_grupy] || 'var(--text-dim)';
     return `<tr>
-      <td title="${r.nazwa}" style="font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis">${r.nazwa||r.indeks||'—'}</td>
-      <td style="font-size:10px">${r.magazyn}</td>
+      <td title="${r.nazwa}" style="font-weight:500;max-width:220px;overflow:hidden;text-overflow:ellipsis">${r.nazwa||'—'}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${r.indeks||'—'}</td>
+      <td style="font-size:11px">${r.magazyn}</td>
       <td><span style="font-size:10px;font-weight:700;color:${clr}">${r.nazwa_grupy||'—'}</span></td>
       <td class="num-cell" style="font-weight:700">${(r.stan||0).toLocaleString('pl-PL',{maximumFractionDigits:0})}</td>
-      <td style="font-size:10px;color:var(--text-muted)">${r.jm||''}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${r.jm||''}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">Brak wyników</td></tr>';
+  }).join('') || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted)">Brak wyników</td></tr>';
+
   document.getElementById('stan-footer').textContent =
     'Wyświetlono ' + rows.length + ' z ' + stanData.length + ' rekordów · stan na ' + stanDate;
 }
@@ -749,7 +646,6 @@ function processFile(file) {
       stanData = rekordy; stanDate = dateStr;
       document.getElementById('stan-source-lbl').textContent = '📂 ' + dateStr + ' (własny plik)';
       document.getElementById('stan-source-lbl').className = 'stan-source-badge source-upload';
-      document.getElementById('stan-badge').textContent = 'Stan: ' + dateStr;
       document.getElementById('stan-custom-clear').style.display = 'inline';
       document.getElementById('upload-mini-lbl').textContent = '↺ Zastąp plik nowszym z StreamSoft';
       const selMag = document.getElementById('stan-f-mag');

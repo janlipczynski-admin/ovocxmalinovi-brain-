@@ -1,72 +1,62 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 195" width="320" height="195">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 148" width="120" height="148">
   <defs>
-    <!-- Gradient spans full berry width: orange-red → magenta → purple -->
-    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="112" y1="0" x2="208" y2="0">
+    <!-- Gradient spans full berry width (x=19..101) -->
+    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="19" y1="0" x2="101" y2="0">
       <stop offset="0%"   stop-color="#E84020"/>
-      <stop offset="38%"  stop-color="#C82068"/>
-      <stop offset="100%" stop-color="#8B2FCC"/>
-    </linearGradient>
-    <!-- Slightly lighter variant for leaves -->
-    <linearGradient id="gl" gradientUnits="userSpaceOnUse" x1="130" y1="0" x2="195" y2="0">
-      <stop offset="0%"   stop-color="#E85025"/>
-      <stop offset="50%"  stop-color="#CC2872"/>
-      <stop offset="100%" stop-color="#9030CC"/>
+      <stop offset="40%"  stop-color="#C82070"/>
+      <stop offset="100%" stop-color="#8C2FCC"/>
     </linearGradient>
   </defs>
 
-  <!-- White background -->
-  <rect width="320" height="195" fill="white"/>
+  <rect width="120" height="148" fill="white"/>
 
-  <!-- Stem — thin curved line, purple gradient -->
-  <path d="M162 28 Q170 14 178 18 Q183 23 175 27" stroke="url(#gl)" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Leaves — drawn first so circles sit on top -->
+  <path d="M50,18 Q41,5 47,1 Q53,8 50,18Z"  fill="url(#g)"/>
+  <path d="M60,17 Q57,3 60,0 Q63,3 60,17Z"  fill="url(#g)"/>
+  <path d="M70,18 Q79,5 73,1 Q67,8 70,18Z"  fill="url(#g)"/>
 
-  <!-- Leaves / sepals (3 pointed shapes, flat fill) -->
-  <!-- Left leaf -->
-  <path d="M148 38 Q137 20 146 14 Q151 22 152 34Z" fill="url(#gl)"/>
-  <!-- Center leaf -->
-  <path d="M160 34 Q160 12 167 10 Q168 20 163 33Z" fill="url(#gl)"/>
-  <!-- Right leaf -->
-  <path d="M172 38 Q183 20 174 14 Q169 22 168 34Z" fill="url(#gl)"/>
+  <!-- Stem -->
+  <path d="M60,4 Q67,0 70,2" stroke="#9030CC" stroke-width="2" fill="none" stroke-linecap="round"/>
 
-  <!-- Berry drupelets — flat fills, no stroke, tight spacing -->
-  <!-- Row 1: 1 -->
-  <circle cx="160" cy="44"  r="12" fill="url(#g)"/>
-  <!-- Row 2: 3 -->
-  <circle cx="137" cy="64"  r="12" fill="url(#g)"/>
-  <circle cx="160" cy="64"  r="12" fill="url(#g)"/>
-  <circle cx="183" cy="64"  r="12" fill="url(#g)"/>
-  <!-- Row 3: 4 -->
-  <circle cx="125" cy="84"  r="12" fill="url(#g)"/>
-  <circle cx="148" cy="84"  r="12" fill="url(#g)"/>
-  <circle cx="171" cy="84"  r="12" fill="url(#g)"/>
-  <circle cx="194" cy="84"  r="12" fill="url(#g)"/>
-  <!-- Row 4: 4 -->
-  <circle cx="125" cy="106" r="12" fill="url(#g)"/>
-  <circle cx="148" cy="106" r="12" fill="url(#g)"/>
-  <circle cx="171" cy="106" r="12" fill="url(#g)"/>
-  <circle cx="194" cy="106" r="12" fill="url(#g)"/>
-  <!-- Row 5: 4 -->
-  <circle cx="125" cy="128" r="12" fill="url(#g)"/>
-  <circle cx="148" cy="128" r="12" fill="url(#g)"/>
-  <circle cx="171" cy="128" r="12" fill="url(#g)"/>
-  <circle cx="194" cy="128" r="12" fill="url(#g)"/>
-  <!-- Row 6: 3 -->
-  <circle cx="137" cy="148" r="12" fill="url(#g)"/>
-  <circle cx="160" cy="148" r="12" fill="url(#g)"/>
-  <circle cx="183" cy="148" r="12" fill="url(#g)"/>
-  <!-- Row 7: 2 -->
-  <circle cx="148" cy="165" r="11" fill="url(#g)"/>
-  <circle cx="171" cy="165" r="11" fill="url(#g)"/>
+  <!-- Drupelets  r=11  dx=20 (2 px overlap)  dy=16 (diagonal overlap ~3 px) -->
+  <!-- Row 1 — 1 -->
+  <circle cx="60"  cy="18"  r="11" fill="url(#g)"/>
+  <!-- Row 2 — 2 -->
+  <circle cx="50"  cy="34"  r="11" fill="url(#g)"/>
+  <circle cx="70"  cy="34"  r="11" fill="url(#g)"/>
+  <!-- Row 3 — 3 -->
+  <circle cx="40"  cy="50"  r="11" fill="url(#g)"/>
+  <circle cx="60"  cy="50"  r="11" fill="url(#g)"/>
+  <circle cx="80"  cy="50"  r="11" fill="url(#g)"/>
+  <!-- Row 4 — 4 (widest) -->
+  <circle cx="30"  cy="66"  r="11" fill="url(#g)"/>
+  <circle cx="50"  cy="66"  r="11" fill="url(#g)"/>
+  <circle cx="70"  cy="66"  r="11" fill="url(#g)"/>
+  <circle cx="90"  cy="66"  r="11" fill="url(#g)"/>
+  <!-- Row 5 — 4 -->
+  <circle cx="30"  cy="82"  r="11" fill="url(#g)"/>
+  <circle cx="50"  cy="82"  r="11" fill="url(#g)"/>
+  <circle cx="70"  cy="82"  r="11" fill="url(#g)"/>
+  <circle cx="90"  cy="82"  r="11" fill="url(#g)"/>
+  <!-- Row 6 — 3 -->
+  <circle cx="40"  cy="98"  r="11" fill="url(#g)"/>
+  <circle cx="60"  cy="98"  r="11" fill="url(#g)"/>
+  <circle cx="80"  cy="98"  r="11" fill="url(#g)"/>
+  <!-- Row 7 — 2 -->
+  <circle cx="50"  cy="112" r="11" fill="url(#g)"/>
+  <circle cx="70"  cy="112" r="11" fill="url(#g)"/>
+  <!-- Row 8 — 1 (tip) -->
+  <circle cx="60"  cy="125" r="10" fill="url(#g)"/>
 
-  <!-- Separator line -->
-  <line x1="44" y1="180" x2="276" y2="180" stroke="#1a1a18" stroke-width="1"/>
+  <!-- Separator -->
+  <line x1="8" y1="139" x2="112" y2="139" stroke="#1a1a18" stroke-width="0.8"/>
 
-  <!-- Company name — light weight, spaced, black -->
-  <text x="160" y="193"
+  <!-- Company name -->
+  <text x="60" y="147"
         text-anchor="middle"
-        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif"
-        font-size="19"
+        font-family="'Plus Jakarta Sans','Helvetica Neue',Helvetica,Arial,sans-serif"
+        font-size="9.5"
         font-weight="300"
-        letter-spacing="5"
+        letter-spacing="2"
         fill="#1a1a18">Ovoc x Malinovi</text>
 </svg>
