@@ -972,10 +972,9 @@ function renderStep3() {
   document.getElementById('wz-body').innerHTML = `
   <div class="rfq-head">
     <div class="rfq-meta">
-      <h3>OvocxMalinovi sp. z o.o.</h3>
+      <img src="logo.svg" alt="OvocxMalinovi" style="height:52px;margin-bottom:6px;display:block">
       <div class="doc-title">📋 Zapytanie ofertowe — Kartony Sezon 2026</div>
       <p>Grupy: <strong>${selGrps}</strong> &nbsp;·&nbsp; Okres: <strong>${periodLbl}</strong></p>
-      <p>Przygotowała: <strong>Renia</strong> — Specjalista ds. Rozliczeń &nbsp;·&nbsp; 26.02.2026</p>
     </div>
   </div>
   <div style="margin-bottom:16px;padding:12px 14px;border:2px solid ${WZ.selDostawca ? 'rgba(250,66,17,.3)' : 'var(--border)'};border-radius:10px;background:${WZ.selDostawca ? 'rgba(250,66,17,.03)' : 'transparent'}">
@@ -1064,7 +1063,7 @@ function doPrint() {
   document.getElementById('print-area').innerHTML = `
     <div class="print-header">
       <div style="flex:1">
-        <div class="print-logo-txt">OvocxMalinovi sp. z o.o.</div>
+        <img src="logo.svg" alt="OvocxMalinovi" style="height:52px;margin-bottom:8px;display:block">
         <div class="print-doc-title">Zapytanie ofertowe — Kartony Sezon 2026</div>
         <div class="print-meta">
           Okres: <strong>${periodLbl}</strong><br>
@@ -1106,7 +1105,7 @@ function doPrint() {
       <strong>Warunki i uwagi:</strong><br>
       • Prosimy o wycenę przy zamówieniu jednorazowym (całość) oraz w 3 transzach w sezonie<br>
       • Dostawy do magazynów: Chodzież, Łobżenica, Stróżewo, Wyszynki<br>
-      • Kartony dla owoców miękkich — wymagana odporność na wilgoć, spełnienie wymogów HACCP<br>
+      • Wymagania: zgodne z obowiązującymi normami — jeśli Państwo dysponują, poprosimy o dołączenie specyfikacji technicznej<br>
       • Termin odpowiedzi: do 7 dni od daty zapytania
     </div>
     <div class="print-footer">
@@ -1196,32 +1195,19 @@ function exportExcelStep3() {
   wsRows.push(['UWAGI DO ZAPYTANIA']);
   wsRows.push(['Proszę o wycenę jednorazową (cały sezon) oraz w 3 transzach']);
   wsRows.push(['Dostawy: Chodzież, Łobżenica, Stróżewo, Wyszynki']);
-  wsRows.push(['Wymagania: odporność na wilgoć, HACCP, kartony dla owoców miękkich']);
+  wsRows.push(['Wymagania: zgodne z obowiązującymi normami — jeśli Państwo dysponują, poprosimy o dołączenie specyfikacji technicznej']);
   wsRows.push(['Termin odpowiedzi: 7 dni']);
 
   const ws1 = XLSX.utils.aoa_to_sheet(wsRows);
   ws1['!cols'] = [{wch:4},{wch:22},{wch:44},{wch:16},{wch:20},{wch:18},{wch:26}];
-  ws1['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}},{s:{r:1,c:0},e:{r:1,c:5}},{s:{r:8,c:0},e:{r:8,c:5}},{s:{r:9,c:0},e:{r:9,c:5}}];
+  const lastMergeR = 3 + (selD ? 3 : 0) + 2; // row of email instruction
+  ws1['!merges'] = [
+    {s:{r:0,c:0},e:{r:0,c:6}},
+    {s:{r:1,c:0},e:{r:1,c:6}},
+    {s:{r:lastMergeR,c:0},e:{r:lastMergeR,c:6}},
+    {s:{r:lastMergeR+1,c:0},e:{r:lastMergeR+1,c:6}},
+  ];
   XLSX.utils.book_append_sheet(wb, ws1, 'Zapytanie ofertowe');
-
-  // Arkusz 2 — per-grupa szczegóły (jak Step 2)
-  const rows2 = [['Szczegóły zapotrzebowania per format (ZP 2025)'],[]];
-  const stanyMap  = getStanyMap();
-  const selGrpArr = Object.entries(WZ.groups).filter(([,v])=>v).map(([g])=>g);
-  rows2.push(['Grupa','Format ZP','Waga×Szt','Zapotrzeb. (kart.)','Przypisany K-xxx','Stan mag.','Do zamów.']);
-  selGrpArr.forEach(grp => {
-    const pakMap = WZ.computed[grp]||{};
-    Object.entries(pakMap).sort((a,b)=>b[1].kartony_period-a[1].kartony_period).forEach(([pak,d])=>{
-      const key=grp+'||'+pak, asgn=WZ.assignments[key]||'';
-      const stan=asgn?(stanyMap[asgn]?.total||0):'';
-      rows2.push([grp,pak.replace(/_/g,' '),`${d.waga_g}g×${d.szt}`,d.kartony_period,asgn,stan,
-        asgn?Math.max(0,d.kartony_period-(stanyMap[asgn]?.total||0)):'']);
-    });
-    rows2.push([]);
-  });
-  const ws2 = XLSX.utils.aoa_to_sheet(rows2);
-  ws2['!cols'] = [{wch:14},{wch:40},{wch:12},{wch:18},{wch:22},{wch:16},{wch:16}];
-  XLSX.utils.book_append_sheet(wb, ws2, 'Szczegóły per format');
 
   const fname = `RFQ_Kartony_2026_${selD?selD.skrot+'_':''}${today.replace(/\./g,'')}.xlsx`;
   XLSX.writeFile(wb, fname);
