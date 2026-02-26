@@ -193,8 +193,9 @@
       <div class="filter-label">Rodzaj kartonu</div>
       <select id="f-rodzaj" onchange="renderZestawienie()">
         <option value="">Wszystkie</option>
-        <option value="SKŁADANY">SKŁADANY</option>
-        <option value="KLEJONY">KLEJONY</option>
+        <option value="SKŁADANY|MAŁY">SKŁADANY MAŁY</option>
+        <option value="SKŁADANY|DUŻY">SKŁADANY DUŻY</option>
+        <option value="KLEJONY|DUŻY">KLEJONY DUŻY</option>
       </select>
     </div>
     <div class="filter-group">
@@ -647,7 +648,11 @@ function getFilteredKatalog() {
   return katalog
     .filter(k => {
       if (typ && k.typ_kartonu !== typ) return false;
-      if (rodzaj && k.rodzaj_kartonu !== rodzaj) return false;
+      if (rodzaj) {
+        const [rKind, rSize] = rodzaj.split('|');
+        if (k.rodzaj_kartonu !== rKind) return false;
+        if (rSize && k.rozmiar_kartonu !== rSize) return false;
+      }
       if (waga && k.waga_g !== parseFloat(waga)) return false;
       if (topseal === '1' && !k.topseal) return false;
       if (topseal === '0' && k.topseal) return false;
