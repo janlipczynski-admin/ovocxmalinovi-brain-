@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OvocxMalinovi — Centrum Operacyjne</title>
 <script src="config.js"></script>
+<script src="firma-wiedza.js"></script>
 <script src="opakowania-data.js" defer></script>
 <script src="planowanie-data.js" defer></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
@@ -786,6 +787,7 @@
   <div class="header-right">
     <div class="date-badge" id="dateDisplay"></div>
     <div class="live-pill">LIVE</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--purple);border:1px solid rgba(144,19,254,0.2);padding:4px 9px;border-radius:20px;background:rgba(144,19,254,0.05)">v3.1</div>
   </div>
 </header>
 
@@ -1495,7 +1497,7 @@ Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO
         body: JSON.stringify({
           model: malModel(),
           max_tokens: 1024,
-          system: MAL_SYSTEM,
+          system: MAL_SYSTEM + (window.FIRMA_WIEDZA ? '\n\n---\n' + window.FIRMA_WIEDZA : ''),
           messages: malHistory
         })
       });
