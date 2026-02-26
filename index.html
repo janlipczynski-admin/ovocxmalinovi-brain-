@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OvocxMalinovi — Centrum Operacyjne</title>
-<script src="config.js"></script>
-<script src="opakowania-data.js" defer></script>
-<script src="planowanie-data.js" defer></script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -304,20 +300,6 @@
   .pill-ip { background: rgba(217,119,6,0.1); color: var(--yellow); border: 1px solid rgba(217,119,6,0.2); }
   .pill-ok { background: rgba(22,163,74,0.1); color: var(--green); border: 1px solid rgba(22,163,74,0.2); }
   .pill-bl { background: rgba(220,38,38,0.1); color: var(--red); border: 1px solid rgba(220,38,38,0.2); }
-  .pill[data-pid] { cursor: pointer; user-select: none; transition: filter .12s; }
-  .pill[data-pid]:hover { filter: brightness(0.93); }
-
-  /* Malinoovek key setup */
-  .key-setup { background: rgba(250,66,17,0.05); border: 1px solid rgba(250,66,17,0.2); border-radius: 8px; padding: 11px 13px; margin-bottom: 10px; }
-  .key-setup-lbl { font-size: 11px; font-weight: 600; color: var(--orange); margin-bottom: 5px; }
-  .key-setup-hint { font-size: 10px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; }
-  .key-setup-row { display: flex; gap: 6px; }
-  .key-setup-row input { flex: 1; border: 1px solid var(--border2); border-radius: 6px; padding: 6px 9px; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text); background: var(--white); outline: none; min-width: 0; }
-  .key-setup-row input:focus { border-color: rgba(250,66,17,.4); }
-  .key-save-btn { padding: 6px 12px; background: var(--grad); color: white; border: none; border-radius: 6px; font-size: 11px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; white-space: nowrap; }
-  .key-save-btn:hover { opacity: .88; }
-  .key-reset-lnk { font-size: 9px; font-family: 'DM Mono', monospace; color: var(--text-muted); cursor: pointer; text-decoration: underline; margin-left: 8px; }
-  .key-reset-lnk:hover { color: var(--red); }
 
   /* Backlog */
   .backlog-list { display: flex; flex-direction: column; gap: 7px; }
@@ -522,70 +504,6 @@
   }
 
   .chat-btn:hover { opacity: 0.85; }
-  .chat-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .chat-history {
-    max-height: 210px;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    scroll-behavior: smooth;
-  }
-  .chat-history::-webkit-scrollbar { width: 3px; }
-  .chat-history::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-
-  .msg-bot {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px 8px 8px 2px;
-    padding: 9px 12px;
-    font-size: 12px;
-    line-height: 1.65;
-    color: var(--text);
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .msg-user {
-    background: var(--grad);
-    color: white;
-    border-radius: 8px 8px 2px 8px;
-    padding: 9px 12px;
-    font-size: 12px;
-    line-height: 1.5;
-    align-self: flex-end;
-    max-width: 90%;
-    word-break: break-word;
-  }
-  .typing-dots {
-    display: flex;
-    gap: 4px;
-    padding: 10px 14px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px 8px 8px 2px;
-    width: fit-content;
-  }
-  .typing-dots span {
-    width: 6px; height: 6px;
-    background: var(--text-muted);
-    border-radius: 50%;
-    animation: malBlink 1.2s infinite;
-  }
-  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes malBlink {
-    0%,60%,100% { opacity: 0.2; transform: scale(1); }
-    30% { opacity: 1; transform: scale(1.25); }
-  }
-  .ctx-badge {
-    font-size: 10px;
-    color: var(--purple);
-    opacity: 0.7;
-    margin-bottom: 4px;
-    font-family: 'DM Mono', monospace;
-  }
 
   /* Team strip */
   .team-row {
@@ -681,95 +599,6 @@
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-
-  /* ─── v3: Gear rings ─────────────────────────────────────── */
-  .stat-card { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .stat-info { flex: 1; min-width: 0; }
-  .gear-ring { position: relative; flex-shrink: 0; }
-  .gear-ring svg { display: block; }
-  .ring-val {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px; font-weight: 700; color: var(--text-dim);
-  }
-
-  /* ─── v3: Data viz ───────────────────────────────────────── */
-  .viz-section {
-    background: var(--white); border: 1px solid var(--border);
-    border-radius: 12px; overflow: hidden; box-shadow: var(--shadow);
-    margin-bottom: 14px; animation: up 0.3s ease both; animation-delay: 0.04s;
-  }
-  .viz-body { padding: 12px 18px 16px; }
-  .viz-bars { display: flex; align-items: flex-end; gap: 4px; height: 60px; margin-top: 8px; }
-  .viz-bar-col { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
-  .viz-bar { width: 100%; border-radius: 3px 3px 0 0; background: var(--grad); opacity: 0.7; transition: opacity 0.12s; }
-  .viz-bar:hover { opacity: 1; }
-  .viz-bar-lbl { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-muted); }
-
-  /* ─── v3: Modals ─────────────────────────────────────────── */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; z-index: 1000;
-    background: rgba(10,5,15,0.44); backdrop-filter: blur(4px);
-  }
-  .modal-overlay.open { display: flex; align-items: center; justify-content: center; padding: 20px; }
-  @keyframes modalIn { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .modal-box {
-    background: var(--white); border: 1px solid var(--border); border-radius: 14px;
-    width: 100%; max-width: 540px;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.22);
-    animation: modalIn 0.2s ease both;
-  }
-  .modal-head {
-    padding: 16px 20px; background: var(--surface2); border-bottom: 1px solid var(--border);
-    border-radius: 14px 14px 0 0; display: flex; align-items: flex-start; gap: 10px;
-  }
-  .modal-head-title { font-size: 14px; font-weight: 700; flex: 1; line-height: 1.4; }
-  .modal-head-close {
-    width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
-    border: 1px solid var(--border2); background: var(--white);
-    cursor: pointer; font-size: 15px; color: var(--text-muted);
-    display: flex; align-items: center; justify-content: center; transition: all 0.12s;
-  }
-  .modal-head-close:hover { border-color: var(--red); color: var(--red); }
-  .modal-body { padding: 18px 20px; }
-  .modal-row { margin-bottom: 13px; }
-  .modal-row:last-child { margin-bottom: 0; }
-  .modal-row-lbl {
-    font-family: 'DM Mono', monospace; font-size: 9px; text-transform: uppercase;
-    letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 4px;
-  }
-  .modal-row-val { font-size: 13px; line-height: 1.6; color: var(--text); }
-  .modal-tags { display: flex; gap: 5px; flex-wrap: wrap; padding-top: 12px; margin-top: 12px; border-top: 1px solid var(--border); }
-  .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
-  .modal-btn-close {
-    padding: 7px 16px; border-radius: 7px;
-    background: var(--surface2); border: 1px solid var(--border2);
-    color: var(--text-dim); font-size: 12px; font-weight: 500;
-    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.12s;
-  }
-  .modal-btn-close:hover { background: var(--bg); border-color: var(--border); }
-  .b-item-hint { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-muted); margin-top: 5px; opacity: 0; transition: opacity 0.15s; }
-  .b-item:hover .b-item-hint { opacity: 0.7; }
-
-  .sheet-badge {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--orange);
-    border: 1px solid rgba(250,66,17,0.2);
-    padding: 2px 5px;
-    border-radius: 3px;
-    background: rgba(250,66,17,0.05);
-    white-space: nowrap;
-    margin-left: 7px;
-    vertical-align: middle;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .process-item.has-sheet { cursor: pointer; }
-  .process-item.has-sheet:hover .sheet-badge { opacity: 1; }
-  .process-item.has-sheet .sheet-badge { opacity: 0.45; }
 </style>
 </head>
 <body>
@@ -793,77 +622,24 @@
 
   <div class="stats-bar">
     <div class="stat-card">
-      <div class="stat-info">
-        <div class="stat-label">Procesy</div>
-        <div class="stat-value">7</div>
-        <div class="stat-sub">Główne + wspierające</div>
-      </div>
-      <div class="gear-ring">
-        <svg width="44" height="44" viewBox="0 0 44 44">
-          <circle cx="22" cy="22" r="17" fill="none" stroke="var(--border)" stroke-width="3.5"/>
-          <circle cx="22" cy="22" r="17" fill="none" stroke="var(--orange)" stroke-width="3.5"
-            stroke-dasharray="30 77" stroke-linecap="round" transform="rotate(-90 22 22)" opacity="0.75"/>
-        </svg>
-        <div class="ring-val">29%</div>
-      </div>
+      <div class="stat-label">Procesy</div>
+      <div class="stat-value">7</div>
+      <div class="stat-sub">Główne + wspierające</div>
     </div>
     <div class="stat-card">
-      <div class="stat-info">
-        <div class="stat-label">In progress</div>
-        <div class="stat-value" style="color:var(--yellow)" id="cnt-ip">1</div>
-        <div class="stat-sub" id="cnt-ip-lbl">Gospodarka magazynowa</div>
-      </div>
-      <div class="gear-ring">
-        <svg width="44" height="44" viewBox="0 0 44 44">
-          <circle cx="22" cy="22" r="17" fill="none" stroke="var(--border)" stroke-width="3.5"/>
-          <circle cx="22" cy="22" r="17" fill="none" stroke="#d97706" stroke-width="3.5"
-            stroke-dasharray="15 92" stroke-linecap="round" transform="rotate(-90 22 22)" opacity="0.8"/>
-        </svg>
-        <div class="ring-val">14%</div>
-      </div>
+      <div class="stat-label">In progress</div>
+      <div class="stat-value" style="color:var(--yellow)">1</div>
+      <div class="stat-sub">Gospodarka magazynowa</div>
     </div>
     <div class="stat-card">
-      <div class="stat-info">
-        <div class="stat-label">Backlog</div>
-        <div class="stat-value grad">6</div>
-        <div class="stat-sub">Pomysłów i usprawnień</div>
-      </div>
-      <div class="gear-ring">
-        <svg width="44" height="44" viewBox="0 0 44 44">
-          <circle cx="22" cy="22" r="17" fill="none" stroke="var(--border)" stroke-width="3.5"/>
-          <circle cx="22" cy="22" r="17" fill="none" stroke="var(--purple)" stroke-width="3.5"
-            stroke-dasharray="64 43" stroke-linecap="round" transform="rotate(-90 22 22)" opacity="0.7"/>
-        </svg>
-        <div class="ring-val">60%</div>
-      </div>
+      <div class="stat-label">Backlog</div>
+      <div class="stat-value grad">6</div>
+      <div class="stat-sub">Pomysłów i usprawnień</div>
     </div>
     <div class="stat-card">
-      <div class="stat-info">
-        <div class="stat-label">Sezon</div>
-        <div class="stat-value">2026</div>
-        <div class="stat-sub">Przygotowania w toku</div>
-      </div>
-      <div class="gear-ring">
-        <svg width="44" height="44" viewBox="0 0 44 44">
-          <circle cx="22" cy="22" r="17" fill="none" stroke="var(--border)" stroke-width="3.5"/>
-          <circle cx="22" cy="22" r="17" fill="none" stroke="var(--green)" stroke-width="3.5"
-            stroke-dasharray="18 89" stroke-linecap="round" transform="rotate(-90 22 22)" opacity="0.75"/>
-        </svg>
-        <div class="ring-val">Q1</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- v3: Data Viz — Aktywność tygodniowa -->
-  <div class="viz-section">
-    <div class="card-header">
-      <div class="card-title">📈 Aktywność — Ostatnie tygodnie 2025</div>
-      <span id="viz-badge" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted)">ładowanie danych RT…</span>
-    </div>
-    <div class="viz-body">
-      <div class="viz-bars" id="viz-bars">
-        <!-- wypełniane przez JS z danych RT lub fallback -->
-      </div>
+      <div class="stat-label">Sezon</div>
+      <div class="stat-value">2026</div>
+      <div class="stat-sub">Przygotowania w toku</div>
     </div>
   </div>
 
@@ -886,7 +662,7 @@
                 <div class="p-owner">Dyrektor handlowy</div>
               </div>
             </div>
-            <div class="pill pill-ns" data-pid="01" onclick="toggleStatus(event,'01')" title="Kliknij, żeby zmienić status">Not started</div>
+            <div class="pill pill-ns">Not started</div>
           </div>
           <div class="process-item">
             <div class="p-left">
@@ -896,17 +672,17 @@
                 <div class="p-owner">Dr. handlowy + Magazyny + Iza + Renia</div>
               </div>
             </div>
-            <div class="pill pill-ns" data-pid="02" onclick="toggleStatus(event,'02')" title="Kliknij, żeby zmienić status">Not started</div>
+            <div class="pill pill-ns">Not started</div>
           </div>
-          <div class="process-item has-sheet" onclick="window.open('rozliczenia-rt.html','_self')">
+          <div class="process-item">
             <div class="p-left">
               <div class="p-num">03</div>
               <div>
-                <div class="p-name">Rozliczenia RT 2025<span class="sheet-badge">↗ Podgląd</span></div>
+                <div class="p-name">Rozliczenia tygodniowe</div>
                 <div class="p-owner">Dz. Rozliczeń</div>
               </div>
             </div>
-            <div class="pill pill-ns" data-pid="03" onclick="toggleStatus(event,'03')" title="Kliknij, żeby zmienić status">Not started</div>
+            <div class="pill pill-ns">Not started</div>
           </div>
         </div>
 
@@ -920,7 +696,7 @@
                 <div class="p-owner">Olgierd (nowy właściciel)</div>
               </div>
             </div>
-            <div class="pill pill-ns" data-pid="04" onclick="toggleStatus(event,'04')" title="Kliknij, żeby zmienić status">Not started</div>
+            <div class="pill pill-ns">Not started</div>
           </div>
           <div class="process-item active">
             <div class="p-left">
@@ -930,7 +706,7 @@
                 <div class="p-owner">Renia + Magazyny · v1.0</div>
               </div>
             </div>
-            <div class="pill pill-ip" data-pid="05" onclick="toggleStatus(event,'05')" title="Kliknij, żeby zmienić status">In progress</div>
+            <div class="pill pill-ip">In progress</div>
           </div>
           <div class="process-item">
             <div class="p-left">
@@ -940,7 +716,7 @@
                 <div class="p-owner">wszyscy związani z biurem</div>
               </div>
             </div>
-            <div class="pill pill-ns" data-pid="06" onclick="toggleStatus(event,'06')" title="Kliknij, żeby zmienić status">Not started</div>
+            <div class="pill pill-ns">Not started</div>
           </div>
           <div class="process-item">
             <div class="p-left">
@@ -950,7 +726,7 @@
                 <div class="p-owner">Iza i Renia</div>
               </div>
             </div>
-            <div class="pill pill-ns" data-pid="07" onclick="toggleStatus(event,'07')" title="Kliknij, żeby zmienić status">Not started</div>
+            <div class="pill pill-ns">Not started</div>
           </div>
         </div>
       </div>
@@ -959,40 +735,34 @@
     <!-- Backlog -->
     <div class="card">
       <div class="card-header">
-        <div class="card-title">Backlog</div>
+        <div class="card-title">Backlog Zmian</div>
         <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted)">6 wpisów</span>
       </div>
       <div class="card-body">
         <div class="backlog-list">
-          <div class="b-item" data-bid="b0">
+          <div class="b-item">
             <div class="b-title">Automatyczne potwierdzenie przyjęcia reklamacji do klienta</div>
             <div class="b-tags"><span class="tag">⚙️ Usprawnienie</span><span class="tag">Reklamacje</span></div>
-            <div class="b-item-hint">↗ kliknij aby zobaczyć szczegóły</div>
           </div>
-          <div class="b-item" data-bid="b1">
+          <div class="b-item">
             <div class="b-title">Archiwizacja dokumentów do chmury zamiast kuriera do księgowości</div>
             <div class="b-tags"><span class="tag">💻 Systemowa</span><span class="tag">Komunikacja</span></div>
-            <div class="b-item-hint">↗ kliknij aby zobaczyć szczegóły</div>
           </div>
-          <div class="b-item" data-bid="b2">
+          <div class="b-item">
             <div class="b-title">Kontrola terminu zamknięcia reklamacji — cel: ≤14 dni</div>
             <div class="b-tags"><span class="tag">⚙️ Usprawnienie</span><span class="tag">Reklamacje</span></div>
-            <div class="b-item-hint">↗ kliknij aby zobaczyć szczegóły</div>
           </div>
-          <div class="b-item" data-bid="b3">
+          <div class="b-item">
             <div class="b-title">Ustandaryzowanie dokumentu PZ przy przyjęciu surowców na magazyn</div>
             <div class="b-tags"><span class="tag">⚙️ Usprawnienie</span><span class="tag tag-y">Magazyn</span></div>
-            <div class="b-item-hint">↗ kliknij aby zobaczyć szczegóły</div>
           </div>
-          <div class="b-item" data-bid="b4">
+          <div class="b-item">
             <div class="b-title">Mail complaints@ nie działa zgodnie z założeniami</div>
             <div class="b-tags"><span class="tag tag-r">🔴 Błąd</span><span class="tag">Komunikacja</span></div>
-            <div class="b-item-hint">↗ kliknij aby zobaczyć szczegóły</div>
           </div>
-          <div class="b-item" data-bid="b5">
+          <div class="b-item">
             <div class="b-title">Regularna kontrola stanów magazynowych vs stany w SS (1x/miesiąc)</div>
             <div class="b-tags"><span class="tag tag-r">🔴 Błąd</span><span class="tag tag-y">Magazyn</span></div>
-            <div class="b-item-hint">↗ kliknij aby zobaczyć szczegóły</div>
           </div>
         </div>
       </div>
@@ -1007,14 +777,14 @@
         </div>
         <div class="card-body">
           <div class="tools-list">
-            <a href="planowanie-i-sprzedaz.html" class="tool" style="text-decoration:none;color:inherit">
+            <div class="tool">
               <div class="tool-icon ti-o">📦</div>
               <div class="tool-info">
-                <div class="tool-name">Planowanie i Sprzedaż 2026</div>
-                <div class="tool-desc">Import Excel · edycja · historia zmian</div>
+                <div class="tool-name">Planer Opakowań 2026</div>
+                <div class="tool-desc">Szacowanie zapotrzebowania</div>
               </div>
               <div class="tool-arr">→</div>
-            </a>
+            </div>
             <div class="tool">
               <div class="tool-icon ti-b">📊</div>
               <div class="tool-info">
@@ -1023,30 +793,14 @@
               </div>
               <div class="tool-arr">→</div>
             </div>
-            <a href="rozliczenia-rt.html" class="tool" style="text-decoration:none;color:inherit">
+            <div class="tool">
               <div class="tool-icon ti-g">💶</div>
               <div class="tool-info">
-                <div class="tool-name">Rozliczenia RT 2025</div>
-                <div class="tool-desc">Zamówienia · podgląd z filtrowaniem</div>
+                <div class="tool-name">Rozliczenia RT</div>
+                <div class="tool-desc">Excel rozliczeń tygodniowych</div>
               </div>
               <div class="tool-arr">→</div>
-            </a>
-            <a href="opakowania.html" class="tool" style="text-decoration:none;color:inherit">
-              <div class="tool-icon ti-o">📦</div>
-              <div class="tool-info">
-                <div class="tool-name">Opakowania 2025</div>
-                <div class="tool-desc">Kartony · per odbiorca · ZP 2025</div>
-              </div>
-              <div class="tool-arr">→</div>
-            </a>
-            <a href="zakupy-planowanie.html" class="tool" style="text-decoration:none;color:inherit">
-              <div class="tool-icon ti-o">🛒</div>
-              <div class="tool-info">
-                <div class="tool-name">Planowanie Zakupów</div>
-                <div class="tool-desc">Stany mag · bufor · arkusz zamówień</div>
-              </div>
-              <div class="tool-arr">→</div>
-            </a>
+            </div>
             <div class="tool">
               <div class="tool-icon ti-p">⚙️</div>
               <div class="tool-info">
@@ -1061,74 +815,24 @@
 
       <div class="mal-card">
         <div class="mal-header">
-          <div class="mal-avatar" style="background:none;padding:0;overflow:hidden;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="30" height="30" style="display:block;border-radius:8px;">
-              <defs>
-                <linearGradient id="malg" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#fa4211"/>
-                  <stop offset="100%" stop-color="#9013fe"/>
-                </linearGradient>
-              </defs>
-              <rect width="100" height="100" rx="18" fill="#0a0608"/>
-              <path d="M 44 12 Q 50 3 56 12" fill="#fa4211" opacity="0.8"/>
-              <line x1="50" y1="5" x2="50" y2="13" stroke="#fa4211" stroke-width="2.5" opacity="0.9"/>
-              <circle cx="50" cy="18" r="7.5" fill="url(#malg)"/>
-              <circle cx="38" cy="29" r="8.5" fill="url(#malg)"/>
-              <circle cx="62" cy="29" r="8.5" fill="url(#malg)"/>
-              <circle cx="29" cy="43" r="8.5" fill="url(#malg)"/>
-              <circle cx="50" cy="42" r="8.5" fill="url(#malg)"/>
-              <circle cx="71" cy="43" r="8.5" fill="url(#malg)"/>
-              <circle cx="37" cy="56" r="8.5" fill="url(#malg)"/>
-              <circle cx="63" cy="56" r="8.5" fill="url(#malg)"/>
-              <ellipse cx="50" cy="41" rx="20" ry="19" fill="#180d2a" opacity="0.93"/>
-              <ellipse cx="43" cy="39" rx="5.5" ry="6.5" fill="white"/>
-              <ellipse cx="57" cy="39" rx="5.5" ry="6.5" fill="white"/>
-              <path d="M 41 49 Q 50 56 59 49" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-              <rect x="37" y="68" width="26" height="19" rx="9" fill="url(#malg)"/>
-              <circle cx="50" cy="77" r="3.5" fill="white" opacity="0.55"/>
-              <rect x="37" y="83" width="11" height="12" rx="5.5" fill="url(#malg)" opacity="0.85"/>
-              <rect x="52" y="83" width="11" height="12" rx="5.5" fill="url(#malg)" opacity="0.85"/>
-              <rect x="23" y="63" width="11" height="17" rx="5.5" fill="url(#malg)" opacity="0.85" transform="rotate(-20,28,71)"/>
-              <rect x="66" y="60" width="11" height="17" rx="5.5" fill="url(#malg)" opacity="0.85" transform="rotate(30,71,68)"/>
-              <circle cx="74" cy="55" r="5.5" fill="url(#malg)" opacity="0.85"/>
-              <line x1="7" y1="37" x2="19" y2="37" stroke="#9013fe" stroke-width="1.6" opacity="0.75"/>
-              <line x1="7" y1="37" x2="7" y2="50" stroke="#9013fe" stroke-width="1.6" opacity="0.75"/>
-              <circle cx="7" cy="53" r="2.5" fill="none" stroke="#9013fe" stroke-width="1.6" opacity="0.75"/>
-              <circle cx="9" cy="28" r="2" fill="#fa4211" opacity="0.65"/>
-              <line x1="11" y1="28" x2="19" y2="28" stroke="#fa4211" stroke-width="1.3" opacity="0.65"/>
-              <line x1="81" y1="37" x2="93" y2="37" stroke="#fa4211" stroke-width="1.6" opacity="0.75"/>
-              <line x1="93" y1="37" x2="93" y2="49" stroke="#fa4211" stroke-width="1.6" opacity="0.75"/>
-              <circle cx="93" cy="52" r="2.5" fill="none" stroke="#fa4211" stroke-width="1.6" opacity="0.75"/>
-              <circle cx="91" cy="28" r="2" fill="#9013fe" opacity="0.65"/>
-              <line x1="81" y1="28" x2="89" y2="28" stroke="#9013fe" stroke-width="1.3" opacity="0.65"/>
-            </svg>
-          </div>
-          <div style="flex:1">
+          <div class="mal-avatar">🫐</div>
+          <div>
             <div class="mal-name">Malinoovek</div>
             <div class="mal-status">● Agent aktywny</div>
           </div>
-          <span class="key-reset-lnk" id="mal-key-reset" onclick="malResetKey()" title="Usuń zapisany klucz API" style="display:none">kasuj klucz</span>
         </div>
         <div class="mal-body">
-          <div class="key-setup" id="mal-key-setup">
-            <div class="key-setup-lbl">🔑 Klucz API Anthropic</div>
-            <div class="key-setup-hint">Zostanie zapisany lokalnie w tej przeglądarce.<br>Zaczyna się od <code style="font-family:'DM Mono',monospace;font-size:10px">sk-ant-</code></div>
-            <div class="key-setup-row">
-              <input type="password" id="mal-key-input" placeholder="sk-ant-api03-..." autocomplete="off">
-              <button class="key-save-btn" onclick="malSaveKey()">Zapisz</button>
-            </div>
+          <div class="chat-bubble">
+            Cześć! Znam procesy OvocxMalinovi i pomagam w codziennej pracy. Co dziś robimy?
           </div>
-          <div class="chat-history" id="mal-history">
-            <div class="msg-bot">Cześć! Znam procesy OvocxMalinovi i pomagam w codziennej pracy. Co dziś robimy?</div>
-          </div>
-          <div class="suggestions" id="mal-suggestions">
-            <button class="sug" onclick="malSend('Ile kartonów opakowań potrzebujemy na sezon 2026?')">📦 Opakowania na sezon 2026?</button>
-            <button class="sug" onclick="malSend('Jaki jest status procesu gospodarka magazynowa i co jest do zrobienia?')">📋 Status: gospodarka magazynowa</button>
-            <button class="sug" onclick="malSend('Co jest najważniejszego do zrobienia w backlogu procesów?')">🔴 Co pilnego w backlogu?</button>
+          <div class="suggestions">
+            <button class="sug">📦 Opakowania na sezon 2026?</button>
+            <button class="sug">📋 Status: gospodarka magazynowa</button>
+            <button class="sug">🔴 Co pilnego w backlogu?</button>
           </div>
           <div class="chat-row">
-            <input class="chat-in" id="mal-input" type="text" placeholder="Napisz do Malinoovka...">
-            <button class="chat-btn" id="mal-btn" onclick="malSend()">↑</button>
+            <input class="chat-in" type="text" placeholder="Napisz do Malinoovka...">
+            <button class="chat-btn">↑</button>
           </div>
         </div>
         <div class="team-row">
@@ -1169,33 +873,6 @@
     </div>
 
   </div>
-
-  <!-- Planowanie i Sprzedaż 2026 — pasek nawigacyjny -->
-  <div class="card" style="margin-top:14px;animation-delay:0.22s">
-    <div class="card-header">
-      <div class="card-title">📊 Planowanie i Sprzedaż 2026</div>
-      <a href="planowanie-i-sprzedaz.html" class="card-link">↗ Otwórz narzędzie</a>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)">
-      <div style="background:var(--white);padding:14px 18px;cursor:pointer" onclick="location.href='planowanie-i-sprzedaz.html'">
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px">Dane sprzedaży</div>
-        <div style="font-size:13px;font-weight:500">Import pliku Excel</div>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Wgraj "planowanie i sprzedaz.xlsx"</div>
-      </div>
-      <div style="background:var(--white);padding:14px 18px;cursor:pointer" onclick="location.href='planowanie-i-sprzedaz.html#plan'">
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px">Plan 2026</div>
-        <div style="font-size:13px;font-weight:500">Edycja i korekty</div>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Inline edycja · zmiany z historią</div>
-      </div>
-      <div style="background:var(--white);padding:14px 18px;cursor:pointer" onclick="location.href='planowanie-i-sprzedaz.html#historia'">
-        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px">Historia zmian</div>
-        <div style="font-size:13px;font-weight:500" id="dashHistCount">—</div>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Zapisanych edycji lokalnie</div>
-      </div>
-    </div>
-  </div>
-
-</div>
 </main>
 
 <script>
@@ -1205,802 +882,13 @@
   document.getElementById('dateDisplay').textContent =
     days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
 
-  // Historia zmian z Planowania — licznik na dashboardzie
-  try {
-    const h = JSON.parse(localStorage.getItem('oxm_plan_history') || '[]');
-    const total = h.reduce((s, e) => s + (e.changes?.length || 0), 0);
-    const el = document.getElementById('dashHistCount');
-    if (el) el.textContent = total ? total + ' zmian' : 'Brak zmian';
-  } catch(e) {}
-
-  // ─── Malinoovek chat ───────────────────────────────────────────
-  const MAL_SYSTEM = `Jesteś Malinoovkiem — asystentem AI firmy OvocxMalinovi sp. z o.o.
-Twoja rola: wspierać zespół w codziennej pracy, optymalizacji procesów i zarządzaniu wiedzą firmową.
-Zawsze odpowiadaj po polsku, chyba że ktoś pisze do Ciebie w innym języku.
-Jesteś konkretny, procesowy i praktyczny. Nie owijasz w bawełnę. Odpowiedzi krótkie i na temat — max 3-4 zdania lub lista punktów.
-
-## O firmie
-OvocxMalinovi sp. z o.o. — polska firma handlująca owocami miękkimi (głównie maliny).
-Działalność: zakup owoców od producentów (rolników), logistyka, sprzedaż krajowa i zagraniczna, rozliczenia z growerami, programy odmianowe (BerryWorld Varieties).
-Kluczowe systemy: StreamSoft (ERP), Excel RT (rozliczenia tygodniowe), EDI (DINO).
-
-## Zespół
-- Jan — Właściciel, projekt REORG (mapy procesów)
-- Iza — Rozliczenia, FA/KORFA, korekty SS, EDI DINO. Korekta ilościowa: ZWWZ→MM-→MM+→RW→KORFA
-- Renia — Zakupy, FZ, FRR rolnicy, opakowania (buforowanie u dostawców), przelewy 2x/tydzień
-- Kacper — Sprzedaż, zakup owoców, zamówienia SS, forecasting, koordynacja transportu z TJ
-- Adrian — Excel RT, analizy finansowe, wytyczne do przelewów, KOWR/FOR/GUS
-- Olgierd — Menedżer procesów, przejmuje obsługę reklamacji od Izy
-- TJ — firma zewnętrzna, logistyka i transport
-
-## Znane problemy operacyjne
-- Magazyny często nie wysyłają WZ na czas → blokuje rozliczenia
-- Korekty ilościowe w SS = 4 dokumenty extra (bardzo pracochłonne)
-- Logistyka niepełna po odejściu Marty
-- Proces reklamacyjny wymaga pełnego opisania przed przekazaniem Olgierdowi
-
-## Narzędzia dostępne w systemie
-- Planowanie i Sprzedaż 2026 (planowanie-i-sprzedaz.html) — import Excel, forecasting
-- Rozliczenia RT 2025 (rozliczenia-rt.html) — podgląd zamówień, filtrowanie
-- Opakowania 2025 (opakowania.html) — zużycie kartonów, per odbiorca, Zestawienia Proceduralne 2025
-- StreamSoft ERP — system zewnętrzny
-
-## Partnerzy
-- BerryWorld Varieties — royalties tylko z kanału Frutania & Local Market
-- DINO — klient EDI
-- RUBI JUICE — klient z osobnym supportem SS`;
-
-  let malHistory = [];
-
-  // ─── Smart context injection ────────────────────────────────────────────────
-  // Jeśli zapytanie dotyczy danych firmowych, dołącz je automatycznie.
-  function buildMalContext(msg) {
-    const q = msg.toLowerCase()
-      .replace(/ą/g,'a').replace(/ć/g,'c').replace(/ę/g,'e')
-      .replace(/ł/g,'l').replace(/ń/g,'n').replace(/ó/g,'o')
-      .replace(/ś/g,'s').replace(/ź/g,'z').replace(/ż/g,'z');
-
-    // Czy pytanie dotyczy danych ilościowych lub cenowych?
-    const dataKeywords = ['karton','opakow','kg','ton','ilosc','wolumen','prognoz','plan','zamow','sprzed','sezon','tygodnie','tyg','pakow','szt','jednostek'];
-    const priceKeywords = ['cen','pln','eur','zl','plac','porownaj','rozlicz','rt ','rt2025'];
-    const hasDataIntent = dataKeywords.some(k => q.includes(k)) || priceKeywords.some(k => q.includes(k));
-    if (!hasDataIntent) return '';
-
-    const hasOpak = !!(window.OPAK_DATA && window.OPAK_DATA.rekordy);
-    const hasPlan = !!(window.PLAN_DATA && window.PLAN_DATA.length);
-    if (!hasOpak && !hasPlan) return '';
-
-    // ── Znajdź odbiorcę ──
-    const ODBIORCY = hasOpak ? [...new Set(window.OPAK_DATA.rekordy.map(r => r.odbiorca))] : [];
-    const KLIENCI  = hasPlan  ? [...new Set(window.PLAN_DATA.filter(r=>r.typ==='klient').map(r=>r.podmiot))] : [];
-    const RT_ODB   = (window.RT_SPRZEDAZ && window.RT_SPRZEDAZ.length) ? [...new Set(window.RT_SPRZEDAZ.map(r => r.odbiorca))] : [];
-    const ALL_NAMES = [...new Set([...ODBIORCY, ...KLIENCI, ...RT_ODB])];
-
-    function normN(s) {
-      return (s||'').toLowerCase()
-        .replace(/ą/g,'a').replace(/ć/g,'c').replace(/ę/g,'e')
-        .replace(/ł/g,'l').replace(/ń/g,'n').replace(/ó/g,'o')
-        .replace(/ś/g,'s').replace(/ź/g,'z').replace(/ż/g,'z');
-    }
-
-    let matchedName = null;
-    let bestScore = 0;
-    for (const name of ALL_NAMES) {
-      const n = normN(name);
-      const words = n.split(/\s+/);
-      const score = words.filter(w => q.includes(w) && w.length > 2).length;
-      if (score > bestScore) { bestScore = score; matchedName = name; }
-    }
-
-    // ── Znajdź owoc ──
-    let matchedOwoc = null;
-    if (q.includes('malin')) matchedOwoc = 'Malina';
-    else if (q.includes('truskaw')) matchedOwoc = 'Truskawka tunelowa';
-
-    // ── Znajdź miesiąc ──
-    const MONTHS = {
-      'maj':[18,22],'czerw':[23,26],'lip':[27,30],'sierp':[31,35],
-      'wrzes':[36,39],'paz':[40,44],'listop':[45,46]
-    };
-    let matchedWeeks = null;
-    for (const [kw, range] of Object.entries(MONTHS)) {
-      if (q.includes(kw)) { matchedWeeks = range; break; }
-    }
-
-    // ── Czy pyta o ceny? ──
-    const priceKw = ['cen','eur','pln','zl','zł','plac','platil','kosztow'];
-    const asksPrice = priceKw.some(k => q.includes(k));
-
-    let ctx = '';
-
-    // ── Dane RT 2025 (opakowania) ──
-    if (hasOpak) {
-      let rekordy = window.OPAK_DATA.rekordy;
-      if (matchedName) rekordy = rekordy.filter(r => r.odbiorca === matchedName || normN(r.odbiorca) === normN(matchedName));
-      if (matchedOwoc) rekordy = rekordy.filter(r => r.owoc === matchedOwoc);
-      if (matchedWeeks) rekordy = rekordy.filter(r => r.tydzien >= matchedWeeks[0] && r.tydzien <= matchedWeeks[1]);
-
-      if (rekordy.length > 0) {
-        // Agreguj po pak
-        const agg = {};
-        for (const r of rekordy) {
-          const k = r.pak;
-          if (!agg[k]) agg[k] = { owoc: r.owoc, odbiorca: r.odbiorca, kg: 0, kartony: 0, jednostki: 0 };
-          agg[k].kg       += r.wolumen_kg  || 0;
-          agg[k].kartony  += r.kartonow    || 0;
-          agg[k].jednostki+= r.jednostek   || 0;
-        }
-        const rows = Object.entries(agg)
-          .sort((a,b) => b[1].kartony - a[1].kartony)
-          .slice(0, 20)
-          .map(([pak, v]) => `${pak}: ${Math.round(v.kg)} kg, ${v.kartony} kart., ${v.jednostki} jedn.`)
-          .join('\n');
-        const totalKg      = rekordy.reduce((s,r) => s + (r.wolumen_kg||0), 0);
-        const totalKartony = rekordy.reduce((s,r) => s + (r.kartonow||0), 0);
-
-        ctx += `\n[DANE FIRMOWE — RT 2025`;
-        if (matchedName) ctx += `, odbiorca: ${matchedName}`;
-        if (matchedOwoc) ctx += `, owoc: ${matchedOwoc}`;
-        if (matchedWeeks) ctx += `, tyg. ${matchedWeeks[0]}–${matchedWeeks[1]}`;
-        ctx += `]\nŁącznie: ${Math.round(totalKg)} kg, ${totalKartony} kartonów\nWg opakowania:\n${rows}`;
-        if (asksPrice) ctx += '\n(Ceny sprzedaży — patrz sekcja RT 2025 poniżej)';
-      }
-    }
-
-    // ── Dane RT 2025 — ceny sprzedaży (z Rozliczenia RT 2025.xlsx) ──
-    const hasRT = !!(window.RT_SPRZEDAZ && window.RT_SPRZEDAZ.length);
-    const asksRT = asksPrice || q.includes('porownaj') || q.includes('cen') || q.includes('rozlicz');
-    if (hasRT && asksRT) {
-      let rt = window.RT_SPRZEDAZ;
-      const isCompare = q.includes('porownaj');
-      if (!isCompare && matchedName) {
-        rt = rt.filter(r => normN(r.odbiorca).includes(normN(matchedName)) || normN(matchedName).includes(normN(r.odbiorca).split(' ')[0]));
-      }
-      if (matchedOwoc) rt = rt.filter(r => r.owoc === matchedOwoc);
-      if (matchedWeeks) rt = rt.filter(r => r.tydzien >= matchedWeeks[0] && r.tydzien <= matchedWeeks[1]);
-
-      if (rt.length > 0) {
-        const agg = {};
-        for (const r of rt) {
-          const k = `${r.odbiorca}|||${r.owoc}`;
-          if (!agg[k]) agg[k] = { odbiorca: r.odbiorca, owoc: r.owoc, totalKg: 0, totalPrzychod: 0, tygodnie: new Set() };
-          agg[k].totalKg      += r.kg;
-          agg[k].totalPrzychod += r.przychod;
-          agg[k].tygodnie.add(r.tydzien);
-        }
-        const rtRows = Object.values(agg)
-          .sort((a, b) => b.totalKg - a.totalKg)
-          .slice(0, 20)
-          .map(v => {
-            const avg = v.totalKg > 0 ? (v.totalPrzychod / v.totalKg).toFixed(2) : '—';
-            return `${v.odbiorca} / ${v.owoc}: ${Math.round(v.totalKg)} kg, śr. cena ${avg} PLN/kg`;
-          }).join('\n');
-
-        ctx += `\n\n[ROZLICZENIA RT 2025 — ceny sprzedaży`;
-        if (!isCompare && matchedName) ctx += `, odbiorca: ${matchedName}`;
-        if (matchedOwoc) ctx += `, owoc: ${matchedOwoc}`;
-        if (matchedWeeks) ctx += `, tyg. ${matchedWeeks[0]}–${matchedWeeks[1]}`;
-        ctx += `]\n${rtRows}`;
-      }
-    }
-
-    // ── Dane PLAN 2026 ──
-    if (hasPlan) {
-      let plan = window.PLAN_DATA.filter(r => r.typ === 'klient');
-      if (matchedName) plan = plan.filter(r => r.podmiot === matchedName || normN(r.podmiot) === normN(matchedName));
-      if (matchedOwoc) plan = plan.filter(r => r.owoc === matchedOwoc);
-      if (matchedWeeks) plan = plan.filter(r => r.tydzien >= matchedWeeks[0] && r.tydzien <= matchedWeeks[1]);
-
-      const planKw = ['plan','prognoz','2026','sezon'];
-      const asksPlan = planKw.some(k => q.includes(k));
-
-      if (plan.length > 0 && asksPlan) {
-        const planKg = plan.reduce((s,r) => s + (r.kg||0), 0);
-        const grouped = {};
-        for (const r of plan) {
-          const k = `${r.podmiot}/${r.owoc}`;
-          if (!grouped[k]) grouped[k] = 0;
-          grouped[k] += r.kg || 0;
-        }
-        const planRows = Object.entries(grouped)
-          .sort((a,b) => b[1]-a[1]).slice(0,10)
-          .map(([k,v]) => `${k}: ${Math.round(v)} kg`)
-          .join('\n');
-        ctx += `\n\n[PLAN 2026`;
-        if (matchedName) ctx += `, klient: ${matchedName}`;
-        if (matchedOwoc) ctx += `, owoc: ${matchedOwoc}`;
-        ctx += `]\nŁącznie: ${Math.round(planKg)} kg\n${planRows}`;
-      }
-    }
-
-    return ctx;
-  }
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  function malGetKey() {
-    // Priorytet: config.js (jeden klucz dla całego zespołu)
-    const cfgKey = (window.OXM_CONFIG && window.OXM_CONFIG.apiKey) ? window.OXM_CONFIG.apiKey.trim() : '';
-    if (cfgKey) return cfgKey;
-    // Fallback: klucz wpisany ręcznie w tej przeglądarce
-    return localStorage.getItem('oxm_mal_key') || null;
-  }
-
-  function malModel() {
-    return (window.OXM_CONFIG && window.OXM_CONFIG.model) ? window.OXM_CONFIG.model : 'claude-haiku-4-5-20251001';
-  }
-
-  function malAddMsg(role, text) {
-    const hist = document.getElementById('mal-history');
-    const div = document.createElement('div');
-    div.className = role === 'user' ? 'msg-user' : 'msg-bot';
-    div.textContent = text;
-    hist.appendChild(div);
-    hist.scrollTop = hist.scrollHeight;
-    return div;
-  }
-
-  function malTyping() {
-    const hist = document.getElementById('mal-history');
-    const div = document.createElement('div');
-    div.className = 'typing-dots';
-    div.id = 'mal-typing';
-    div.innerHTML = '<span></span><span></span><span></span>';
-    hist.appendChild(div);
-    hist.scrollTop = hist.scrollHeight;
-  }
-
-  function malStopTyping() {
-    const t = document.getElementById('mal-typing');
-    if (t) t.remove();
-  }
-
-  async function malSend(text) {
-    const input = document.getElementById('mal-input');
-    const msg = (text || input.value).trim();
-    if (!msg) return;
-    const key = malGetKey();
-    if (!key) {
-      document.getElementById('mal-key-setup').style.display = 'block';
-      document.getElementById('mal-key-input').focus();
-      return;
-    }
-
-    input.value = '';
-    document.getElementById('mal-suggestions').style.display = 'none';
-    document.getElementById('mal-btn').disabled = true;
-
-    // Wstrzyknij dane firmowe jeśli zapytanie tego wymaga
-    const ctx = buildMalContext(msg);
-    const msgForApi = ctx ? msg + '\n\n' + ctx : msg;
-
-    malAddMsg('user', msg);
-    if (ctx) {
-      const badge = document.createElement('div');
-      badge.className = 'ctx-badge';
-      badge.textContent = '📊 dane firmowe dołączone';
-      document.getElementById('mal-history').appendChild(badge);
-    }
-    malHistory.push({ role: 'user', content: msgForApi });
-    malTyping();
-
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': key,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
-          model: malModel(),
-          max_tokens: 1024,
-          system: MAL_SYSTEM,
-          messages: malHistory
-        })
-      });
-      malStopTyping();
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        if (res.status === 401) {
-          localStorage.removeItem('oxm_mal_key');
-          malAddMsg('bot', '⚠️ Nieprawidłowy klucz API. Odśwież stronę i podaj poprawny klucz.');
-        } else {
-          malAddMsg('bot', '⚠️ Błąd API: ' + (err.error?.message || res.statusText));
-        }
-        return;
-      }
-      const data = await res.json();
-      const reply = data.content?.[0]?.text || '(brak odpowiedzi)';
-      malHistory.push({ role: 'assistant', content: reply });
-      malAddMsg('bot', reply);
-    } catch (e) {
-      malStopTyping();
-      malAddMsg('bot', '⚠️ Błąd połączenia. Sprawdź CORS — uruchom przez serwer HTTP (nie file://).');
-    } finally {
-      document.getElementById('mal-btn').disabled = false;
-      input.focus();
-    }
-  }
-
-  document.getElementById('mal-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); malSend(); }
-  });
-
-  // Google Sheets — dynamiczne linki do zakładek procesów (fuzzy matching)
-  (async function loadSheetLinks() {
-    const SPREADSHEET_ID = '1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY';
-    const API_KEY = 'AIzaSyAlBh740rlHHg5wtWVDFp_WBFROxS8kKbM';
-    const BASE = 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID + '/edit';
-
-    // Normalizacja: małe litery + usunięcie polskich ogonków + zwinięcie spacji
-    function norm(s) {
-      return s.trim().toLowerCase()
-        .replace(/ą/g,'a').replace(/ć/g,'c').replace(/ę/g,'e')
-        .replace(/ł/g,'l').replace(/ń/g,'n').replace(/ó/g,'o')
-        .replace(/ś/g,'s').replace(/ź/g,'z').replace(/ż/g,'z')
-        .replace(/\s+/g,' ');
-    }
-
-    // Odległość Levenshteina
-    function lev(a, b) {
-      const m = a.length, n = b.length;
-      const dp = Array.from({length: m+1}, (_, i) =>
-        Array.from({length: n+1}, (_, j) => i || j));
-      for (let i = 1; i <= m; i++)
-        for (let j = 1; j <= n; j++)
-          dp[i][j] = a[i-1] === b[j-1]
-            ? dp[i-1][j-1]
-            : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-      return dp[m][n];
-    }
-
-    try {
-      const res = await fetch(
-        'https://sheets.googleapis.com/v4/spreadsheets/' + SPREADSHEET_ID +
-        '?fields=sheets.properties&key=' + API_KEY
-      );
-      if (!res.ok) return;
-      const data = await res.json();
-
-      // Dwie mapy: exact lowercase → gid  oraz  znormalizowana → gid
-      const exactMap = {}, normMap = {};
-      for (const sheet of data.sheets) {
-        const title = sheet.properties.title.trim();
-        const gid   = sheet.properties.sheetId;
-        exactMap[title.toLowerCase()] = gid;
-        normMap[norm(title)] = gid;
-      }
-
-      function findGid(processName) {
-        // 1. Exact (case-insensitive)
-        const exact = processName.trim().toLowerCase();
-        if (exactMap[exact] !== undefined) return exactMap[exact];
-        // 2. Znormalizowane (bez ogonków, małe litery)
-        const normalized = norm(processName);
-        if (normMap[normalized] !== undefined) return normMap[normalized];
-        // 3. Fuzzy: Levenshtein ≤ 3 na znormalizowanych
-        let bestGid = null, bestDist = Infinity;
-        for (const [key, gid] of Object.entries(normMap)) {
-          const d = lev(normalized, key);
-          if (d <= 3 && d < bestDist) { bestDist = d; bestGid = gid; }
-        }
-        return bestGid;
-      }
-
-      document.querySelectorAll('.process-item').forEach(item => {
-        const nameEl = item.querySelector('.p-name');
-        if (!nameEl) return;
-        const gid = findGid(nameEl.textContent);
-        if (gid !== null) {
-          const url = BASE + '?gid=' + gid + '#gid=' + gid;
-          item.classList.add('has-sheet');
-          nameEl.insertAdjacentHTML('afterend', '<span class="sheet-badge">↗ Sheets</span>');
-          item.addEventListener('click', () => window.open(url, '_blank'));
-        }
-      });
-
-      // ─── Sync statusów procesów z Google Sheets ───────────────
-      // Mapowanie wartości Sheets → kod pilla
-      function sheetStatusToCode(val) {
-        const v = (val || '').trim().toLowerCase();
-        if (v.includes('progress')) return 'ip';
-        if (v === 'done' || v.includes('done') || v.includes('gotow') || v === 'ok') return 'ok';
-        if (v.includes('block') || v.includes('zablok')) return 'bl';
-        if (v.includes('not started') || v === 'ns') return 'ns';
-        return null; // nieznana wartość — nie nadpisuj
-      }
-
-      // Przeszukaj każdy arkusz szukając kolumny STATUS
-      for (const sheet of data.sheets) {
-        try {
-          const title = sheet.properties.title;
-          const range = encodeURIComponent(title + '!A1:H25');
-          const vRes = await fetch(
-            'https://sheets.googleapis.com/v4/spreadsheets/' + SPREADSHEET_ID +
-            '/values/' + range + '?key=' + API_KEY
-          );
-          if (!vRes.ok) continue;
-          const vData = await vRes.json();
-          const rows = vData.values || [];
-          if (rows.length < 2) continue;
-
-          // Znajdź nagłówek STATUS (wiersz z "STATUS" w jednej z komórek)
-          let headerRow = -1, statusCol = -1, nameCol = -1;
-          for (let ri = 0; ri < Math.min(5, rows.length); ri++) {
-            const row = rows[ri];
-            const statusIdx = row.findIndex(c => (c||'').toUpperCase().includes('STATUS'));
-            if (statusIdx !== -1) {
-              headerRow = ri;
-              statusCol = statusIdx;
-              // Szukaj kolumny z nazwami — szukaj "NAZW", "PROCES", albo weź kol. 0
-              nameCol = row.findIndex(c => {
-                const u = (c||'').toUpperCase();
-                return u.includes('NAZW') || u.includes('PROCES') || u.includes('NAME');
-              });
-              if (nameCol === -1) nameCol = 0;
-              break;
-            }
-          }
-          if (statusCol === -1 || headerRow === -1) continue;
-
-          // Mamy arkusz z kolumną STATUS — aktualizuj pille
-          let updated = 0;
-          for (let ri = headerRow + 1; ri < rows.length; ri++) {
-            const row = rows[ri];
-            const processName = (row[nameCol] || '').trim();
-            const statusRaw   = (row[statusCol] || '').trim();
-            if (!processName && !statusRaw) continue;
-            const code = sheetStatusToCode(statusRaw);
-            if (!code) continue;
-
-            // Dopasuj do pilla po nazwie procesu (norm + lev)
-            const pNorm = norm(processName);
-            document.querySelectorAll('.pill[data-pid]').forEach(pill => {
-              const nameEl2 = pill.closest('.process-item') && pill.closest('.process-item').querySelector('.p-name');
-              if (!nameEl2) return;
-              const dNorm = norm(nameEl2.textContent.replace(/↗.*/,'').trim());
-              if (dNorm === pNorm || lev(pNorm, dNorm) <= 3) {
-                const pid = pill.dataset.pid;
-                // Update localStorage + pill
-                const statuses = JSON.parse(localStorage.getItem(PILL_KEY) || '{}');
-                statuses[pid] = code;
-                localStorage.setItem(PILL_KEY, JSON.stringify(statuses));
-                pill.className = 'pill pill-' + code;
-                pill.textContent = PILL_LABELS[code];
-                updated++;
-              }
-            });
-          }
-
-          if (updated > 0) {
-            updatePillCounters();
-            break; // Znaleziono właściwy arkusz — kończymy
-          }
-        } catch (e2) { continue; }
-      }
-
-      // Wszystkie tytuły kart — automatyczny link tylko jeśli nie ma już card-link
-      document.querySelectorAll('.card-title').forEach(titleEl => {
-        const header = titleEl.closest('.card-header');
-        if (header.querySelector('.card-link')) return; // już jest link — pomijamy
-        const gid = findGid(titleEl.textContent);
-        if (gid !== null) {
-          const url = BASE + '?gid=' + gid + '#gid=' + gid;
-          const link = document.createElement('a');
-          link.href = url;
-          link.target = '_blank';
-          link.className = 'card-link';
-          link.textContent = '↗ Otwórz w Google Sheets';
-          header.appendChild(link);
-        }
-      });
-    } catch (e) {
-      // brak dostępu do API — dashboard działa normalnie
-    }
-  })();
-
-  // ─── Status procesów ──────────────────────────────────────────
-  const PILL_LABELS = { ns: 'Not started', ip: 'In progress', ok: 'Done ✓', bl: 'Blocked' };
-  const PILL_CYCLE  = ['ns', 'ip', 'ok', 'bl'];
-  const PILL_KEY    = 'oxm_process_status';
-  const PILL_DEFAULTS = { '01':'ns','02':'ns','03':'ns','04':'ns','05':'ip','06':'ns','07':'ns' };
-
-  function toggleStatus(e, pid) {
-    e.stopPropagation();
-    const statuses = JSON.parse(localStorage.getItem(PILL_KEY) || '{}');
-    const cur = statuses[pid] !== undefined ? statuses[pid] : (PILL_DEFAULTS[pid] || 'ns');
-    const next = PILL_CYCLE[(PILL_CYCLE.indexOf(cur) + 1) % PILL_CYCLE.length];
-    statuses[pid] = next;
-    localStorage.setItem(PILL_KEY, JSON.stringify(statuses));
-    const pill = document.querySelector('.pill[data-pid="' + pid + '"]');
-    if (pill) { pill.className = 'pill pill-' + next; pill.textContent = PILL_LABELS[next]; }
-    updatePillCounters();
-  }
-
-  function loadStatuses() {
-    const statuses = JSON.parse(localStorage.getItem(PILL_KEY) || '{}');
-    document.querySelectorAll('.pill[data-pid]').forEach(function(pill) {
-      const pid = pill.dataset.pid;
-      const st = statuses[pid] !== undefined ? statuses[pid] : (PILL_DEFAULTS[pid] || 'ns');
-      pill.className = 'pill pill-' + st;
-      pill.textContent = PILL_LABELS[st];
-    });
-    updatePillCounters();
-  }
-
-  function updatePillCounters() {
-    const statuses = JSON.parse(localStorage.getItem(PILL_KEY) || '{}');
-    let ipCount = 0; const ipNames = [];
-    document.querySelectorAll('.pill[data-pid]').forEach(function(pill) {
-      const pid = pill.dataset.pid;
-      const st = statuses[pid] !== undefined ? statuses[pid] : (PILL_DEFAULTS[pid] || 'ns');
-      if (st === 'ip') {
-        ipCount++;
-        const nameEl = pill.closest('.process-item') && pill.closest('.process-item').querySelector('.p-name');
-        if (nameEl) ipNames.push(nameEl.textContent.replace(/↗.*/, '').trim());
-      }
-    });
-    const cntEl = document.getElementById('cnt-ip');
-    const lblEl = document.getElementById('cnt-ip-lbl');
-    if (cntEl) cntEl.textContent = ipCount;
-    if (lblEl) lblEl.textContent = ipCount === 0 ? 'Brak aktywnych' : ipNames.slice(0,2).join(', ') + (ipNames.length > 2 ? '…' : '');
-  }
-
-  loadStatuses();
-
-  // ─── Malinoovek klucz ─────────────────────────────────────────
-  function malSaveKey() {
-    const inp = document.getElementById('mal-key-input');
-    const k = inp.value.trim();
-    if (!k) { inp.style.borderColor = 'var(--red)'; return; }
-    inp.style.borderColor = '';
-    localStorage.setItem('oxm_mal_key', k);
-    document.getElementById('mal-key-setup').style.display = 'none';
-    document.getElementById('mal-key-reset').style.display = 'inline';
-    malAddMsg('bot', '✅ Klucz zapisany! Możesz teraz pisać do Malinoovka.');
-    document.getElementById('mal-input').focus();
-  }
-
-  function malResetKey() {
-    if (!confirm('Usunąć zapisany klucz API?')) return;
-    localStorage.removeItem('oxm_mal_key');
-    document.getElementById('mal-key-setup').style.display = 'block';
-    document.getElementById('mal-key-reset').style.display = 'none';
-    document.getElementById('mal-key-input').value = '';
-  }
-
-  document.getElementById('mal-key-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') malSaveKey();
-  });
-
-  // ─── Ładowanie danych RT 2025 (Rozliczenia RT 2025.xlsx) w tle ───────────────
-  (async function loadRTSprzedaz() {
-    try {
-      const resp = await fetch('Rozliczenia RT 2025.xlsx');
-      if (!resp.ok) return;
-      const buf = await resp.arrayBuffer();
-      const wb = XLSX.read(buf, { type: 'array', cellDates: false });
-      const ws = wb.Sheets['Zamówienia'];
-      if (!ws) return;
-      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true });
-      window.RT_SPRZEDAZ = raw.slice(1)
-        .filter(r => r.some(c => c != null && c !== ''))
-        .map(r => ({
-          tydzien:  parseFloat(r[4])  || 0,
-          producent:String(r[5]  || ''),
-          wyrob:    String(r[6]  || ''),
-          odbiorca: String(r[7]  || ''),
-          kg:       parseFloat(r[12]) || 0,
-          cena:     parseFloat(r[14]) || 0,
-          przychod: parseFloat(r[20]) || 0,
-          owoc:     String(r[38] || ''),
-        }))
-        .filter(r => r.odbiorca && r.kg > 0);
-    } catch(e) { /* silent fail */ }
-  })();
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  // ─── v3: Modal data ───────────────────────────────────────────
-  var BACKLOG_DETAILS = {
-    b0: { title: 'Auto-potwierdzenie przyjęcia reklamacji', owner: 'Olgierd', priority: 'Średni',
-          desc: 'Po rejestracji reklamacji w SS, klient powinien automatycznie otrzymać e-mail z potwierdzeniem i numerem sprawy. Obecnie brak takiego mechanizmu.',
-          next: 'Zdefiniować szablon e-mail i trigger w SS lub zewnętrznym narzędziu.',
-          effort: 'Średni — integracja SS z e-mail', type: 'Usprawnienie', area: 'Reklamacje' },
-    b1: { title: 'Archiwizacja dokumentów do chmury', owner: 'Renia', priority: 'Niski',
-          desc: 'Dokumenty (FA, CMR, WZ) wysyłane kurierem do zewnętrznej księgowości mogą być skanowane i archiwizowane w chmurze. Zmniejszy koszty i przyspieszy dostęp.',
-          next: 'Wybrać platformę (Google Drive / SharePoint), ustalić strukturę folderów i procedurę skanowania.',
-          effort: 'Niski — konfiguracja i procedura', type: 'Systemowa', area: 'Komunikacja' },
-    b2: { title: 'Kontrola terminu reklamacji ≤14 dni', owner: 'Olgierd', priority: 'Wysoki',
-          desc: 'Brak monitoringu czasu obsługi reklamacji. Cel: każda reklamacja zamknięta w ≤14 dni roboczych.',
-          next: 'Stworzyć arkusz kontrolny lub raport w SS z datą otwarcia/zamknięcia.',
-          effort: 'Niski — raport kontrolny', type: 'Usprawnienie', area: 'Reklamacje' },
-    b3: { title: 'Ustandaryzowanie dokumentu PZ', owner: 'Renia + Magazyny', priority: 'Średni',
-          desc: 'Różne formaty PZ od różnych magazynów utrudniają rejestrację w SS. Potrzebny jednolity szablon.',
-          next: 'Przygotować szablon PZ i wdrożyć we wszystkich magazynach.',
-          effort: 'Niski — szablon dokumentu', type: 'Usprawnienie', area: 'Magazyn' },
-    b4: { title: 'Mail complaints@ nie działa', owner: 'Jan', priority: 'Wysoki',
-          desc: 'Skrzynka complaints@ nie przekierowuje poprawnie lub nie jest monitorowana. Wymaga weryfikacji konfiguracji i odpowiedzialności.',
-          next: 'Sprawdzić konfigurację DNS/MX, ustalić właściciela skrzynki i procedurę odpowiedzi.',
-          effort: 'Niski — konfiguracja e-mail', type: 'Błąd', area: 'Komunikacja' },
-    b5: { title: 'Kontrola stanów magazynowych 1×/miesiąc', owner: 'Renia + Magazyny', priority: 'Wysoki',
-          desc: 'Rozbieżności między fizycznym stanem magazynu a SS wykrywane za późno. Potrzebna miesięczna inwentaryzacja wyrywkowa.',
-          next: 'Wdrożyć procedurę miesięcznej kontroli stanów z checklistą.',
-          effort: 'Niski — procedura miesięczna', type: 'Błąd', area: 'Magazyn' }
-  };
-
-  var PROCESS_DETAILS = {
-    '01': { name: 'Sprzedaż i Handel', owner: 'Kacper (Dyrektor handlowy)',
-            desc: 'Zakup owoców od growerów, sprzedaż krajowa i zagraniczna, forecasting roczny/tygodniowy/dzienny. Główna oś przychodów firmy.',
-            tools: 'StreamSoft — zamówienia · Planowanie i Sprzedaż 2026',
-            kpi: 'Wolumen sprzedaży [kg] · marża [PLN/kg] · % realizacji planu',
-            next: 'Opisanie procesu i mapa przepływu dokumentów' },
-    '02': { name: 'Obsługa zamówień OxM', owner: 'Kacper + Magazyny + Iza + Renia',
-            desc: 'Od przyjęcia zamówienia przez WZ, CMR, FA aż do wysyłki i potwierdzenia odbioru. Kluczowy problem: WZ od magazynów z opóźnieniem.',
-            tools: 'StreamSoft — WZ, FA, CMR',
-            kpi: 'Czas od zamówienia do FA [dni] · % WZ na czas',
-            next: 'Ustalenie SLA dla magazynów na wysyłkę WZ (max 24h)' },
-    '03': { name: 'Rozliczenia RT 2025', owner: 'Iza + Adrian',
-            desc: 'Tygodniowe rozliczenia z growerami (FRR), FA/KORFA dla klientów, korekty ilościowe w SS: ZWWZ→MM-→MM+→RW→KORFA. Faktury DINO przez EDI.',
-            tools: 'Excel RT · StreamSoft · EDI (DINO)',
-            kpi: 'Czas wystawienia FA [dni od WZ] · % korekt/FA',
-            next: 'Automatyzacja pobierania danych z SS do RT' },
-    '04': { name: 'Obsługa reklamacji', owner: 'Olgierd (nowy właściciel; przejmuje od Izy)',
-            desc: 'Rejestracja reklamacji → weryfikacja → korekta w SS (jeśli ilościowa) → odpowiedź do klienta. Reklamacje ilościowe = 4 dodatkowe dokumenty w SS.',
-            tools: 'StreamSoft — KORFA, korekty ilościowe',
-            kpi: 'Czas zamknięcia ≤14 dni · % korekt bez błędów',
-            next: 'Pełne opisanie procesu przed formalnym przekazaniem Olgierdowi' },
-    '05': { name: 'Gospodarka magazynowa', owner: 'Renia + Magazyny',
-            desc: 'Zakup i buforowanie opakowań, PZ/FPZ, WZ przy wydaniu towaru. Znany problem: magazyny nie wysyłają WZ na czas → blokada rozliczeń.',
-            tools: 'StreamSoft — PZ, WZ, MM, RW',
-            kpi: '% WZ na czas · poziom bufora opakowań [%]',
-            next: 'Wdrożenie SLA na WZ; miesięczna kontrola stanów' },
-    '06': { name: 'Komunikacja wewnętrzna', owner: 'Wszyscy związani z biurem',
-            desc: 'WhatsApp, e-mail, telefon. Zgłoszenia zapotrzebowania z magazynów mailowo/WhatsApp. Brak standaryzacji kanałów i formatów.',
-            tools: 'WhatsApp · e-mail · telefon',
-            kpi: 'Brak formalnych KPI — do ustalenia',
-            next: 'Wyznaczenie kanałów i standardów komunikacji dla każdego typu wiadomości' },
-    '07': { name: 'Certyfikacja i wymogi prawne', owner: 'Iza i Renia',
-            desc: 'BerryWorld Varieties royalties (tylko Frutania & Local Market), KOWR, FOR, GUS i inne wymogi formalne. Raporty okresowe do urzędów.',
-            tools: 'KOWR · FOR · GUS — formularze zewnętrzne',
-            kpi: '% raportów złożonych na czas',
-            next: 'Kalendarz compliance z terminami wszystkich raportów' }
-  };
-
-  function openModal(data) {
-    var ov = document.getElementById('modal-overlay');
-    document.getElementById('modal-title').textContent = data.title || data.name || '';
-    var body = '';
-    if (data.owner)  body += '<div class="modal-row"><div class="modal-row-lbl">Właściciel</div><div class="modal-row-val">' + data.owner + '</div></div>';
-    if (data.desc)   body += '<div class="modal-row"><div class="modal-row-lbl">Opis</div><div class="modal-row-val">' + data.desc + '</div></div>';
-    if (data.tools)  body += '<div class="modal-row"><div class="modal-row-lbl">Narzędzia</div><div class="modal-row-val">' + data.tools + '</div></div>';
-    if (data.kpi)    body += '<div class="modal-row"><div class="modal-row-lbl">KPI</div><div class="modal-row-val">' + data.kpi + '</div></div>';
-    if (data.next)   body += '<div class="modal-row"><div class="modal-row-lbl">Następny krok</div><div class="modal-row-val">' + data.next + '</div></div>';
-    if (data.effort) body += '<div class="modal-row"><div class="modal-row-lbl">Nakład pracy</div><div class="modal-row-val">' + data.effort + '</div></div>';
-    var tags = '';
-    if (data.type)     tags += '<span class="tag ' + (data.type === 'Błąd' ? 'tag-r' : data.type === 'Systemowa' ? '' : 'tag-o') + '">' + (data.type === 'Błąd' ? '🔴 ' : data.type === 'Systemowa' ? '💻 ' : '⚙️ ') + data.type + '</span>';
-    if (data.area)     tags += '<span class="tag ' + (data.area === 'Magazyn' ? 'tag-y' : '') + '">' + data.area + '</span>';
-    if (data.priority) tags += '<span class="tag ' + (data.priority === 'Wysoki' ? 'tag-r' : data.priority === 'Średni' ? 'tag-y' : '') + '">Priorytet: ' + data.priority + '</span>';
-    if (tags) body += '<div class="modal-tags">' + tags + '</div>';
-    document.getElementById('modal-body').innerHTML = body;
-    ov.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeModal() {
-    document.getElementById('modal-overlay').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  window.closeModal = closeModal;
-
-  document.getElementById('modal-overlay').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-  });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeModal();
-  });
-
-  // Backlog items → modal
-  document.querySelectorAll('.b-item[data-bid]').forEach(function(el) {
-    el.addEventListener('click', function() {
-      var bid = el.dataset.bid;
-      if (BACKLOG_DETAILS[bid]) openModal(BACKLOG_DETAILS[bid]);
+  document.querySelectorAll('.sug').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelector('.chat-in').value = b.textContent.trim().replace(/^.\s/, '');
+      document.querySelector('.chat-in').focus();
     });
   });
-
-  // Process items → modal (nie te, które nawigują sameIn siebie)
-  document.querySelectorAll('.process-item[data-pid]').forEach(function(el) {
-    // Pomiń te z klasą has-sheet (mają własną nawigację onclick)
-    if (el.classList.contains('has-sheet')) return;
-    el.addEventListener('click', function(e) {
-      // Nie otwieraj modalu jeśli kliknięto pill (toggle statusu)
-      if (e.target.closest('.pill')) return;
-      var pid = el.querySelector('.pill[data-pid]');
-      if (pid && PROCESS_DETAILS[pid.dataset.pid]) {
-        openModal(PROCESS_DETAILS[pid.dataset.pid]);
-      }
-    });
-  });
-
-  // ─── v3: Data viz chart ───────────────────────────────────────
-  (function initVizChart() {
-    function renderChart(weekData) {
-      var container = document.getElementById('viz-bars');
-      var badge = document.getElementById('viz-badge');
-      if (!container) return;
-      var maxVal = Math.max.apply(null, weekData.map(function(d){ return d.v; })) || 1;
-      var html = weekData.map(function(d) {
-        var pct = Math.round((d.v / maxVal) * 100);
-        return '<div class="viz-bar-col">' +
-          '<div class="viz-bar" style="height:' + pct + '%" title="Tyg.' + d.w + ': ' + d.v.toLocaleString('pl') + ' kg"></div>' +
-          '<div class="viz-bar-lbl">T' + d.w + '</div>' +
-          '</div>';
-      }).join('');
-      container.innerHTML = html;
-      if (badge) badge.textContent = weekData.length + ' tygodni · RT 2025';
-    }
-
-    // Czekamy na załadowanie RT_SPRZEDAZ z xlsx (ładowane async)
-    var tries = 0;
-    var maxTries = 20;
-    function tryLoad() {
-      tries++;
-      if (window.RT_SPRZEDAZ && window.RT_SPRZEDAZ.length > 0) {
-        // Agreguj po tygodniach
-        var agg = {};
-        window.RT_SPRZEDAZ.forEach(function(r) {
-          if (!r.tydzien) return;
-          agg[r.tydzien] = (agg[r.tydzien] || 0) + (r.kg || 0);
-        });
-        var weeks = Object.keys(agg).map(Number).sort(function(a,b){return a-b;});
-        // Ostatnie 12 tygodni
-        var last = weeks.slice(-12);
-        renderChart(last.map(function(w){ return { w: w, v: Math.round(agg[w]) }; }));
-        return;
-      }
-      // Fallback: placeholder jeśli nie ma danych
-      if (tries >= maxTries) {
-        var placeholder = [18,19,20,21,22,23,24,25,26,27,28,29].map(function(w) {
-          return { w: w, v: Math.round(8000 + Math.random() * 18000) };
-        });
-        renderChart(placeholder);
-        var badge = document.getElementById('viz-badge');
-        if (badge) badge.textContent = 'dane przykładowe (brak pliku RT)';
-        return;
-      }
-      setTimeout(tryLoad, 500);
-    }
-    setTimeout(tryLoad, 1200);
-  })();
-  // ─────────────────────────────────────────────────────────────
-
-  (function initMalKey() {
-    const cfgKey = (window.OXM_CONFIG && window.OXM_CONFIG.apiKey) ? window.OXM_CONFIG.apiKey.trim() : '';
-    if (cfgKey) {
-      // Klucz skonfigurowany w config.js — ukryj cały formularz
-      document.getElementById('mal-key-setup').style.display = 'none';
-      document.getElementById('mal-key-reset').style.display = 'none';
-      return;
-    }
-    const hasKey = !!localStorage.getItem('oxm_mal_key');
-    document.getElementById('mal-key-setup').style.display = hasKey ? 'none' : 'block';
-    if (hasKey) document.getElementById('mal-key-reset').style.display = 'inline';
-  })();
 </script>
-
-<!-- v3: Modal overlay -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-head">
-      <div class="modal-head-title" id="modal-title"></div>
-      <button class="modal-head-close" onclick="closeModal()" title="Zamknij">×</button>
-    </div>
-    <div class="modal-body" id="modal-body"></div>
-    <div class="modal-footer">
-      <button class="modal-btn-close" onclick="closeModal()">Zamknij</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
