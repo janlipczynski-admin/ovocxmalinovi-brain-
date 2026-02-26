@@ -169,6 +169,10 @@
     🏷 Etykiety
     <span class="tab-badge" id="badge-etykiety">—</span>
   </div>
+  <div class="tab" data-tab="jednostkowe" onclick="switchTab('jednostkowe')">
+    🫙 Pojemniki jedn.
+    <span class="tab-badge" id="badge-jednostkowe">—</span>
+  </div>
   <div class="tab" data-tab="arkusz" onclick="switchTab('arkusz')">
     📋 Arkusz zamówień
   </div>
@@ -258,6 +262,26 @@
           <th>Status / Maszyna</th>
         </tr></thead>
         <tbody id="d-et-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Pojemniki jednostkowe — stan magazynowy</span>
+      <span class="table-count" id="d-jedn-count">—</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Pojemnik</th>
+          <th class="num">CHO</th>
+          <th class="num">ŁOB</th>
+          <th class="num">STR</th>
+          <th class="num">WYS</th>
+          <th class="num">RAZEM</th>
+        </tr></thead>
+        <tbody id="d-jedn-body"></tbody>
       </table>
     </div>
   </div>
@@ -379,6 +403,53 @@
           <th>Maszyna / Status</th>
         </tr></thead>
         <tbody id="et-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB 3.5: POJEMNIKI JEDNOSTKOWE ═══ -->
+<div id="tab-jednostkowe" class="tab-content">
+
+  <div class="snapshot-note">
+    ℹ️ Pojemniki jednostkowe (PET, celulozowe, SERCE, wieczka) — stan wg snapshotu 25.02.2026.
+    Brak automatycznej prognozy na 2026 — tylko widok aktualnego stanu magazynowego.
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <div class="filter-label">Magazyn</div>
+      <select id="jedn-mag" onchange="renderJednostkowe()">
+        <option value="">Wszystkie</option>
+        <option value="Chodzież">Chodzież</option>
+        <option value="Łobżenica">Łobżenica</option>
+        <option value="Stróżewo">Stróżewo</option>
+        <option value="Wyszynki">Wyszynki</option>
+      </select>
+    </div>
+    <div class="filter-sep"></div>
+    <div class="filter-group">
+      <div class="filter-label">Szukaj</div>
+      <input type="text" id="jedn-search" placeholder="Nazwa pojemnika..." oninput="renderJednostkowe()" style="min-width:200px">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Stan magazynowy — Pojemniki jednostkowe</span>
+      <span class="table-count" id="jedn-count">—</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Nazwa pojemnika</th>
+          <th class="num">Chodzież</th>
+          <th class="num">Łobżenica</th>
+          <th class="num">Stróżewo</th>
+          <th class="num">Wyszynki</th>
+          <th class="num">Razem stan</th>
+        </tr></thead>
+        <tbody id="jedn-body"></tbody>
       </table>
     </div>
   </div>
@@ -637,6 +708,7 @@ function machineTags(byMag) {
 function renderDashboard() {
   const kartRows = buildRows('kartony');
   const etRows   = buildRows('etykiety');
+  const jednRows = buildRows('jednostkowe').sort((a,b) => a.nazwa.localeCompare(b.nazwa, 'pl'));
   const all = [...kartRows, ...etRows];
 
   const crit = all.filter(r => r.status === 'crit').length;
@@ -680,6 +752,15 @@ function renderDashboard() {
       <td class="num"><span class="num-muted">${fmtN(r.bufferNeed)}</span></td>
       <td class="num">${r.toOrder > 0 ? `<span class="num-order">${fmtN(r.toOrder)}</span>` : '<span class="num-muted">—</span>'}</td>
       <td>${statusBadge(r.status)} ${machineTags(r.stockByMag)}</td>
+    </tr>`).join('');
+
+  // Pojemniki table
+  document.getElementById('d-jedn-count').textContent = jednRows.length + ' pozycji';
+  document.getElementById('d-jedn-body').innerHTML = jednRows.map(r => `
+    <tr>
+      <td style="max-width:300px;font-size:11px">${r.nazwa}</td>
+      ${MAGS.map(m => `<td class="num">${magVal(r.stockByMag, m)}</td>`).join('')}
+      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
     </tr>`).join('');
 }
 
@@ -744,6 +825,26 @@ function renderEtykiety() {
     </tr>`).join('');
 }
 
+function renderJednostkowe() {
+  const magF    = document.getElementById('jedn-mag').value;
+  const searchF = document.getElementById('jedn-search').value.toLowerCase();
+
+  let rows = buildRows('jednostkowe').filter(r => {
+    if (searchF && !r.nazwa.toLowerCase().includes(searchF)) return false;
+    return true;
+  }).sort((a, b) => a.nazwa.localeCompare(b.nazwa, 'pl'));
+
+  document.getElementById('jedn-count').textContent = rows.length + ' pozycji';
+  document.getElementById('badge-jednostkowe').textContent = rows.length;
+
+  document.getElementById('jedn-body').innerHTML = rows.map(r => `
+    <tr>
+      <td style="max-width:300px;font-size:11px;font-weight:500">${r.nazwa}</td>
+      ${MAGS.map(m => `<td class="num" ${magF===m?'style="background:rgba(250,66,17,.06);font-weight:700"':''}>${magVal(r.stockByMag, m)}</td>`).join('')}
+      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
+    </tr>`).join('');
+}
+
 function renderArkusz() {
   const {lead} = getParam();
   document.getElementById('ark-lead').textContent = lead + ' dni';
@@ -801,6 +902,7 @@ function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
   if (name === 'kartony') renderKartony();
   if (name === 'etykiety') renderEtykiety();
+  if (name === 'jednostkowe') renderJednostkowe();
   if (name === 'arkusz') renderArkusz();
 }
 
@@ -808,6 +910,7 @@ function refreshAll() {
   renderDashboard();
   if (document.getElementById('tab-kartony').classList.contains('active')) renderKartony();
   if (document.getElementById('tab-etykiety').classList.contains('active')) renderEtykiety();
+  if (document.getElementById('tab-jednostkowe').classList.contains('active')) renderJednostkowe();
   if (document.getElementById('tab-arkusz').classList.contains('active')) renderArkusz();
 }
 
