@@ -276,6 +276,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
            target="_blank" class="source-link">
           <span>🕐</span> Historia zmian
         </a>
+        <button id="km-btn" onclick="toggleKartonyMiesiac()" style="background:var(--white);color:var(--text-dim);border:1.5px solid var(--border2);padding:9px 16px;border-radius:9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.2px;display:flex;align-items:center;gap:7px;transition:all .15s;white-space:nowrap">
+          <span style="font-size:14px">📅</span> KARTONY/MIESIĄC
+        </button>
         <button class="gen-btn" onclick="openWizard()">
           <span style="font-size:14px">🛒</span> GENERUJ ZAPOTRZEBOWANIE
         </button>
@@ -286,6 +289,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <span id="plan-alert-text">Ładowanie danych…</span>
     </div>
   </div>
+
+  <!-- ── Kartony/Miesiąc panel ── -->
+  <div id="km-panel" style="display:none"></div>
 
   <!-- ── KPI row ── -->
   <div class="kpi-row">
@@ -1211,6 +1217,175 @@ function exportExcelStep3() {
 
   const fname = `RFQ_Kartony_2026_${selD?selD.skrot+'_':''}${today.replace(/\./g,'')}.xlsx`;
   XLSX.writeFile(wb, fname);
+}
+
+// ════════════════════════════════════════════════════════════
+// KARTONY / MIESIĄC — panel inline
+// Oblicza zapotrzebowanie na kartony per miesiąc, per typ kartonu (K-xxx)
+// Wzór: identyczny z computeNeeds() — kg_planu × udział_ZP ÷ kgpk
+// UWAGA: dzielimy przez kgpk (kg/karton), NIE mnożymy przez szt/karton
+// ════════════════════════════════════════════════════════════
+let _kmVisible = false;
+
+function toggleKartonyMiesiac() {
+  _kmVisible = !_kmVisible;
+  const panel = document.getElementById('km-panel');
+  const btn   = document.getElementById('km-btn');
+  if (_kmVisible) {
+    renderKartonyMiesiac();
+    panel.style.display = 'block';
+    btn.style.borderColor = 'var(--blue)';
+    btn.style.color = 'var(--blue)';
+    btn.style.background = 'rgba(37,99,235,.06)';
+  } else {
+    panel.style.display = 'none';
+    btn.style.borderColor = 'var(--border2)';
+    btn.style.color = 'var(--text-dim)';
+    btn.style.background = 'var(--white)';
+  }
+}
+
+function computeKartonyMiesiac() {
+  const pl         = planLookup();
+  const kartonMapa = window.KARTON_MAPA;
+  const selGrp     = Object.entries(WZ.groups).filter(([,v]) => v).map(([g]) => g);
+  const stanyMap   = getStanyMap();
+  const result     = {};  // indeks → { indeks, nazwa, months:{m→qty}, total }
+
+  function ensureEntry(indeks) {
+    if (!result[indeks]) {
+      const s = stanyMap[indeks] || {};
+      result[indeks] = { indeks, nazwa: s.nazwa || indeks, months: {}, total: 0 };
+      MONTHS_INFO.forEach(mi => { result[indeks].months[mi.m] = 0; });
+    }
+  }
+
+  // Pre-przelicz roczne kg per row z danych tygodniowych
+  // Fallback (r.kg_2026) używamy tylko gdy cały rok = 0 (brak danych tygodniowych w planie)
+  const rowYearKg = {};
+  window.PLAN2026_DATA.rows
+    .filter(r => r.kartony_2026 && selGrp.includes(r.group))
+    .forEach(r => {
+      let yearKg = 0;
+      ALL_WEEKS.forEach(w => {
+        if (r.owoc === 'Truskawka') {
+          yearKg += pl[`${r.klient}||Truskawka tunelowa||${w}`]    || 0;
+          yearKg += pl[`${r.klient}||Truskawka szklarniowa||${w}`] || 0;
+        } else {
+          yearKg += pl[`${r.klient}||${r.owoc}||${w}`] || 0;
+        }
+      });
+      rowYearKg[`${r.klient}||${r.owoc}`] = yearKg;
+    });
+
+  MONTHS_INFO.forEach(mi => {
+    window.PLAN2026_DATA.rows
+      .filter(r => r.kartony_2026 && selGrp.includes(r.group))
+      .forEach(r => {
+        const rowKey = `${r.klient}||${r.owoc}`;
+        const yearKg = rowYearKg[rowKey] || 0;
+        let monthKg = 0;
+
+        if (yearKg > 0) {
+          // Dane tygodniowe istnieją — sumujemy tylko tygodnie tego miesiąca
+          mi.weeks.forEach(w => {
+            if (r.owoc === 'Truskawka') {
+              monthKg += pl[`${r.klient}||Truskawka tunelowa||${w}`]    || 0;
+              monthKg += pl[`${r.klient}||Truskawka szklarniowa||${w}`] || 0;
+            } else {
+              monthKg += pl[`${r.klient}||${r.owoc}||${w}`] || 0;
+            }
+          });
+        } else if (r.kg_2026) {
+          // Brak danych tygodniowych — fallback proporcjonalny (tylko wtedy)
+          monthKg = r.kg_2026 * (mi.weeks.length / 29);
+        }
+
+        if (monthKg === 0) return;
+
+        r.paks.forEach(p => {
+          // kartony = kg × udział% / kgpk  (NIE × szt)
+          const kartonCount = Math.round(monthKg * (p.udzial / 100) / p.kgpk);
+          if (kartonCount === 0) return;
+          const assignedK = kartonMapa.get(r.group, p.pak);
+          ensureEntry(assignedK);
+          result[assignedK].months[mi.m] += kartonCount;
+          result[assignedK].total        += kartonCount;
+        });
+      });
+  });
+
+  return result;
+}
+
+function renderKartonyMiesiac() {
+  const data  = computeKartonyMiesiac();
+  const rows  = Object.values(data).sort((a, b) => b.total - a.total);
+  const selGrps = Object.entries(WZ.groups).filter(([,v]) => v).map(([g]) => g).join(', ');
+
+  // Column totals
+  const monthTotals = {};
+  MONTHS_INFO.forEach(mi => {
+    monthTotals[mi.m] = rows.reduce((s, r) => s + (r.months[mi.m] || 0), 0);
+  });
+  const grandTotal = rows.reduce((s, r) => s + r.total, 0);
+
+  // Table head
+  const headCols = MONTHS_INFO.map(mi =>
+    `<th style="padding:8px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap;min-width:72px">${mi.short}</th>`
+  ).join('') + '<th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:800;text-transform:uppercase;color:var(--orange);border-bottom:1px solid var(--border);border-left:2px solid var(--border2);min-width:82px">RAZEM</th>';
+
+  // Table rows
+  const tableRows = rows.map(row => {
+    const cells = MONTHS_INFO.map(mi => {
+      const v = row.months[mi.m] || 0;
+      return `<td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;font-size:11px;font-variant-numeric:tabular-nums;color:${v > 0 ? 'var(--text)' : 'var(--text-muted)'}">${v > 0 ? v.toLocaleString('pl-PL') : '—'}</td>`;
+    }).join('');
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:7px 12px">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:var(--orange)">${row.indeks}</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:1px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${row.nazwa}</div>
+      </td>
+      ${cells}
+      <td style="padding:7px 12px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;font-weight:800;color:var(--orange);border-left:2px solid var(--border2)">${row.total.toLocaleString('pl-PL')}</td>
+    </tr>`;
+  }).join('');
+
+  // Footer totals
+  const footCols = MONTHS_INFO.map(mi =>
+    `<td style="padding:8px 10px;text-align:right;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums">${monthTotals[mi.m].toLocaleString('pl-PL')}</td>`
+  ).join('') + `<td style="padding:8px 12px;text-align:right;font-family:'DM Mono',monospace;font-size:13px;font-weight:900;color:var(--orange);border-left:2px solid var(--border2)">${grandTotal.toLocaleString('pl-PL')}</td>`;
+
+  document.getElementById('km-panel').innerHTML = `
+  <div style="background:var(--white);border:1px solid rgba(37,99,235,.25);border-radius:12px;overflow:hidden;margin-bottom:20px;box-shadow:0 2px 10px rgba(37,99,235,.08)">
+    <div style="background:rgba(37,99,235,.05);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(37,99,235,.15)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:13px;font-weight:800;color:var(--blue)">📅 Zapotrzebowanie na Kartony — per Miesiąc</span>
+        <span style="font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace">Grupy: ${selGrps} · ${rows.length} typów · łącznie ${grandTotal.toLocaleString('pl-PL')} kart.</span>
+      </div>
+      <button onclick="toggleKartonyMiesiac()" style="background:none;border:1px solid var(--border2);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;color:var(--text-muted);font-family:'Plus Jakarta Sans',sans-serif">✕ Zamknij</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="background:var(--surface2)">
+            <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);border-bottom:1px solid var(--border);min-width:240px">Karton</th>
+            ${headCols}
+          </tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+        <tfoot>
+          <tr style="background:var(--surface2);border-top:2px solid var(--border2)">
+            <td style="padding:8px 12px;font-weight:800;font-size:12px">ŁĄCZNIE</td>
+            ${footCols}
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div style="padding:7px 14px;background:var(--surface2);border-top:1px solid var(--border);font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace">
+      Wzór: kg_planu × udział_ZP ÷ kg/karton · Przypisanie indeksów: KARTON_MAPA (ZP 2025 kol. M) · Kliknij „GENERUJ ZAPOTRZEBOWANIE" aby zmienić przypisania
+    </div>
+  </div>`;
 }
 
 // ── Copy to clipboard ─────────────────────────────────────────
