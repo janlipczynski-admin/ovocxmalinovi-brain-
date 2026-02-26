@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zużycie Materiałów 2025 — OvocxMalinovi</title>
+<script src="zuzycie-data.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange:#fa4211; --purple:#9013fe; --green:#16a34a; --blue:#2563eb; --yellow:#d97706;
+  --grad:linear-gradient(135deg,#fa4211,#9013fe);
+  --bg:#f7f7f5; --white:#fff;
+  --border:#e8e6e1; --border2:#d8d5ce;
+  --text:#1a1a18; --text-dim:#6b6b65; --text-muted:#a8a8a0;
+  --surface2:#f2f0eb;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;font-size:14px}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 32px;background:var(--white);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;box-shadow:var(--shadow);gap:12px
+}
+.back-btn{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:color .15s;white-space:nowrap}
+.back-btn:hover{color:var(--purple)}
+.h-center{display:flex;align-items:center;gap:8px;flex:1;justify-content:center}
+.page-title{font-size:15px;font-weight:700}
+.lock-badge{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(22,163,74,.07);color:var(--green);border:1px solid rgba(22,163,74,.25)}
+
+/* ── Filters bar ─────────────────────────────────────────────────────────── */
+.filters-bar{
+  background:var(--white);border-bottom:1px solid var(--border);
+  padding:12px 32px;display:flex;gap:12px;align-items:center;flex-wrap:wrap
+}
+.filter-group{display:flex;flex-direction:column;gap:3px}
+.filter-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-family:'DM Mono',monospace}
+select{
+  padding:6px 10px;border:1px solid var(--border2);border-radius:7px;
+  font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;
+  color:var(--text);background:var(--white);cursor:pointer;outline:none;transition:border-color .15s
+}
+select:focus{border-color:var(--purple)}
+
+/* Multi-select dropdown */
+.ms-wrap{position:relative;min-width:160px}
+.ms-trigger{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:6px 10px;border:1px solid var(--border2);border-radius:7px;
+  font-size:12px;cursor:pointer;background:var(--white);transition:border-color .15s;user-select:none
+}
+.ms-trigger:hover{border-color:var(--border2)}
+.ms-caret{font-size:10px;color:var(--text-muted)}
+.ms-dropdown{
+  position:absolute;top:calc(100% + 4px);left:0;z-index:300;
+  background:var(--white);border:1px solid var(--border2);border-radius:9px;
+  box-shadow:var(--shadow-md);min-width:200px;max-height:260px;overflow-y:auto;
+  padding:6px 0
+}
+.ms-all-item,.ms-item{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:12px;cursor:pointer}
+.ms-all-item:hover,.ms-item:hover{background:var(--surface2)}
+.ms-all-item{font-weight:600;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:2px}
+.ms-item input,.ms-all-item input{accent-color:var(--purple)}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .15s;border:1px solid var(--border2);background:var(--white);color:var(--text-dim);font-weight:500;text-decoration:none;white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.filter-sep{width:1px;height:36px;background:var(--border);align-self:flex-end;margin:0 4px}
+
+/* ── Stats row ───────────────────────────────────────────────────────────── */
+.stats-row{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+  padding:16px 32px;background:var(--white);border-bottom:1px solid var(--border)
+}
+@media(max-width:700px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 14px}
+.stat-label{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:4px}
+.stat-val{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat-val-purple{color:var(--purple)}
+.stat-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+
+/* ── Main ────────────────────────────────────────────────────────────────── */
+main{padding:20px 32px 48px;max-width:1600px;margin:0 auto}
+
+/* ── Table ───────────────────────────────────────────────────────────────── */
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border);gap:12px}
+.table-title{font-size:13px;font-weight:600}
+.table-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted)}
+
+.table-scroll{overflow-x:auto;max-height:calc(100vh - 340px);overflow-y:auto}
+table{width:100%;border-collapse:collapse}
+thead th{
+  background:var(--surface2);color:var(--text-dim);
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  padding:9px 12px;text-align:left;
+  position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border);
+  white-space:nowrap;cursor:pointer;user-select:none;transition:background .1s
+}
+thead th:hover{background:#e9e7e2}
+thead th.sort-asc::after{content:' ↑';color:var(--purple)}
+thead th.sort-desc::after{content:' ↓';color:var(--purple)}
+tbody td{padding:7px 12px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(144,19,254,.03)}
+
+.num{text-align:right;font-family:'DM Mono',monospace}
+.num-big{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.code-chip{font-family:'DM Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border2);padding:1px 7px;border-radius:5px;color:var(--text-dim)}
+.bar-cell{display:flex;align-items:center;gap:8px}
+.bar-bg{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;min-width:60px}
+.bar-fill{height:100%;background:linear-gradient(90deg,rgba(144,19,254,.6),rgba(144,19,254,1));border-radius:3px;transition:width .2s}
+.empty-state{padding:48px 0;text-align:center;color:var(--text-muted);font-size:13px}
+
+/* Material type colors */
+.typ-karton{color:#fa4211;font-weight:700}
+.typ-etykieta{color:#9013fe;font-weight:700}
+.typ-tasma{color:#2563eb;font-weight:700}
+.typ-zapinka{color:#16a34a;font-weight:700}
+.typ-katownik{color:#d97706;font-weight:700}
+.typ-inne{color:#6b6b65;font-weight:600}
+
+@media(max-width:700px){.filters-bar{padding:12px 16px}main{padding:16px 16px 48px}header{padding:12px 16px}}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="zakupy-planowanie.html" class="back-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Dashboard zakupowy
+  </a>
+  <div class="h-center">
+    <span class="page-title">Zużycie Materiałów 2025</span>
+    <span class="lock-badge">🔒 Dane historyczne</span>
+  </div>
+  <div></div>
+</header>
+
+<!-- Stats -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-label">Łączna ilość</div>
+    <div class="stat-val stat-val-purple" id="s-ilosc">—</div>
+    <div class="stat-sub">szt. / mb.</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Wiersze</div>
+    <div class="stat-val" id="s-cnt">—</div>
+    <div class="stat-sub">rekordów</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Magazyny</div>
+    <div class="stat-val" id="s-mag">—</div>
+    <div class="stat-sub">lokalizacji</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Materiały</div>
+    <div class="stat-val" id="s-mat">—</div>
+    <div class="stat-sub">unikalnych</div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filters-bar">
+  <!-- Miesiąc -->
+  <div class="filter-group">
+    <div class="filter-label">Miesiąc</div>
+    <div class="ms-wrap" id="mies-wrap">
+      <div class="ms-trigger" onclick="msToggle('mies-dd','mies-wrap')">
+        <span id="mies-lbl">Wszystkie</span><span class="ms-caret">▾</span>
+      </div>
+      <div class="ms-dropdown" id="mies-dd" style="display:none">
+        <label class="ms-all-item"><input type="checkbox" id="mies-all" checked onchange="msToggleAll('mies')"> Zaznacz wszystkie</label>
+        <div id="mies-items">
+          <label class="ms-item"><input type="checkbox" value="4"  checked onchange="msGroupChange('mies')"> Kwiecień</label>
+          <label class="ms-item"><input type="checkbox" value="5"  checked onchange="msGroupChange('mies')"> Maj</label>
+          <label class="ms-item"><input type="checkbox" value="6"  checked onchange="msGroupChange('mies')"> Czerwiec</label>
+          <label class="ms-item"><input type="checkbox" value="7"  checked onchange="msGroupChange('mies')"> Lipiec</label>
+          <label class="ms-item"><input type="checkbox" value="8"  checked onchange="msGroupChange('mies')"> Sierpień</label>
+          <label class="ms-item"><input type="checkbox" value="9"  checked onchange="msGroupChange('mies')"> Wrzesień</label>
+          <label class="ms-item"><input type="checkbox" value="10" checked onchange="msGroupChange('mies')"> Październik</label>
+          <label class="ms-item"><input type="checkbox" value="11" checked onchange="msGroupChange('mies')"> Listopad</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Magazyn -->
+  <div class="filter-group">
+    <div class="filter-label">Magazyn</div>
+    <select id="f-mag" onchange="render()">
+      <option value="">Wszystkie</option>
+      <option>Chodzież</option>
+      <option>Justynów</option>
+      <option>Stróżewo</option>
+      <option>Unisad</option>
+      <option>Wyszynki</option>
+      <option>Łobżenica</option>
+    </select>
+  </div>
+
+  <!-- Typ -->
+  <div class="filter-group">
+    <div class="filter-label">Typ materiału</div>
+    <select id="f-typ" onchange="typChanged()">
+      <option value="">Wszystkie</option>
+      <option>Karton</option>
+      <option>Etykieta</option>
+      <option>Taśma</option>
+      <option>Zapinka</option>
+      <option>Kątownik</option>
+      <option>Inne</option>
+    </select>
+  </div>
+
+  <!-- Materiał -->
+  <div class="filter-group">
+    <div class="filter-label">Materiał</div>
+    <div class="ms-wrap" id="mat-wrap" style="min-width:220px">
+      <div class="ms-trigger" onclick="msToggle('mat-dd','mat-wrap')">
+        <span id="mat-lbl">Wszystkie</span><span class="ms-caret">▾</span>
+      </div>
+      <div class="ms-dropdown" id="mat-dd" style="display:none">
+        <label class="ms-all-item"><input type="checkbox" id="mat-all" checked onchange="msToggleAll('mat')"> Zaznacz wszystkie</label>
+        <div id="mat-items"><!-- filled by JS --></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-sep"></div>
+  <div class="filter-group" style="justify-content:flex-end;margin-top:auto">
+    <button class="btn" onclick="resetFilters()">↺ Resetuj filtry</button>
+  </div>
+</div>
+
+<main>
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Zestawienie zużycia — 2025</span>
+      <span class="table-count" id="t-count">—</span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('surowiec_nazwa')">Materiał</th>
+            <th onclick="sortBy('typ_materialu')">Typ</th>
+            <th onclick="sortBy('magazyn')">Magazyn</th>
+            <th onclick="sortBy('miesiac')">Miesiąc</th>
+            <th onclick="sortBy('ilosc')" style="text-align:right">Ilość</th>
+            <th style="min-width:140px">Udział %</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+// Close dropdowns on outside click
+document.addEventListener('click', function(e) {
+  ['mies-wrap','mat-wrap'].forEach(id => {
+    const wrap = document.getElementById(id);
+    if (wrap && !wrap.contains(e.target)) {
+      wrap.querySelector('.ms-dropdown').style.display = 'none';
+    }
+  });
+});
+
+function msToggle(ddId, wrapId) {
+  const dd = document.getElementById(ddId);
+  const isOpen = dd.style.display !== 'none';
+  // Close all dropdowns first
+  document.querySelectorAll('.ms-dropdown').forEach(d => d.style.display = 'none');
+  if (!isOpen) dd.style.display = 'block';
+}
+
+function msToggleAll(group) {
+  const checked = document.getElementById(group + '-all').checked;
+  document.querySelectorAll('#' + group + '-items input').forEach(cb => cb.checked = checked);
+  updateLabel(group);
+  render();
+}
+
+function msGroupChange(group) {
+  const items = document.querySelectorAll('#' + group + '-items input');
+  document.getElementById(group + '-all').checked = [...items].every(cb => cb.checked);
+  updateLabel(group);
+  render();
+}
+
+function updateLabel(group) {
+  const items = [...document.querySelectorAll('#' + group + '-items input')];
+  const checked = items.filter(cb => cb.checked);
+  const lbl = document.getElementById(group + '-lbl');
+  if (checked.length === items.length) lbl.textContent = 'Wszystkie';
+  else if (checked.length === 0) lbl.textContent = 'Brak';
+  else lbl.textContent = checked.length + ' z ' + items.length;
+}
+
+// ── Sort state ────────────────────────────────────────────────────────────────
+let sortCol = 'surowiec_nazwa', sortDir = 1;
+
+function sortBy(col) {
+  sortDir = sortCol === col ? sortDir * -1 : (col === 'surowiec_nazwa' || col === 'magazyn' || col === 'typ_materialu' ? 1 : -1);
+  sortCol = col;
+  document.querySelectorAll('thead th').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+    const oc = th.getAttribute('onclick');
+    if (oc === `sortBy('${col}')`) th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
+  });
+  render();
+}
+
+// ── Filter: type changed → rebuild material list ───────────────────────────
+function typChanged() {
+  const typ = document.getElementById('f-typ').value;
+  const rek = window.ZUZYCIE_DATA?.rekordy || [];
+  const filtered = typ ? rek.filter(r => r.typ_materialu === typ) : rek;
+  const names = [...new Set(filtered.map(r => r.surowiec_nazwa).filter(Boolean))].sort((a,b) => a.localeCompare(b,'pl'));
+  const cont = document.getElementById('mat-items');
+  cont.innerHTML = names.map(n =>
+    `<label class="ms-item"><input type="checkbox" value="${n.replace(/"/g,'&quot;')}" checked onchange="msGroupChange('mat')"> ${n}</label>`
+  ).join('');
+  document.getElementById('mat-all').checked = true;
+  updateLabel('mat');
+  render();
+}
+
+function resetFilters() {
+  document.getElementById('f-mag').value = '';
+  document.getElementById('f-typ').value = '';
+  document.querySelectorAll('#mies-items input').forEach(cb => cb.checked = true);
+  document.getElementById('mies-all').checked = true;
+  updateLabel('mies');
+  typChanged(); // re-builds material list + renders
+}
+
+// ── Main render ───────────────────────────────────────────────────────────────
+const MIES_NAMES = ['','Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
+const TYP_CLASS  = {Karton:'typ-karton',Etykieta:'typ-etykieta','Taśma':'typ-tasma',Zapinka:'typ-zapinka','Kątownik':'typ-katownik'};
+
+function fmtN(v) { return (v||0).toLocaleString('pl-PL',{maximumFractionDigits:0}); }
+
+function render() {
+  if (!window.ZUZYCIE_DATA) return;
+  const mag = document.getElementById('f-mag').value;
+  const typ = document.getElementById('f-typ').value;
+
+  const miesItems = [...document.querySelectorAll('#mies-items input')];
+  const selMies   = new Set(miesItems.filter(cb => cb.checked).map(cb => Number(cb.value)));
+  const allMies   = selMies.size === miesItems.length;
+
+  const matItems  = [...document.querySelectorAll('#mat-items input')];
+  const selMat    = new Set(matItems.filter(cb => cb.checked).map(cb => cb.value));
+  const allMat    = selMat.size === matItems.length;
+
+  let rows = window.ZUZYCIE_DATA.rekordy.filter(r => {
+    if (!allMies && !selMies.has(r.miesiac)) return false;
+    if (mag && r.magazyn !== mag) return false;
+    if (typ && r.typ_materialu !== typ) return false;
+    if (!allMat && !selMat.has(r.surowiec_nazwa)) return false;
+    return true;
+  });
+
+  rows.sort((a,b) => {
+    const av = a[sortCol], bv = b[sortCol];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1; if (bv == null) return -1;
+    return (typeof av === 'string' ? av.localeCompare(bv,'pl') : av - bv) * sortDir;
+  });
+
+  const totIlosc = rows.reduce((s,r) => s + (r.ilosc||0), 0);
+
+  // Stats
+  document.getElementById('s-ilosc').textContent = fmtN(totIlosc);
+  document.getElementById('s-cnt').textContent   = rows.length.toLocaleString('pl-PL');
+  document.getElementById('s-mag').textContent   = new Set(rows.map(r => r.magazyn)).size;
+  document.getElementById('s-mat').textContent   = new Set(rows.map(r => r.surowiec_nazwa)).size;
+  document.getElementById('t-count').textContent = rows.length + ' wierszy';
+
+  const tbody = document.getElementById('tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Brak wyników dla wybranych filtrów</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const pct     = totIlosc > 0 ? Math.min(100, r.ilosc / totIlosc * 100) : 0;
+    const typCls  = TYP_CLASS[r.typ_materialu] || 'typ-inne';
+    const magCell = r.magazyn === 'Nieokreślony'
+      ? '<span style="color:var(--text-muted);font-style:italic">Nieokreślony</span>'
+      : r.magazyn;
+    return `<tr>
+      <td style="font-size:12px;font-weight:500;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.surowiec_nazwa||''}">${r.surowiec_nazwa||'—'}</td>
+      <td><span class="${typCls}" style="font-size:11px">${r.typ_materialu||'—'}</span></td>
+      <td style="font-size:12px">${magCell}</td>
+      <td><span class="code-chip">${MIES_NAMES[r.miesiac]||r.miesiac}</span></td>
+      <td class="num"><span class="num-big">${fmtN(r.ilosc)}</span></td>
+      <td>
+        <div class="bar-cell">
+          <div class="bar-bg"><div class="bar-fill" style="width:${Math.round(pct)}%"></div></div>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);width:38px;text-align:right;flex-shrink:0">${pct.toFixed(1)}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+(function init() {
+  if (!window.ZUZYCIE_DATA) {
+    document.getElementById('tbody').innerHTML = '<tr><td colspan="6" class="empty-state">Brak danych — sprawdź plik zuzycie-data.js</td></tr>';
+    return;
+  }
+  typChanged(); // builds material list & calls render()
+})();
+</script>
+</body>
+</html>

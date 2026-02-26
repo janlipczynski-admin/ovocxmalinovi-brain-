@@ -3,1222 +3,509 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Planowanie Zakupów Opakowań — OvocxMalinovi</title>
-<script src="zakupy-data.js"></script>
-<script src="planowanie-data.js"></script>
+<title>Planowanie Zakupów i Opakowań — OvocxMalinovi</title>
 <script src="zuzycie-data.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --orange:#fa4211;--purple:#9013fe;
-    --grad:linear-gradient(135deg,#fa4211,#9013fe);
-    --bg:#f7f7f5;--white:#fff;
-    --border:#e8e6e1;--border2:#d8d5ce;
-    --text:#1a1a18;--text-dim:#6b6b65;--text-muted:#a8a8a0;
-    --surface2:#f2f0eb;
-    --green:#16a34a;--green-bg:rgba(22,163,74,.08);--green-border:rgba(22,163,74,.2);
-    --yellow:#d97706;--yellow-bg:rgba(217,119,6,.08);--yellow-border:rgba(217,119,6,.25);
-    --red:#dc2626;--red-bg:rgba(220,38,38,.08);--red-border:rgba(220,38,38,.2);
-    --blue:#2563eb;
-    --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-    --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;font-size:14px}
+:root {
+  --orange:#fa4211; --purple:#9013fe; --green:#16a34a; --blue:#2563eb; --yellow:#d97706;
+  --grad:linear-gradient(135deg,#fa4211,#9013fe);
+  --bg:#f7f7f5; --white:#fff;
+  --border:#e8e6e1; --border2:#d8d5ce;
+  --text:#1a1a18; --text-dim:#6b6b65; --text-muted:#a8a8a0;
+  --surface2:#f2f0eb;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.09),0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12),0 4px 8px rgba(0,0,0,.05);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;font-size:14px}
 
-  header{display:flex;align-items:center;justify-content:space-between;padding:13px 32px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:var(--shadow);gap:12px}
-  .back-btn{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:color .15s;white-space:nowrap}
-  .back-btn:hover{color:var(--orange)}
-  .h-center{display:flex;align-items:center;gap:10px;flex:1;justify-content:center}
-  .page-title{font-size:16px;font-weight:700}
-  .snapshot-pill{font-family:'DM Mono',monospace;font-size:11px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border2);padding:3px 10px;border-radius:20px}
-  .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .15s;border:1px solid var(--border2);background:var(--white);color:var(--text-dim);font-weight:500}
-  .btn:hover{background:var(--surface2)}
-  .btn-print{background:var(--grad);color:#fff;border:none}
-  .btn-print:hover{opacity:.9}
+/* ── Header ─────────────────────────────────────────────────────────────── */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 32px;background:var(--white);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;box-shadow:var(--shadow);gap:12px
+}
+.back-btn{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:color .15s;white-space:nowrap}
+.back-btn:hover{color:var(--orange)}
+.h-center{display:flex;align-items:center;gap:8px;flex:1;justify-content:center}
+.page-title{font-size:15px;font-weight:700}
+.date-pill{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border2);padding:3px 10px;border-radius:20px}
 
-  .tabs-bar{display:flex;background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;overflow-x:auto}
-  .tab{display:flex;align-items:center;gap:6px;padding:12px 16px;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
-  .tab:hover{color:var(--text-dim)}
-  .tab.active{color:var(--orange);border-bottom-color:var(--orange)}
-  .tab-badge{font-family:'DM Mono',monospace;font-size:9px;background:var(--surface2);color:var(--text-muted);padding:1px 6px;border-radius:10px;border:1px solid var(--border)}
-  .tab.active .tab-badge{background:rgba(250,66,17,.1);color:var(--orange);border-color:rgba(250,66,17,.2)}
+/* ── Main ────────────────────────────────────────────────────────────────── */
+main{padding:28px 32px 48px;max-width:1600px;margin:0 auto}
 
-  main{padding:20px 32px;max-width:1600px;margin:0 auto}
-  .tab-content{display:none}
-  .tab-content.active{display:block}
+/* Page intro */
+.page-intro{margin-bottom:28px}
+.page-intro h1{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px}
+.page-intro p{font-size:13px;color:var(--text-dim);line-height:1.5}
 
-  /* ALERT CARDS */
-  .alert-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-  .alert-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px;border-left:4px solid var(--border)}
-  .alert-card.red{border-left-color:var(--red);background:var(--red-bg)}
-  .alert-card.yellow{border-left-color:var(--yellow);background:var(--yellow-bg)}
-  .alert-card.green{border-left-color:var(--green);background:var(--green-bg)}
-  .alert-label{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:5px}
-  .alert-val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
-  .alert-sub{font-size:10px;color:var(--text-muted);margin-top:2px}
+/* ── Dashboard grid ──────────────────────────────────────────────────────── */
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  align-items:start
+}
+@media(max-width:1100px){.dashboard-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.dashboard-grid{grid-template-columns:1fr}}
 
-  /* FILTERS */
-  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:flex-end}
-  .filter-group{display:flex;flex-direction:column;gap:3px}
-  .filter-label{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)}
-  select,input[type=number],input[type=text]{background:var(--white);border:1px solid var(--border2);border-radius:7px;padding:6px 10px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);outline:none;transition:border-color .15s}
-  select:focus,input:focus{border-color:var(--orange)}
-  select{cursor:pointer;min-width:130px}
-  input[type=number]{min-width:80px}
-  .filter-sep{width:1px;height:36px;background:var(--border);align-self:flex-end;margin:0 4px}
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+.dash-card{
+  background:var(--white);border:1px solid var(--border);border-radius:16px;
+  overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s
+}
+.dash-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
 
-  /* TABLE */
-  .table-wrap{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
-  .table-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border)}
-  .table-title{font-size:13px;font-weight:600}
-  .table-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted)}
-  table{width:100%;border-collapse:collapse}
-  th{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:500;white-space:nowrap}
-  th.num,td.num{text-align:right}
-  td{padding:7px 12px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle}
-  tr:last-child td{border-bottom:none}
-  tr:hover td{background:var(--surface2)}
+/* Color accent strip on left */
+.dash-card .card-top{position:relative;padding:20px 22px 16px 26px;border-bottom:1px solid var(--border)}
+.dash-card .card-top::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:0}
+.card-orange .card-top::before{background:var(--orange)}
+.card-purple .card-top::before{background:var(--purple)}
+.card-blue .card-top::before{background:var(--blue)}
 
-  /* STATUS BADGES */
-  .status{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;white-space:nowrap}
-  .status-ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
-  .status-warn{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border)}
-  .status-crit{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
-  .status-na{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)}
+.card-icon-wrap{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px;flex-shrink:0}
+.icon-orange{background:rgba(250,66,17,.1)}
+.icon-purple{background:rgba(144,19,254,.1)}
+.icon-blue{background:rgba(37,99,235,.1)}
 
-  /* NUM */
-  .num-big{font-family:'DM Mono',monospace;font-size:12px;font-weight:600}
-  .num-muted{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted)}
-  .num-order{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--orange)}
+.card-title{font-size:16px;font-weight:700;margin-bottom:3px;letter-spacing:-.2px}
+.card-desc{font-size:12px;color:var(--text-dim);line-height:1.4;margin-bottom:10px}
 
-  /* BAR */
-  .bar-cell{display:flex;align-items:center;gap:6px}
-  .bar-bg{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;min-width:50px}
-  .bar-fill-green{height:100%;background:var(--green);border-radius:3px}
-  .bar-fill-yellow{height:100%;background:var(--yellow);border-radius:3px}
-  .bar-fill-red{height:100%;background:var(--red);border-radius:3px}
-  .bar-pct{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);min-width:36px;text-align:right}
+.card-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:'DM Mono',monospace;font-size:10px;
+  padding:3px 9px;border-radius:20px;border:1px solid
+}
+.badge-active{background:rgba(250,66,17,.07);color:var(--orange);border-color:rgba(250,66,17,.2)}
+.badge-purple{background:rgba(144,19,254,.07);color:var(--purple);border-color:rgba(144,19,254,.2)}
+.badge-locked{background:rgba(22,163,74,.07);color:var(--green);border-color:rgba(22,163,74,.25)}
+.badge-pending{background:var(--surface2);color:var(--text-muted);border-color:var(--border2)}
 
-  /* LABEL MACHINE */
-  .machine-tag{font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text-dim)}
-  .machine-special{background:rgba(144,19,254,.08);color:var(--purple);border-color:rgba(144,19,254,.2)}
+/* Card body */
+.card-body{padding:18px 22px;flex:1}
 
-  /* ORDER FORM */
-  .order-header{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:16px}
-  .order-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
-  .order-meta-item{font-size:12px}
-  .order-meta-label{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);display:block;margin-bottom:3px}
-  .order-section{margin-bottom:24px}
-  .order-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--border)}
-  .order-note{font-size:11px;color:var(--text-dim);background:rgba(250,66,17,.06);border:1px solid rgba(250,66,17,.15);border-radius:7px;padding:10px 14px;margin-bottom:12px;line-height:1.6}
+/* Card footer */
+.card-footer{
+  padding:12px 22px;border-top:1px solid var(--border);
+  background:var(--surface2);display:flex;gap:8px;flex-wrap:wrap;align-items:center
+}
 
-  /* SNAPSHOT INFO */
-  .snapshot-note{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-dim);background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.15);border-radius:7px;padding:9px 14px;margin-bottom:16px}
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 14px;border-radius:8px;font-size:12px;
+  font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;
+  transition:all .15s;border:1px solid var(--border2);
+  background:var(--white);color:var(--text-dim);font-weight:500;
+  text-decoration:none;white-space:nowrap
+}
+.btn:hover{background:var(--surface2)}
+.btn-orange{background:rgba(250,66,17,.07);color:var(--orange);border-color:rgba(250,66,17,.2)}
+.btn-orange:hover{background:rgba(250,66,17,.12)}
+.btn-purple{background:rgba(144,19,254,.07);color:var(--purple);border-color:rgba(144,19,254,.2)}
+.btn-purple:hover{background:rgba(144,19,254,.12)}
+.btn-blue{background:rgba(37,99,235,.07);color:var(--blue);border-color:rgba(37,99,235,.2)}
+.btn-blue:hover{background:rgba(37,99,235,.12)}
+.btn-sm{padding:5px 10px;font-size:11px}
 
-  /* MULTI-SELECT DROPDOWN */
-  .ms-wrap{position:relative;min-width:200px}
-  .ms-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--white);border:1px solid var(--border2);border-radius:7px;padding:6px 10px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);cursor:pointer;transition:border-color .15s;user-select:none}
-  .ms-trigger:hover{border-color:var(--orange)}
-  .ms-caret{font-size:10px;color:var(--text-muted);flex-shrink:0}
-  .ms-dropdown{position:absolute;top:calc(100% + 4px);left:0;min-width:100%;max-height:260px;background:var(--white);border:1px solid var(--border2);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.10);z-index:300;overflow-y:auto;padding:6px 0}
-  .ms-all-item{display:flex;align-items:center;gap:7px;padding:5px 12px;font-size:11px;font-weight:600;color:var(--text-dim);cursor:pointer;border-bottom:1px solid var(--border);margin-bottom:4px;padding-bottom:8px}
-  .ms-all-item:hover{color:var(--orange)}
-  .ms-item{display:flex;align-items:center;gap:7px;padding:4px 12px;font-size:11px;color:var(--text);cursor:pointer;white-space:nowrap}
-  .ms-item:hover{background:var(--surface2);color:var(--orange)}
-  .ms-all-item input,.ms-item input{accent-color:var(--orange);cursor:pointer;flex-shrink:0}
-  /* ZUŻYCIE extras */
-  .empty-state{text-align:center;color:var(--text-muted);font-style:italic;padding:24px}
-  .code-chip{font-family:'DM Mono',monospace;font-size:10px;background:var(--surface2);border:1px solid var(--border);padding:2px 7px;border-radius:5px;color:var(--text-dim)}
-  .bar-fill-orange{height:100%;background:var(--orange);border-radius:3px}
+/* ── Sub-nav items ──────────────────────────────────────────────────────── */
+.sub-nav-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 14px;border:1px solid var(--border);border-radius:11px;
+  margin-bottom:10px;text-decoration:none;color:var(--text);
+  transition:all .2s;background:var(--white)
+}
+.sub-nav-item:hover{border-color:var(--border2);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.sub-nav-item:last-child{margin-bottom:0}
+.sub-nav-item.disabled{opacity:.5;pointer-events:none;cursor:default}
 
-  /* SETTINGS BOX */
-  .settings-box{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end}
-  .settings-box .filter-label{margin-bottom:4px}
+.sub-nav-left{display:flex;align-items:center;gap:11px}
+.sub-nav-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.sni-purple{background:rgba(144,19,254,.1)}
+.sni-muted{background:var(--surface2)}
+.sni-orange{background:rgba(250,66,17,.1)}
 
-  @media(max-width:900px){
-    main{padding:14px 16px}
-    header{padding:11px 16px}
-    .tabs-bar{padding:0 16px}
-    .alert-row{grid-template-columns:repeat(2,1fr)}
-    .order-meta{grid-template-columns:1fr}
-  }
-  @media print{
-    header,.tabs-bar,.filters,.settings-box,.btn,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .tab-content{display:block !important}
-    .tabs-bar,.tab:not(.active),.back-btn,.btn{display:none}
-    #tab-arkusz{display:block !important}
-  }
+.sub-nav-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.sub-nav-meta{font-size:11px;color:var(--text-muted)}
+
+.sub-nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.sub-nav-arrow{font-size:16px;color:var(--text-muted)}
+
+/* ── Stan Magazynowy ─────────────────────────────────────────────────────── */
+.upload-zone{
+  border:2px dashed var(--border2);border-radius:10px;
+  padding:22px 16px;text-align:center;cursor:pointer;
+  transition:all .15s;background:var(--surface2);margin-bottom:16px
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--orange);background:rgba(250,66,17,.04)}
+.upload-icon{font-size:26px;margin-bottom:6px}
+.upload-text{font-size:12px;color:var(--text-dim);font-weight:500}
+.upload-sub{font-size:11px;color:var(--text-muted);margin-top:3px}
+input[type=file]#mag-file{display:none}
+
+.empty-hint{text-align:center;padding:8px 0 0}
+.empty-hint-icon{font-size:26px;margin-bottom:6px;opacity:.45}
+.empty-hint-text{font-size:12px;color:var(--text-muted);line-height:1.5}
+
+.stan-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:10px}
+.stan-date-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-family:'DM Mono',monospace;margin-bottom:4px}
+.stan-date-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--orange)}
+
+/* Stats mini row */
+.stats-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat-mini{background:var(--surface2);border-radius:8px;padding:9px 11px;border:1px solid var(--border)}
+.stat-mini-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace;margin-bottom:3px}
+.stat-mini-val{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+
+/* Table */
+.stan-table-wrap{overflow-x:auto;max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:9px}
+.stan-table{width:100%;border-collapse:collapse;font-size:12px}
+.stan-table th{background:var(--surface2);color:var(--text-dim);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:7px 10px;text-align:left;position:sticky;top:0;border-bottom:1px solid var(--border);white-space:nowrap}
+.stan-table td{padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.stan-table tr:last-child td{border-bottom:none}
+.stan-table tr:hover td{background:var(--surface2)}
+.num-cell{font-family:'DM Mono',monospace;text-align:right}
+.stan-table-footer{padding:6px 12px;background:var(--surface2);border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;border-radius:0 0 9px 9px}
+
+/* ── Zużycie ─────────────────────────────────────────────────────────────── */
+.zuz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.zuz-stat{background:var(--surface2);border-radius:8px;padding:10px 12px;border:1px solid var(--border);text-align:center}
+.zuz-stat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace;margin-bottom:4px}
+.zuz-stat-val{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* ── Planowanie placeholder ──────────────────────────────────────────────── */
+.wip-box{
+  border:1.5px dashed var(--border2);border-radius:11px;
+  padding:22px 18px;text-align:center;background:var(--surface2);
+  margin-bottom:18px
+}
+.wip-icon{font-size:30px;margin-bottom:8px;opacity:.7}
+.wip-title{font-size:13px;font-weight:600;margin-bottom:4px}
+.wip-text{font-size:11px;color:var(--text-muted);line-height:1.6}
+
+.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:10px;font-family:'DM Mono',monospace}
 </style>
 </head>
 <body>
 
 <header>
   <a href="index.html" class="back-btn">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    Dashboard
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Centrum Operacyjne
   </a>
   <div class="h-center">
-    <span class="page-title">Planowanie Zakupów Opakowań</span>
-    <span class="snapshot-pill">Stan: 25.02.2026</span>
+    <span class="page-title">Planowanie Zakupów i Opakowań</span>
   </div>
-  <div style="display:flex;gap:7px">
-    <button class="btn btn-print" onclick="window.print()">🖨 Drukuj arkusz</button>
-  </div>
+  <div class="date-pill" id="today-date"></div>
 </header>
 
-<nav class="tabs-bar" style="gap:0;border-bottom-color:var(--border2)">
-  <a href="zakupy-planowanie.html" class="tab active" style="text-decoration:none">📊 Stan magazynowy</a>
-  <a href="zakupy-klienci.html"    class="tab"        style="text-decoration:none">📦 Konfekcja per klient</a>
-  <a href="zakupy-harmonogram.html" class="tab"       style="text-decoration:none">📅 Harmonogram zakupów</a>
-</nav>
-
-<div class="tabs-bar">
-  <div class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">
-    🚦 Dashboard
-    <span class="tab-badge" id="badge-dashboard">—</span>
-  </div>
-  <div class="tab" data-tab="kartony" onclick="switchTab('kartony')">
-    📦 Kartony zbiorcze
-    <span class="tab-badge" id="badge-kartony">—</span>
-  </div>
-  <div class="tab" data-tab="etykiety" onclick="switchTab('etykiety')">
-    🏷 Etykiety
-    <span class="tab-badge" id="badge-etykiety">—</span>
-  </div>
-  <div class="tab" data-tab="jednostkowe" onclick="switchTab('jednostkowe')">
-    🫙 Pojemniki jedn.
-    <span class="tab-badge" id="badge-jednostkowe">—</span>
-  </div>
-  <div class="tab" data-tab="arkusz" onclick="switchTab('arkusz')">
-    📋 Arkusz zamówień
-  </div>
-  <div class="tab" data-tab="zuzycie2025" onclick="switchTab('zuzycie2025')">
-    🏭 Zużycie materiałów 2025
-    <span class="tab-badge" id="badge-zuzycie">—</span>
-  </div>
-</div>
-
 <main>
-
-<!-- ═══ TAB 1: DASHBOARD ═══ -->
-<div id="tab-dashboard" class="tab-content active">
-
-  <div class="snapshot-note">
-    ℹ️ Stan magazynowy wg snapshotu z <strong>25.02.2026</strong>.
-    Zużycie 2025 z zestawień proceduralnych (01.01–26.11.2025).
-    Prognoza 2026 = plan sprzedaży 2026 per klient × miks opakowań z ZP 2025.
+  <div class="page-intro">
+    <h1>Dashboard zakupowy</h1>
+    <p>Zarządzaj stanami magazynowymi, analizuj zużycie materiałów i planuj zakupy opakowań.</p>
   </div>
 
-  <div class="settings-box">
-    <div class="filter-group">
-      <div class="filter-label">Plan sprzedaży 2026 (klienci)</div>
-      <div id="plan-display" style="font-family:'DM Mono',monospace;font-size:14px;font-weight:700;padding:6px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--text)">—</div>
-    </div>
-    <div class="filter-group">
-      <div class="filter-label">Bufor u dostawcy (miesiące)</div>
-      <select id="bufor-mies" onchange="refreshAll()">
-        <option value="2" selected>2 miesiące</option>
-        <option value="1">1 miesiąc</option>
-        <option value="3">3 miesiące</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <div class="filter-label">Czas realizacji (dni)</div>
-      <input type="number" id="lead-time" value="21" min="1" max="60" oninput="refreshAll()" style="min-width:70px">
-    </div>
-    <div style="font-size:11px;color:var(--text-muted);align-self:flex-end;padding-bottom:7px;max-width:380px;line-height:1.6">
-      Plan pobierany z <strong>Planowanie + sprzedaż 2026</strong>.<br>
-      Proporcje opakowań z zestawień proc. 2025 (mix opak.).<br>
-      Bufor = ilość ze wszystkich magazynów na N miesięcy sezonu.
-    </div>
-  </div>
+  <div class="dashboard-grid">
 
-  <div class="alert-row" id="alert-row">
-    <div class="alert-card red"><div class="alert-label">Krytyczne — brak buforu</div><div class="alert-val" id="d-crit">—</div><div class="alert-sub">pozycji wymaga natychmiastowego zamówienia</div></div>
-    <div class="alert-card yellow"><div class="alert-label">Uwaga — poniżej buforu</div><div class="alert-val" id="d-warn">—</div><div class="alert-sub">pozycji — zamów w ciągu tygodnia</div></div>
-    <div class="alert-card green"><div class="alert-label">OK — bufor zapewniony</div><div class="alert-val" id="d-ok">—</div><div class="alert-sub">pozycji — stan wystarczający</div></div>
-    <div class="alert-card"><div class="alert-label">Łączne zamówienie</div><div class="alert-val grad" id="d-total-order" style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">—</div><div class="alert-sub">pozycji do zamówienia (kartony + etykiety)</div></div>
-  </div>
+    <!-- ══════════════════════════════════════════════════════════════
+         KARTA 1 — Stan Magazynowy
+    ═══════════════════════════════════════════════════════════════ -->
+    <div class="dash-card card-orange">
 
-  <div class="table-wrap">
-    <div class="table-header">
-      <span class="table-title">Kartony zbiorcze — status buforu</span>
-      <span class="table-count" id="d-kart-count">—</span>
-    </div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead><tr>
-          <th>Karton</th>
-          <th class="num">CHO</th>
-          <th class="num">ŁOB</th>
-          <th class="num">STR</th>
-          <th class="num">WYS</th>
-          <th class="num">RAZEM</th>
-          <th class="num">Bufor 2M</th>
-          <th class="num">Zamówić</th>
-          <th>Status</th>
-        </tr></thead>
-        <tbody id="d-kart-body"></tbody>
-      </table>
-    </div>
-  </div>
+      <div class="card-top">
+        <div class="card-icon-wrap icon-orange">📦</div>
+        <div class="card-title">Stan Magazynowy</div>
+        <div class="card-desc">Stany opakowań w magazynach na wybrany dzień — wgraj plik z exportu StreamSoft</div>
+        <div class="card-badge badge-active" id="stan-badge">Brak danych</div>
+      </div>
 
-  <div class="table-wrap">
-    <div class="table-header">
-      <span class="table-title">Etykiety — status buforu</span>
-      <span class="table-count" id="d-et-count">—</span>
-    </div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead><tr>
-          <th>Etykieta</th>
-          <th class="num">CHO</th>
-          <th class="num">ŁOB</th>
-          <th class="num">STR</th>
-          <th class="num">WYS</th>
-          <th class="num">RAZEM</th>
-          <th class="num">Bufor 2M</th>
-          <th class="num">Zamówić</th>
-          <th>Status / Maszyna</th>
-        </tr></thead>
-        <tbody id="d-et-body"></tbody>
-      </table>
-    </div>
-  </div>
+      <div class="card-body">
 
-  <div class="table-wrap">
-    <div class="table-header">
-      <span class="table-title">Pojemniki jednostkowe — stan magazynowy</span>
-      <span class="table-count" id="d-jedn-count">—</span>
-    </div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead><tr>
-          <th>Pojemnik</th>
-          <th class="num">CHO</th>
-          <th class="num">ŁOB</th>
-          <th class="num">STR</th>
-          <th class="num">WYS</th>
-          <th class="num">RAZEM</th>
-        </tr></thead>
-        <tbody id="d-jedn-body"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ TAB 2: KARTONY ═══ -->
-<div id="tab-kartony" class="tab-content">
-
-  <div class="snapshot-note">
-    ℹ️ Dane zestawień proceduralnych dają łączny wolumen sezonu.
-    Zużycie kartonów = wolumen kg ÷ kg/karton (według kodu opakowania).
-    Mapowanie kodów opakowań na nazwane kartony jest przybliżone — weryfikuj z działem magazynowym.
-  </div>
-
-  <div class="filters">
-    <div class="filter-group">
-      <div class="filter-label">Magazyn</div>
-      <select id="kart-mag" onchange="renderKartony()">
-        <option value="">Wszystkie</option>
-        <option value="Chodzież">Chodzież</option>
-        <option value="Łobżenica">Łobżenica</option>
-        <option value="Stróżewo">Stróżewo</option>
-        <option value="Wyszynki">Wyszynki</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <div class="filter-label">Status</div>
-      <select id="kart-status" onchange="renderKartony()">
-        <option value="">Wszystkie</option>
-        <option value="crit">Krytyczne</option>
-        <option value="warn">Uwaga</option>
-        <option value="ok">OK</option>
-      </select>
-    </div>
-    <div class="filter-sep"></div>
-    <div class="filter-group">
-      <div class="filter-label">Szukaj</div>
-      <input type="text" id="kart-search" placeholder="Nazwa kartonu..." oninput="renderKartony()" style="min-width:200px">
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <div class="table-header">
-      <span class="table-title">Plan zakupów — Kartony zbiorcze 2026</span>
-      <span class="table-count" id="kart-count">—</span>
-    </div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead><tr>
-          <th>Nazwa kartonu</th>
-          <th class="num">Chodzież</th>
-          <th class="num">Łobżenica</th>
-          <th class="num">Stróżewo</th>
-          <th class="num">Wyszynki</th>
-          <th class="num">Razem stan</th>
-          <th class="num">Bufor 2M</th>
-          <th class="num">DO ZAMÓWIENIA</th>
-          <th>Status</th>
-          <th>Pokrycie</th>
-        </tr></thead>
-        <tbody id="kart-body"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ TAB 3: ETYKIETY ═══ -->
-<div id="tab-etykiety" class="tab-content">
-
-  <div class="order-note">
-    ⚠️ <strong>Etykieciarka Łobżenica</strong> ma inne parametry niż pozostałe magazyny.<br>
-    Przy zamawianiu etykiet dla Łobżenicy podaj: <strong>Gilza: 76 mm / Nawój: 500 m</strong>.<br>
-    Dla pozostałych magazynów (Chodzież, Stróżewo, Wyszynki): <strong>Gilza: 40 mm / Nawój: 300 m</strong>.
-  </div>
-
-  <div class="filters">
-    <div class="filter-group">
-      <div class="filter-label">Magazyn</div>
-      <select id="et-mag" onchange="renderEtykiety()">
-        <option value="">Wszystkie</option>
-        <option value="Chodzież">Chodzież</option>
-        <option value="Łobżenica">Łobżenica</option>
-        <option value="Stróżewo">Stróżewo</option>
-        <option value="Wyszynki">Wyszynki</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <div class="filter-label">Status</div>
-      <select id="et-status" onchange="renderEtykiety()">
-        <option value="">Wszystkie</option>
-        <option value="crit">Krytyczne</option>
-        <option value="warn">Uwaga</option>
-        <option value="ok">OK</option>
-      </select>
-    </div>
-    <div class="filter-sep"></div>
-    <div class="filter-group">
-      <div class="filter-label">Szukaj</div>
-      <input type="text" id="et-search" placeholder="Nazwa etykiety..." oninput="renderEtykiety()" style="min-width:200px">
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <div class="table-header">
-      <span class="table-title">Plan zakupów — Etykiety 2026</span>
-      <span class="table-count" id="et-count">—</span>
-    </div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead><tr>
-          <th>Nazwa etykiety</th>
-          <th class="num">Chodzież</th>
-          <th class="num">Łobżenica</th>
-          <th class="num">Stróżewo</th>
-          <th class="num">Wyszynki</th>
-          <th class="num">Razem stan</th>
-          <th class="num">Bufor 2M</th>
-          <th class="num">DO ZAMÓWIENIA</th>
-          <th>Maszyna / Status</th>
-        </tr></thead>
-        <tbody id="et-body"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ TAB 3.5: POJEMNIKI JEDNOSTKOWE ═══ -->
-<div id="tab-jednostkowe" class="tab-content">
-
-  <div class="snapshot-note">
-    ℹ️ Pojemniki jednostkowe (PET, celulozowe, SERCE, wieczka) — stan wg snapshotu 25.02.2026.
-    Brak automatycznej prognozy na 2026 — tylko widok aktualnego stanu magazynowego.
-  </div>
-
-  <div class="filters">
-    <div class="filter-group">
-      <div class="filter-label">Magazyn</div>
-      <select id="jedn-mag" onchange="renderJednostkowe()">
-        <option value="">Wszystkie</option>
-        <option value="Chodzież">Chodzież</option>
-        <option value="Łobżenica">Łobżenica</option>
-        <option value="Stróżewo">Stróżewo</option>
-        <option value="Wyszynki">Wyszynki</option>
-      </select>
-    </div>
-    <div class="filter-sep"></div>
-    <div class="filter-group">
-      <div class="filter-label">Szukaj</div>
-      <input type="text" id="jedn-search" placeholder="Nazwa pojemnika..." oninput="renderJednostkowe()" style="min-width:200px">
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <div class="table-header">
-      <span class="table-title">Stan magazynowy — Pojemniki jednostkowe</span>
-      <span class="table-count" id="jedn-count">—</span>
-    </div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead><tr>
-          <th>Nazwa pojemnika</th>
-          <th class="num">Chodzież</th>
-          <th class="num">Łobżenica</th>
-          <th class="num">Stróżewo</th>
-          <th class="num">Wyszynki</th>
-          <th class="num">Razem stan</th>
-        </tr></thead>
-        <tbody id="jedn-body"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ TAB 4: ARKUSZ ZAMÓWIEŃ ═══ -->
-<div id="tab-arkusz" class="tab-content">
-
-  <div class="order-header">
-    <div style="font-size:15px;font-weight:700">Arkusz zamówieniowy — OvocxMalinovi sp. z o.o.</div>
-    <div class="order-meta">
-      <div class="order-meta-item"><span class="order-meta-label">Data sporządzenia</span><span id="ark-data">25.02.2026</span></div>
-      <div class="order-meta-item"><span class="order-meta-label">Snapshot stanu magazynowego</span><span>25.02.2026</span></div>
-      <div class="order-meta-item"><span class="order-meta-label">Czas realizacji dostaw</span><span id="ark-lead">21 dni</span></div>
-    </div>
-  </div>
-
-  <div class="order-note">
-    📋 Poniższe zestawienie zawiera <strong>wyłącznie pozycje wymagające zamówienia</strong> (stan poniżej buforu 2-miesięcznego).
-    Ilości do zamówienia to sumy dla wszystkich magazynów (bufor centralny u dostawcy).
-    Przed wysłaniem zamówienia <strong>zweryfikuj ilości i podziel dostawy wg potrzeb poszczególnych magazynów</strong>.
-  </div>
-
-  <div class="order-section">
-    <div class="order-section-title">📦 Opakowania zbiorcze (kartony)</div>
-    <div id="ark-kart-note" class="order-note" style="display:none"></div>
-    <table id="ark-kart-table" style="border-collapse:collapse;width:100%;font-size:12px">
-      <thead>
-        <tr style="background:var(--surface2)">
-          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">LP</th>
-          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Nazwa</th>
-          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Stan TOTAL</th>
-          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Bufor 2M</th>
-          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">ZAMÓWIĆ (szt)</th>
-          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Uwagi</th>
-        </tr>
-      </thead>
-      <tbody id="ark-kart-body"></tbody>
-    </table>
-  </div>
-
-  <div class="order-section">
-    <div class="order-section-title">🏷 Etykiety</div>
-    <div class="order-note">
-      <strong>Łobżenica — inna etykieciarka:</strong> Gilza 76 mm / Nawój 500 m<br>
-      <strong>Chodzież, Stróżewo, Wyszynki:</strong> Gilza 40 mm / Nawój 300 m<br>
-      Pamiętaj o podaniu parametrów przy zamówieniu!
-    </div>
-    <table id="ark-et-table" style="border-collapse:collapse;width:100%;font-size:12px">
-      <thead>
-        <tr style="background:var(--surface2)">
-          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">LP</th>
-          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Nazwa etykiety</th>
-          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Stan TOTAL</th>
-          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Bufor 2M</th>
-          <th style="padding:8px 12px;text-align:right;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">ZAMÓWIĆ (szt)</th>
-          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Gilza / Nawój</th>
-          <th style="padding:8px 12px;text-align:left;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase">Magazyn dostawy</th>
-        </tr>
-      </thead>
-      <tbody id="ark-et-body"></tbody>
-    </table>
-  </div>
-
-  <div class="order-section">
-    <div class="order-section-title">📍 Adresy magazynów (miejsca dostawy)</div>
-    <div id="ark-adresy" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:8px"></div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════ TAB: ZUŻYCIE MATERIAŁÓW 2025 -->
-<div id="tab-zuzycie2025" class="tab-content">
-
-  <div class="filters">
-    <!-- Miesiąc: multi-checkbox dropdown -->
-    <div class="filter-group">
-      <div class="filter-label">Miesiąc</div>
-      <div class="ms-wrap" id="zm-mies-wrap">
-        <div class="ms-trigger" onclick="zmToggleDropdown('zm-mies-dropdown','zm-mies-wrap')">
-          <span id="zm-mies-label">Wszystkie miesiące</span>
-          <span class="ms-caret">▾</span>
-        </div>
-        <div class="ms-dropdown" id="zm-mies-dropdown" style="display:none">
-          <label class="ms-all-item"><input type="checkbox" id="zm-mies-all" checked onchange="zmToggleGroup('mies')"> Zaznacz wszystkie</label>
-          <div id="zm-mies-items">
-            <label class="ms-item"><input type="checkbox" value="4"  checked onchange="zmOnGroupChange('mies')"> Kwiecień</label>
-            <label class="ms-item"><input type="checkbox" value="5"  checked onchange="zmOnGroupChange('mies')"> Maj</label>
-            <label class="ms-item"><input type="checkbox" value="6"  checked onchange="zmOnGroupChange('mies')"> Czerwiec</label>
-            <label class="ms-item"><input type="checkbox" value="7"  checked onchange="zmOnGroupChange('mies')"> Lipiec</label>
-            <label class="ms-item"><input type="checkbox" value="8"  checked onchange="zmOnGroupChange('mies')"> Sierpień</label>
-            <label class="ms-item"><input type="checkbox" value="9"  checked onchange="zmOnGroupChange('mies')"> Wrzesień</label>
-            <label class="ms-item"><input type="checkbox" value="10" checked onchange="zmOnGroupChange('mies')"> Październik</label>
-            <label class="ms-item"><input type="checkbox" value="11" checked onchange="zmOnGroupChange('mies')"> Listopad</label>
+        <!-- ─── Stan: brak danych ─── -->
+        <div id="stan-empty">
+          <div class="upload-zone" id="upload-zone"
+               onclick="document.getElementById('mag-file').click()"
+               ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+            <div class="upload-icon">📂</div>
+            <div class="upload-text">Wgraj stany magazynowe</div>
+            <div class="upload-sub">.xlsx · .xls &nbsp;·&nbsp; przeciągnij lub kliknij</div>
+          </div>
+          <input type="file" id="mag-file" accept=".xlsx,.xls" onchange="handleFile(event)">
+          <div class="empty-hint">
+            <div class="empty-hint-icon">📋</div>
+            <div class="empty-hint-text">Brak wgranych danych.<br>Wgraj plik exportu ze StreamSoft.</div>
           </div>
         </div>
+
+        <!-- ─── Stan: dane wgrane ─── -->
+        <div id="stan-data" style="display:none">
+          <div class="stan-header">
+            <div>
+              <div class="stan-date-lbl">Stan na dzień</div>
+              <div class="stan-date-val" id="stan-date-val">—</div>
+            </div>
+            <button class="btn btn-sm" onclick="clearStan()">✕ Wyczyść</button>
+          </div>
+          <div class="stats-mini" id="stan-stats"></div>
+          <div class="stan-table-wrap">
+            <table class="stan-table">
+              <thead id="stan-thead"></thead>
+              <tbody id="stan-tbody"></tbody>
+            </table>
+          </div>
+          <div class="stan-table-footer" id="stan-footer"></div>
+        </div>
+
+      </div>
+
+      <div class="card-footer">
+        <button class="btn btn-orange" onclick="document.getElementById('mag-file').click()">
+          ↑ Wgraj plik
+        </button>
+        <button class="btn btn-sm" id="stan-change-btn" style="display:none" onclick="document.getElementById('mag-file').click()">
+          ↺ Zmień
+        </button>
+        <span style="flex:1"></span>
+        <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace">Excel / StreamSoft</span>
       </div>
     </div>
-    <!-- Magazyn: select tylko z prawdziwych magazynów -->
-    <div class="filter-group">
-      <div class="filter-label">Magazyn</div>
-      <select id="zm-magazyn" onchange="renderZuzycie()" style="min-width:180px">
-        <option value="">Wszystkie magazyny</option>
-        <option>Chodzież</option>
-        <option>Justynów</option>
-        <option>Stróżewo</option>
-        <option>Unisad</option>
-        <option>Wyszynki</option>
-        <option>Łobżenica</option>
-      </select>
-    </div>
-    <!-- Typ materiału -->
-    <div class="filter-group">
-      <div class="filter-label">Typ materiału</div>
-      <select id="zm-typ" onchange="zmTypChanged()">
-        <option value="">Wszystkie</option>
-        <option>Karton</option>
-        <option>Etykieta</option>
-        <option>Taśma</option>
-        <option>Zapinka</option>
-        <option>Kątownik</option>
-        <option>Inne</option>
-      </select>
-    </div>
-    <!-- Materiał: multi-checkbox dropdown -->
-    <div class="filter-group">
-      <div class="filter-label">Materiał</div>
-      <div class="ms-wrap" id="zm-mat-wrap">
-        <div class="ms-trigger" onclick="zmToggleDropdown('zm-mat-dropdown','zm-mat-wrap')">
-          <span id="zm-mat-label">Wszystkie materiały</span>
-          <span class="ms-caret">▾</span>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         KARTA 2 — Zużycie Materiałów
+    ═══════════════════════════════════════════════════════════════ -->
+    <div class="dash-card card-purple">
+
+      <div class="card-top">
+        <div class="card-icon-wrap icon-purple">📊</div>
+        <div class="card-title">Zużycie Materiałów</div>
+        <div class="card-desc">Analiza zużycia opakowań per magazyn i materiał — dane historyczne i bieżące</div>
+        <div class="card-badge badge-purple" id="zuz-badge">Ładowanie…</div>
+      </div>
+
+      <div class="card-body">
+        <div class="zuz-stats">
+          <div class="zuz-stat">
+            <div class="zuz-stat-label">Rekordy 2025</div>
+            <div class="zuz-stat-val" id="zuz-cnt" style="color:var(--purple)">—</div>
+          </div>
+          <div class="zuz-stat">
+            <div class="zuz-stat-label">Magazyny</div>
+            <div class="zuz-stat-val" id="zuz-mag">—</div>
+          </div>
+          <div class="zuz-stat">
+            <div class="zuz-stat-label">Typy mat.</div>
+            <div class="zuz-stat-val" id="zuz-typy">—</div>
+          </div>
         </div>
-        <div class="ms-dropdown" id="zm-mat-dropdown" style="display:none">
-          <label class="ms-all-item"><input type="checkbox" id="zm-mat-all" checked onchange="zmToggleGroup('mat')"> Zaznacz wszystkie</label>
-          <div id="zm-mat-items"></div>
-        </div>
+
+        <div class="section-label">Wybierz rok</div>
+
+        <a href="zuzycie-2025.html" class="sub-nav-item">
+          <div class="sub-nav-left">
+            <div class="sub-nav-icon sni-purple">📁</div>
+            <div>
+              <div class="sub-nav-title">Zużycie 2025</div>
+              <div class="sub-nav-meta" id="zuz-meta-2025">IV–XI 2025 · ładowanie…</div>
+            </div>
+          </div>
+          <div class="sub-nav-right">
+            <span class="card-badge badge-locked">🔒 Historyczne</span>
+            <span class="sub-nav-arrow">›</span>
+          </div>
+        </a>
+
+        <a href="#" class="sub-nav-item disabled">
+          <div class="sub-nav-left">
+            <div class="sub-nav-icon sni-muted">📁</div>
+            <div>
+              <div class="sub-nav-title">Zużycie 2026</div>
+              <div class="sub-nav-meta">Dane będą uzupełniane na bieżąco</div>
+            </div>
+          </div>
+          <div class="sub-nav-right">
+            <span class="card-badge badge-pending">W przygotowaniu</span>
+            <span class="sub-nav-arrow" style="opacity:.4">›</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="card-footer">
+        <a href="zuzycie-2025.html" class="btn btn-purple">📊 Otwórz Zużycie 2025</a>
       </div>
     </div>
-    <div class="filter-sep"></div>
-    <button class="btn" onclick="resetZuzycie()">Resetuj filtry</button>
-  </div>
 
-  <div class="alert-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
-    <div class="alert-card">
-      <div class="alert-label">Łączna ilość</div>
-      <div class="alert-val" id="zm-s-ilosc" style="font-size:20px">—</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">jm. (01.01–26.11.2025)</div>
-    </div>
-    <div class="alert-card">
-      <div class="alert-label">Magazynów</div>
-      <div class="alert-val" id="zm-s-mag" style="font-size:20px">—</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">aktywnych lokalizacji</div>
-    </div>
-    <div class="alert-card">
-      <div class="alert-label">Typów materiałów</div>
-      <div class="alert-val" id="zm-s-typy" style="font-size:20px">—</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">kategorii</div>
-    </div>
-    <div class="alert-card">
-      <div class="alert-label">Unikalnych surowców</div>
-      <div class="alert-val" id="zm-s-sur" style="font-size:20px">—</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">nazw materiałów</div>
-    </div>
-  </div>
+    <!-- ══════════════════════════════════════════════════════════════
+         KARTA 3 — Planowanie Zakupów
+    ═══════════════════════════════════════════════════════════════ -->
+    <div class="dash-card card-blue">
 
-  <div class="table-wrap">
-    <div class="table-header">
-      <span class="table-title">Zużycie materiałów — per magazyn × miesiąc (ZP 2025)</span>
-      <span class="table-count" id="zm-count">—</span>
-    </div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead>
-          <tr>
-            <th onclick="zmSort('surowiec_nazwa')">Materiał (Surowiec Nazwa)</th>
-            <th onclick="zmSort('typ_materialu')">Typ</th>
-            <th onclick="zmSort('magazyn')">Magazyn</th>
-            <th onclick="zmSort('miesiac')">Miesiąc</th>
-            <th class="num" onclick="zmSort('ilosc')">Ilość [jm.]</th>
-            <th>Udział</th>
-          </tr>
-        </thead>
-        <tbody id="zm-body"></tbody>
-      </table>
-    </div>
-  </div>
+      <div class="card-top">
+        <div class="card-icon-wrap icon-blue">🛒</div>
+        <div class="card-title">Planowanie Zakupów</div>
+        <div class="card-desc">Harmonogram zamówień, progi bezpieczeństwa i rekomendacje zakupowe</div>
+        <div class="card-badge badge-pending">⏳ W przygotowaniu</div>
+      </div>
 
-</div>
+      <div class="card-body">
+        <div class="wip-box">
+          <div class="wip-icon">🏗️</div>
+          <div class="wip-title">Sekcja w opracowaniu</div>
+          <div class="wip-text">Opis i funkcjonalność tej sekcji<br>są aktualnie definiowane przez Janka.</div>
+        </div>
 
+        <div class="section-label">Powiązane widoki</div>
+
+        <a href="zakupy-klienci.html" class="sub-nav-item">
+          <div class="sub-nav-left">
+            <div class="sub-nav-icon sni-orange">📦</div>
+            <div>
+              <div class="sub-nav-title">Konfekcja per klient</div>
+              <div class="sub-nav-meta">Zestawienie opakowań wg klientów</div>
+            </div>
+          </div>
+          <span class="sub-nav-arrow">›</span>
+        </a>
+
+        <a href="zakupy-harmonogram.html" class="sub-nav-item">
+          <div class="sub-nav-left">
+            <div class="sub-nav-icon sni-orange">📅</div>
+            <div>
+              <div class="sub-nav-title">Harmonogram zakupów</div>
+              <div class="sub-nav-meta">Terminy i planowane zamówienia</div>
+            </div>
+          </div>
+          <span class="sub-nav-arrow">›</span>
+        </a>
+      </div>
+
+      <div class="card-footer">
+        <span class="btn" style="cursor:default;opacity:.55">⏳ Wkrótce dostępne</span>
+      </div>
+    </div>
+
+  </div><!-- /dashboard-grid -->
 </main>
 
 <script>
-// ═══════════════════════════════════════════════ DATA
-const D = window.ZAKUPY_DATA;
-const MAGS = D.magazyny; // ['Chodzież','Łobżenica','Stróżewo','Wyszynki']
-const SNAP_STANY = D.stany;
-const ZP = D.zp_stats;
+// ── Date display ─────────────────────────────────────────────────────────────
+const today = new Date();
+document.getElementById('today-date').textContent =
+  today.toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'});
 
-// Season months count (Apr-Nov = 8)
-const SEASON_MONTHS = 8;
-
-// ─── Helpers ───────────────────────────────────────────────
-function fmtN(n) {
-  if (n == null || isNaN(n)) return '—';
-  return Math.round(n).toLocaleString('pl-PL');
-}
-function fmtNK(n) {  // thousands with "k"
-  if (!n) return '—';
-  return n >= 1000 ? (n/1000).toFixed(0)+'k' : n.toString();
-}
-
-function getParam() {
-  const buforM = parseInt(document.getElementById('bufor-mies').value) || 2;
-  const lead   = parseInt(document.getElementById('lead-time').value) || 21;
-  return {buforM, lead};
-}
-
-// ─── Plan 2026 per klient z PLAN_DATA ────────────────────
-const PLAN_DATA_ALL = window.PLAN_DATA || [];
-const PLAN_2026_BY_CLIENT = {};
-PLAN_DATA_ALL.filter(r => r.typ === 'klient').forEach(r => {
-  PLAN_2026_BY_CLIENT[r.podmiot] = (PLAN_2026_BY_CLIENT[r.podmiot] || 0) + (r.kg || 0);
-});
-const PLAN_2026_KG = Object.values(PLAN_2026_BY_CLIENT).reduce((s, v) => s + v, 0);
-
-// ─── Projekcja kartonów: plan kg × miks opakowań per klient ─
-// ZCP = {klient: [{pak, kg_zp, kgpk}]} z zakupy-data.js
-// Dla każdego klienta: PAK_PROJ[pak_code] += plan_kg × share_w_ZP2025 / kgpk
-// Żaden growth factor — plan_kg to bezpośrednia podstawa, kgpk to spec produktu
-const ZCP = (window.ZAKUPY_DATA || {}).zp_client_pak || {};
-
-// Fallback: średni miks (dla klientów niezidentyfikowanych w ZP 2025)
-const ZCP_AVG = {};
-Object.values(ZCP).forEach(paks => {
-  paks.forEach(v => {
-    if (!ZCP_AVG[v.pak]) ZCP_AVG[v.pak] = {kg_zp: 0, kgpk: v.kgpk};
-    ZCP_AVG[v.pak].kg_zp += v.kg_zp;
-    if (!ZCP_AVG[v.pak].kgpk) ZCP_AVG[v.pak].kgpk = v.kgpk;
-  });
-});
-const ZCP_AVG_TOTAL = Object.values(ZCP_AVG).reduce((s, v) => s + v.kg_zp, 0);
-
-const PAK_PROJ = {};  // {pak_code: prognozowana_liczba_kartonów_2026}
-Object.entries(PLAN_2026_BY_CLIENT).forEach(([client, planKg]) => {
-  const paks    = ZCP[client] || [];
-  const zpTotal = paks.reduce((s, v) => s + v.kg_zp, 0);
-  const usePaks = zpTotal > 0 ? paks
-    : (ZCP_AVG_TOTAL > 0 ? Object.entries(ZCP_AVG).map(([pak, v]) => ({pak, ...v})) : []);
-  const useTotal = zpTotal > 0 ? zpTotal : ZCP_AVG_TOTAL;
-  usePaks.forEach(v => {
-    const projKg = (v.kg_zp / useTotal) * planKg;
-    if (v.kgpk > 0) PAK_PROJ[v.pak] = (PAK_PROJ[v.pak] || 0) + projKg / v.kgpk;
-  });
-});
-
-function pakSum(filterFn) {
-  let total = 0;
-  Object.entries(PAK_PROJ).forEach(([pak, c]) => { if (filterFn(pak)) total += c; });
-  return Math.round(total);
-}
-
-// Named carton (stany mag) → pak_code filter
-// Biedronka używa X6/250X8, zielona deska X12 — rozróżnienie bez sztucznych %
-function projCartons2026(nazwa) {
-  const n = nazwa.toLowerCase();
-  if (n.includes('mały czarny') || n.includes('apla'))
-    return pakSum(p => p.includes('PROSTE') && p.includes('MAŁY'));
-  if (n.includes('mały') && n.includes('biedronka'))
-    return pakSum(p => p.includes('PEŁNE') && p.includes('MAŁY') && (p.includes('X6') || p.includes('250X8')));
-  if (n.includes('mały') && (n.includes('zielona') || n.includes('lidl')))
-    return pakSum(p => p.includes('PEŁNE') && p.includes('MAŁY') && p.includes('X12'));
-  if (n.includes('duży czarny') && n.includes('klejony'))
-    return pakSum(p => p.includes('PROSTE') && p.includes('DUŻY') && p.includes('KLEJONY'));
-  if (n.includes('duży czarny') && n.includes('składan'))
-    return pakSum(p => p.includes('PROSTE') && p.includes('DUŻY') && p.includes('SKŁADANY'));
-  if (n.includes('duży') && n.includes('zielony') && n.includes('klejony'))
-    return pakSum(p => p.includes('PEŁNE') && p.includes('DUŻY') && p.includes('KLEJONY'));
-  if (n.includes('duży') && n.includes('zielony') && n.includes('składan'))
-    return pakSum(p => p.includes('PEŁNE') && p.includes('DUŻY') && p.includes('SKŁADANY'));
-  if (n.includes('duży') && n.includes('biedronka'))
-    return pakSum(p => p.includes('PEŁNE') && p.includes('DUŻY'));
-  if (n.includes('duży') && n.includes('szary'))
-    return pakSum(p => p.includes('PEŁNE') && p.includes('DUŻY'));
-  return null;
-}
-
-// ─── Projekcja etykiet ────────────────────────────────────
-// Gęstość etykiet/kg = spec. produktu z ZP 2025; vol = plan 2026 klientów
-const ZP_TOTAL_KG = ZP.reduce((s, z) => s + (z.kg_2025 || 0), 0);
-const ZP_LABELS_PER_KG = ZP_TOTAL_KG > 0
-  ? ZP.reduce((s, z) => {
-      if (z.szt && z.waga_g && z.kg_2025)
-        return s + z.kg_2025 * (z.szt / (z.waga_g / 1000)) / ZP_TOTAL_KG;
-      return s;
-    }, 0)
-  : 0;
-const PROJ_LABELS_2026_TOTAL = Math.round(PLAN_2026_KG * ZP_LABELS_PER_KG);
-
-function projLabels2026(indeks, totalLabelStany) {
-  const item = SNAP_STANY.find(i => i.indeks === indeks);
-  if (!item || !totalLabelStany || PROJ_LABELS_2026_TOTAL === 0) return null;
-  return Math.round((item.total / totalLabelStany) * PROJ_LABELS_2026_TOTAL);
-}
-
-// ─── Build planning rows ───────────────────────────────────
-function buildRows(kategoria) {
-  const {buforM} = getParam();
-  const items = SNAP_STANY.filter(i => i.kategoria === kategoria);
-
-  const totalLabelStany = kategoria === 'etykiety'
-    ? items.reduce((s, i) => s + (i.total || 0), 0) : 0;
-
-  return items.map(item => {
-    const stock = item.total || 0;
-    const stockByMag = item.by_mag || {};
-
-    let proj2026 = null;
-    if (kategoria === 'kartony') {
-      proj2026 = projCartons2026(item.nazwa);
-    } else if (kategoria === 'etykiety') {
-      proj2026 = projLabels2026(item.indeks, totalLabelStany);
-    }
-
-    const monthlyNeed = proj2026 != null ? Math.round(proj2026 / SEASON_MONTHS) : null;
-    const bufferNeed  = monthlyNeed != null ? monthlyNeed * buforM : null;
-    const toOrder     = bufferNeed != null ? Math.max(0, bufferNeed - stock) : null;
-
-    let status = 'na';
-    if (bufferNeed != null) {
-      const cover = bufferNeed > 0 ? stock / bufferNeed : 1;
-      if (cover >= 1) status = 'ok';
-      else if (cover >= 0.5) status = 'warn';
-      else status = 'crit';
-    }
-
-    return { indeks: item.indeks, nazwa: item.nazwa, stockByMag, stock,
-             proj2026, bufferNeed, toOrder, status };
-  });
-}
-
-function statusBadge(s) {
-  if (s === 'ok')   return '<span class="status status-ok">✓ OK</span>';
-  if (s === 'warn') return '<span class="status status-warn">⚠ UWAGA</span>';
-  if (s === 'crit') return '<span class="status status-crit">✗ KRYTYCZNE</span>';
-  return '<span class="status status-na">— brak est.</span>';
-}
-
-function coverBar(stock, bufferNeed) {
-  if (!bufferNeed || bufferNeed <= 0) return '';
-  const pct = Math.min(100, Math.round(stock / bufferNeed * 100));
-  const cls = pct >= 100 ? 'bar-fill-green' : pct >= 50 ? 'bar-fill-yellow' : 'bar-fill-red';
-  return `<div class="bar-cell">
-    <div class="bar-bg"><div class="${cls}" style="width:${pct}%"></div></div>
-    <span class="bar-pct">${pct}%</span>
-  </div>`;
-}
-
-function magVal(byMag, mag) {
-  const v = byMag[mag] || 0;
-  return v > 0 ? `<span class="num-big">${fmtN(v)}</span>` : '<span class="num-muted">—</span>';
-}
-
-// ─── Etykieciarka tag ───────────────────────────────────────
-function machineTags(byMag) {
-  const lob = (byMag['Łobżenica'] || 0) > 0;
-  const rest = (['Chodzież','Stróżewo','Wyszynki'].some(m => (byMag[m]||0) > 0));
-  let tags = '';
-  if (rest) tags += '<span class="machine-tag">Std 40mm/300m</span> ';
-  if (lob)  tags += '<span class="machine-tag machine-special">ŁOB 76mm/500m</span>';
-  return tags || '—';
-}
-
-// ═══════════════════════════════════════════════ RENDER FUNCTIONS
-
-function renderDashboard() {
-  const kartRows = buildRows('kartony');
-  const etRows   = buildRows('etykiety');
-  const jednRows = buildRows('jednostkowe').sort((a,b) => a.nazwa.localeCompare(b.nazwa, 'pl'));
-  const all = [...kartRows, ...etRows];
-
-  const crit = all.filter(r => r.status === 'crit').length;
-  const warn = all.filter(r => r.status === 'warn').length;
-  const ok   = all.filter(r => r.status === 'ok').length;
-  const toOrd = all.filter(r => r.toOrder && r.toOrder > 0).length;
-
-  document.getElementById('d-crit').textContent = crit;
-  document.getElementById('d-warn').textContent = warn;
-  document.getElementById('d-ok').textContent   = ok;
-  document.getElementById('d-total-order').textContent = toOrd + ' poz.';
-  document.getElementById('badge-dashboard').textContent = crit + ' kryt.';
-
-  // Kartony table
-  const sorted_k = [...kartRows].sort((a,b) => {
-    const ord = {crit:0, warn:1, ok:2, na:3};
-    return (ord[a.status]||3) - (ord[b.status]||3);
-  });
-  document.getElementById('d-kart-count').textContent = kartRows.length + ' pozycji';
-  document.getElementById('d-kart-body').innerHTML = sorted_k.map(r => `
-    <tr>
-      <td style="max-width:220px;font-size:11px">${r.nazwa}</td>
-      ${MAGS.map(m => `<td class="num">${magVal(r.stockByMag, m)}</td>`).join('')}
-      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
-      <td class="num"><span class="num-muted">${fmtN(r.bufferNeed)}</span></td>
-      <td class="num">${r.toOrder > 0 ? `<span class="num-order">${fmtN(r.toOrder)}</span>` : '<span class="num-muted">—</span>'}</td>
-      <td>${statusBadge(r.status)}</td>
-    </tr>`).join('');
-
-  // Etykiety table
-  const sorted_e = [...etRows].sort((a,b) => {
-    const ord = {crit:0, warn:1, ok:2, na:3};
-    return (ord[a.status]||3) - (ord[b.status]||3);
-  });
-  document.getElementById('d-et-count').textContent = etRows.length + ' pozycji';
-  document.getElementById('d-et-body').innerHTML = sorted_e.map(r => `
-    <tr>
-      <td style="max-width:220px;font-size:11px">${r.nazwa}</td>
-      ${MAGS.map(m => `<td class="num">${magVal(r.stockByMag, m)}</td>`).join('')}
-      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
-      <td class="num"><span class="num-muted">${fmtN(r.bufferNeed)}</span></td>
-      <td class="num">${r.toOrder > 0 ? `<span class="num-order">${fmtN(r.toOrder)}</span>` : '<span class="num-muted">—</span>'}</td>
-      <td>${statusBadge(r.status)} ${machineTags(r.stockByMag)}</td>
-    </tr>`).join('');
-
-  // Pojemniki table
-  document.getElementById('d-jedn-count').textContent = jednRows.length + ' pozycji';
-  document.getElementById('d-jedn-body').innerHTML = jednRows.map(r => `
-    <tr>
-      <td style="max-width:300px;font-size:11px">${r.nazwa}</td>
-      ${MAGS.map(m => `<td class="num">${magVal(r.stockByMag, m)}</td>`).join('')}
-      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
-    </tr>`).join('');
-}
-
-function renderKartony() {
-  const magF    = document.getElementById('kart-mag').value;
-  const statF   = document.getElementById('kart-status').value;
-  const searchF = document.getElementById('kart-search').value.toLowerCase();
-
-  let rows = buildRows('kartony').filter(r => {
-    if (statF && r.status !== statF) return false;
-    if (searchF && !r.nazwa.toLowerCase().includes(searchF)) return false;
-    return true;
-  }).sort((a,b) => {
-    const ord = {crit:0, warn:1, ok:2, na:3};
-    return (ord[a.status]||3) - (ord[b.status]||3);
-  });
-
-  document.getElementById('kart-count').textContent = rows.length + ' pozycji';
-  const crit = rows.filter(r=>r.status==='crit').length;
-  document.getElementById('badge-kartony').textContent = crit > 0 ? crit+' kryt.' : rows.length;
-
-  document.getElementById('kart-body').innerHTML = rows.map(r => {
-    const magHighlight = magF && r.stockByMag[magF] !== undefined;
-    return `<tr${r.status==='crit'?' style="background:var(--red-bg)"':r.status==='warn'?' style="background:var(--yellow-bg)"':''}>
-      <td style="max-width:200px;font-size:11px;font-weight:500">${r.nazwa}</td>
-      ${MAGS.map(m => `<td class="num" ${magF===m?'style="background:rgba(250,66,17,.06);font-weight:700"':''}>${magVal(r.stockByMag, m)}</td>`).join('')}
-      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
-      <td class="num"><span class="num-muted">${fmtN(r.bufferNeed)}</span></td>
-      <td class="num">${r.toOrder > 0 ? `<span class="num-order">${fmtN(r.toOrder)}</span>` : '<span class="num-muted">—</span>'}</td>
-      <td>${statusBadge(r.status)}</td>
-      <td>${coverBar(r.stock, r.bufferNeed)}</td>
-    </tr>`;
-  }).join('');
-}
-
-function renderEtykiety() {
-  const magF    = document.getElementById('et-mag').value;
-  const statF   = document.getElementById('et-status').value;
-  const searchF = document.getElementById('et-search').value.toLowerCase();
-
-  let rows = buildRows('etykiety').filter(r => {
-    if (statF && r.status !== statF) return false;
-    if (searchF && !r.nazwa.toLowerCase().includes(searchF)) return false;
-    return true;
-  }).sort((a,b) => {
-    const ord = {crit:0, warn:1, ok:2, na:3};
-    return (ord[a.status]||3) - (ord[b.status]||3);
-  });
-
-  document.getElementById('et-count').textContent = rows.length + ' pozycji';
-  const crit = rows.filter(r=>r.status==='crit').length;
-  document.getElementById('badge-etykiety').textContent = crit > 0 ? crit+' kryt.' : rows.length;
-
-  document.getElementById('et-body').innerHTML = rows.map(r => `
-    <tr${r.status==='crit'?' style="background:var(--red-bg)"':r.status==='warn'?' style="background:var(--yellow-bg)"':''}>
-      <td style="max-width:220px;font-size:11px;font-weight:500">${r.nazwa}</td>
-      ${MAGS.map(m => `<td class="num" ${magF===m?'style="background:rgba(250,66,17,.06);font-weight:700"':''}>${magVal(r.stockByMag, m)}</td>`).join('')}
-      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
-      <td class="num"><span class="num-muted">${fmtN(r.bufferNeed)}</span></td>
-      <td class="num">${r.toOrder > 0 ? `<span class="num-order">${fmtN(r.toOrder)}</span>` : '<span class="num-muted">—</span>'}</td>
-      <td>${machineTags(r.stockByMag)}<br>${statusBadge(r.status)}</td>
-    </tr>`).join('');
-}
-
-function renderJednostkowe() {
-  const magF    = document.getElementById('jedn-mag').value;
-  const searchF = document.getElementById('jedn-search').value.toLowerCase();
-
-  let rows = buildRows('jednostkowe').filter(r => {
-    if (searchF && !r.nazwa.toLowerCase().includes(searchF)) return false;
-    return true;
-  }).sort((a, b) => a.nazwa.localeCompare(b.nazwa, 'pl'));
-
-  document.getElementById('jedn-count').textContent = rows.length + ' pozycji';
-  document.getElementById('badge-jednostkowe').textContent = rows.length;
-
-  document.getElementById('jedn-body').innerHTML = rows.map(r => `
-    <tr>
-      <td style="max-width:300px;font-size:11px;font-weight:500">${r.nazwa}</td>
-      ${MAGS.map(m => `<td class="num" ${magF===m?'style="background:rgba(250,66,17,.06);font-weight:700"':''}>${magVal(r.stockByMag, m)}</td>`).join('')}
-      <td class="num"><span class="num-big">${fmtN(r.stock)}</span></td>
-    </tr>`).join('');
-}
-
-function renderArkusz() {
-  const {lead} = getParam();
-  document.getElementById('ark-lead').textContent = lead + ' dni';
-
-  const today = new Date();
-  document.getElementById('ark-data').textContent = today.toLocaleDateString('pl-PL');
-
-  // Kartony to order
-  const kartRows = buildRows('kartony').filter(r => r.toOrder > 0).sort((a,b) => b.toOrder - a.toOrder);
-  document.getElementById('ark-kart-body').innerHTML = kartRows.length === 0
-    ? '<tr><td colspan="6" style="padding:12px;text-align:center;color:var(--green);font-size:12px">✓ Wszystkie kartony powyżej progu buforu — brak zamówień</td></tr>'
-    : kartRows.map((r, i) => `
-      <tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:7px 12px;border:1px solid var(--border2)">${i+1}</td>
-        <td style="padding:7px 12px;border:1px solid var(--border2);font-weight:500">${r.nazwa}</td>
-        <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right">${fmtN(r.stock)}</td>
-        <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right">${fmtN(r.bufferNeed)}</td>
-        <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right;font-weight:700;color:var(--orange)">${fmtN(r.toOrder)}</td>
-        <td style="padding:7px 12px;border:1px solid var(--border2);color:var(--text-muted);font-size:11px">${r.status === 'crit' ? '⚠ PILNE' : ''}</td>
-      </tr>`).join('');
-
-  // Etykiety to order
-  const etRows = buildRows('etykiety').filter(r => r.toOrder > 0).sort((a,b) => b.toOrder - a.toOrder);
-  document.getElementById('ark-et-body').innerHTML = etRows.length === 0
-    ? '<tr><td colspan="7" style="padding:12px;text-align:center;color:var(--green);font-size:12px">✓ Wszystkie etykiety powyżej progu buforu — brak zamówień</td></tr>'
-    : etRows.map((r, i) => {
-        const lobStock = r.stockByMag['Łobżenica'] || 0;
-        const restStock = MAGS.filter(m=>m!=='Łobżenica').reduce((s,m)=>s+(r.stockByMag[m]||0),0);
-        const machines = [];
-        if (restStock > 0) machines.push('40mm / 300m');
-        if (lobStock > 0)  machines.push('76mm / 500m (ŁOB)');
-        return `<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:7px 12px;border:1px solid var(--border2)">${i+1}</td>
-          <td style="padding:7px 12px;border:1px solid var(--border2);font-weight:500;font-size:11px">${r.nazwa}</td>
-          <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right">${fmtN(r.stock)}</td>
-          <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right">${fmtN(r.bufferNeed)}</td>
-          <td style="padding:7px 12px;border:1px solid var(--border2);text-align:right;font-weight:700;color:var(--orange)">${fmtN(r.toOrder)}</td>
-          <td style="padding:7px 12px;border:1px solid var(--border2);font-size:10px;font-family:'DM Mono',monospace">${machines.join('<br>') || '—'}</td>
-          <td style="padding:7px 12px;border:1px solid var(--border2);font-size:11px">${MAGS.filter(m=>(r.stockByMag[m]||0)>0).join(', ') || '—'}</td>
-        </tr>`;
-      }).join('');
-
-  // Adresy
-  const adresyData = D.adresy || {};
-  document.getElementById('ark-adresy').innerHTML = Object.entries(adresyData).map(([mag, info]) => `
-    <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
-      <div style="font-weight:700;font-size:13px;margin-bottom:6px">${mag} <span class="snapshot-pill" style="font-size:10px">${info.skrot}</span></div>
-      <div style="font-size:11px;color:var(--text-dim);white-space:pre-line;line-height:1.7">${info.pelna}</div>
-    </div>`).join('');
-}
-
-// ═══════════════════════════════════════════════ ZUŻYCIE MATERIAŁÓW 2025
-
-let zmSortCol = 'ilosc';
-let zmSortDir = -1;
-
-// Zamknij wszystkie dropdowny zużycia przy kliknięciu poza nimi
-document.addEventListener('click', function(e) {
-  ['zm-mies-wrap','zm-mat-wrap'].forEach(id => {
-    const wrap = document.getElementById(id);
-    if (wrap && !wrap.contains(e.target)) {
-      const dd = wrap.querySelector('.ms-dropdown');
-      if (dd) dd.style.display = 'none';
-    }
-  });
-});
-
-function zmToggleDropdown(ddId, wrapId) {
-  const dd = document.getElementById(ddId);
-  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
-}
-
-// Generyczna obsługa grup checkboxów (mies / mat)
-function zmToggleGroup(grp) {
-  const checked = document.getElementById('zm-'+grp+'-all').checked;
-  document.querySelectorAll('#zm-'+grp+'-items input').forEach(cb => cb.checked = checked);
-  zmUpdateLabel(grp);
-  renderZuzycie();
-}
-function zmOnGroupChange(grp) {
-  const all = document.querySelectorAll('#zm-'+grp+'-items input');
-  document.getElementById('zm-'+grp+'-all').checked = [...all].every(cb => cb.checked);
-  zmUpdateLabel(grp);
-  renderZuzycie();
-}
-function zmUpdateLabel(grp) {
-  const all = document.querySelectorAll('#zm-'+grp+'-items input');
-  const cnt = [...all].filter(cb => cb.checked).length;
-  const lbl = document.getElementById('zm-'+grp+'-label');
-  const names = {mies:'miesiące', mat:'materiały'};
-  if (!all.length || cnt === all.length) lbl.textContent = 'Wszystkie ' + names[grp];
-  else if (cnt === 0) lbl.textContent = 'Żaden nie wybrany';
-  else lbl.textContent = cnt + ' wybranych';
-}
-
-// Zmiana typu filtruje listę materiałów
-function zmTypChanged() {
-  if (!window.ZUZYCIE_DATA) return;
-  const typ = document.getElementById('zm-typ').value;
+// ── Zużycie stats (from zuzycie-data.js) ─────────────────────────────────────
+if (window.ZUZYCIE_DATA) {
   const rek = window.ZUZYCIE_DATA.rekordy;
-  const allNazwy = [...new Set(
-    rek.filter(r => !typ || r.typ_materialu === typ).map(r => r.surowiec_nazwa)
-  )].sort((a,b) => a.localeCompare(b,'pl'));
-  const cont = document.getElementById('zm-mat-items');
-  cont.innerHTML = allNazwy.map(n =>
-    `<label class="ms-item"><input type="checkbox" value="${n}" checked onchange="zmOnGroupChange('mat')"> ${n}</label>`
+  const mags  = new Set(rek.map(r => r.magazyn));
+  const typy  = new Set(rek.map(r => r.typ_materialu));
+  const mats  = new Set(rek.map(r => r.surowiec_nazwa));
+  document.getElementById('zuz-cnt').textContent   = rek.length.toLocaleString('pl-PL');
+  document.getElementById('zuz-mag').textContent   = mags.size;
+  document.getElementById('zuz-typy').textContent  = typy.size;
+  document.getElementById('zuz-badge').textContent = rek.length + ' rekordów · 2025';
+  document.getElementById('zuz-meta-2025').textContent =
+    window.ZUZYCIE_DATA.zakres + ' · ' + rek.length + ' rekordów · ' + mats.size + ' materiałów';
+}
+
+// ── Stan Magazynowy ──────────────────────────────────────────────────────────
+const LS_KEY = 'oxm_stan_mag_v2';
+
+function handleDragOver(e)  { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag'); }
+function handleDragLeave()  { document.getElementById('upload-zone').classList.remove('drag'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (file) processFile(file);
+}
+
+function processFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const wb  = XLSX.read(ev.target.result, { type:'array' });
+      const ws  = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+      if (!raw.length) return;
+
+      // Try to extract date from filename e.g. "Stany magazynowe na dn.25.02.2026.xlsx"
+      const m = file.name.match(/(\d{1,2}[.\-\/]\d{1,2}[.\-\/]\d{4})/);
+      const dateStr = m ? m[1].replace(/[-\/]/g, '.') : file.name.replace(/\.xlsx?$/i,'');
+
+      const headers = raw[0].map(String).filter(Boolean);
+      const rows    = raw.slice(1).filter(r => r.some(c => c !== ''));
+
+      try { localStorage.setItem(LS_KEY, JSON.stringify({ date:dateStr, headers, rows:rows.slice(0,300) })); } catch(e){}
+      renderStan(dateStr, headers, rows);
+    } catch(err) {
+      alert('Błąd wczytywania pliku:\n' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderStan(dateStr, headers, rows) {
+  document.getElementById('stan-empty').style.display = 'none';
+  document.getElementById('stan-data').style.display  = 'block';
+  document.getElementById('stan-change-btn').style.display = 'inline-flex';
+  document.getElementById('stan-date-val').textContent = dateStr;
+  document.getElementById('stan-badge').textContent   = 'Stan: ' + dateStr;
+
+  // Stats
+  const numCols = headers.reduce((acc, h, i) => {
+    if (rows.slice(0,10).some(r => typeof r[i] === 'number')) acc++;
+    return acc;
+  }, 0);
+  document.getElementById('stan-stats').innerHTML = `
+    <div class="stat-mini"><div class="stat-mini-label">Wiersze</div><div class="stat-mini-val" style="color:var(--orange)">${rows.length.toLocaleString('pl-PL')}</div></div>
+    <div class="stat-mini"><div class="stat-mini-label">Kolumny</div><div class="stat-mini-val">${headers.length}</div></div>
+    <div class="stat-mini"><div class="stat-mini-label">Num. kol.</div><div class="stat-mini-val">${numCols}</div></div>
+  `;
+
+  // Table — max 8 columns to fit nicely
+  const MAX_COLS = 8;
+  const dispHeaders = headers.slice(0, MAX_COLS);
+  document.getElementById('stan-thead').innerHTML =
+    '<tr>' + dispHeaders.map(h => `<th>${h}</th>`).join('') + '</tr>';
+
+  document.getElementById('stan-tbody').innerHTML = rows.slice(0, 60).map(row =>
+    '<tr>' + dispHeaders.map((h, i) => {
+      const v = row[i];
+      const isNum = typeof v === 'number';
+      return `<td class="${isNum ? 'num-cell' : ''}" title="${v}">${isNum ? v.toLocaleString('pl-PL') : (v || '')}</td>`;
+    }).join('') + '</tr>'
   ).join('');
-  document.getElementById('zm-mat-all').checked = true;
-  zmUpdateLabel('mat');
-  renderZuzycie();
+
+  document.getElementById('stan-footer').textContent =
+    'Wyświetlono ' + Math.min(rows.length, 60) + ' z ' + rows.length + ' wierszy'
+    + (headers.length > MAX_COLS ? ' · ' + (headers.length - MAX_COLS) + ' kolumn ukrytych' : '');
 }
 
-function initZuzycie() {
-  if (!window.ZUZYCIE_DATA) return;
-  const rek = window.ZUZYCIE_DATA.rekordy;
-  // Wypełnij listę materiałów (wszystkie typy)
-  const allNazwy = [...new Set(rek.map(r => r.surowiec_nazwa).filter(Boolean))].sort((a,b) => a.localeCompare(b,'pl'));
-  const cont = document.getElementById('zm-mat-items');
-  cont.innerHTML = allNazwy.map(n =>
-    `<label class="ms-item"><input type="checkbox" value="${n}" checked onchange="zmOnGroupChange('mat')"> ${n}</label>`
-  ).join('');
-  zmUpdateLabel('mies');
-  zmUpdateLabel('mat');
-  renderZuzycie();
+function clearStan() {
+  localStorage.removeItem(LS_KEY);
+  document.getElementById('stan-empty').style.display = 'block';
+  document.getElementById('stan-data').style.display  = 'none';
+  document.getElementById('stan-change-btn').style.display = 'none';
+  document.getElementById('stan-badge').textContent = 'Brak danych';
+  document.getElementById('mag-file').value = '';
 }
 
-function resetZuzycie() {
-  document.getElementById('zm-magazyn').value = '';
-  document.getElementById('zm-typ').value = '';
-  document.querySelectorAll('#zm-mies-items input').forEach(cb => cb.checked = true);
-  document.getElementById('zm-mies-all').checked = true;
-  zmTypChanged(); // odbuduje listę materiałów
-  zmUpdateLabel('mies');
-}
-
-function zmSort(col) {
-  zmSortDir = zmSortCol === col ? zmSortDir * -1 : (col === 'surowiec_nazwa' || col === 'magazyn' || col === 'typ_materialu' ? 1 : -1);
-  zmSortCol = col;
-  document.querySelectorAll('#tab-zuzycie2025 th').forEach(th => {
-    th.classList.remove('sort-asc','sort-desc');
-    if (th.getAttribute('onclick') === `zmSort('${col}')`) th.classList.add(zmSortDir === 1 ? 'sort-asc' : 'sort-desc');
-  });
-  renderZuzycie();
-}
-
-function renderZuzycie() {
-  if (!window.ZUZYCIE_DATA) return;
-  const magazyn  = document.getElementById('zm-magazyn').value;
-  const typ      = document.getElementById('zm-typ').value;
-
-  const miesItems = document.querySelectorAll('#zm-mies-items input');
-  const selMies   = new Set([...miesItems].filter(cb => cb.checked).map(cb => Number(cb.value)));
-  const allMies   = miesItems.length > 0 && selMies.size === miesItems.length;
-
-  const matItems  = document.querySelectorAll('#zm-mat-items input');
-  const selMat    = new Set([...matItems].filter(cb => cb.checked).map(cb => cb.value));
-  const allMat    = matItems.length > 0 && selMat.size === matItems.length;
-
-  let rows = window.ZUZYCIE_DATA.rekordy.filter(r => {
-    if (!allMies && !selMies.has(r.miesiac)) return false;
-    if (magazyn && r.magazyn !== magazyn) return false;
-    if (typ && r.typ_materialu !== typ) return false;
-    if (!allMat && !selMat.has(r.surowiec_nazwa)) return false;
-    return true;
-  });
-
-  rows.sort((a,b) => {
-    const av = a[zmSortCol], bv = b[zmSortCol];
-    if (av == null && bv == null) return 0;
-    if (av == null) return 1; if (bv == null) return -1;
-    return (typeof av === 'string' ? av.localeCompare(bv,'pl') : av - bv) * zmSortDir;
-  });
-
-  const totIlosc = rows.reduce((s,r) => s + (r.ilosc||0), 0);
-  document.getElementById('zm-s-ilosc').textContent = fmtN(totIlosc);
-  document.getElementById('zm-s-mag').textContent   = new Set(rows.map(r=>r.magazyn)).size;
-  document.getElementById('zm-s-typy').textContent  = new Set(rows.map(r=>r.typ_materialu)).size;
-  document.getElementById('zm-s-sur').textContent   = new Set(rows.map(r=>r.surowiec_nazwa)).size;
-  document.getElementById('zm-count').textContent   = rows.length + ' wierszy';
-  document.getElementById('badge-zuzycie').textContent = rows.length;
-
-  const MIES = ['','Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
-  const TYP_CLR = {Karton:'var(--orange)',Etykieta:'var(--purple,#9013fe)',Taśma:'var(--blue,#2563eb)',Zapinka:'var(--green)',Kątownik:'var(--yellow,#d97706)'};
-
-  const tbody = document.getElementById('zm-body');
-  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Brak wyników dla wybranych filtrów</td></tr>'; return; }
-
-  tbody.innerHTML = rows.map(r => {
-    const pct = totIlosc > 0 ? Math.min(100, r.ilosc / totIlosc * 100) : 0;
-    const typC = TYP_CLR[r.typ_materialu] || 'var(--text-dim)';
-    const magLabel = r.magazyn === 'Nieokreślony'
-      ? '<span style="color:var(--text-muted);font-style:italic">Nieokreślony</span>'
-      : `<span style="font-size:11px">${r.magazyn}</span>`;
-    return `<tr>
-      <td style="font-size:11px;font-weight:500;max-width:260px">${r.surowiec_nazwa||'—'}</td>
-      <td><span style="font-size:10px;font-weight:700;color:${typC};white-space:nowrap">${r.typ_materialu||'—'}</span></td>
-      <td>${magLabel}</td>
-      <td><span class="code-chip">${MIES[r.miesiac]||r.miesiac}</span></td>
-      <td class="num"><span class="num-big">${fmtN(r.ilosc)}</span></td>
-      <td>
-        <div class="bar-cell">
-          <div class="bar-bg"><div class="bar-fill-orange" style="width:${Math.round(pct)}%"></div></div>
-          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);width:34px;text-align:right">${pct.toFixed(1)}%</span>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-// ═══════════════════════════════════════════════ TAB SWITCHING
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
-  if (name === 'kartony') renderKartony();
-  if (name === 'etykiety') renderEtykiety();
-  if (name === 'jednostkowe') renderJednostkowe();
-  if (name === 'arkusz') renderArkusz();
-  if (name === 'zuzycie2025') renderZuzycie();
-}
-
-function refreshAll() {
-  renderDashboard();
-  if (document.getElementById('tab-kartony').classList.contains('active')) renderKartony();
-  if (document.getElementById('tab-etykiety').classList.contains('active')) renderEtykiety();
-  if (document.getElementById('tab-jednostkowe').classList.contains('active')) renderJednostkowe();
-  if (document.getElementById('tab-arkusz').classList.contains('active')) renderArkusz();
-}
-
-// ═══════════════════════════════════════════════ INIT
-// Pokaż plan 2026 z PLAN_DATA
-document.getElementById('plan-display').textContent =
-  PLAN_2026_KG.toLocaleString('pl-PL', {maximumFractionDigits:0}) + ' kg';
-
-renderDashboard();
-initZuzycie();
+// Load persisted data on init
+(function() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const { date, headers, rows } = JSON.parse(raw);
+    renderStan(date, headers, rows);
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>
