@@ -6,6 +6,7 @@
 <title>Konfekcja per klient — OvocxMalinovi</title>
 <script src="zakupy-data.js"></script>
 <script src="planowanie-data.js"></script>
+<script src="zestawienie-proc-data.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--orange:#fa4211;--purple:#9013fe;--grad:linear-gradient(135deg,#fa4211,#9013fe);--bg:#f7f7f5;--white:#fff;--border:#e8e6e1;--border2:#d8d5ce;--text:#1a1a18;--text-dim:#6b6b65;--text-muted:#a8a8a0;--surface2:#f2f0eb;--green:#16a34a;--green-bg:rgba(22,163,74,.08);--green-border:rgba(22,163,74,.2);--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
@@ -122,10 +123,56 @@ main{padding:20px 32px 100px;max-width:1400px;margin:0 auto}
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────────────
-const ZS    = (window.ZAKUPY_DATA || {}).zp_client_stats || {};   // per-client 2025 actuals
-const ZCP   = (window.ZAKUPY_DATA || {}).zp_client_pak   || {};   // for share computation
-const SNAPS = ((window.ZAKUPY_DATA || {}).stany || []).filter(s => s.kategoria === 'etykiety');
+const SNAPS   = ((window.ZAKUPY_DATA || {}).stany || []).filter(s => s.kategoria === 'etykiety');
 const LS_ETYK = 'oxm_klient_etyk_v1';
+
+// Mapowanie: nazwa klienta w planie → nazwy odbiorców w ZP 2025
+const CLIENT_MAP = {
+  'Biedronka':     ['JERONIMO MARTINS POLSKA SPÓŁKA AKCYJNA'],
+  'Dino':          ['DINO POLSKA SPÓŁKA  AKCYJNA'],
+  'OGL':           ['OGL FOOD TRADE POLSKA', 'OGL FOOD TRADE NIEMCY'],
+  'SanLucar':      ['SANLUCAR'],
+  'Kaczmarek':     ['RAFAŁ KACZMAREK'],
+  'Special Fruit': ['SPECIAL FRUIT', 'SPECIAL FRUIT- MAXIMA'],
+  'Frutania':      ['FRUTANIA'],
+  'Garden Frutta': ['GARDEN FRUTTA S.R.L.'],
+  'Specjał':       ['SPECJAŁ'],
+  'Berry World':   ['BERRYWORLD (NL-NIP)'],
+  'Kaufland':      ['FHU ROBERT (KAUFLAND)'],
+  'Spar':          ['SCA PR POLSKA SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ'],
+  'InterMarche':   [],
+};
+
+// Buduj ZS bezpośrednio z ZP_DATA.rekordy (zestawienie-proc-data.js)
+const ZS = (function() {
+  const zpRekordy = (window.ZP_DATA || {}).rekordy || [];
+  const result = {};
+  Object.entries(CLIENT_MAP).forEach(([planClient, zpClients]) => {
+    const pakMap = {};
+    zpClients.forEach(zpC => {
+      zpRekordy.filter(r => r.odbiorca === zpC).forEach(r => {
+        if (!pakMap[r.pak]) {
+          pakMap[r.pak] = { pak: r.pak, kart_2025: 0, kg_2025: 0,
+                            kgpk: r.kg_per_karton || 0, szt_pkrt: r.szt_w_kartonie || 0 };
+        }
+        pakMap[r.pak].kart_2025 += r.kartonow    || 0;
+        pakMap[r.pak].kg_2025   += r.wolumen_kg  || 0;
+        if (!pakMap[r.pak].kgpk    && r.kg_per_karton)   pakMap[r.pak].kgpk    = r.kg_per_karton;
+        if (!pakMap[r.pak].szt_pkrt && r.szt_w_kartonie) pakMap[r.pak].szt_pkrt = r.szt_w_kartonie;
+      });
+    });
+    const paks = Object.values(pakMap)
+      .map(v => ({ ...v, kart_2025: Math.round(v.kart_2025), kg_2025: Math.round(v.kg_2025) }))
+      .filter(v => v.kg_2025 > 0)
+      .sort((a, b) => b.kg_2025 - a.kg_2025);
+    result[planClient] = {
+      paks,
+      total_kg:   Math.round(paks.reduce((s, v) => s + v.kg_2025,   0)),
+      total_kart: Math.round(paks.reduce((s, v) => s + v.kart_2025, 0)),
+    };
+  });
+  return result;
+})();
 
 // PLAN 2026 per client
 const PLAN_DATA_ALL = window.PLAN_DATA || [];
