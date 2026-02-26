@@ -1,806 +1,894 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raport Zbiorów 2025 | MaxCrop</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #0a0f1a;
-            --bg-secondary: #111827;
-            --bg-card: #1a2235;
-            --accent-green: #10b981;
-            --accent-green-light: #34d399;
-            --accent-amber: #f59e0b;
-            --accent-red: #ef4444;
-            --accent-blue: #3b82f6;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border: #2d3748;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OvocxMalinovi — Centrum Operacyjne</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #fa4211;
+    --purple: #9013fe;
+    --pink: #d4257f;
+    --grad: linear-gradient(135deg, #fa4211, #9013fe);
+    --grad-soft: linear-gradient(135deg, rgba(250,66,17,0.08), rgba(144,19,254,0.08));
+    --bg: #f7f7f5;
+    --white: #ffffff;
+    --border: #e8e6e1;
+    --border2: #d8d5ce;
+    --text: #1a1a18;
+    --text-dim: #6b6b65;
+    --text-muted: #a8a8a0;
+    --surface: #ffffff;
+    --surface2: #f2f0eb;
+    --yellow: #d97706;
+    --green: #16a34a;
+    --red: #dc2626;
+    --blue: #2563eb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            background-image: 
-                radial-gradient(ellipse at 20% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.06) 0%, transparent 50%);
-        }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+  }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 36px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
 
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
-            padding: 2rem 0;
-            border-bottom: 1px solid var(--border);
-            position: relative;
-        }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-        header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
-        }
+  .logo img {
+    height: 40px;
+    width: auto;
+    /* PNG ma czarne tło — używamy mix-blend-mode żeby wyglądało dobrze */
+    
+  }
 
-        .logo {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.85rem;
-            letter-spacing: 0.3em;
-            color: var(--accent-green);
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-        }
+  .logo-divider {
+    width: 1px;
+    height: 26px;
+    background: var(--border2);
+  }
 
-        h1 {
-            font-size: 2.8rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--text-primary), var(--accent-green-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+  .logo-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    font-family: 'DM Mono', monospace;
+  }
 
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-        }
+  .logo-label strong {
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
 
-        .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+  .date-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
 
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.15);
-        }
+  .live-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
-        }
+  .live-pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--orange);
+    animation: blink 2s infinite;
+  }
 
-        .stat-label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-        }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
 
-        .stat-value {
-            font-family: 'Space Mono', monospace;
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--accent-green-light);
-        }
+  /* Main */
+  main {
+    padding: 28px 36px;
+    max-width: 1440px;
+    margin: 0 auto;
+  }
 
-        .stat-unit {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-left: 0.25rem;
-        }
+  /* Stats */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+    animation: up 0.3s ease both;
+  }
 
-        .section {
-            margin-bottom: 3rem;
-        }
+  @keyframes up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.15s;
+  }
 
-        h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
+  .stat-card:hover { box-shadow: var(--shadow-md); }
 
-        h2::before {
-            content: '';
-            width: 4px;
-            height: 24px;
-            background: var(--accent-green);
-            border-radius: 2px;
-        }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
 
-        .filter-group {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
 
-        select, button {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.6rem 1rem;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+  .stat-value.grad {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 
-        select:hover, button:hover {
-            border-color: var(--accent-green);
-            background: var(--bg-card);
-        }
+  .stat-sub { font-size: 11px; color: var(--text-muted); }
 
-        button.active {
-            background: var(--accent-green);
-            border-color: var(--accent-green);
-            color: var(--bg-primary);
-        }
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 320px;
+    gap: 14px;
+    align-items: start;
+  }
 
-        .chart-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            position: relative;
-        }
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    animation: up 0.3s ease both;
+  }
 
-        .chart-wrapper {
-            position: relative;
-            height: 400px;
-        }
+  .card:nth-child(1) { animation-delay: 0.06s; }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.14s; }
+  .card:nth-child(4) { animation-delay: 0.18s; grid-column: 1 / 3; }
 
-        .table-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-        }
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+  }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+  .card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+  }
 
-        th, td {
-            padding: 1rem 1.25rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
+  .card-link {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--orange);
+    text-decoration: none;
+    border: 1px solid rgba(250,66,17,0.2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: all 0.15s;
+    background: rgba(250,66,17,0.04);
+  }
 
-        th {
-            background: var(--bg-secondary);
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
-        }
+  .card-link:hover { background: rgba(250,66,17,0.1); }
 
-        tr:hover td {
-            background: rgba(16, 185, 129, 0.05);
-        }
+  .card-body { padding: 16px 18px; }
 
-        td:nth-child(2), td:nth-child(3) {
-            font-family: 'Space Mono', monospace;
-        }
+  /* Section label */
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
 
-        .trend-up {
-            color: var(--accent-green);
-        }
+  /* Process items */
+  .process-list { display: flex; flex-direction: column; gap: 5px; }
 
-        .trend-down {
-            color: var(--accent-red);
-        }
+  .process-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--white);
+  }
 
-        .tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1rem;
-        }
+  .process-item:hover {
+    border-color: rgba(250,66,17,0.3);
+    background: rgba(250,66,17,0.02);
+    transform: translateX(1px);
+  }
 
-        .tab {
-            background: transparent;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 500;
-        }
+  .process-item.active {
+    border-color: rgba(250,66,17,0.35);
+    background: linear-gradient(to right, rgba(250,66,17,0.04), rgba(144,19,254,0.02));
+  }
 
-        .tab.active {
-            background: var(--accent-green);
-            color: var(--bg-primary);
-        }
+  .p-left { display: flex; align-items: center; gap: 10px; }
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 1.5rem;
-        }
+  .p-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    width: 16px;
+  }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
+  .p-name { font-size: 13px; font-weight: 500; }
+  .p-owner { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
 
-            h1 {
-                font-size: 2rem;
-            }
+  .pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    font-weight: 500;
+  }
 
-            .stat-value {
-                font-size: 1.5rem;
-            }
+  .pill-ns { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border2); }
+  .pill-ip { background: rgba(217,119,6,0.1); color: var(--yellow); border: 1px solid rgba(217,119,6,0.2); }
+  .pill-ok { background: rgba(22,163,74,0.1); color: var(--green); border: 1px solid rgba(22,163,74,0.2); }
+  .pill-bl { background: rgba(220,38,38,0.1); color: var(--red); border: 1px solid rgba(220,38,38,0.2); }
 
-            .chart-wrapper {
-                height: 300px;
-            }
+  /* Backlog */
+  .backlog-list { display: flex; flex-direction: column; gap: 7px; }
 
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
+  .b-item {
+    padding: 11px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
 
-            th, td {
-                padding: 0.75rem;
-                font-size: 0.85rem;
-            }
-        }
+  .b-item:hover { border-color: var(--border2); background: var(--surface2); }
 
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 300px;
-            color: var(--text-secondary);
-        }
+  .b-title { font-size: 12px; line-height: 1.5; margin-bottom: 7px; color: var(--text); }
 
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--bg-secondary);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 0.5rem;
-        }
+  .b-tags { display: flex; gap: 5px; flex-wrap: wrap; }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
 
-        footer {
-            text-align: center;
-            padding: 2rem 0;
-            margin-top: 2rem;
-            border-top: 1px solid var(--border);
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-    </style>
+  .tag-r { background: rgba(220,38,38,0.08); color: var(--red); border-color: rgba(220,38,38,0.15); }
+  .tag-y { background: rgba(217,119,6,0.08); color: var(--yellow); border-color: rgba(217,119,6,0.15); }
+  .tag-o { background: rgba(250,66,17,0.08); color: var(--orange); border-color: rgba(250,66,17,0.15); }
+
+  /* Sidebar */
+  .sidebar { display: flex; flex-direction: column; gap: 14px; }
+
+  /* Tools */
+  .tools-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .tool {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    text-decoration: none;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .tool:hover {
+    border-color: rgba(144,19,254,0.3);
+    background: rgba(144,19,254,0.02);
+    transform: translateX(1px);
+  }
+
+  .tool-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .ti-o { background: rgba(250,66,17,0.1); }
+  .ti-p { background: rgba(144,19,254,0.1); }
+  .ti-g { background: rgba(22,163,74,0.1); }
+  .ti-b { background: rgba(37,99,235,0.1); }
+
+  .tool-info { flex: 1; }
+  .tool-name { font-size: 12px; font-weight: 600; }
+  .tool-desc { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+  .tool-arr {
+    font-size: 12px;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+
+  .tool:hover .tool-arr { color: var(--purple); transform: translateX(2px); }
+
+  /* Malinoovek */
+  .mal-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+
+  .mal-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--grad);
+  }
+
+  .mal-header {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+  }
+
+  .mal-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--grad);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .mal-name { font-size: 13px; font-weight: 700; }
+
+  .mal-status {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--orange);
+    margin-top: 1px;
+  }
+
+  .mal-body { padding: 13px 16px; }
+
+  .chat-bubble {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.6;
+    margin-bottom: 11px;
+    color: var(--text);
+  }
+
+  .suggestions { display: flex; flex-direction: column; gap: 5px; margin-bottom: 11px; }
+
+  .sug {
+    padding: 7px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    font-size: 11px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .sug:hover {
+    border-color: rgba(250,66,17,0.3);
+    color: var(--text);
+    background: rgba(250,66,17,0.02);
+  }
+
+  .chat-row { display: flex; gap: 7px; }
+
+  .chat-in {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 11px;
+    font-size: 12px;
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .chat-in:focus { border-color: rgba(250,66,17,0.4); }
+  .chat-in::placeholder { color: var(--text-muted); }
+
+  .chat-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 7px;
+    background: var(--grad);
+    border: none;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+
+  .chat-btn:hover { opacity: 0.85; }
+
+  /* Team strip */
+  .team-row {
+    display: flex;
+    gap: 6px;
+    padding: 11px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+    overflow-x: auto;
+  }
+
+  .av {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    min-width: 44px;
+  }
+
+  .av-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    border: 1.5px solid var(--border2);
+    transition: border-color 0.15s;
+  }
+
+  .av:hover .av-circle { border-color: var(--orange); }
+  .av-lbl { font-size: 9px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+  .av-jan { background: rgba(250,66,17,0.1); color: var(--orange); }
+  .av-iza { background: rgba(37,99,235,0.1); color: var(--blue); }
+  .av-ren { background: rgba(217,119,6,0.1); color: var(--yellow); }
+  .av-kac { background: rgba(22,163,74,0.1); color: var(--green); }
+  .av-adr { background: rgba(144,19,254,0.1); color: var(--purple); }
+  .av-olg { background: rgba(220,38,38,0.1); color: var(--red); }
+
+  /* Bottom wide card */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .bstat {
+    background: var(--white);
+    padding: 14px 18px;
+  }
+
+  .bstat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+  }
+
+  .bstat-val { font-size: 13px; font-weight: 500; }
+  .bstat-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  .grad-text {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 600;
+  }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+    .card:nth-child(3) { grid-column: 1 / -1; }
+    .card:nth-child(4) { grid-column: 1 / -1; }
+    .sidebar { flex-direction: row; flex-wrap: wrap; }
+    .sidebar > * { flex: 1; min-width: 260px; }
+  }
+
+  @media (max-width: 700px) {
+    main { padding: 16px; }
+    header { padding: 12px 16px; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .grid { grid-template-columns: 1fr; }
+    .card:nth-child(3), .card:nth-child(4) { grid-column: 1; }
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">MaxCrop Analytics</div>
-            <h1>Raport Zbiorów 2025</h1>
-            <p class="subtitle">Szczegółowa analiza zbiorów malin w podziale na obszary i tygodnie</p>
-        </header>
 
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card">
-                <div class="stat-label">Suma zbiorów</div>
-                <div class="stat-value" id="totalKg">-</div>
-                <span class="stat-unit">kg</span>
+<header>
+  <div class="logo">
+    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJTdmdqc1N2ZzUyNzciIHdpZHRoPSI0MDk2IiBoZWlnaHQ9IjMwNDIuNzU0NzI1MzY4NzgzNSIgdmVyc2lvbj0iMS4xIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeG1sbnM6c3ZnanM9Imh0dHA6Ly9zdmdqcy5jb20vc3ZnanMiPjxkZWZzIGlkPSJTdmdqc0RlZnM1Mjc4Ij48L2RlZnM+PGcgaWQ9IlN2Z2pzRzUyNzkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyOCwgMzI4KSBzY2FsZSgzNC40KSIgb3BhY2l0eT0iMSI+PGRlZnMgaWQ9IlN2Z2pzRGVmczIyMzMiPjxsaW5lYXJHcmFkaWVudCBpZD0iU3ZnanNMaW5lYXJHcmFkaWVudHZVV2JKREFPWiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxNS4xOTk5OTk5OTk5OTk5OTYiIHkxPSI1MCIgeDI9Ijg0LjgwMDAwMDAwMDAwMDAxIiB5Mj0iNTAiPjxzdG9wIGlkPSJTdmdqc1N0b3AyMjM2IiBzdG9wLWNvbG9yPSIjZmE0MjExIiBvZmZzZXQ9IjAiPjwvc3RvcD48c3RvcCBpZD0iU3ZnanNTdG9wMjIzNyIgc3RvcC1jb2xvcj0iIzkwMTNmZSIgb2Zmc2V0PSIxIj48L3N0b3A+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PGcgaWQ9IlN2Z2pzRzIyMzQiIHRyYW5zZm9ybT0ic2NhbGUoMC4yNDM1MzI0ODQ0MDU4NjkwMykiIG9wYWNpdHk9IjEiPjxnIGlkPSJTdmdqc0cyMjM4IiBjbGFzcz0ieC16dHdPeXppIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg5My41NTIyMjIwNjMwMzM1MywgLTExLjE3NTkxOTcxNTg4NDkyMikgc2NhbGUoMi4yMzUxODM5NDMxNzY5ODQpIiBsaWdodC1jb250ZW50PSJmYWxzZSIgbm9uLXN0cm9rYWJsZT0iZmFsc2UiIGZpbGw9InVybCgjU3ZnanNMaW5lYXJHcmFkaWVudHZVV2JKREFPWikiPjxwYXRoIGQ9Ik01MS4zIDI5LjFWMjRjMC02LjEgMy40LTExLjYgOC45LTE0LjRMNTcuOSA1Yy03LjIgMy42LTExLjcgMTAuOS0xMS43IDE5djcuMWwxLjIgMS4yYzEuMy0uOCAyLjYtMiAzLjktMy4yem0xNi44IDVjLjcuNCAxLjQuOCAyIDEuNCA0LjQtMi4yIDguMS01LjYgOC40LTkuMy01LjEgMi44LTkuMyA0LjItMTIuMSA0LjlsMS43IDN6bS0zOS4zLS44VjMzYy0uNC0xLjItLjctMi40LS45LTMuNmwtOC4yLTIuN2MyIDIuMiA1LjIgNS4xIDkuMSA2LjZ6TTQzLjYgOTVjMi41IDAgNC43LTEuMyA2LTMuMi0uNS0xLS44LTIuMi0uOC0zLjQtMi4yLS44LTQtMi4zLTUuMS00LjMtMS41IDIuNi00LjEgNC40LTcuMSA0LjguNSAzLjUgMy41IDYuMSA3IDYuMXptMTQuOSAwYzMuNiAwIDYuNS0yLjYgNy4xLTYtMi40LS4zLTQuNS0xLjYtNi0zLjNhOS43OCA5Ljc4IDAgMCAxLTcuNCAzLjRoLS43Yy41IDMuMyAzLjUgNS45IDcgNS45em0xNS43LTE1LjdjMC0uMyAwLS42LS4xLS45aC0uOGMtMy42IDAtNi44LTItOC41LTQuOS0uOCAxLjQtMS45IDIuNi0zLjMgMy40LjIuOC4zIDEuNS4zIDIuNCAwIDEuNC0uMyAyLjgtLjkgNCAxLjMgMS45IDMuNSAzLjIgNiAzLjIgNC4xIDAgNy4zLTMuMiA3LjMtNy4yem0tMTQuOSAwYzAtLjQgMC0uOC0uMS0xLjMtLjkuMy0xLjkuNC0yLjguNC0zLjYgMC02LjgtMi04LjUtNC45LS42IDEtMS4zIDEuOS0yLjMgMi43LS40LjktLjcgMi0uNyAzLjEgMCA0IDMuMiA3LjIgNy4yIDcuMnM3LjItMy4yIDcuMi03LjJ6bS0yNC4yIDcuMmM0IDAgNy4yLTMuMiA3LjItNy4yIDAtLjQgMC0uOC0uMS0xLjMtLjkuMy0xLjkuNC0yLjguNC0yLjQgMC00LjctLjktNi40LTIuNC0xLjQgMS4yLTMuMSAyLTUgMi4zIDAgLjMtLjEuNi0uMS45IDAgNC4xIDMuMyA3LjMgNy4yIDcuM3pNMjAuNCA2NS4xYy0uNiAxLS45IDIuMy0uOSAzLjUgMCA0IDMuMiA3LjIgNy4yIDcuMiAxLjggMCAzLjQtLjYgNC43LTEuNy0xLjEtMS42LTEuNy0zLjUtMS43LTUuNSAwLTEuMi4yLTIuMy42LTMuNC0xLjMtLjEtMi41LS40LTMuNi0uOS0xLjMuNi0yLjcgMS00LjIgMS0uOCAwLTEuNSAwLTIuMS0uMnptMTcuNy0zYy0xLjMgMS40LTMgMi41LTUgMy0uNiAxLjEtMSAyLjMtMSAzLjYgMCA0IDMuMiA3LjIgNy4yIDcuMnM3LjItMy4yIDcuMi03LjJjMC0xLjItLjMtMi40LS44LTMuNGgtLjRjLTIuOCAwLTUuNC0xLjItNy4yLTMuMnptNDIuNSA2LjZjMC0xLjUtLjUtMi45LTEuMy00LjEtMS4yLjUtMi40LjgtMy44LjgtMi41IDAtNC43LS45LTYuNC0yLjQtMS44IDEuMy0yLjkgMy40LTIuOSA1LjggMCA0IDMuMiA3LjIgNy4yIDcuMiAzLjktLjEgNy4yLTMuMyA3LjItNy4zek01My41IDYyYy0yLjYgMS4xLTQuNCAzLjctNC40IDYuNiAwIDQgMy4yIDcuMiA3LjIgNy4yczcuMi0zLjIgNy4yLTcuMmMwLTEuMy0uMy0yLjUtLjktMy41LS42LjEtMS4yLjItMS44LjItMi45IDAtNS41LTEuMi03LjMtMy4zem0tMzEuMS44Yy42IDAgMS4xLS4xIDEuNy0uMi0xLjgtMS44LTMtNC4zLTMtNyAwLTEgLjItMi4xLjUtMy0xLjctLjEtMy4zLS43LTQuNy0xLjctMS4xIDEuMy0xLjcgMi45LTEuNyA0LjcgMCAzLjkgMy4yIDcuMiA3LjIgNy4yem0xLjMtNy4yYzAgNCAzLjIgNy4yIDcuMiA3LjIgMi4zIDAgNC40LTEuMSA1LjctMi45LS43LTEuMy0xLTIuOC0xLTQuMyAwLTEuMy4zLTIuNi44LTMuOC0xLjIuNS0yLjUuOC0zLjkuOC0xLjggMC0zLjYtLjUtNS0xLjQtLjkuNi0xLjkgMS0zIDEuMi0uNS45LS44IDItLjggMy4yem01OSAwYzAtMS40LS40LTIuNy0xLjEtMy44LTEuMi41LTIuNi45LTQgLjktMi42IDAtNC45LTEtNi43LTIuNi0uNS40LS45LjktMS4zIDEuNC42IDEuMyAxIDIuNyAxIDQuMnMtLjQgMi45LTEgNC4yYzEuMyAxLjggMy40IDMgNS44IDMgNC4xLS4xIDcuMy0zLjQgNy4zLTcuM3ptLTI4LjItMy41Yy40IDEuMS42IDIuMi42IDMuNHMtLjIgMi40LS42IDMuNGMxLjIgMi4yIDMuNiAzLjggNi4zIDMuOCA0IDAgNy4yLTMuMiA3LjItNy4yIDAtMS4zLS40LTIuNS0xLTMuNi0xLjEuNC0yLjIuNi0zLjQuNi0yLjcgMC01LjItMS4xLTctMi45LS44LjctMS42IDEuNS0yLjEgMi41em0tMTYuMyAzLjVjMCA0IDMuMiA3LjIgNy4yIDcuMnM3LjItMy4yIDcuMi03LjJjMC0xLjMtLjQtMi42LTEtMy43LTEuMS40LTIuMy43LTMuNi43LTIuNyAwLTUuMS0xLjEtNi45LTIuOC0xLjggMS4zLTIuOSAzLjQtMi45IDUuOHpNMjIuNCA1MGMxIDAgMi0uMiAyLjktLjYtMS42LTEuNy0yLjYtNC4xLTIuNi02LjZzMS00LjkgMi42LTYuNmMtLjktLjQtMS45LS42LTIuOS0uNi00IDAtNy4yIDMuMi03LjIgNy4yczMuMiA3LjIgNy4yIDcuMnoiPjwvcGF0aD48cGF0aCBkPSJNMzcuNyAzNy45Yy0yLjUtLjItNS0uOS03LjMtMi0zIC45LTUuMiAzLjYtNS4yIDYuOSAwIDQgMy4yIDcuMiA3LjIgNy4yIDIuNyAwIDUuMS0xLjUgNi4zLTMuOC0uNC0xLjEtLjYtMi4yLS42LTMuNHMuMi0yLjQuNi0zLjRjLS4yLS42LS41LTEtMS0xLjV6bTM0LjUuMmMuOCAxLjQgMS4yIDMgMS4yIDQuN3MtLjUgMy4zLTEuMiA0LjdjMS4zIDEuNSAzLjMgMi41IDUuNCAyLjUgNCAwIDcuMi0zLjIgNy4yLTcuMnMtMy4yLTcuMi03LjItNy4yYy0yLjEgMC00LjEgMS01LjQgMi41ek02My43IDUwYzQgMCA3LjItMy4yIDcuMi03LjIgMC0yLjktMS44LTUuNS00LjMtNi42LTIuNyAxLTUuNCAxLjUtOC4yIDEuNy0uNS41LS44IDEuMS0xLjEgMS43LjMgMSAuNSAyLjEuNSAzLjJzLS4yIDIuMi0uNSAzLjJjMS4xIDIuNCAzLjUgNCA2LjQgNHpNNDcgMzYuNWMtMS4zLjUtMi43LjktNC4xIDEuMi0xLjMgMS4zLTIuMiAzLjEtMi4yIDUuMSAwIDQgMy4yIDcuMiA3LjIgNy4yczcuMi0zLjIgNy4yLTcuMmMwLTEuOS0uOC0zLjctMi01LTItLjItNC4xLS42LTYuMS0xLjN6bTIuMS0yLjJ2LjJjNS4yIDEuNCAxMC44IDEuMyAxNi0uNWwtNi40LTExLjFjLTEuOSA0LjItNS43IDguNy05LjYgMTEuNHptLTMuNSAwTDMxLjMgMTkuOWMtMS43IDQuNC0xLjUgOS41LjUgMTMuOCA0LjMgMiA5LjQgMi4yIDEzLjguNnoiPjwvcGF0aD48L2c+PGcgaWQ9IlN2Z2pzRzIyMzkiIGNsYXNzPSJ0ZXh0IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyMDUuMzEsIDI4NC4zNzYwODYxMDU5MTIwNykgc2NhbGUoMSkiIGxpZ2h0LWNvbnRlbnQ9ImZhbHNlIiBmaWxsPSIjMTIxMjEyIj48cGF0aCBkPSJNLTIwMC43MSAtMTYuNjFDLTIwMC43MSAtMTguMjMgLTIwMC41MSAtMTkuODkgLTIwMC4xMiAtMjEuNThDLTE5OS43MyAtMjMuMjggLTE5OS4wNyAtMjQuNzggLTE5OC4xMyAtMjYuMDdDLTE5Ny4xOSAtMjcuMzYgLTE5Ni4wMiAtMjguMzkgLTE5NC42MyAtMjkuMTdDLTE5My4yMyAtMjkuOTUgLTE5MS41NCAtMzAuMzMgLTE4OS41MyAtMzAuMzNDLTE4Ny41MiAtMzAuMzMgLTE4NS44IC0yOS45NSAtMTg0LjM3IC0yOS4xN0MtMTgyLjk0IC0yOC4zOSAtMTgxLjc3IC0yNy4zNiAtMTgwLjg3IC0yNi4wN0MtMTc5Ljk3IC0yNC43OCAtMTc5LjMxIC0yMy4yOCAtMTc4Ljg4IC0yMS41OEMtMTc4LjQ1IC0xOS44OSAtMTc4LjIzIC0xOC4yMyAtMTc4LjIzIC0xNi42MUMtMTc4LjIzIC0xNC45OSAtMTc4LjQ1IC0xMy4zMyAtMTc4Ljg4IC0xMS42MUMtMTc5LjMxIC05Ljg5IC0xNzkuOTcgLTguMzggLTE4MC44NyAtNy4wOUMtMTgxLjc3IC01LjggLTE4Mi45NCAtNC43NyAtMTg0LjM3IC0zLjk5Qy0xODUuOCAtMy4yMSAtMTg3LjUyIC0yLjgyIC0xODkuNTMgLTIuODJDLTE5MS41NCAtMi44MiAtMTkzLjIzIC0zLjIxIC0xOTQuNjMgLTMuOTlDLTE5Ni4wMiAtNC43NyAtMTk3LjE5IC01LjggLTE5OC4xMyAtNy4wOUMtMTk5LjA3IC04LjM4IC0xOTkuNzMgLTkuODkgLTIwMC4xMiAtMTEuNjFDLTIwMC41MSAtMTMuMzMgLTIwMC43MSAtMTQuOTkgLTIwMC43MSAtMTYuNjFaTS0yMDUuMzEgLTE2LjdDLTIwNS4zMSAtMTQuMjkgLTIwNC45NiAtMTIgLTIwNC4yNyAtOS44NkMtMjAzLjU3IC03LjcxIC0yMDIuNTMgLTUuODUgLTIwMS4xNCAtNC4zQy0xOTguMzkgLTEuMTEgLTE5NC41NCAwLjQ5IC0xODkuNTkgMC40OUMtMTg0LjYgMC40OSAtMTgwLjY5IC0xLjExIC0xNzcuODYgLTQuM0MtMTc2LjUxIC01Ljc3IC0xNzUuNSAtNy42IC0xNzQuODIgLTkuNzlDLTE3NC4xNSAtMTEuOTggLTE3My44MSAtMTQuMjkgLTE3My44MSAtMTYuN0MtMTczLjgxIC0xOS4wOCAtMTc0LjE1IC0yMS4zMyAtMTc0LjgyIC0yMy40NkMtMTc1LjUgLTI1LjU5IC0xNzYuNTEgLTI3LjQxIC0xNzcuODYgLTI4LjkyQy0xODAuNjkgLTMyLjE2IC0xODQuNiAtMzMuNzcgLTE4OS41OSAtMzMuNzdDLTE5NC41IC0zMy43MyAtMTk4LjM1IC0zMi4xMiAtMjAxLjE0IC0yOC45MkMtMjAyLjUzIC0yNy40MSAtMjAzLjU3IC0yNS41OSAtMjA0LjI3IC0yMy40NkMtMjA0Ljk2IC0yMS4zMyAtMjA1LjMxIC0xOS4wOCAtMjA1LjMxIC0xNi43WiBNLTE1MC4wNSAtMi44MkwtMTQyLjggLTIwLjg4Qy0xNDIuNzIgLTIxLjEyIC0xNDIuNjYgLTIxLjM2IC0xNDIuNjIgLTIxLjU4Qy0xNDIuNTcgLTIxLjgxIC0xNDIuNjQgLTIyLjA0IC0xNDIuOCAtMjIuMjlDLTE0My4yMSAtMjIuOTkgLTE0My44MiAtMjMuMzMgLTE0NC42NCAtMjMuMzNDLTE0NS40MiAtMjMuMjUgLTE0NS45NSAtMjIuOCAtMTQ2LjI0IC0yMS45OEwtMTUzLjM2IC00LjNMLTE2MC43MyAtMjEuOThDLTE2MC45OCAtMjIuODggLTE2MS41NSAtMjMuMzMgLTE2Mi40NSAtMjMuMzNDLTE2Mi44NiAtMjMuMjUgLTE2My4yNyAtMjMuMDUgLTE2My42OCAtMjIuNzJDLTE2NC40MSAtMjIuMTkgLTE2NC42IC0yMS41NyAtMTY0LjIzIC0yMC44OEwtMTU2LjU1IC0yLjgyQy0xNTYuMjMgLTEuOCAtMTU1LjgzIC0xLjA3IC0xNTUuMzYgLTAuNjRDLTE1NC44OSAtMC4yMSAtMTU0LjIyIDAgLTE1My4zNiAwQy0xNTIuNSAwIC0xNTEuODQgLTAuMjMgLTE1MS4zNyAtMC42OEMtMTUwLjkgLTEuMTMgLTE1MC40NiAtMS44NCAtMTUwLjA1IC0yLjgyWiBNLTEzNC4xNCAtMTEuNjFDLTEzNC4xNCAtOC4zNyAtMTMzLjE4IC01LjYxIC0xMzEuMjYgLTMuMzJDLTEyOS4yMSAtMC43OCAtMTI2LjMgMC40OSAtMTIyLjU0IDAuNDlDLTExOC43NyAwLjQ5IC0xMTUuODYgLTAuNzggLTExMy44MiAtMy4zMkMtMTExLjg5IC01LjY1IC0xMTAuOTMgLTguNDMgLTExMC45MyAtMTEuNjdDLTExMC45MyAtMTQuODYgLTExMS44OSAtMTcuNjQgLTExMy44MiAtMjAuMDJDLTExNS44NiAtMjIuNTIgLTExOC43NyAtMjMuNzYgLTEyMi41NCAtMjMuNzZDLTEyNi4zIC0yMy43NiAtMTI5LjIxIC0yMi41MiAtMTMxLjI2IC0yMC4wMkMtMTMyLjI0IC0xOC44MyAtMTMyLjk2IC0xNy41IC0xMzMuNDQgLTE2LjAzQy0xMzMuOTEgLTE0LjU1IC0xMzQuMTQgLTEzLjA4IC0xMzQuMTQgLTExLjYxWk0tMTMwLjE1IC0xMS42MUMtMTMwLjE1IC0xNC4wNiAtMTI5LjU0IC0xNi4xMyAtMTI4LjMxIC0xNy44MUMtMTI2LjkyIC0xOS44NSAtMTI0Ljk5IC0yMC44OCAtMTIyLjU0IC0yMC44OEMtMTIwIC0yMC44OCAtMTE4LjA3IC0xOS44NSAtMTE2Ljc2IC0xNy44MUMtMTE1LjU4IC0xNi4wOSAtMTE0Ljk4IC0xNC4wNCAtMTE0Ljk4IC0xMS42N0MtMTE0Ljk4IC05LjM3IC0xMTUuNTggLTcuMjkgLTExNi43NiAtNS40Qy0xMTguMDMgLTMuNCAtMTE5Ljk2IC0yLjM5IC0xMjIuNTQgLTIuMzlDLTEyNC45OSAtMi4zOSAtMTI2LjkyIC0zLjQgLTEyOC4zMSAtNS40Qy0xMjkgLTYuMzUgLTEyOS40OSAtNy4zNyAtMTI5Ljc1IC04LjQ3Qy0xMzAuMDIgLTkuNTggLTEzMC4xNSAtMTAuNjIgLTEzMC4xNSAtMTEuNjFaIE0tMTAxLjYgLTExLjY3Qy0xMDEuNiAtOC4yMyAtMTAwLjY1IC01LjM4IC05OC43NyAtMy4xM0MtOTcuODcgLTEuOTQgLTk2Ljc1IC0xLjA0IC05NS4zOSAtMC40M0MtOTQuMDQgMC4xOCAtOTIuNTMgMC41IC05MC44NSAwLjUyQy04OS4xNyAwLjU0IC04Ny40MyAwLjI1IC04NS42MyAtMC4zN0MtODQuODkgLTAuNjEgLTg0LjI2IC0wLjk1IC04My43MyAtMS4zOEMtODMuMiAtMS44MSAtODIuOTMgLTIuMjQgLTgyLjkzIC0yLjY3Qy04Mi45MyAtMy4xIC04My4wNSAtMy40NCAtODMuMyAtMy42OEMtODMuNzEgLTQuMTggLTg0LjIgLTQuMjYgLTg0Ljc3IC0zLjkzQy04Ni45IC0yLjkxIC04OC43IC0yLjM5IC05MC4xNyAtMi4zOUMtOTIuODggLTIuMzkgLTk0Ljg0IC0zLjM4IC05Ni4wNyAtNS4zNEMtOTcuMDkgLTcuMDYgLTk3LjYxIC05LjE3IC05Ny42MSAtMTEuNjdDLTk3LjYxIC0xNC4zNyAtOTYuODkgLTE2LjU4IC05NS40NiAtMTguM0MtOTQuMTkgLTE5Ljk4IC05Mi40MyAtMjAuODIgLTkwLjE3IC0yMC44MkMtODguNDYgLTIwLjg2IC04Ni44MiAtMjAuNDMgLTg1LjI2IC0xOS41M0MtODUuMSAtMTkuNCAtODQuODUgLTE5LjM0IC04NC41MyAtMTkuMzRDLTg0LjIgLTE5LjM0IC04My45MSAtMTkuNDggLTgzLjY3IC0xOS43NEMtODMuNDIgLTIwLjAxIC04My4zIC0yMC4zNyAtODMuMyAtMjAuODJDLTgzLjMgLTIxLjI3IC04My41MiAtMjEuNjYgLTgzLjk3IC0yMS45OEMtODUuNDkgLTIzLjE3IC04Ny42OCAtMjMuNzYgLTkwLjU0IC0yMy43NkMtOTMuOSAtMjMuNzYgLTk2LjYyIC0yMi41NiAtOTguNzEgLTIwLjE0Qy0xMDAuNjMgLTE3Ljg5IC0xMDEuNiAtMTUuMDYgLTEwMS42IC0xMS42N1ogTS00OC4xNyAtMTEuOTdMLTU1LjYgLTIuNThDLTU1LjgxIC0yLjI1IC01NS45MSAtMS45IC01NS45MSAtMS41NEMtNTUuOTEgLTEuMTcgLTU1LjczIC0wLjgyIC01NS4zNiAtMC40OUMtNTQuOTkgLTAuMTYgLTU0LjUgMCAtNTMuODggMEMtNTMuNTIgMCAtNTMuMTkgLTAuMiAtNTIuOSAtMC42MUwtNDYuMDIgLTkuN0wtMzkuMjcgLTAuNzRDLTM4Ljc4IC0wLjI1IC0zOC4yOSAwIC0zNy44IDBDLTM3LjMgMCAtMzYuODEgLTAuMTggLTM2LjMyIC0wLjU1Qy0zNi4xMiAtMC42OCAtMzUuOTYgLTAuODYgLTM1Ljg2IC0xLjExQy0zNS43NiAtMS4zNSAtMzUuNzEgLTEuNjMgLTM1LjcxIC0xLjkzQy0zNS43MSAtMi4yNCAtMzUuODMgLTIuNTQgLTM2LjA4IC0yLjgyTC00My4zOCAtMTEuOTdMLTM2LjU3IC0yMC44MkMtMzYuMzIgLTIxLjA2IC0zNi4yIC0yMS4zNyAtMzYuMiAtMjEuNzRDLTM2LjIgLTIyLjExIC0zNi4zOCAtMjIuNDYgLTM2Ljc1IC0yMi44MUMtMzcuMTIgLTIzLjE2IC0zNy41NSAtMjMuMzMgLTM4LjA0IC0yMy4zM0MtMzguNTMgLTIzLjMzIC0zOC45NCAtMjMuMDkgLTM5LjI3IC0yMi42TC00NS41OSAtMTQuMjVMLTUxLjggLTIyLjQ3Qy01Mi4yOSAtMjMuMDUgLTUyLjc5IC0yMy4zMyAtNTMuMyAtMjMuMzNDLTUzLjgxIC0yMy4zMyAtNTQuMjkgLTIzLjEzIC01NC43NCAtMjIuNzJDLTU0LjkxIC0yMi41NiAtNTUuMDMgLTIyLjM3IC01NS4xMSAtMjIuMTdDLTU1LjE5IC0yMS45NiAtNTUuMjYgLTIxLjY4IC01NS4zIC0yMS4zMUMtNTUuMzQgLTIwLjk0IC01NS4yMyAtMjAuNjMgLTU0Ljk5IC0yMC4zOVogTTEyLjE5IC01LjRMMTIuMTMgLTUuNEwxLjIgLTI5Ljk3QzAuNDYgLTMxLjQ0IC0wLjE1IC0zMi4zOCAtMC42NCAtMzIuNzlDLTAuOTMgLTMzLjA0IC0xLjI3IC0zMy4yMiAtMS42NiAtMzMuMzRDLTIuMDUgLTMzLjQ3IC0yLjQ4IC0zMy41MSAtMi45NSAtMzMuNDdDLTMuNDIgLTMzLjQzIC0zLjg4IC0zMy4zNiAtNC4zMyAtMzMuMjhDLTUuNjQgLTMyLjc5IC02LjI5IC0zMS42NCAtNi4yOSAtMjkuODRMLTYuMjkgLTEuODRDLTYuMjkgLTEuMjMgLTYuMSAtMC43NyAtNS43MSAtMC40NkMtNS4zMiAtMC4xNSAtNC44OCAwIC00LjM5IDBDLTMuOSAwIC0zLjQ2IC0wLjE1IC0zLjA3IC0wLjQ2Qy0yLjY4IC0wLjc3IC0yLjQ5IC0xLjIzIC0yLjQ5IC0xLjg0TC0yLjQ5IC0yOS4yM0w5LjYxIC0yLjU4QzEwLjIyIC0xLjM1IDExLjA2IC0wLjc0IDEyLjEzIC0wLjc0QzEzLjM2IC0wLjc0IDE0LjIyIC0xLjM1IDE0LjcxIC0yLjU4TDI2Ljg3IC0yOS4zNUwyNi44NyAtMS44NEMyNi44NyAtMS4yMyAyNy4wNSAtMC43NyAyNy40MiAtMC40NkMyNy43OSAtMC4xNSAyOC4yMiAwIDI4LjcxIDBDMjkuMiAwIDI5LjY0IC0wLjE1IDMwLjAzIC0wLjQ2QzMwLjQyIC0wLjc3IDMwLjYxIC0xLjIzIDMwLjYxIC0xLjg0TDMwLjYxIC0yOS44NEMzMC42MSAtMzAuOTkgMzAuMjYgLTMxLjkxIDI5LjU3IC0zMi42MUMyOS4yOCAtMzIuODkgMjguOTQgLTMzLjEyIDI4LjU1IC0zMy4yOEMyOC4xNiAtMzMuNDUgMjcuNjEgLTMzLjUzIDI2LjkgLTMzLjUzQzI2LjE4IC0zMy41MyAyNS40NyAtMzMuMjIgMjQuNzggLTMyLjYxQzI0LjQ1IC0zMi4yNCAyMy45NiAtMzEuMzYgMjMuMyAtMjkuOTdaIE01NS4xNyAtMTQuMThDNDYuNDUgLTE0LjE4IDQyLjA5IC0xMS42MSA0Mi4wOSAtNi40NUM0Mi4wOSAtNC4yOCA0Mi44NSAtMi41NiA0NC4zNyAtMS4yOUM0NS4xIC0wLjY4IDQ1Ljk1IC0wLjIzIDQ2LjkxIDAuMDZDNDcuODggMC4zNSA0OC44NSAwLjQ5IDQ5LjgzIDAuNDlDNTAuODEgMC40OSA1MS42OSAwLjM5IDUyLjQ3IDAuMThDNTUuMDEgLTAuMzUgNTYuNzcgLTEuNjggNTcuNzUgLTMuODFMNTcuNzUgLTEuNkM1Ny43NSAtMS4wMiA1Ny45NCAtMC42MSA1OC4zMSAtMC4zN0M1OC42NyAtMC4xMiA1OS4wOCAwIDU5LjUzIDBDNTkuOTggMCA2MC4zOSAtMC4xNCA2MC43NiAtMC40M0M2MS4xMyAtMC43MiA2MS4zMSAtMS4xMyA2MS4zMSAtMS42Nkw2MS40NCAtMTUuODRDNjEuNDQgLTE3LjE5IDYxLjIzIC0xOC4zOCA2MC44MiAtMTkuNEM1OS41OSAtMjIuMzEgNTYuODEgLTIzLjc2IDUyLjQ3IC0yMy43NkM0OC43MSAtMjMuNzYgNDUuODYgLTIyLjg0IDQzLjk0IC0yMUM0My41NyAtMjAuNjcgNDMuMzggLTIwLjM1IDQzLjM4IC0yMC4wMkM0My4zOCAtMTkuNjEgNDMuNTMgLTE5LjI4IDQzLjgxIC0xOS4wNEM0NC4xIC0xOC43OSA0NC40MSAtMTguNjcgNDQuNzMgLTE4LjY3QzQ1LjA2IC0xOC42NyA0NS41MSAtMTguODQgNDYuMDkgLTE5LjE5QzQ2LjY2IC0xOS41NCA0Ny42IC0xOS45NiA0OC45MSAtMjAuNDVDNDkuNjUgLTIwLjczIDUwLjgxIC0yMC44OCA1Mi40MSAtMjAuODhDNTUuOTcgLTIwLjg4IDU3Ljc1IC0xOS4yOCA1Ny43NSAtMTYuMDlMNTcuNzUgLTE0LjEyQzU2Ljg5IC0xNC4xNiA1Ni4wMyAtMTQuMTggNTUuMTcgLTE0LjE4Wk01Ny43NSAtMTEuNDJMNTcuNzUgLTkuMzNDNTcuNjMgLTcuMDQgNTYuOTUgLTUuMzIgNTUuNzMgLTQuMThDNTQuMzggLTIuOTkgNTIuNzggLTIuMzkgNTAuOTQgLTIuMzlDNDkuNDIgLTIuNDQgNDguMjYgLTIuNzggNDcuNDQgLTMuNDRDNDYuMzcgLTQuMTggNDUuODQgLTUuMiA0NS44NCAtNi41MUM0NS45MiAtOC4xOSA0Ni42NiAtOS40IDQ4LjA1IC0xMC4xM0M0OC43MSAtMTAuNSA0OS40NCAtMTAuNzggNTAuMjYgLTEwLjk2QzUxLjA4IC0xMS4xNSA1MS45NCAtMTEuMjUgNTIuODQgLTExLjI3QzUzLjc0IC0xMS4yOSA1NC42MiAtMTEuMyA1NS40OCAtMTEuM0M1Ni4zNCAtMTEuMyA1Ny4xIC0xMS4zNCA1Ny43NSAtMTEuNDJaIE03My44NCAtMzEuNTZMNzMuODQgLTEuODRDNzMuODQgLTEuMjMgNzQuMDMgLTAuNzcgNzQuMzkgLTAuNDZDNzQuNzYgLTAuMTUgNzUuMTkgMCA3NS42OCAwQzc2LjE3IDAgNzYuNjIgLTAuMTUgNzcuMDMgLTAuNDZDNzcuNDQgLTAuNzcgNzcuNjUgLTEuMjMgNzcuNjUgLTEuODRMNzcuNjUgLTMxLjU2Qzc3LjY1IC0zMi4yMiA3Ny40MiAtMzIuNjkgNzYuOTcgLTMyLjk4Qzc2Ljc3IC0zMy4xOCA3Ni41NiAtMzMuMyA3Ni4zNiAtMzMuMzRDNzYuMTUgLTMzLjM4IDc1Ljg5IC0zMy40IDc1LjU2IC0zMy40Qzc1LjIzIC0zMy40IDc0Ljg2IC0zMy4yNiA3NC40NSAtMzIuOThDNzQuMDUgLTMyLjY5IDczLjg0IC0zMi4yMiA3My44NCAtMzEuNTZaIE05NC42NiAtMzEuNDRDOTQuNjYgLTMyLjAxIDk0LjQ0IC0zMi41IDk0LjAxIC0zMi45MUM5My41OCAtMzMuMzIgOTIuOTUgLTMzLjUzIDkyLjExIC0zMy41M0M5MS4yNyAtMzMuNTMgOTAuNjMgLTMzLjMyIDkwLjE3IC0zMi45MUM4OS43MiAtMzIuNSA4OS41IC0zMi4wMSA4OS41IC0zMS40NEM4OS41IC0zMC43OCA4OS43MiAtMzAuMjUgOTAuMTcgLTI5Ljg0QzkwLjYzIC0yOS40MyA5MS4yNiAtMjkuMjMgOTIuMDggLTI5LjIzQzkyLjkgLTI5LjIzIDkzLjUzIC0yOS40MyA5My45OCAtMjkuODRDOTQuNDMgLTMwLjI1IDk0LjY2IC0zMC43OCA5NC42NiAtMzEuNDRaTTkwLjI0IC0yMS4zN0w5MC4yNCAtMS44NEM5MC4yNCAtMS4yMyA5MC40MiAtMC43NyA5MC43OSAtMC40NkM5MS4xNiAtMC4xNSA5MS41OSAwIDkyLjA4IDBDOTIuNTcgMCA5My4wMiAtMC4xNSA5My40MyAtMC40NkM5My44NCAtMC43NyA5NC4wNCAtMS4yMyA5NC4wNCAtMS44NEw5NC4wNCAtMjEuMzdDOTQuMDQgLTIxLjk4IDkzLjgyIC0yMi40MyA5My4zNyAtMjIuNzJDOTMuMTYgLTIyLjkyIDkyLjk2IC0yMy4wOCA5Mi43NSAtMjMuMThDOTIuNTUgLTIzLjI4IDkyLjI4IC0yMy4zMyA5MS45NiAtMjMuMzNDOTEuNjMgLTIzLjMzIDkxLjI2IC0yMy4xNiA5MC44NSAtMjIuODFDOTAuNDQgLTIyLjQ2IDkwLjI0IC0yMS45OCA5MC4yNCAtMjEuMzdaIE0xMDYuNjMgLTIxLjU1TDEwNi42MyAtMS43MkMxMDYuNjMgLTEuMTkgMTA2LjggLTAuNzcgMTA3LjEyIC0wLjQ2QzEwNy40NSAtMC4xNSAxMDcuODYgMCAxMDguMzUgMEMxMDguODQgMCAxMDkuMjkgLTAuMTQgMTA5LjcgLTAuNDNDMTEwLjExIC0wLjcyIDExMC4zMiAtMS4xNSAxMTAuMzIgLTEuNzJMMTEwLjMyIC0xMy41MUMxMTAuMzIgLTE2LjA1IDExMS4wMSAtMTcuOTMgMTEyLjQgLTE5LjE2QzExMy44IC0yMC4zIDExNS40NyAtMjAuODggMTE3LjQ0IC0yMC44OEMxMTguOTEgLTIwLjg4IDEyMC4xNCAtMjAuMzkgMTIxLjEyIC0xOS40QzEyMi4xOSAtMTguMzggMTIyLjcyIC0xNi45MSAxMjIuNzIgLTE0Ljk4TDEyMi43MiAtMS43MkMxMjIuNzIgLTEuMTkgMTIyLjkgLTAuNzcgMTIzLjI3IC0wLjQ2QzEyMy42NCAtMC4xNSAxMjQuMDcgMCAxMjQuNTYgMEMxMjUuMDEgMCAxMjUuNDUgLTAuMTQgMTI1Ljg4IC0wLjQzQzEyNi4zMSAtMC43MiAxMjYuNTMgLTEuMTUgMTI2LjUzIC0xLjcyTDEyNi41MyAtMTQuNzRDMTI2LjUzIC0xNy43NyAxMjUuNzEgLTIwLjA2IDEyNC4wNyAtMjEuNjFDMTIzLjI1IC0yMi4zNSAxMjIuMzUgLTIyLjg5IDEyMS4zNyAtMjMuMjRDMTIwLjM5IC0yMy41OSAxMTkuMTkgLTIzLjc2IDExNy43OCAtMjMuNzZDMTE2LjM2IC0yMy43NiAxMTQuOTQgLTIzLjM4IDExMy41MSAtMjIuNkMxMTEuODcgLTIxLjcgMTEwLjgxIC0yMC42MyAxMTAuMzIgLTE5LjRDMTEwLjQ0IC0yMC43MSAxMTAuMzggLTIxLjcgMTEwLjEzIC0yMi4zNUMxMDkuODkgLTIzLjAxIDEwOS4zMyAtMjMuMzMgMTA4LjQ3IC0yMy4zM0MxMDguMDYgLTIzLjMzIDEwNy42NiAtMjMuMTcgMTA3LjI1IC0yMi44NEMxMDYuODQgLTIyLjUyIDEwNi42MyAtMjIuMDkgMTA2LjYzIC0yMS41NVogTTEzNy40IC0xMS42MUMxMzcuNCAtOC4zNyAxMzguMzYgLTUuNjEgMTQwLjI4IC0zLjMyQzE0Mi4zMyAtMC43OCAxNDUuMjQgMC40OSAxNDkgMC40OUMxNTIuNzcgMC40OSAxNTUuNjcgLTAuNzggMTU3LjcyIC0zLjMyQzE1OS42NSAtNS42NSAxNjAuNjEgLTguNDMgMTYwLjYxIC0xMS42N0MxNjAuNjEgLTE0Ljg2IDE1OS42NSAtMTcuNjQgMTU3LjcyIC0yMC4wMkMxNTUuNjcgLTIyLjUyIDE1Mi43NyAtMjMuNzYgMTQ5IC0yMy43NkMxNDUuMjQgLTIzLjc2IDE0Mi4zMyAtMjIuNTIgMTQwLjI4IC0yMC4wMkMxMzkuMyAtMTguODMgMTM4LjU3IC0xNy41IDEzOC4xIC0xNi4wM0MxMzcuNjMgLTE0LjU1IDEzNy40IC0xMy4wOCAxMzcuNCAtMTEuNjFaTTE0MS4zOSAtMTEuNjFDMTQxLjM5IC0xNC4wNiAxNDIgLTE2LjEzIDE0My4yMyAtMTcuODFDMTQ0LjYyIC0xOS44NSAxNDYuNTUgLTIwLjg4IDE0OSAtMjAuODhDMTUxLjU0IC0yMC44OCAxNTMuNDYgLTE5Ljg1IDE1NC43NyAtMTcuODFDMTU1Ljk2IC0xNi4wOSAxNTYuNTUgLTE0LjA0IDE1Ni41NSAtMTEuNjdDMTU2LjU1IC05LjM3IDE1NS45NiAtNy4yOSAxNTQuNzcgLTUuNEMxNTMuNTEgLTMuNCAxNTEuNTggLTIuMzkgMTQ5IC0yLjM5QzE0Ni41NSAtMi4zOSAxNDQuNjIgLTMuNCAxNDMuMjMgLTUuNEMxNDIuNTMgLTYuMzUgMTQyLjA1IC03LjM3IDE0MS43OSAtOC40N0MxNDEuNTIgLTkuNTggMTQxLjM5IC0xMC42MiAxNDEuMzkgLTExLjYxWiBNMTgzLjMzIC0yLjgyTDE5MC41NyAtMjAuODhDMTkwLjY2IC0yMS4xMiAxOTAuNzIgLTIxLjM2IDE5MC43NiAtMjEuNThDMTkwLjggLTIxLjgxIDE5MC43NCAtMjIuMDQgMTkwLjU3IC0yMi4yOUMxOTAuMTYgLTIyLjk5IDE4OS41NSAtMjMuMzMgMTg4LjczIC0yMy4zM0MxODcuOTUgLTIzLjI1IDE4Ny40MiAtMjIuOCAxODcuMTQgLTIxLjk4TDE4MC4wMSAtNC4zTDE3Mi42NCAtMjEuOThDMTcyLjQgLTIyLjg4IDE3MS44MiAtMjMuMzMgMTcwLjkyIC0yMy4zM0MxNzAuNTEgLTIzLjI1IDE3MC4xMSAtMjMuMDUgMTY5LjcgLTIyLjcyQzE2OC45NiAtMjIuMTkgMTY4Ljc3IC0yMS41NyAxNjkuMTQgLTIwLjg4TDE3Ni44MiAtMi44MkMxNzcuMTUgLTEuOCAxNzcuNTUgLTEuMDcgMTc4LjAyIC0wLjY0QzE3OC40OSAtMC4yMSAxNzkuMTUgMCAxODAuMDEgMEMxODAuODcgMCAxODEuNTQgLTAuMjMgMTgyLjAxIC0wLjY4QzE4Mi40OCAtMS4xMyAxODIuOTIgLTEuODQgMTgzLjMzIC0yLjgyWiBNMjA1LjMxIC0zMS40NEMyMDUuMzEgLTMyLjAxIDIwNS4xIC0zMi41IDIwNC42NyAtMzIuOTFDMjA0LjI0IC0zMy4zMiAyMDMuNiAtMzMuNTMgMjAyLjc2IC0zMy41M0MyMDEuOTIgLTMzLjUzIDIwMS4yOCAtMzMuMzIgMjAwLjgzIC0zMi45MUMyMDAuMzggLTMyLjUgMjAwLjE1IC0zMi4wMSAyMDAuMTUgLTMxLjQ0QzIwMC4xNSAtMzAuNzggMjAwLjM4IC0zMC4yNSAyMDAuODMgLTI5Ljg0QzIwMS4yOCAtMjkuNDMgMjAxLjkxIC0yOS4yMyAyMDIuNzMgLTI5LjIzQzIwMy41NSAtMjkuMjMgMjA0LjE5IC0yOS40MyAyMDQuNjQgLTI5Ljg0QzIwNS4wOSAtMzAuMjUgMjA1LjMxIC0zMC43OCAyMDUuMzEgLTMxLjQ0Wk0yMDAuODkgLTIxLjM3TDIwMC44OSAtMS44NEMyMDAuODkgLTEuMjMgMjAxLjA3IC0wLjc3IDIwMS40NCAtMC40NkMyMDEuODEgLTAuMTUgMjAyLjI0IDAgMjAyLjczIDBDMjAzLjIyIDAgMjAzLjY3IC0wLjE1IDIwNC4wOCAtMC40NkMyMDQuNDkgLTAuNzcgMjA0LjcgLTEuMjMgMjA0LjcgLTEuODRMMjA0LjcgLTIxLjM3QzIwNC43IC0yMS45OCAyMDQuNDcgLTIyLjQzIDIwNC4wMiAtMjIuNzJDMjAzLjgyIC0yMi45MiAyMDMuNjEgLTIzLjA4IDIwMy40MSAtMjMuMThDMjAzLjIgLTIzLjI4IDIwMi45NCAtMjMuMzMgMjAyLjYxIC0yMy4zM0MyMDIuMjggLTIzLjMzIDIwMS45MSAtMjMuMTYgMjAxLjUgLTIyLjgxQzIwMS4wOSAtMjIuNDYgMjAwLjg5IC0yMS45OCAyMDAuODkgLTIxLjM3WiI+PC9wYXRoPjwvZz48cmVjdCBpZD0iU3ZnanNSZWN0MjI0MCIgd2lkdGg9IjQxMC42MjI4Mzg0NDM3NjU1NCIgaGVpZ2h0PSIxLjkyMTE3NzMzMzAxMTMwODIiIGZpbGw9IiMxMjEyMTIiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIDIzMy44ODE5OTkyODI0MjEwOCkgc2NhbGUoMSkiIGxpZ2h0LWNvbnRlbnQ9ImZhbHNlIj48L3JlY3Q+PC9nPjwvZz48L3N2Zz4=" alt="OvocxMalinovi">
+    <div class="logo-divider"></div>
+    <div class="logo-label">
+      <strong>Centrum Operacyjne</strong>
+      Sezon 2026
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="date-badge" id="dateDisplay"></div>
+    <div class="live-pill">LIVE</div>
+  </div>
+</header>
+
+<main>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-label">Procesy</div>
+      <div class="stat-value">7</div>
+      <div class="stat-sub">Główne + wspierające</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">In progress</div>
+      <div class="stat-value" style="color:var(--yellow)">1</div>
+      <div class="stat-sub">Gospodarka magazynowa</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Backlog</div>
+      <div class="stat-value grad">6</div>
+      <div class="stat-sub">Pomysłów i usprawnień</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sezon</div>
+      <div class="stat-value">2026</div>
+      <div class="stat-sub">Przygotowania w toku</div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- Procesy -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Mapa Procesów</div>
+        <a href="WKLEJ_LINK_DO_GOOGLE_SHEETS" target="_blank" class="card-link">↗ Otwórz w Google Sheets</a>
+      </div>
+      <div class="card-body">
+        <div class="section-label">Procesy Główne</div>
+        <div class="process-list">
+          <div class="process-item">
+            <div class="p-left">
+              <div class="p-num">01</div>
+              <div>
+                <div class="p-name">Sprzedaż i Handel</div>
+                <div class="p-owner">Dyrektor handlowy</div>
+              </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Liczba zbieraczy</div>
-                <div class="stat-value" id="totalWorkers">-</div>
+            <div class="pill pill-ns">Not started</div>
+          </div>
+          <div class="process-item">
+            <div class="p-left">
+              <div class="p-num">02</div>
+              <div>
+                <div class="p-name">Obsługa zamówień OxM</div>
+                <div class="p-owner">Dr. handlowy + Magazyny + Iza + Renia</div>
+              </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Średnia tygodniowa</div>
-                <div class="stat-value" id="avgWeekly">-</div>
-                <span class="stat-unit">kg</span>
+            <div class="pill pill-ns">Not started</div>
+          </div>
+          <div class="process-item">
+            <div class="p-left">
+              <div class="p-num">03</div>
+              <div>
+                <div class="p-name">Rozliczenia tygodniowe</div>
+                <div class="p-owner">Dz. Rozliczeń</div>
+              </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Najlepszy tydzień</div>
-                <div class="stat-value" id="bestWeek">-</div>
-                <span class="stat-unit">kg</span>
-            </div>
+            <div class="pill pill-ns">Not started</div>
+          </div>
         </div>
 
-        <div class="section">
-            <div class="section-header">
-                <h2>Zbiory tygodniowe – kumulatywnie</h2>
+        <div class="section-label" style="margin-top:12px">Procesy Wspierające</div>
+        <div class="process-list">
+          <div class="process-item">
+            <div class="p-left">
+              <div class="p-num">04</div>
+              <div>
+                <div class="p-name">Obsługa reklamacji</div>
+                <div class="p-owner">Olgierd (nowy właściciel)</div>
+              </div>
             </div>
-            <div class="chart-container">
-                <div class="chart-wrapper">
-                    <canvas id="weeklyTotalChart"></canvas>
-                </div>
+            <div class="pill pill-ns">Not started</div>
+          </div>
+          <div class="process-item active">
+            <div class="p-left">
+              <div class="p-num">05</div>
+              <div>
+                <div class="p-name">Gospodarka magazynowa</div>
+                <div class="p-owner">Renia + Magazyny · v1.0</div>
+              </div>
             </div>
+            <div class="pill pill-ip">In progress</div>
+          </div>
+          <div class="process-item">
+            <div class="p-left">
+              <div class="p-num">06</div>
+              <div>
+                <div class="p-name">Komunikacja wewnętrzna</div>
+                <div class="p-owner">wszyscy związani z biurem</div>
+              </div>
+            </div>
+            <div class="pill pill-ns">Not started</div>
+          </div>
+          <div class="process-item">
+            <div class="p-left">
+              <div class="p-num">07</div>
+              <div>
+                <div class="p-name">Certyfikacja i wymogi prawne</div>
+                <div class="p-owner">Iza i Renia</div>
+              </div>
+            </div>
+            <div class="pill pill-ns">Not started</div>
+          </div>
         </div>
-
-        <div class="section">
-            <div class="section-header">
-                <h2>Zbiory tygodniowe – wg obszarów</h2>
-                <div class="filter-group">
-                    <select id="areaFilter">
-                        <option value="all">Wszystkie obszary</option>
-                    </select>
-                </div>
-            </div>
-            <div class="chart-container">
-                <div class="chart-wrapper">
-                    <canvas id="weeklyAreaChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <h2>Liczba zbieraczy vs zbiory</h2>
-            </div>
-            <div class="chart-container">
-                <div class="chart-wrapper">
-                    <canvas id="workersChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <h2>Podsumowanie obszarów</h2>
-            </div>
-            <div class="table-container">
-                <table id="summaryTable">
-                    <thead>
-                        <tr>
-                            <th>Obszar</th>
-                            <th>Suma zbiorów (kg)</th>
-                            <th>Zbieraczy</th>
-                            <th>Udział %</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <h2>Szczegóły tygodniowe – wg obszaru</h2>
-                <div class="filter-group">
-                    <select id="weeklyDetailArea">
-                        <option value="all">Wszystkie obszary</option>
-                    </select>
-                </div>
-            </div>
-            <div class="table-container">
-                <table id="weeklyDetailTable">
-                    <thead>
-                        <tr>
-                            <th>Tydzień</th>
-                            <th>Zbiory (kg)</th>
-                            <th>Zbieraczy</th>
-                            <th>kg/Zbieracz</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-
-        <footer>
-            Raport wygenerowany na podstawie danych MaxCrop | Okres: czerwiec – grudzień 2025
-        </footer>
+      </div>
     </div>
 
-    <script>
-        // Dane osadzone bezpośrednio w pliku
-        const harvestData = {
-  "dzienne": [
-    {"Data": "2025-06-02", "Obszar": "Cały blok A", "Waga_kg": 100.0},
-    {"Data": "2025-06-04", "Obszar": "Blok_B ruby8-13", "Waga_kg": 10.5},
-    {"Data": "2025-06-04", "Obszar": "Cały blok A", "Waga_kg": 138.75},
-    {"Data": "2025-06-06", "Obszar": "Blok_B 1-7", "Waga_kg": 4.5},
-    {"Data": "2025-06-06", "Obszar": "Blok_B ruby8-13", "Waga_kg": 35.63},
-    {"Data": "2025-06-06", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 60.39},
-    {"Data": "2025-06-06", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 78.01}
-  ],
-  "tygodniowe": [
-    {"Tydzien": "2025-W22", "Obszar": "Cały blok A", "Waga_kg": 100.0},
-    {"Tydzien": "2025-W23", "Obszar": "Blok_B ruby8-13", "Waga_kg": 10.5},
-    {"Tydzien": "2025-W23", "Obszar": "Cały blok A", "Waga_kg": 138.75}
-  ],
-  "tygodniowe_kumulatywnie": [
-    {"Tydzien": "2025-W22", "Waga_kg": 100.0, "Liczba_zbieraczy": 1},
-    {"Tydzien": "2025-W23", "Waga_kg": 149.25, "Liczba_zbieraczy": 2}
-  ],
-  "zbieracze_tyg_obszar": [
-    {"Tydzien": "2025-W22", "Obszar": "Cały blok A", "Liczba_zbieraczy": 1}
-  ],
-  "podsumowanie_obszar": [
-    {"Obszar": "Malina-Blok  D", "Suma_kg": 41135.32, "Unikalnych_zbieraczy": 145},
-    {"Obszar": "Malina - Blok_A1-9", "Suma_kg": 22954.95, "Unikalnych_zbieraczy": 155},
-    {"Obszar": "Malina - Bloka_A10-19", "Suma_kg": 21008.37, "Unikalnych_zbieraczy": 139},
-    {"Obszar": "Blok_B 1-7", "Suma_kg": 16571.0, "Unikalnych_zbieraczy": 109},
-    {"Obszar": "Blok_B ruby8-13", "Suma_kg": 15317.28, "Unikalnych_zbieraczy": 110},
-    {"Obszar": "Cala plantacja", "Suma_kg": 8179.29, "Unikalnych_zbieraczy": 71},
-    {"Obszar": "Malina-Blok_C", "Suma_kg": 3396.42, "Unikalnych_zbieraczy": 74},
-    {"Obszar": "Cały blok A", "Suma_kg": 710.03, "Unikalnych_zbieraczy": 4},
-    {"Obszar": "Malina-Blok_C-RUBY", "Suma_kg": 5.4, "Unikalnych_zbieraczy": 2}
-  ],
-  "obszary": ["Malina - Bloka_A10-19", "Malina - Blok_A1-9", "Malina-Blok  D", "Blok_B 1-7", "Malina-Blok_C", "Cały blok A", "Blok_B ruby8-13", "Cala plantacja", "Malina-Blok_C-RUBY"]
-};
+    <!-- Backlog -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Backlog Zmian</div>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted)">6 wpisów</span>
+      </div>
+      <div class="card-body">
+        <div class="backlog-list">
+          <div class="b-item">
+            <div class="b-title">Automatyczne potwierdzenie przyjęcia reklamacji do klienta</div>
+            <div class="b-tags"><span class="tag">⚙️ Usprawnienie</span><span class="tag">Reklamacje</span></div>
+          </div>
+          <div class="b-item">
+            <div class="b-title">Archiwizacja dokumentów do chmury zamiast kuriera do księgowości</div>
+            <div class="b-tags"><span class="tag">💻 Systemowa</span><span class="tag">Komunikacja</span></div>
+          </div>
+          <div class="b-item">
+            <div class="b-title">Kontrola terminu zamknięcia reklamacji — cel: ≤14 dni</div>
+            <div class="b-tags"><span class="tag">⚙️ Usprawnienie</span><span class="tag">Reklamacje</span></div>
+          </div>
+          <div class="b-item">
+            <div class="b-title">Ustandaryzowanie dokumentu PZ przy przyjęciu surowców na magazyn</div>
+            <div class="b-tags"><span class="tag">⚙️ Usprawnienie</span><span class="tag tag-y">Magazyn</span></div>
+          </div>
+          <div class="b-item">
+            <div class="b-title">Mail complaints@ nie działa zgodnie z założeniami</div>
+            <div class="b-tags"><span class="tag tag-r">🔴 Błąd</span><span class="tag">Komunikacja</span></div>
+          </div>
+          <div class="b-item">
+            <div class="b-title">Regularna kontrola stanów magazynowych vs stany w SS (1x/miesiąc)</div>
+            <div class="b-tags"><span class="tag tag-r">🔴 Błąd</span><span class="tag tag-y">Magazyn</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        // Pełne dane zostaną wstrzyknięte przez skrypt Python
-    </script>
+    <!-- Sidebar -->
+    <div class="sidebar">
 
-    <script>
-        // Pełne dane z JSON
-        const fullData = {"dzienne": [{"Data": "2025-06-02", "Obszar": "Cały blok A", "Waga_kg": 100.0}, {"Data": "2025-06-04", "Obszar": "Blok_B ruby8-13", "Waga_kg": 10.5}, {"Data": "2025-06-04", "Obszar": "Cały blok A", "Waga_kg": 138.75}, {"Data": "2025-06-06", "Obszar": "Blok_B 1-7", "Waga_kg": 4.5}, {"Data": "2025-06-06", "Obszar": "Blok_B ruby8-13", "Waga_kg": 35.63}, {"Data": "2025-06-06", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 60.39}, {"Data": "2025-06-06", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 78.01}, {"Data": "2025-06-07", "Obszar": "Blok_B 1-7", "Waga_kg": 10.0}, {"Data": "2025-06-07", "Obszar": "Blok_B ruby8-13", "Waga_kg": 36.0}, {"Data": "2025-06-07", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 79.0}, {"Data": "2025-06-07", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 4.0}, {"Data": "2025-06-07", "Obszar": "Malina-Blok  D", "Waga_kg": 12.0}, {"Data": "2025-06-09", "Obszar": "Blok_B ruby8-13", "Waga_kg": 90.85}, {"Data": "2025-06-09", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 90.2}, {"Data": "2025-06-09", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 88.38}, {"Data": "2025-06-10", "Obszar": "Blok_B 1-7", "Waga_kg": 34.0}, {"Data": "2025-06-10", "Obszar": "Blok_B ruby8-13", "Waga_kg": 120.0}, {"Data": "2025-06-10", "Obszar": "Cala plantacja", "Waga_kg": 4.0}, {"Data": "2025-06-10", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 34.0}, {"Data": "2025-06-10", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 48.0}, {"Data": "2025-06-12", "Obszar": "Blok_B 1-7", "Waga_kg": 40.0}, {"Data": "2025-06-12", "Obszar": "Blok_B ruby8-13", "Waga_kg": 170.0}, {"Data": "2025-06-12", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 72.0}, {"Data": "2025-06-12", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 82.0}, {"Data": "2025-06-14", "Obszar": "Blok_B 1-7", "Waga_kg": 20.0}, {"Data": "2025-06-14", "Obszar": "Blok_B ruby8-13", "Waga_kg": 130.0}, {"Data": "2025-06-14", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 38.0}, {"Data": "2025-06-14", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 71.0}, {"Data": "2025-06-15", "Obszar": "Blok_B 1-7", "Waga_kg": 4.0}, {"Data": "2025-06-15", "Obszar": "Blok_B ruby8-13", "Waga_kg": 72.0}, {"Data": "2025-06-16", "Obszar": "Blok_B 1-7", "Waga_kg": 21.0}, {"Data": "2025-06-16", "Obszar": "Blok_B ruby8-13", "Waga_kg": 73.5}, {"Data": "2025-06-16", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 45.75}, {"Data": "2025-06-16", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 51.0}, {"Data": "2025-06-16", "Obszar": "Malina-Blok  D", "Waga_kg": 23.63}, {"Data": "2025-06-18", "Obszar": "Blok_B 1-7", "Waga_kg": 66.03999999999999}, {"Data": "2025-06-18", "Obszar": "Blok_B ruby8-13", "Waga_kg": 359.42}, {"Data": "2025-06-18", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 131.5}, {"Data": "2025-06-18", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 130.9}, {"Data": "2025-06-18", "Obszar": "Malina-Blok  D", "Waga_kg": 62.5}, {"Data": "2025-06-19", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 72.64}, {"Data": "2025-06-19", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 70.48}, {"Data": "2025-06-19", "Obszar": "Malina-Blok  D", "Waga_kg": 116.68}, {"Data": "2025-06-20", "Obszar": "Blok_B 1-7", "Waga_kg": 48.58}, {"Data": "2025-06-20", "Obszar": "Blok_B ruby8-13", "Waga_kg": 210.0}, {"Data": "2025-06-20", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 66.45}, {"Data": "2025-06-20", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 79.52}, {"Data": "2025-06-20", "Obszar": "Malina-Blok  D", "Waga_kg": 46.0}, {"Data": "2025-06-21", "Obszar": "Blok_B 1-7", "Waga_kg": 100.0}, {"Data": "2025-06-21", "Obszar": "Blok_B ruby8-13", "Waga_kg": 190.2}, {"Data": "2025-06-21", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 144.6}, {"Data": "2025-06-21", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 151.6}, {"Data": "2025-06-21", "Obszar": "Malina-Blok  D", "Waga_kg": 50.0}, {"Data": "2025-06-22", "Obszar": "Blok_B ruby8-13", "Waga_kg": 134.0}, {"Data": "2025-06-22", "Obszar": "Malina-Blok  D", "Waga_kg": 100.0}, {"Data": "2025-06-23", "Obszar": "Blok_B 1-7", "Waga_kg": 94.81}, {"Data": "2025-06-23", "Obszar": "Blok_B ruby8-13", "Waga_kg": 179.33}, {"Data": "2025-06-23", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 277.56}, {"Data": "2025-06-23", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 204.97}, {"Data": "2025-06-23", "Obszar": "Malina-Blok  D", "Waga_kg": 103.08}, {"Data": "2025-06-24", "Obszar": "Blok_B 1-7", "Waga_kg": 96.6}, {"Data": "2025-06-24", "Obszar": "Blok_B ruby8-13", "Waga_kg": 209.3}, {"Data": "2025-06-24", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 211.57}, {"Data": "2025-06-24", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 200.25}, {"Data": "2025-06-24", "Obszar": "Malina-Blok  D", "Waga_kg": 119.0}, {"Data": "2025-06-25", "Obszar": "Blok_B 1-7", "Waga_kg": 125.12}, {"Data": "2025-06-25", "Obszar": "Blok_B ruby8-13", "Waga_kg": 347.29}, {"Data": "2025-06-25", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 351.56}, {"Data": "2025-06-25", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 337.69}, {"Data": "2025-06-26", "Obszar": "Blok_B 1-7", "Waga_kg": 142.06}, {"Data": "2025-06-26", "Obszar": "Blok_B ruby8-13", "Waga_kg": 540.7}, {"Data": "2025-06-26", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 447.28}, {"Data": "2025-06-26", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 111.13}, {"Data": "2025-06-26", "Obszar": "Malina-Blok  D", "Waga_kg": 268.44}, {"Data": "2025-06-27", "Obszar": "Blok_B 1-7", "Waga_kg": 155.27}, {"Data": "2025-06-27", "Obszar": "Blok_B ruby8-13", "Waga_kg": 218.04}, {"Data": "2025-06-27", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 391.7}, {"Data": "2025-06-27", "Obszar": "Malina-Blok  D", "Waga_kg": 199.42}, {"Data": "2025-06-28", "Obszar": "Blok_B 1-7", "Waga_kg": 169.61}, {"Data": "2025-06-28", "Obszar": "Blok_B ruby8-13", "Waga_kg": 340.26}, {"Data": "2025-06-28", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 356.15}, {"Data": "2025-06-28", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 309.08}, {"Data": "2025-06-29", "Obszar": "Blok_B 1-7", "Waga_kg": 266.79}, {"Data": "2025-06-29", "Obszar": "Blok_B ruby8-13", "Waga_kg": 354.82}, {"Data": "2025-06-29", "Obszar": "Malina-Blok  D", "Waga_kg": 426.73}, {"Data": "2025-06-30", "Obszar": "Blok_B 1-7", "Waga_kg": 4.5}, {"Data": "2025-06-30", "Obszar": "Blok_B ruby8-13", "Waga_kg": 364.76}, {"Data": "2025-06-30", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1029.57}, {"Data": "2025-06-30", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1012.7}, {"Data": "2025-07-01", "Obszar": "Blok_B 1-7", "Waga_kg": 412.06}, {"Data": "2025-07-01", "Obszar": "Blok_B ruby8-13", "Waga_kg": 3.0}, {"Data": "2025-07-01", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 538.62}, {"Data": "2025-07-01", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 4.5}, {"Data": "2025-07-01", "Obszar": "Malina-Blok  D", "Waga_kg": 806.56}, {"Data": "2025-07-02", "Obszar": "Blok_B 1-7", "Waga_kg": 294.16}, {"Data": "2025-07-02", "Obszar": "Blok_B ruby8-13", "Waga_kg": 538.22}, {"Data": "2025-07-02", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 103.5}, {"Data": "2025-07-02", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 647.2}, {"Data": "2025-07-02", "Obszar": "Malina-Blok  D", "Waga_kg": 212.05}, {"Data": "2025-07-03", "Obszar": "Blok_B 1-7", "Waga_kg": 182.54}, {"Data": "2025-07-03", "Obszar": "Blok_B ruby8-13", "Waga_kg": 252.16}, {"Data": "2025-07-03", "Obszar": "Cala plantacja", "Waga_kg": 86.5}, {"Data": "2025-07-03", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 420.41}, {"Data": "2025-07-03", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 253.1}, {"Data": "2025-07-03", "Obszar": "Malina-Blok  D", "Waga_kg": 245.18}, {"Data": "2025-07-04", "Obszar": "Malina-Blok  D", "Waga_kg": 844.42}, {"Data": "2025-07-05", "Obszar": "Blok_B 1-7", "Waga_kg": 624.82}, {"Data": "2025-07-05", "Obszar": "Blok_B ruby8-13", "Waga_kg": 737.91}, {"Data": "2025-07-05", "Obszar": "Cala plantacja", "Waga_kg": 168.0}, {"Data": "2025-07-05", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1303.88}, {"Data": "2025-07-05", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 129.49}, {"Data": "2025-07-05", "Obszar": "Malina-Blok  D", "Waga_kg": 1.5}, {"Data": "2025-07-06", "Obszar": "Cala plantacja", "Waga_kg": 202.32}, {"Data": "2025-07-06", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 9.5}, {"Data": "2025-07-06", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1319.95}, {"Data": "2025-07-06", "Obszar": "Malina-Blok  D", "Waga_kg": 1095.23}, {"Data": "2025-07-07", "Obszar": "Blok_B ruby8-13", "Waga_kg": 1038.23}, {"Data": "2025-07-07", "Obszar": "Cala plantacja", "Waga_kg": 175.04}, {"Data": "2025-07-07", "Obszar": "Malina-Blok  D", "Waga_kg": 1667.33}, {"Data": "2025-07-08", "Obszar": "Blok_B 1-7", "Waga_kg": 950.31}, {"Data": "2025-07-08", "Obszar": "Blok_B ruby8-13", "Waga_kg": 7.5}, {"Data": "2025-07-08", "Obszar": "Cala plantacja", "Waga_kg": 437.5}, {"Data": "2025-07-08", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 982.45}, {"Data": "2025-07-08", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 257.19}, {"Data": "2025-07-09", "Obszar": "Blok_B 1-7", "Waga_kg": 3.1}, {"Data": "2025-07-09", "Obszar": "Cala plantacja", "Waga_kg": 199.25}, {"Data": "2025-07-09", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 345.23}, {"Data": "2025-07-09", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 785.93}, {"Data": "2025-07-09", "Obszar": "Malina-Blok  D", "Waga_kg": 1254.83}, {"Data": "2025-07-10", "Obszar": "Blok_B ruby8-13", "Waga_kg": 516.4}, {"Data": "2025-07-10", "Obszar": "Cala plantacja", "Waga_kg": 267.29}, {"Data": "2025-07-10", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 6.6}, {"Data": "2025-07-10", "Obszar": "Malina-Blok  D", "Waga_kg": 2527.14}, {"Data": "2025-07-10", "Obszar": "Malina-Blok_C-RUBY", "Waga_kg": 3.0}, {"Data": "2025-07-11", "Obszar": "Blok_B 1-7", "Waga_kg": 824.58}, {"Data": "2025-07-11", "Obszar": "Blok_B ruby8-13", "Waga_kg": 924.86}, {"Data": "2025-07-11", "Obszar": "Cala plantacja", "Waga_kg": 189.5}, {"Data": "2025-07-11", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 366.8}, {"Data": "2025-07-11", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 350.14}, {"Data": "2025-07-11", "Obszar": "Malina-Blok  D", "Waga_kg": 3.1}, {"Data": "2025-07-11", "Obszar": "Malina-Blok_C-RUBY", "Waga_kg": 2.4}, {"Data": "2025-07-12", "Obszar": "Blok_B 1-7", "Waga_kg": 232.37}, {"Data": "2025-07-12", "Obszar": "Blok_B ruby8-13", "Waga_kg": 4.0}, {"Data": "2025-07-12", "Obszar": "Cala plantacja", "Waga_kg": 316.5}, {"Data": "2025-07-12", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1344.34}, {"Data": "2025-07-12", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1001.32}, {"Data": "2025-07-12", "Obszar": "Malina-Blok  D", "Waga_kg": 6.0}, {"Data": "2025-07-13", "Obszar": "Blok_B 1-7", "Waga_kg": 1.6}, {"Data": "2025-07-13", "Obszar": "Cala plantacja", "Waga_kg": 258.75}, {"Data": "2025-07-13", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 16.5}, {"Data": "2025-07-13", "Obszar": "Malina-Blok  D", "Waga_kg": 2989.58}, {"Data": "2025-07-14", "Obszar": "Blok_B 1-7", "Waga_kg": 1406.56}, {"Data": "2025-07-14", "Obszar": "Blok_B ruby8-13", "Waga_kg": 1798.08}, {"Data": "2025-07-14", "Obszar": "Cala plantacja", "Waga_kg": 392.25}, {"Data": "2025-07-14", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1.2}, {"Data": "2025-07-14", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 4.8}, {"Data": "2025-07-14", "Obszar": "Malina-Blok  D", "Waga_kg": 1315.3}, {"Data": "2025-07-15", "Obszar": "Blok_B 1-7", "Waga_kg": 327.7}, {"Data": "2025-07-15", "Obszar": "Cala plantacja", "Waga_kg": 331.0}, {"Data": "2025-07-15", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1591.01}, {"Data": "2025-07-15", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 789.88}, {"Data": "2025-07-15", "Obszar": "Malina-Blok  D", "Waga_kg": 3.1}, {"Data": "2025-07-16", "Obszar": "Cala plantacja", "Waga_kg": 299.25}, {"Data": "2025-07-16", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 14.4}, {"Data": "2025-07-16", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 773.39}, {"Data": "2025-07-16", "Obszar": "Malina-Blok  D", "Waga_kg": 2178.97}, {"Data": "2025-07-17", "Obszar": "Blok_B 1-7", "Waga_kg": 295.44}, {"Data": "2025-07-17", "Obszar": "Blok_B ruby8-13", "Waga_kg": 838.79}, {"Data": "2025-07-17", "Obszar": "Cala plantacja", "Waga_kg": 233.0}, {"Data": "2025-07-17", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 6.0}, {"Data": "2025-07-17", "Obszar": "Malina-Blok  D", "Waga_kg": 1425.58}, {"Data": "2025-07-18", "Obszar": "Blok_B 1-7", "Waga_kg": 1236.36}, {"Data": "2025-07-18", "Obszar": "Blok_B ruby8-13", "Waga_kg": 27.0}, {"Data": "2025-07-18", "Obszar": "Cala plantacja", "Waga_kg": 142.75}, {"Data": "2025-07-18", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 615.83}, {"Data": "2025-07-18", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 9.0}, {"Data": "2025-07-18", "Obszar": "Malina-Blok  D", "Waga_kg": 167.95}, {"Data": "2025-07-19", "Obszar": "Blok_B 1-7", "Waga_kg": 5.0}, {"Data": "2025-07-19", "Obszar": "Blok_B ruby8-13", "Waga_kg": 1.5}, {"Data": "2025-07-19", "Obszar": "Cala plantacja", "Waga_kg": 138.75}, {"Data": "2025-07-19", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1447.95}, {"Data": "2025-07-19", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1028.14}, {"Data": "2025-07-20", "Obszar": "Blok_B ruby8-13", "Waga_kg": 1.5}, {"Data": "2025-07-20", "Obszar": "Cala plantacja", "Waga_kg": 160.0}, {"Data": "2025-07-20", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1.6}, {"Data": "2025-07-20", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 690.21}, {"Data": "2025-07-20", "Obszar": "Malina-Blok  D", "Waga_kg": 1942.86}, {"Data": "2025-07-21", "Obszar": "Blok_B 1-7", "Waga_kg": 3.0}, {"Data": "2025-07-21", "Obszar": "Cala plantacja", "Waga_kg": 217.25}, {"Data": "2025-07-21", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1.5}, {"Data": "2025-07-21", "Obszar": "Malina-Blok  D", "Waga_kg": 3380.72}, {"Data": "2025-07-22", "Obszar": "Blok_B 1-7", "Waga_kg": 1563.28}, {"Data": "2025-07-22", "Obszar": "Blok_B ruby8-13", "Waga_kg": 1600.25}, {"Data": "2025-07-22", "Obszar": "Cala plantacja", "Waga_kg": 208.5}, {"Data": "2025-07-22", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1.6}, {"Data": "2025-07-22", "Obszar": "Malina-Blok  D", "Waga_kg": 1.6}, {"Data": "2025-07-23", "Obszar": "Blok_B ruby8-13", "Waga_kg": 3.0}, {"Data": "2025-07-23", "Obszar": "Cala plantacja", "Waga_kg": 176.5}, {"Data": "2025-07-23", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1243.97}, {"Data": "2025-07-23", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 95.52}, {"Data": "2025-07-23", "Obszar": "Malina-Blok  D", "Waga_kg": 628.31}, {"Data": "2025-07-24", "Obszar": "Blok_B 1-7", "Waga_kg": 3.2}, {"Data": "2025-07-24", "Obszar": "Cala plantacja", "Waga_kg": 177.58}, {"Data": "2025-07-24", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 199.11}, {"Data": "2025-07-24", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1104.79}, {"Data": "2025-07-24", "Obszar": "Malina-Blok  D", "Waga_kg": 1381.25}, {"Data": "2025-07-25", "Obszar": "Blok_B 1-7", "Waga_kg": 6.0}, {"Data": "2025-07-25", "Obszar": "Cala plantacja", "Waga_kg": 201.25}, {"Data": "2025-07-25", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1.5}, {"Data": "2025-07-25", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 3.2}, {"Data": "2025-07-25", "Obszar": "Malina-Blok  D", "Waga_kg": 2495.55}, {"Data": "2025-07-26", "Obszar": "Blok_B 1-7", "Waga_kg": 1571.12}, {"Data": "2025-07-26", "Obszar": "Blok_B ruby8-13", "Waga_kg": 1070.86}, {"Data": "2025-07-26", "Obszar": "Cala plantacja", "Waga_kg": 222.24}, {"Data": "2025-07-26", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 2.0}, {"Data": "2025-07-26", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 8.8}, {"Data": "2025-07-26", "Obszar": "Malina-Blok  D", "Waga_kg": 538.4399999999999}, {"Data": "2025-07-27", "Obszar": "Blok_B 1-7", "Waga_kg": 8.4}, {"Data": "2025-07-27", "Obszar": "Blok_B ruby8-13", "Waga_kg": 256.95}, {"Data": "2025-07-27", "Obszar": "Cala plantacja", "Waga_kg": 210.5}, {"Data": "2025-07-27", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1374.19}, {"Data": "2025-07-27", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 52.0}, {"Data": "2025-07-27", "Obszar": "Malina-Blok  D", "Waga_kg": 488.67}, {"Data": "2025-07-28", "Obszar": "Cala plantacja", "Waga_kg": 140.7}, {"Data": "2025-07-28", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 20.4}, {"Data": "2025-07-28", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 29.68}, {"Data": "2025-07-28", "Obszar": "Malina-Blok  D", "Waga_kg": 1980.98}, {"Data": "2025-07-29", "Obszar": "Blok_B 1-7", "Waga_kg": 547.32}, {"Data": "2025-07-29", "Obszar": "Blok_B ruby8-13", "Waga_kg": 574.88}, {"Data": "2025-07-29", "Obszar": "Cala plantacja", "Waga_kg": 206.75}, {"Data": "2025-07-29", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 9.0}, {"Data": "2025-07-29", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1005.72}, {"Data": "2025-07-29", "Obszar": "Malina-Blok  D", "Waga_kg": 1.5}, {"Data": "2025-07-30", "Obszar": "Blok_B 1-7", "Waga_kg": 331.35}, {"Data": "2025-07-30", "Obszar": "Blok_B ruby8-13", "Waga_kg": 2.0}, {"Data": "2025-07-30", "Obszar": "Cala plantacja", "Waga_kg": 134.25}, {"Data": "2025-07-30", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1.5}, {"Data": "2025-07-30", "Obszar": "Malina-Blok  D", "Waga_kg": 1814.64}, {"Data": "2025-07-31", "Obszar": "Blok_B 1-7", "Waga_kg": 3.0}, {"Data": "2025-07-31", "Obszar": "Blok_B ruby8-13", "Waga_kg": 328.93}, {"Data": "2025-07-31", "Obszar": "Cala plantacja", "Waga_kg": 971.87}, {"Data": "2025-07-31", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 40.59}, {"Data": "2025-07-31", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 11.56}, {"Data": "2025-07-31", "Obszar": "Malina-Blok  D", "Waga_kg": 616.7}, {"Data": "2025-08-01", "Obszar": "Blok_B 1-7", "Waga_kg": 517.04}, {"Data": "2025-08-01", "Obszar": "Cala plantacja", "Waga_kg": 342.5}, {"Data": "2025-08-01", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 3.2}, {"Data": "2025-08-01", "Obszar": "Malina-Blok  D", "Waga_kg": 637.59}, {"Data": "2025-08-02", "Obszar": "Blok_B 1-7", "Waga_kg": 4.800000000000001}, {"Data": "2025-08-02", "Obszar": "Blok_B ruby8-13", "Waga_kg": 1.6}, {"Data": "2025-08-02", "Obszar": "Cala plantacja", "Waga_kg": 69.0}, {"Data": "2025-08-02", "Obszar": "Malina-Blok  D", "Waga_kg": 767.24}, {"Data": "2025-08-04", "Obszar": "Cala plantacja", "Waga_kg": 116.0}, {"Data": "2025-08-04", "Obszar": "Malina-Blok  D", "Waga_kg": 1269.49}, {"Data": "2025-08-05", "Obszar": "Blok_B 1-7", "Waga_kg": 422.43}, {"Data": "2025-08-05", "Obszar": "Blok_B ruby8-13", "Waga_kg": 595.0600000000001}, {"Data": "2025-08-05", "Obszar": "Cala plantacja", "Waga_kg": 106.0}, {"Data": "2025-08-05", "Obszar": "Malina-Blok  D", "Waga_kg": 1.5}, {"Data": "2025-08-06", "Obszar": "Blok_B 1-7", "Waga_kg": 291.25}, {"Data": "2025-08-06", "Obszar": "Blok_B ruby8-13", "Waga_kg": 8.0}, {"Data": "2025-08-06", "Obszar": "Cala plantacja", "Waga_kg": 87.0}, {"Data": "2025-08-06", "Obszar": "Malina-Blok  D", "Waga_kg": 703.45}, {"Data": "2025-08-07", "Obszar": "Cala plantacja", "Waga_kg": 28.25}, {"Data": "2025-08-07", "Obszar": "Malina-Blok  D", "Waga_kg": 332.21}, {"Data": "2025-08-08", "Obszar": "Cala plantacja", "Waga_kg": 180.0}, {"Data": "2025-08-08", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 22.0}, {"Data": "2025-08-08", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 44.0}, {"Data": "2025-08-09", "Obszar": "Blok_B 1-7", "Waga_kg": 24.5}, {"Data": "2025-08-09", "Obszar": "Cala plantacja", "Waga_kg": 149.5}, {"Data": "2025-08-09", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 2.0}, {"Data": "2025-08-09", "Obszar": "Malina-Blok  D", "Waga_kg": 368.0}, {"Data": "2025-08-10", "Obszar": "Cala plantacja", "Waga_kg": 157.0}, {"Data": "2025-08-10", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 128.5}, {"Data": "2025-08-11", "Obszar": "Cala plantacja", "Waga_kg": 75.0}, {"Data": "2025-08-11", "Obszar": "Malina-Blok  D", "Waga_kg": 189.25}, {"Data": "2025-08-12", "Obszar": "Cały blok A", "Waga_kg": 204.0}, {"Data": "2025-08-12", "Obszar": "Malina-Blok  D", "Waga_kg": 87.0}, {"Data": "2025-08-14", "Obszar": "Blok_B 1-7", "Waga_kg": 22.0}, {"Data": "2025-08-14", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 78.0}, {"Data": "2025-08-14", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 114.0}, {"Data": "2025-08-16", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 88.0}, {"Data": "2025-08-16", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 96.0}, {"Data": "2025-08-18", "Obszar": "Blok_B 1-7", "Waga_kg": 7.0}, {"Data": "2025-08-18", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 200.0}, {"Data": "2025-08-18", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 182.0}, {"Data": "2025-08-20", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 238.0}, {"Data": "2025-08-20", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 241.0}, {"Data": "2025-08-22", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 137.0}, {"Data": "2025-08-22", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 154.0}, {"Data": "2025-08-22", "Obszar": "Malina-Blok  D", "Waga_kg": 10.0}, {"Data": "2025-08-23", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 117.0}, {"Data": "2025-08-23", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 76.0}, {"Data": "2025-08-25", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 211.13}, {"Data": "2025-08-25", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 210.38}, {"Data": "2025-08-25", "Obszar": "Malina-Blok  D", "Waga_kg": 16.13}, {"Data": "2025-08-27", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 242.99}, {"Data": "2025-08-27", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 253.6}, {"Data": "2025-08-27", "Obszar": "Malina-Blok  D", "Waga_kg": 8.4}, {"Data": "2025-08-29", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 224.19}, {"Data": "2025-08-29", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 183.98}, {"Data": "2025-08-29", "Obszar": "Malina-Blok  D", "Waga_kg": 10.4}, {"Data": "2025-09-01", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 460.37}, {"Data": "2025-09-01", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 551.39}, {"Data": "2025-09-02", "Obszar": "Blok_B 1-7", "Waga_kg": 52.0}, {"Data": "2025-09-02", "Obszar": "Malina-Blok  D", "Waga_kg": 55.5}, {"Data": "2025-09-03", "Obszar": "Blok_B 1-7", "Waga_kg": 9.0}, {"Data": "2025-09-03", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 202.02}, {"Data": "2025-09-03", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 156.38}, {"Data": "2025-09-03", "Obszar": "Malina-Blok  D", "Waga_kg": 17.009999999999998}, {"Data": "2025-09-05", "Obszar": "Blok_B 1-7", "Waga_kg": 50.61}, {"Data": "2025-09-05", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 306.51}, {"Data": "2025-09-05", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 354.5}, {"Data": "2025-09-06", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 125.75}, {"Data": "2025-09-06", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 110.51}, {"Data": "2025-09-06", "Obszar": "Malina-Blok  D", "Waga_kg": 64.88}, {"Data": "2025-09-08", "Obszar": "Blok_B 1-7", "Waga_kg": 15.0}, {"Data": "2025-09-08", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 475.74}, {"Data": "2025-09-08", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 258.74}, {"Data": "2025-09-09", "Obszar": "Blok_B 1-7", "Waga_kg": 144.28}, {"Data": "2025-09-09", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 4.0}, {"Data": "2025-09-09", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 348.64}, {"Data": "2025-09-09", "Obszar": "Malina-Blok  D", "Waga_kg": 144.84}, {"Data": "2025-09-10", "Obszar": "Blok_B 1-7", "Waga_kg": 33.43}, {"Data": "2025-09-10", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 315.2}, {"Data": "2025-09-10", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 203.32}, {"Data": "2025-09-10", "Obszar": "Malina-Blok  D", "Waga_kg": 39.300000000000004}, {"Data": "2025-09-12", "Obszar": "Blok_B 1-7", "Waga_kg": 79.55}, {"Data": "2025-09-12", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 320.4}, {"Data": "2025-09-12", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 318.94}, {"Data": "2025-09-12", "Obszar": "Malina-Blok  D", "Waga_kg": 96.96000000000001}, {"Data": "2025-09-14", "Obszar": "Blok_B 1-7", "Waga_kg": 88.11}, {"Data": "2025-09-14", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 411.46}, {"Data": "2025-09-14", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 375.43}, {"Data": "2025-09-14", "Obszar": "Malina-Blok  D", "Waga_kg": 107.46}, {"Data": "2025-09-16", "Obszar": "Blok_B 1-7", "Waga_kg": 115.63}, {"Data": "2025-09-16", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 394.36}, {"Data": "2025-09-16", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 390.42}, {"Data": "2025-09-16", "Obszar": "Malina-Blok  D", "Waga_kg": 56.910000000000004}, {"Data": "2025-09-17", "Obszar": "Blok_B 1-7", "Waga_kg": 35.38}, {"Data": "2025-09-17", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 141.75}, {"Data": "2025-09-17", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 120.0}, {"Data": "2025-09-17", "Obszar": "Malina-Blok  D", "Waga_kg": 92.75}, {"Data": "2025-09-18", "Obszar": "Blok_B 1-7", "Waga_kg": 38.74}, {"Data": "2025-09-18", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 138.6}, {"Data": "2025-09-18", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 153.85}, {"Data": "2025-09-18", "Obszar": "Malina-Blok  D", "Waga_kg": 54.230000000000004}, {"Data": "2025-09-20", "Obszar": "Blok_B 1-7", "Waga_kg": 92.71}, {"Data": "2025-09-20", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 311.98}, {"Data": "2025-09-20", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 354.24}, {"Data": "2025-09-20", "Obszar": "Malina-Blok  D", "Waga_kg": 103.04}, {"Data": "2025-09-22", "Obszar": "Blok_B 1-7", "Waga_kg": 99.0}, {"Data": "2025-09-22", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 197.0}, {"Data": "2025-09-22", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 212.36}, {"Data": "2025-09-22", "Obszar": "Malina-Blok  D", "Waga_kg": 111.56}, {"Data": "2025-09-24", "Obszar": "Blok_B 1-7", "Waga_kg": 82.06}, {"Data": "2025-09-24", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 245.61}, {"Data": "2025-09-24", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 284.49}, {"Data": "2025-09-24", "Obszar": "Malina-Blok  D", "Waga_kg": 72.45}, {"Data": "2025-09-24", "Obszar": "Malina-Blok_C", "Waga_kg": 4.88}, {"Data": "2025-09-26", "Obszar": "Blok_B 1-7", "Waga_kg": 129.44}, {"Data": "2025-09-26", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 255.11}, {"Data": "2025-09-26", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 257.54}, {"Data": "2025-09-26", "Obszar": "Malina-Blok  D", "Waga_kg": 128.36}, {"Data": "2025-09-26", "Obszar": "Malina-Blok_C", "Waga_kg": 12.0}, {"Data": "2025-09-27", "Obszar": "Blok_B 1-7", "Waga_kg": 26.68}, {"Data": "2025-09-27", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 57.54}, {"Data": "2025-09-27", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 57.08}, {"Data": "2025-09-27", "Obszar": "Malina-Blok  D", "Waga_kg": 34.26}, {"Data": "2025-09-29", "Obszar": "Blok_B 1-7", "Waga_kg": 74.99}, {"Data": "2025-09-29", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 146.86}, {"Data": "2025-09-29", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 152.48}, {"Data": "2025-09-29", "Obszar": "Malina-Blok  D", "Waga_kg": 82.24}, {"Data": "2025-09-29", "Obszar": "Malina-Blok_C", "Waga_kg": 16.13}, {"Data": "2025-10-01", "Obszar": "Blok_B 1-7", "Waga_kg": 78.73}, {"Data": "2025-10-01", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 108.63}, {"Data": "2025-10-01", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 104.74}, {"Data": "2025-10-01", "Obszar": "Malina-Blok  D", "Waga_kg": 65.88}, {"Data": "2025-10-03", "Obszar": "Blok_B 1-7", "Waga_kg": 74.8}, {"Data": "2025-10-03", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 139.24}, {"Data": "2025-10-03", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 128.05}, {"Data": "2025-10-03", "Obszar": "Malina-Blok  D", "Waga_kg": 80.28}, {"Data": "2025-10-06", "Obszar": "Blok_B 1-7", "Waga_kg": 101.0}, {"Data": "2025-10-06", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 171.32}, {"Data": "2025-10-06", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 94.76}, {"Data": "2025-10-06", "Obszar": "Malina-Blok  D", "Waga_kg": 114.47}, {"Data": "2025-10-06", "Obszar": "Malina-Blok_C", "Waga_kg": 47.87}, {"Data": "2025-10-07", "Obszar": "Blok_B 1-7", "Waga_kg": 10.0}, {"Data": "2025-10-07", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 30.0}, {"Data": "2025-10-07", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 140.0}, {"Data": "2025-10-07", "Obszar": "Malina-Blok  D", "Waga_kg": 5.0}, {"Data": "2025-10-08", "Obszar": "Blok_B 1-7", "Waga_kg": 106.94}, {"Data": "2025-10-08", "Obszar": "Malina-Blok  D", "Waga_kg": 146.54}, {"Data": "2025-10-08", "Obszar": "Malina-Blok_C", "Waga_kg": 62.76}, {"Data": "2025-10-10", "Obszar": "Blok_B 1-7", "Waga_kg": 118.26}, {"Data": "2025-10-10", "Obszar": "Cały blok A", "Waga_kg": 265.43}, {"Data": "2025-10-10", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 91.61}, {"Data": "2025-10-10", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 57.0}, {"Data": "2025-10-10", "Obszar": "Malina-Blok_C", "Waga_kg": 42.96}, {"Data": "2025-10-11", "Obszar": "Blok_B 1-7", "Waga_kg": 34.63}, {"Data": "2025-10-11", "Obszar": "Cały blok A", "Waga_kg": 0.25}, {"Data": "2025-10-11", "Obszar": "Malina-Blok  D", "Waga_kg": 203.07999999999998}, {"Data": "2025-10-11", "Obszar": "Malina-Blok_C", "Waga_kg": 53.49}, {"Data": "2025-10-12", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 179.68}, {"Data": "2025-10-12", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 122.0}, {"Data": "2025-10-13", "Obszar": "Blok_B 1-7", "Waga_kg": 99.32}, {"Data": "2025-10-13", "Obszar": "Cały blok A", "Waga_kg": 1.6}, {"Data": "2025-10-13", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 67.05}, {"Data": "2025-10-13", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 12.18}, {"Data": "2025-10-13", "Obszar": "Malina-Blok  D", "Waga_kg": 102.58}, {"Data": "2025-10-13", "Obszar": "Malina-Blok_C", "Waga_kg": 94.92}, {"Data": "2025-10-15", "Obszar": "Blok_B 1-7", "Waga_kg": 91.21000000000001}, {"Data": "2025-10-15", "Obszar": "Malina-Blok  D", "Waga_kg": 86.45}, {"Data": "2025-10-15", "Obszar": "Malina-Blok_C", "Waga_kg": 81.33}, {"Data": "2025-10-16", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 211.5}, {"Data": "2025-10-16", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 201.25}, {"Data": "2025-10-17", "Obszar": "Blok_B 1-7", "Waga_kg": 83.86}, {"Data": "2025-10-17", "Obszar": "Malina-Blok_C", "Waga_kg": 101.08}, {"Data": "2025-10-18", "Obszar": "Malina-Blok  D", "Waga_kg": 167.55}, {"Data": "2025-10-19", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 86.5}, {"Data": "2025-10-20", "Obszar": "Blok_B 1-7", "Waga_kg": 88.94}, {"Data": "2025-10-20", "Obszar": "Malina-Blok_C", "Waga_kg": 121.69}, {"Data": "2025-10-21", "Obszar": "Malina-Blok  D", "Waga_kg": 102.41}, {"Data": "2025-10-22", "Obszar": "Blok_B 1-7", "Waga_kg": 88.5}, {"Data": "2025-10-22", "Obszar": "Malina-Blok_C", "Waga_kg": 127.22}, {"Data": "2025-10-23", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 188.25}, {"Data": "2025-10-24", "Obszar": "Malina-Blok  D", "Waga_kg": 156.83}, {"Data": "2025-10-25", "Obszar": "Blok_B 1-7", "Waga_kg": 52.71}, {"Data": "2025-10-25", "Obszar": "Malina-Blok_C", "Waga_kg": 226.46}, {"Data": "2025-10-26", "Obszar": "Blok_B 1-7", "Waga_kg": 72.57}, {"Data": "2025-10-26", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 86.5}, {"Data": "2025-10-27", "Obszar": "Malina-Blok  D", "Waga_kg": 109.08}, {"Data": "2025-10-28", "Obszar": "Malina-Blok_C", "Waga_kg": 197.49}, {"Data": "2025-10-30", "Obszar": "Blok_B 1-7", "Waga_kg": 230.77}, {"Data": "2025-10-30", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 24.2}, {"Data": "2025-10-30", "Obszar": "Malina-Blok  D", "Waga_kg": 81.75}, {"Data": "2025-10-31", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 4.0}, {"Data": "2025-10-31", "Obszar": "Malina-Blok  D", "Waga_kg": 71.25}, {"Data": "2025-10-31", "Obszar": "Malina-Blok_C", "Waga_kg": 287.63}, {"Data": "2025-11-02", "Obszar": "Malina-Blok  D", "Waga_kg": 162.5}, {"Data": "2025-11-03", "Obszar": "Blok_B 1-7", "Waga_kg": 103.73}, {"Data": "2025-11-03", "Obszar": "Malina-Blok_C", "Waga_kg": 377.0}, {"Data": "2025-11-05", "Obszar": "Malina-Blok  D", "Waga_kg": 76.74}, {"Data": "2025-11-05", "Obszar": "Malina-Blok_C", "Waga_kg": 215.21}, {"Data": "2025-11-06", "Obszar": "Blok_B 1-7", "Waga_kg": 146.0}, {"Data": "2025-11-06", "Obszar": "Malina-Blok  D", "Waga_kg": 138.0}, {"Data": "2025-11-07", "Obszar": "Malina-Blok_C", "Waga_kg": 271.9}, {"Data": "2025-11-10", "Obszar": "Malina-Blok_C", "Waga_kg": 235.94}, {"Data": "2025-11-11", "Obszar": "Blok_B 1-7", "Waga_kg": 174.25}, {"Data": "2025-11-11", "Obszar": "Malina-Blok  D", "Waga_kg": 60.0}, {"Data": "2025-11-13", "Obszar": "Malina-Blok_C", "Waga_kg": 293.51}, {"Data": "2025-11-14", "Obszar": "Blok_B 1-7", "Waga_kg": 123.0}, {"Data": "2025-11-17", "Obszar": "Malina-Blok_C", "Waga_kg": 344.95}, {"Data": "2025-11-20", "Obszar": "Malina-Blok_C", "Waga_kg": 180.0}], "tygodniowe": [{"Tydzien": "2025-W22", "Obszar": "Blok_B 1-7", "Waga_kg": 14.5}, {"Tydzien": "2025-W22", "Obszar": "Blok_B ruby8-13", "Waga_kg": 82.13}, {"Tydzien": "2025-W22", "Obszar": "Cały blok A", "Waga_kg": 238.75}, {"Tydzien": "2025-W22", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 139.39}, {"Tydzien": "2025-W22", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 82.01}, {"Tydzien": "2025-W22", "Obszar": "Malina-Blok  D", "Waga_kg": 12.0}, {"Tydzien": "2025-W23", "Obszar": "Blok_B 1-7", "Waga_kg": 98.0}, {"Tydzien": "2025-W23", "Obszar": "Blok_B ruby8-13", "Waga_kg": 582.85}, {"Tydzien": "2025-W23", "Obszar": "Cala plantacja", "Waga_kg": 4.0}, {"Tydzien": "2025-W23", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 234.2}, {"Tydzien": "2025-W23", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 289.38}, {"Tydzien": "2025-W24", "Obszar": "Blok_B 1-7", "Waga_kg": 235.62}, {"Tydzien": "2025-W24", "Obszar": "Blok_B ruby8-13", "Waga_kg": 967.12}, {"Tydzien": "2025-W24", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 460.94}, {"Tydzien": "2025-W24", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 483.5}, {"Tydzien": "2025-W24", "Obszar": "Malina-Blok  D", "Waga_kg": 398.81}, {"Tydzien": "2025-W25", "Obszar": "Blok_B 1-7", "Waga_kg": 1050.26}, {"Tydzien": "2025-W25", "Obszar": "Blok_B ruby8-13", "Waga_kg": 2189.74}, {"Tydzien": "2025-W25", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1644.12}, {"Tydzien": "2025-W25", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1554.82}, {"Tydzien": "2025-W25", "Obszar": "Malina-Blok  D", "Waga_kg": 1116.67}, {"Tydzien": "2025-W26", "Obszar": "Blok_B 1-7", "Waga_kg": 1518.08}, {"Tydzien": "2025-W26", "Obszar": "Blok_B ruby8-13", "Waga_kg": 1896.05}, {"Tydzien": "2025-W26", "Obszar": "Cala plantacja", "Waga_kg": 456.82}, {"Tydzien": "2025-W26", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 3405.48}, {"Tydzien": "2025-W26", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 3366.94}, {"Tydzien": "2025-W26", "Obszar": "Malina-Blok  D", "Waga_kg": 3204.94}, {"Tydzien": "2025-W27", "Obszar": "Blok_B 1-7", "Waga_kg": 2011.96}, {"Tydzien": "2025-W27", "Obszar": "Blok_B ruby8-13", "Waga_kg": 2490.99}, {"Tydzien": "2025-W27", "Obszar": "Cala plantacja", "Waga_kg": 1843.83}, {"Tydzien": "2025-W27", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 3045.42}, {"Tydzien": "2025-W27", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 2411.08}, {"Tydzien": "2025-W27", "Obszar": "Malina-Blok  D", "Waga_kg": 8447.98}, {"Tydzien": "2025-W27", "Obszar": "Malina-Blok_C-RUBY", "Waga_kg": 5.4}, {"Tydzien": "2025-W28", "Obszar": "Blok_B 1-7", "Waga_kg": 3271.06}, {"Tydzien": "2025-W28", "Obszar": "Blok_B ruby8-13", "Waga_kg": 2666.87}, {"Tydzien": "2025-W28", "Obszar": "Cala plantacja", "Waga_kg": 1697.0}, {"Tydzien": "2025-W28", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 3677.99}, {"Tydzien": "2025-W28", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 3295.42}, {"Tydzien": "2025-W28", "Obszar": "Malina-Blok  D", "Waga_kg": 7033.76}, {"Tydzien": "2025-W29", "Obszar": "Blok_B 1-7", "Waga_kg": 3155.0}, {"Tydzien": "2025-W29", "Obszar": "Blok_B ruby8-13", "Waga_kg": 2931.06}, {"Tydzien": "2025-W29", "Obszar": "Cala plantacja", "Waga_kg": 1413.82}, {"Tydzien": "2025-W29", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 2822.37}, {"Tydzien": "2025-W29", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1265.81}, {"Tydzien": "2025-W29", "Obszar": "Malina-Blok  D", "Waga_kg": 8914.54}, {"Tydzien": "2025-W30", "Obszar": "Blok_B 1-7", "Waga_kg": 1403.51}, {"Tydzien": "2025-W30", "Obszar": "Blok_B ruby8-13", "Waga_kg": 907.41}, {"Tydzien": "2025-W30", "Obszar": "Cala plantacja", "Waga_kg": 1865.07}, {"Tydzien": "2025-W30", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 69.99}, {"Tydzien": "2025-W30", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1051.66}, {"Tydzien": "2025-W30", "Obszar": "Malina-Blok  D", "Waga_kg": 5818.65}, {"Tydzien": "2025-W31", "Obszar": "Blok_B 1-7", "Waga_kg": 738.18}, {"Tydzien": "2025-W31", "Obszar": "Blok_B ruby8-13", "Waga_kg": 603.0600000000001}, {"Tydzien": "2025-W31", "Obszar": "Cala plantacja", "Waga_kg": 823.75}, {"Tydzien": "2025-W31", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 24.0}, {"Tydzien": "2025-W31", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 172.5}, {"Tydzien": "2025-W31", "Obszar": "Malina-Blok  D", "Waga_kg": 2674.65}, {"Tydzien": "2025-W32", "Obszar": "Blok_B 1-7", "Waga_kg": 22.0}, {"Tydzien": "2025-W32", "Obszar": "Cala plantacja", "Waga_kg": 75.0}, {"Tydzien": "2025-W32", "Obszar": "Cały blok A", "Waga_kg": 204.0}, {"Tydzien": "2025-W32", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 166.0}, {"Tydzien": "2025-W32", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 210.0}, {"Tydzien": "2025-W32", "Obszar": "Malina-Blok  D", "Waga_kg": 276.25}, {"Tydzien": "2025-W33", "Obszar": "Blok_B 1-7", "Waga_kg": 7.0}, {"Tydzien": "2025-W33", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 692.0}, {"Tydzien": "2025-W33", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 653.0}, {"Tydzien": "2025-W33", "Obszar": "Malina-Blok  D", "Waga_kg": 10.0}, {"Tydzien": "2025-W34", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 678.31}, {"Tydzien": "2025-W34", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 647.96}, {"Tydzien": "2025-W34", "Obszar": "Malina-Blok  D", "Waga_kg": 34.93}, {"Tydzien": "2025-W35", "Obszar": "Blok_B 1-7", "Waga_kg": 111.61}, {"Tydzien": "2025-W35", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1094.65}, {"Tydzien": "2025-W35", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1172.78}, {"Tydzien": "2025-W35", "Obszar": "Malina-Blok  D", "Waga_kg": 137.39}, {"Tydzien": "2025-W36", "Obszar": "Blok_B 1-7", "Waga_kg": 360.37}, {"Tydzien": "2025-W36", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 1526.8}, {"Tydzien": "2025-W36", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1505.07}, {"Tydzien": "2025-W36", "Obszar": "Malina-Blok  D", "Waga_kg": 388.56}, {"Tydzien": "2025-W37", "Obszar": "Blok_B 1-7", "Waga_kg": 282.46}, {"Tydzien": "2025-W37", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 986.69}, {"Tydzien": "2025-W37", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 1018.51}, {"Tydzien": "2025-W37", "Obszar": "Malina-Blok  D", "Waga_kg": 306.93}, {"Tydzien": "2025-W38", "Obszar": "Blok_B 1-7", "Waga_kg": 337.18}, {"Tydzien": "2025-W38", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 755.26}, {"Tydzien": "2025-W38", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 811.47}, {"Tydzien": "2025-W38", "Obszar": "Malina-Blok  D", "Waga_kg": 346.63}, {"Tydzien": "2025-W38", "Obszar": "Malina-Blok_C", "Waga_kg": 16.88}, {"Tydzien": "2025-W39", "Obszar": "Blok_B 1-7", "Waga_kg": 228.52}, {"Tydzien": "2025-W39", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 394.73}, {"Tydzien": "2025-W39", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 385.27}, {"Tydzien": "2025-W39", "Obszar": "Malina-Blok  D", "Waga_kg": 228.4}, {"Tydzien": "2025-W39", "Obszar": "Malina-Blok_C", "Waga_kg": 16.13}, {"Tydzien": "2025-W40", "Obszar": "Blok_B 1-7", "Waga_kg": 370.83}, {"Tydzien": "2025-W40", "Obszar": "Cały blok A", "Waga_kg": 265.68}, {"Tydzien": "2025-W40", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 472.61}, {"Tydzien": "2025-W40", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 413.76}, {"Tydzien": "2025-W40", "Obszar": "Malina-Blok  D", "Waga_kg": 469.09000000000003}, {"Tydzien": "2025-W40", "Obszar": "Malina-Blok_C", "Waga_kg": 207.08}, {"Tydzien": "2025-W41", "Obszar": "Blok_B 1-7", "Waga_kg": 274.39}, {"Tydzien": "2025-W41", "Obszar": "Cały blok A", "Waga_kg": 1.6}, {"Tydzien": "2025-W41", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 365.05}, {"Tydzien": "2025-W41", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 213.43}, {"Tydzien": "2025-W41", "Obszar": "Malina-Blok  D", "Waga_kg": 356.58}, {"Tydzien": "2025-W41", "Obszar": "Malina-Blok_C", "Waga_kg": 277.33}, {"Tydzien": "2025-W42", "Obszar": "Blok_B 1-7", "Waga_kg": 302.72}, {"Tydzien": "2025-W42", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 274.75}, {"Tydzien": "2025-W42", "Obszar": "Malina-Blok  D", "Waga_kg": 259.24}, {"Tydzien": "2025-W42", "Obszar": "Malina-Blok_C", "Waga_kg": 475.37}, {"Tydzien": "2025-W43", "Obszar": "Blok_B 1-7", "Waga_kg": 230.77}, {"Tydzien": "2025-W43", "Obszar": "Malina - Blok_A1-9", "Waga_kg": 24.2}, {"Tydzien": "2025-W43", "Obszar": "Malina - Bloka_A10-19", "Waga_kg": 4.0}, {"Tydzien": "2025-W43", "Obszar": "Malina-Blok  D", "Waga_kg": 424.58}, {"Tydzien": "2025-W43", "Obszar": "Malina-Blok_C", "Waga_kg": 485.12}, {"Tydzien": "2025-W44", "Obszar": "Blok_B 1-7", "Waga_kg": 249.73}, {"Tydzien": "2025-W44", "Obszar": "Malina-Blok  D", "Waga_kg": 214.74}, {"Tydzien": "2025-W44", "Obszar": "Malina-Blok_C", "Waga_kg": 864.11}, {"Tydzien": "2025-W45", "Obszar": "Blok_B 1-7", "Waga_kg": 297.25}, {"Tydzien": "2025-W45", "Obszar": "Malina-Blok  D", "Waga_kg": 60.0}, {"Tydzien": "2025-W45", "Obszar": "Malina-Blok_C", "Waga_kg": 529.45}, {"Tydzien": "2025-W46", "Obszar": "Malina-Blok_C", "Waga_kg": 524.95}], "tygodniowe_kumulatywnie": [{"Tydzien": "2025-W22", "Waga_kg": 568.78, "Liczba_zbieraczy": 17}, {"Tydzien": "2025-W23", "Waga_kg": 1208.43, "Liczba_zbieraczy": 30}, {"Tydzien": "2025-W24", "Waga_kg": 2545.99, "Liczba_zbieraczy": 40}, {"Tydzien": "2025-W25", "Waga_kg": 7555.61, "Liczba_zbieraczy": 51}, {"Tydzien": "2025-W26", "Waga_kg": 13848.31, "Liczba_zbieraczy": 68}, {"Tydzien": "2025-W27", "Waga_kg": 20256.66, "Liczba_zbieraczy": 85}, {"Tydzien": "2025-W28", "Waga_kg": 21642.1, "Liczba_zbieraczy": 82}, {"Tydzien": "2025-W29", "Waga_kg": 20502.6, "Liczba_zbieraczy": 96}, {"Tydzien": "2025-W30", "Waga_kg": 11116.29, "Liczba_zbieraczy": 81}, {"Tydzien": "2025-W31", "Waga_kg": 5036.14, "Liczba_zbieraczy": 63}, {"Tydzien": "2025-W32", "Waga_kg": 953.25, "Liczba_zbieraczy": 40}, {"Tydzien": "2025-W33", "Waga_kg": 1362.0, "Liczba_zbieraczy": 33}, {"Tydzien": "2025-W34", "Waga_kg": 1361.2, "Liczba_zbieraczy": 31}, {"Tydzien": "2025-W35", "Waga_kg": 2516.43, "Liczba_zbieraczy": 29}, {"Tydzien": "2025-W36", "Waga_kg": 3780.8, "Liczba_zbieraczy": 34}, {"Tydzien": "2025-W37", "Waga_kg": 2594.59, "Liczba_zbieraczy": 33}, {"Tydzien": "2025-W38", "Waga_kg": 2267.42, "Liczba_zbieraczy": 38}, {"Tydzien": "2025-W39", "Waga_kg": 1253.05, "Liczba_zbieraczy": 35}, {"Tydzien": "2025-W40", "Waga_kg": 2199.05, "Liczba_zbieraczy": 32}, {"Tydzien": "2025-W41", "Waga_kg": 1488.38, "Liczba_zbieraczy": 29}, {"Tydzien": "2025-W42", "Waga_kg": 1312.08, "Liczba_zbieraczy": 17}, {"Tydzien": "2025-W43", "Waga_kg": 1168.67, "Liczba_zbieraczy": 22}, {"Tydzien": "2025-W44", "Waga_kg": 1328.58, "Liczba_zbieraczy": 21}, {"Tydzien": "2025-W45", "Waga_kg": 886.7, "Liczba_zbieraczy": 19}, {"Tydzien": "2025-W46", "Waga_kg": 524.95, "Liczba_zbieraczy": 19}], "zbieracze_tyg_obszar": [{"Tydzien": "2025-W22", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 2}, {"Tydzien": "2025-W22", "Obszar": "Blok_B ruby8-13", "Liczba_zbieraczy": 13}, {"Tydzien": "2025-W22", "Obszar": "Cały blok A", "Liczba_zbieraczy": 1}, {"Tydzien": "2025-W22", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 15}, {"Tydzien": "2025-W22", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 12}, {"Tydzien": "2025-W22", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 1}, {"Tydzien": "2025-W23", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 18}, {"Tydzien": "2025-W23", "Obszar": "Blok_B ruby8-13", "Liczba_zbieraczy": 28}, {"Tydzien": "2025-W23", "Obszar": "Cala plantacja", "Liczba_zbieraczy": 1}, {"Tydzien": "2025-W23", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 26}, {"Tydzien": "2025-W23", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 26}, {"Tydzien": "2025-W24", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 32}, {"Tydzien": "2025-W24", "Obszar": "Blok_B ruby8-13", "Liczba_zbieraczy": 38}, {"Tydzien": "2025-W24", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 32}, {"Tydzien": "2025-W24", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 32}, {"Tydzien": "2025-W24", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 34}, {"Tydzien": "2025-W25", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 48}, {"Tydzien": "2025-W25", "Obszar": "Blok_B ruby8-13", "Liczba_zbieraczy": 51}, {"Tydzien": "2025-W25", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 45}, {"Tydzien": "2025-W25", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 45}, {"Tydzien": "2025-W25", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 43}, {"Tydzien": "2025-W26", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 56}, {"Tydzien": "2025-W26", "Obszar": "Blok_B ruby8-13", "Liczba_zbieraczy": 58}, {"Tydzien": "2025-W26", "Obszar": "Cala plantacja", "Liczba_zbieraczy": 60}, {"Tydzien": "2025-W26", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 60}, {"Tydzien": "2025-W26", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 63}, {"Tydzien": "2025-W26", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 62}, {"Tydzien": "2025-W27", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 62}, {"Tydzien": "2025-W27", "Obszar": "Blok_B ruby8-13", "Liczba_zbieraczy": 54}, {"Tydzien": "2025-W27", "Obszar": "Cala plantacja", "Liczba_zbieraczy": 76}, {"Tydzien": "2025-W27", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 66}, {"Tydzien": "2025-W27", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 69}, {"Tydzien": "2025-W27", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 78}, {"Tydzien": "2025-W27", "Obszar": "Malina-Blok_C-RUBY", "Liczba_zbieraczy": 3}, {"Tydzien": "2025-W28", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 74}, {"Tydzien": "2025-W28", "Obszar": "Blok_B ruby8-13", "Liczba_zbieraczy": 67}, {"Tydzien": "2025-W28", "Obszar": "Cala plantacja", "Liczba_zbieraczy": 76}, {"Tydzien": "2025-W28", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 73}, {"Tydzien": "2025-W28", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 73}, {"Tydzien": "2025-W28", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 76}, {"Tydzien": "2025-W29", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 78}, {"Tydzien": "2025-W29", "Obszar": "Blok_B ruby8-13", "Liczba_zbieraczy": 75}, {"Tydzien": "2025-W29", "Obszar": "Cala plantacja", "Liczba_zbieraczy": 81}, {"Tydzien": "2025-W29", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 79}, {"Tydzien": "2025-W29", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 78}, {"Tydzien": "2025-W29", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 83}, {"Tydzien": "2025-W30", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 70}, {"Tydzien": "2025-W30", "Obszar": "Blok_B ruby8-13", "Liczba_zbieraczy": 73}, {"Tydzien": "2025-W30", "Obszar": "Cala plantacja", "Liczba_zbieraczy": 78}, {"Tydzien": "2025-W30", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 21}, {"Tydzien": "2025-W30", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 68}, {"Tydzien": "2025-W30", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 78}, {"Tydzien": "2025-W31", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 43}, {"Tydzien": "2025-W31", "Obszar": "Blok_B ruby8-13", "Liczba_zbieraczy": 43}, {"Tydzien": "2025-W31", "Obszar": "Cala plantacja", "Liczba_zbieraczy": 60}, {"Tydzien": "2025-W31", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 4}, {"Tydzien": "2025-W31", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 13}, {"Tydzien": "2025-W31", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 48}, {"Tydzien": "2025-W32", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 5}, {"Tydzien": "2025-W32", "Obszar": "Cala plantacja", "Liczba_zbieraczy": 9}, {"Tydzien": "2025-W32", "Obszar": "Cały blok A", "Liczba_zbieraczy": 1}, {"Tydzien": "2025-W32", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 16}, {"Tydzien": "2025-W32", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 22}, {"Tydzien": "2025-W32", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 15}, {"Tydzien": "2025-W33", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 1}, {"Tydzien": "2025-W33", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 30}, {"Tydzien": "2025-W33", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 33}, {"Tydzien": "2025-W33", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 1}, {"Tydzien": "2025-W34", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 30}, {"Tydzien": "2025-W34", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 27}, {"Tydzien": "2025-W34", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 12}, {"Tydzien": "2025-W35", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 18}, {"Tydzien": "2025-W35", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 27}, {"Tydzien": "2025-W35", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 25}, {"Tydzien": "2025-W35", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 23}, {"Tydzien": "2025-W36", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 28}, {"Tydzien": "2025-W36", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 34}, {"Tydzien": "2025-W36", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 34}, {"Tydzien": "2025-W36", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 27}, {"Tydzien": "2025-W37", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 32}, {"Tydzien": "2025-W37", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 33}, {"Tydzien": "2025-W37", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 33}, {"Tydzien": "2025-W37", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 33}, {"Tydzien": "2025-W38", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 37}, {"Tydzien": "2025-W38", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 37}, {"Tydzien": "2025-W38", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 36}, {"Tydzien": "2025-W38", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 37}, {"Tydzien": "2025-W38", "Obszar": "Malina-Blok_C", "Liczba_zbieraczy": 1}, {"Tydzien": "2025-W39", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 34}, {"Tydzien": "2025-W39", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 33}, {"Tydzien": "2025-W39", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 32}, {"Tydzien": "2025-W39", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 34}, {"Tydzien": "2025-W39", "Obszar": "Malina-Blok_C", "Liczba_zbieraczy": 1}, {"Tydzien": "2025-W40", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 32}, {"Tydzien": "2025-W40", "Obszar": "Cały blok A", "Liczba_zbieraczy": 23}, {"Tydzien": "2025-W40", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 29}, {"Tydzien": "2025-W40", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 26}, {"Tydzien": "2025-W40", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 32}, {"Tydzien": "2025-W40", "Obszar": "Malina-Blok_C", "Liczba_zbieraczy": 29}, {"Tydzien": "2025-W41", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 23}, {"Tydzien": "2025-W41", "Obszar": "Cały blok A", "Liczba_zbieraczy": 1}, {"Tydzien": "2025-W41", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 25}, {"Tydzien": "2025-W41", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 15}, {"Tydzien": "2025-W41", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 25}, {"Tydzien": "2025-W41", "Obszar": "Malina-Blok_C", "Liczba_zbieraczy": 25}, {"Tydzien": "2025-W42", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 17}, {"Tydzien": "2025-W42", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 15}, {"Tydzien": "2025-W42", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 16}, {"Tydzien": "2025-W42", "Obszar": "Malina-Blok_C", "Liczba_zbieraczy": 17}, {"Tydzien": "2025-W43", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 19}, {"Tydzien": "2025-W43", "Obszar": "Malina - Blok_A1-9", "Liczba_zbieraczy": 6}, {"Tydzien": "2025-W43", "Obszar": "Malina - Bloka_A10-19", "Liczba_zbieraczy": 2}, {"Tydzien": "2025-W43", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 22}, {"Tydzien": "2025-W43", "Obszar": "Malina-Blok_C", "Liczba_zbieraczy": 21}, {"Tydzien": "2025-W44", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 21}, {"Tydzien": "2025-W44", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 18}, {"Tydzien": "2025-W44", "Obszar": "Malina-Blok_C", "Liczba_zbieraczy": 21}, {"Tydzien": "2025-W45", "Obszar": "Blok_B 1-7", "Liczba_zbieraczy": 17}, {"Tydzien": "2025-W45", "Obszar": "Malina-Blok  D", "Liczba_zbieraczy": 7}, {"Tydzien": "2025-W45", "Obszar": "Malina-Blok_C", "Liczba_zbieraczy": 19}, {"Tydzien": "2025-W46", "Obszar": "Malina-Blok_C", "Liczba_zbieraczy": 19}], "podsumowanie_obszar": [{"Obszar": "Malina-Blok  D", "Suma_kg": 41135.32, "Unikalnych_zbieraczy": 154}, {"Obszar": "Malina - Blok_A1-9", "Suma_kg": 22954.95, "Unikalnych_zbieraczy": 148}, {"Obszar": "Malina - Bloka_A10-19", "Suma_kg": 21008.37, "Unikalnych_zbieraczy": 151}, {"Obszar": "Blok_B 1-7", "Suma_kg": 16571.0, "Unikalnych_zbieraczy": 143}, {"Obszar": "Blok_B ruby8-13", "Suma_kg": 15317.28, "Unikalnych_zbieraczy": 109}, {"Obszar": "Cala plantacja", "Suma_kg": 8179.29, "Unikalnych_zbieraczy": 115}, {"Obszar": "Malina-Blok_C", "Suma_kg": 3396.42, "Unikalnych_zbieraczy": 39}, {"Obszar": "Cały blok A", "Suma_kg": 710.03, "Unikalnych_zbieraczy": 24}, {"Obszar": "Malina-Blok_C-RUBY", "Suma_kg": 5.4, "Unikalnych_zbieraczy": 3}], "obszary": ["Malina - Bloka_A10-19", "Malina - Blok_A1-9", "Malina-Blok  D", "Blok_B 1-7", "Malina-Blok_C", "Cały blok A", "Blok_B ruby8-13", "Cala plantacja", "Malina-Blok_C-RUBY"]};
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Narzędzia</div>
+        </div>
+        <div class="card-body">
+          <div class="tools-list">
+            <div class="tool">
+              <div class="tool-icon ti-o">📦</div>
+              <div class="tool-info">
+                <div class="tool-name">Planer Opakowań 2026</div>
+                <div class="tool-desc">Szacowanie zapotrzebowania</div>
+              </div>
+              <div class="tool-arr">→</div>
+            </div>
+            <div class="tool">
+              <div class="tool-icon ti-b">📊</div>
+              <div class="tool-info">
+                <div class="tool-name">Mapa Procesów</div>
+                <div class="tool-desc">Google Sheets — REORG 2026</div>
+              </div>
+              <div class="tool-arr">→</div>
+            </div>
+            <div class="tool">
+              <div class="tool-icon ti-g">💶</div>
+              <div class="tool-info">
+                <div class="tool-name">Rozliczenia RT</div>
+                <div class="tool-desc">Excel rozliczeń tygodniowych</div>
+              </div>
+              <div class="tool-arr">→</div>
+            </div>
+            <div class="tool">
+              <div class="tool-icon ti-p">⚙️</div>
+              <div class="tool-info">
+                <div class="tool-name">StreamSoft</div>
+                <div class="tool-desc">System ERP</div>
+              </div>
+              <div class="tool-arr">→</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        // Użyj pełnych danych jeśli dostępne
-        const data = fullData && fullData.tygodniowe_kumulatywnie ? fullData : harvestData;
+      <div class="mal-card">
+        <div class="mal-header">
+          <div class="mal-avatar">🫐</div>
+          <div>
+            <div class="mal-name">Malinoovek</div>
+            <div class="mal-status">● Agent aktywny</div>
+          </div>
+        </div>
+        <div class="mal-body">
+          <div class="chat-bubble">
+            Cześć! Znam procesy OvocxMalinovi i pomagam w codziennej pracy. Co dziś robimy?
+          </div>
+          <div class="suggestions">
+            <button class="sug">📦 Opakowania na sezon 2026?</button>
+            <button class="sug">📋 Status: gospodarka magazynowa</button>
+            <button class="sug">🔴 Co pilnego w backlogu?</button>
+          </div>
+          <div class="chat-row">
+            <input class="chat-in" type="text" placeholder="Napisz do Malinoovka...">
+            <button class="chat-btn">↑</button>
+          </div>
+        </div>
+        <div class="team-row">
+          <div class="av"><div class="av-circle av-jan">JL</div><div class="av-lbl">Jan</div></div>
+          <div class="av"><div class="av-circle av-iza">IZ</div><div class="av-lbl">Iza</div></div>
+          <div class="av"><div class="av-circle av-ren">RE</div><div class="av-lbl">Renia</div></div>
+          <div class="av"><div class="av-circle av-kac">KA</div><div class="av-lbl">Kacper</div></div>
+          <div class="av"><div class="av-circle av-adr">AD</div><div class="av-lbl">Adrian</div></div>
+          <div class="av"><div class="av-circle av-olg">OL</div><div class="av-lbl">Olgierd</div></div>
+        </div>
+      </div>
 
-        // Kolory dla obszarów
-        const areaColors = {
-            'Malina-Blok  D': '#10b981',
-            'Malina - Blok_A1-9': '#3b82f6',
-            'Malina - Bloka_A10-19': '#f59e0b',
-            'Blok_B 1-7': '#ef4444',
-            'Blok_B ruby8-13': '#8b5cf6',
-            'Cala plantacja': '#ec4899',
-            'Malina-Blok_C': '#06b6d4',
-            'Cały blok A': '#84cc16',
-            'Malina-Blok_C-RUBY': '#f97316'
-        };
+    </div>
 
-        // Konfiguracja Chart.js
-        Chart.defaults.color = '#94a3b8';
-        Chart.defaults.borderColor = '#2d3748';
-        Chart.defaults.font.family = "'DM Sans', sans-serif";
+    <!-- Wide bottom card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📦 Gospodarka Magazynowa — Aktywny proces</div>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--yellow)">In progress · v1.0 · 23.02.2026</span>
+      </div>
+      <div class="bottom-grid">
+        <div class="bstat">
+          <div class="bstat-label">Właściciel</div>
+          <div class="bstat-val">Renia + Magazyny</div>
+          <div class="bstat-sub">Spec. ds. zakupów</div>
+        </div>
+        <div class="bstat">
+          <div class="bstat-label">Kategoria</div>
+          <div class="bstat-val">Obsługa magazynowa</div>
+          <div class="bstat-sub">Proces wspierający</div>
+        </div>
+        <div class="bstat">
+          <div class="bstat-label">Narzędzie</div>
+          <div class="bstat-val"><span class="grad-text">Planer Opakowań 2026</span></div>
+          <div class="bstat-sub">→ kliknij w Narzędzia</div>
+        </div>
+      </div>
+    </div>
 
-        // Statystyki główne
-        function updateStats() {
-            const total = data.podsumowanie_obszar.reduce((sum, a) => sum + a.Suma_kg, 0);
-            const workers = Math.max(...data.podsumowanie_obszar.map(a => a.Unikalnych_zbieraczy));
-            const weeks = data.tygodniowe_kumulatywnie.length;
-            const avgWeekly = total / weeks;
-            const bestWeek = Math.max(...data.tygodniowe_kumulatywnie.map(w => w.Waga_kg));
+  </div>
+</main>
 
-            document.getElementById('totalKg').textContent = total.toLocaleString('pl-PL', {maximumFractionDigits: 0});
-            document.getElementById('totalWorkers').textContent = '182';
-            document.getElementById('avgWeekly').textContent = avgWeekly.toLocaleString('pl-PL', {maximumFractionDigits: 0});
-            document.getElementById('bestWeek').textContent = bestWeek.toLocaleString('pl-PL', {maximumFractionDigits: 0});
-        }
+<script>
+  const d = new Date();
+  const days = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
+  const months = ['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
+  document.getElementById('dateDisplay').textContent =
+    days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
 
-        // Wykres tygodniowy kumulatywny
-        function createWeeklyTotalChart() {
-            const ctx = document.getElementById('weeklyTotalChart').getContext('2d');
-            const weeks = data.tygodniowe_kumulatywnie.map(w => w.Tydzien);
-            const kg = data.tygodniowe_kumulatywnie.map(w => w.Waga_kg);
+  document.querySelectorAll('.sug').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelector('.chat-in').value = b.textContent.trim().replace(/^.\s/, '');
+      document.querySelector('.chat-in').focus();
+    });
+  });
+</script>
 
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: weeks,
-                    datasets: [{
-                        label: 'Zbiory (kg)',
-                        data: kg,
-                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                        borderColor: '#10b981',
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        barPercentage: 0.7
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#1a2235',
-                            borderColor: '#2d3748',
-                            borderWidth: 1,
-                            padding: 12,
-                            callbacks: {
-                                label: ctx => `${ctx.parsed.y.toLocaleString('pl-PL')} kg`
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(45, 55, 72, 0.5)' },
-                            ticks: {
-                                callback: v => v.toLocaleString('pl-PL') + ' kg'
-                            }
-                        },
-                        x: {
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Wykres tygodniowy wg obszarów
-        let weeklyAreaChart;
-        function createWeeklyAreaChart(filterArea = 'all') {
-            const ctx = document.getElementById('weeklyAreaChart').getContext('2d');
-            
-            if (weeklyAreaChart) weeklyAreaChart.destroy();
-
-            const weeks = [...new Set(data.tygodniowe.map(w => w.Tydzien))].sort();
-            const areas = filterArea === 'all' ? data.obszary : [filterArea];
-
-            const datasets = areas.map(area => {
-                const areaData = weeks.map(week => {
-                    const entry = data.tygodniowe.find(w => w.Tydzien === week && w.Obszar === area);
-                    return entry ? entry.Waga_kg : 0;
-                });
-                return {
-                    label: area,
-                    data: areaData,
-                    backgroundColor: areaColors[area] || '#6b7280',
-                    borderColor: areaColors[area] || '#6b7280',
-                    borderWidth: 1,
-                    borderRadius: 4
-                };
-            });
-
-            weeklyAreaChart = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: weeks, datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: { usePointStyle: true, padding: 20 }
-                        },
-                        tooltip: {
-                            backgroundColor: '#1a2235',
-                            borderColor: '#2d3748',
-                            borderWidth: 1,
-                            callbacks: {
-                                label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('pl-PL')} kg`
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            stacked: filterArea === 'all',
-                            beginAtZero: true,
-                            grid: { color: 'rgba(45, 55, 72, 0.5)' },
-                            ticks: { callback: v => v.toLocaleString('pl-PL') }
-                        },
-                        x: {
-                            stacked: filterArea === 'all',
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Wykres zbieraczy
-        function createWorkersChart() {
-            const ctx = document.getElementById('workersChart').getContext('2d');
-            const weeks = data.tygodniowe_kumulatywnie.map(w => w.Tydzien);
-            const kg = data.tygodniowe_kumulatywnie.map(w => w.Waga_kg);
-            const workers = data.tygodniowe_kumulatywnie.map(w => w.Liczba_zbieraczy);
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: weeks,
-                    datasets: [
-                        {
-                            label: 'Zbiory (kg)',
-                            data: kg,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            fill: true,
-                            tension: 0.3,
-                            yAxisID: 'y'
-                        },
-                        {
-                            label: 'Liczba zbieraczy',
-                            data: workers,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            fill: true,
-                            tension: 0.3,
-                            yAxisID: 'y1'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: { usePointStyle: true }
-                        },
-                        tooltip: {
-                            backgroundColor: '#1a2235',
-                            borderColor: '#2d3748',
-                            borderWidth: 1
-                        }
-                    },
-                    scales: {
-                        y: {
-                            type: 'linear',
-                            position: 'left',
-                            beginAtZero: true,
-                            grid: { color: 'rgba(45, 55, 72, 0.5)' },
-                            ticks: { callback: v => v.toLocaleString('pl-PL') + ' kg' }
-                        },
-                        y1: {
-                            type: 'linear',
-                            position: 'right',
-                            beginAtZero: true,
-                            grid: { drawOnChartArea: false },
-                            ticks: { callback: v => v + ' os.' }
-                        },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-
-        // Tabela podsumowania
-        function populateSummaryTable() {
-            const tbody = document.querySelector('#summaryTable tbody');
-            const total = data.podsumowanie_obszar.reduce((sum, a) => sum + a.Suma_kg, 0);
-
-            tbody.innerHTML = data.podsumowanie_obszar.map(area => {
-                const percent = ((area.Suma_kg / total) * 100).toFixed(1);
-                return `
-                    <tr>
-                        <td>${area.Obszar}</td>
-                        <td>${area.Suma_kg.toLocaleString('pl-PL', {maximumFractionDigits: 2})}</td>
-                        <td>${area.Unikalnych_zbieraczy}</td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div class="progress-bar" style="width: 100px;">
-                                    <div class="progress-fill" style="width: ${percent}%"></div>
-                                </div>
-                                <span>${percent}%</span>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        // Tabela szczegółów tygodniowych
-        function populateWeeklyDetailTable(filterArea = 'all') {
-            const tbody = document.querySelector('#weeklyDetailTable tbody');
-            const weeks = [...new Set(data.tygodniowe.map(w => w.Tydzien))].sort();
-
-            const rows = weeks.map(week => {
-                let weekKg, weekWorkers;
-
-                if (filterArea === 'all') {
-                    const kum = data.tygodniowe_kumulatywnie.find(w => w.Tydzien === week);
-                    weekKg = kum ? kum.Waga_kg : 0;
-                    weekWorkers = kum ? kum.Liczba_zbieraczy : 0;
-                } else {
-                    const areaEntry = data.tygodniowe.find(w => w.Tydzien === week && w.Obszar === filterArea);
-                    const workerEntry = data.zbieracze_tyg_obszar.find(w => w.Tydzien === week && w.Obszar === filterArea);
-                    weekKg = areaEntry ? areaEntry.Waga_kg : 0;
-                    weekWorkers = workerEntry ? workerEntry.Liczba_zbieraczy : 0;
-                }
-
-                const perWorker = weekWorkers > 0 ? (weekKg / weekWorkers).toFixed(1) : 0;
-
-                return `
-                    <tr>
-                        <td>${week}</td>
-                        <td>${weekKg.toLocaleString('pl-PL', {maximumFractionDigits: 2})}</td>
-                        <td>${weekWorkers}</td>
-                        <td>${perWorker}</td>
-                    </tr>
-                `;
-            }).join('');
-
-            tbody.innerHTML = rows;
-        }
-
-        // Populacja filtrów
-        function populateFilters() {
-            const areaFilter = document.getElementById('areaFilter');
-            const weeklyDetailArea = document.getElementById('weeklyDetailArea');
-
-            data.obszary.forEach(area => {
-                areaFilter.innerHTML += `<option value="${area}">${area}</option>`;
-                weeklyDetailArea.innerHTML += `<option value="${area}">${area}</option>`;
-            });
-
-            areaFilter.addEventListener('change', e => createWeeklyAreaChart(e.target.value));
-            weeklyDetailArea.addEventListener('change', e => populateWeeklyDetailTable(e.target.value));
-        }
-
-        // Inicjalizacja
-        document.addEventListener('DOMContentLoaded', () => {
-            updateStats();
-            createWeeklyTotalChart();
-            createWeeklyAreaChart();
-            createWorkersChart();
-            populateSummaryTable();
-            populateWeeklyDetailTable();
-            populateFilters();
-        });
-    </script>
 </body>
 </html>
