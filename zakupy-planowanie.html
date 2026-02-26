@@ -6,6 +6,7 @@
 <title>Planowanie Zakupów i Opakowań — OvocxMalinovi</title>
 <script src="zuzycie-data.js"></script>
 <script src="stany-data.js"></script>
+<script src="plan-zakupow-2026-data.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -129,6 +130,7 @@ main{padding:28px 32px 48px;max-width:1600px;margin:0 auto}
 .sni-purple{background:rgba(144,19,254,.1)}
 .sni-muted{background:var(--surface2)}
 .sni-orange{background:rgba(250,66,17,.1)}
+.sni-blue{background:rgba(37,99,235,.1)}
 
 .sub-nav-title{font-size:13px;font-weight:600;margin-bottom:2px}
 .sub-nav-meta{font-size:11px;color:var(--text-muted)}
@@ -215,7 +217,7 @@ input[type=file]#mag-file{display:none}
 
       <div class="card-top">
         <div class="card-icon-wrap icon-orange">📦</div>
-        <div class="card-title">Stan Magazynowy</div>
+        <div class="card-title"><a href="zakupy-stan.html" style="color:inherit;text-decoration:none">Stan Magazynowy ›</a></div>
         <div class="card-desc">Stany opakowań w magazynach na wybrany dzień — wgraj plik z exportu StreamSoft</div>
         <div class="card-badge badge-active" id="stan-badge">Brak danych</div>
       </div>
@@ -269,6 +271,7 @@ input[type=file]#mag-file{display:none}
         </span>
         <span style="flex:1"></span>
         <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace" id="stan-total-lbl"></span>
+        <a href="zakupy-stan.html" class="btn btn-orange">→ Pełny widok</a>
       </div>
     </div>
 
@@ -343,26 +346,42 @@ input[type=file]#mag-file{display:none}
 
       <div class="card-top">
         <div class="card-icon-wrap icon-blue">🛒</div>
-        <div class="card-title">Planowanie Zakupów</div>
-        <div class="card-desc">Harmonogram zamówień, progi bezpieczeństwa i rekomendacje zakupowe</div>
-        <div class="card-badge badge-pending">⏳ W przygotowaniu</div>
+        <div class="card-title"><a href="zakupy-plan2026.html" style="color:inherit;text-decoration:none">Planowanie Zakupów ›</a></div>
+        <div class="card-desc">Plan kartonów na sezon 2026 — proporcje 2025 × wolumen 2026 per klient/owoc</div>
+        <div class="card-badge badge-active" id="plan-badge">Plan 2026</div>
       </div>
 
       <div class="card-body">
-        <div class="wip-box">
-          <div class="wip-icon">🏗️</div>
-          <div class="wip-title">Sekcja w opracowaniu</div>
-          <div class="wip-text">Opis i funkcjonalność tej sekcji<br>są aktualnie definiowane przez Janka.</div>
+
+        <!-- Plan 2026 mini-stats -->
+        <div class="stats-mini" id="plan-mini-stats" style="margin-bottom:14px">
+          <div class="stat-mini"><div class="stat-mini-label">Kart. plan 2026</div><div class="stat-mini-val" id="p26-kart" style="color:var(--blue)">—</div></div>
+          <div class="stat-mini"><div class="stat-mini-label">Klientów z planem</div><div class="stat-mini-val" id="p26-kl">—</div></div>
+          <div class="stat-mini"><div class="stat-mini-label">Baza (kart. 2025)</div><div class="stat-mini-val" id="p26-hist" style="font-size:13px;color:var(--text-dim)">—</div></div>
         </div>
 
-        <div class="section-label">Powiązane widoki</div>
+        <div class="section-label">Podzakładki</div>
+
+        <a href="zakupy-plan2026.html" class="sub-nav-item">
+          <div class="sub-nav-left">
+            <div class="sub-nav-icon sni-blue">📋</div>
+            <div>
+              <div class="sub-nav-title">Plan sprzedaży na 2026</div>
+              <div class="sub-nav-meta">Total · OGL · Jeronimo · Pozostali</div>
+            </div>
+          </div>
+          <div class="sub-nav-right">
+            <span class="card-badge badge-active">Aktywny</span>
+            <span class="sub-nav-arrow">›</span>
+          </div>
+        </a>
 
         <a href="zakupy-klienci.html" class="sub-nav-item">
           <div class="sub-nav-left">
             <div class="sub-nav-icon sni-orange">📦</div>
             <div>
               <div class="sub-nav-title">Konfekcja per klient</div>
-              <div class="sub-nav-meta">Zestawienie opakowań wg klientów</div>
+              <div class="sub-nav-meta">Zestawienie opakowań wg klientów 2025</div>
             </div>
           </div>
           <span class="sub-nav-arrow">›</span>
@@ -381,7 +400,10 @@ input[type=file]#mag-file{display:none}
       </div>
 
       <div class="card-footer">
-        <span class="btn" style="cursor:default;opacity:.55">⏳ Wkrótce dostępne</span>
+        <a href="zakupy-plan2026.html" class="btn btn-orange">→ Plan Zakupów 2026</a>
+        <span style="flex:1"></span>
+        <a href="https://github.com/janlipczynski-admin/ovocxmalinovi-brain-/commits/main/planowanie-data.js"
+           target="_blank" class="btn btn-sm" style="font-size:10px">🕐 Historia zmian</a>
       </div>
     </div>
 
@@ -607,6 +629,18 @@ function clearCustomStan() {
 }
 
 stanInit();
+
+// ── Plan 2026 mini-stats ──────────────────────────────────────────────────────
+(function() {
+  if (!window.PLAN2026_DATA) return;
+  const { totals, rows } = window.PLAN2026_DATA;
+  const kliZPlanem = new Set(rows.filter(r=>r.kartony_2026).map(r=>r.klient)).size;
+  const fmt = n => n == null ? '—' : Math.round(n).toLocaleString('pl-PL');
+  document.getElementById('p26-kart').textContent = fmt(totals.kartony_2026);
+  document.getElementById('p26-kl').textContent   = kliZPlanem + ' / ' + new Set(rows.map(r=>r.klient)).size;
+  document.getElementById('p26-hist').textContent = fmt(totals.kartony_2025);
+  document.getElementById('plan-badge').textContent = 'Plan 2026 · aktywny';
+})();
 </script>
 </body>
 </html>

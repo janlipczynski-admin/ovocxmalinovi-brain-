@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Zakupów Kartonów 2026 — OvocxMalinovi</title>
+<script src="plan-zakupow-2026-data.js"></script>
+<script src="planowanie-data.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange:#fa4211; --purple:#9013fe; --green:#16a34a; --blue:#2563eb; --yellow:#d97706;
+  --grad:linear-gradient(135deg,#fa4211,#9013fe);
+  --bg:#f7f7f5; --white:#fff;
+  --border:#e8e6e1; --border2:#d8d5ce;
+  --text:#1a1a18; --text-dim:#4a4a46; --text-muted:#8a8a82;
+  --surface2:#f0ede8; --nav-h:52px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Nav ── */
+.nav{height:var(--nav-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:100}
+.nav-logo{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;font-size:15px;letter-spacing:-.3px;white-space:nowrap}
+.nav-sep{width:1px;height:20px;background:var(--border2)}
+.nav-back{font-size:12px;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;transition:background .15s}
+.nav-back:hover{background:var(--surface2);color:var(--text-dim)}
+.nav-title{font-size:13px;font-weight:600;color:var(--text)}
+.nav-spacer{flex:1}
+.nav-badge{font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;border-radius:8px;background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+
+/* ── Main layout ── */
+.main{max-width:1200px;margin:0 auto;padding:20px 16px 40px}
+
+/* ── Page header ── */
+.page-head{margin-bottom:20px}
+.page-head-row{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:10px}
+.page-head h1{font-size:22px;font-weight:800;letter-spacing:-.4px;line-height:1.2}
+.page-head-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.source-link{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--text-muted);text-decoration:none;padding:4px 9px;border:1px solid var(--border2);border-radius:7px;transition:all .15s;font-family:'DM Mono',monospace}
+.source-link:hover{border-color:var(--orange);color:var(--orange);background:rgba(250,66,17,.04)}
+.source-link span{font-size:12px}
+.alert-info{background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.25);border-radius:9px;padding:10px 14px;font-size:12px;color:#92400e;line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+.alert-info strong{white-space:nowrap}
+
+/* ── KPI stats ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:700px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 16px}
+.kpi-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace;margin-bottom:5px}
+.kpi-val{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.kpi-sub{font-size:10px;color:var(--text-muted);margin-top:3px}
+
+/* ── Group cards ── */
+.group-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:700px){.group-row{grid-template-columns:1fr}}
+.group-card{background:var(--white);border:2px solid var(--border);border-radius:10px;padding:13px 16px;cursor:pointer;transition:all .15s}
+.group-card:hover,.group-card.active{border-width:2px}
+.group-card.active-OGL{border-color:var(--orange);background:rgba(250,66,17,.03)}
+.group-card.active-Jeronimo{border-color:var(--purple);background:rgba(144,19,254,.03)}
+.group-card.active-Pozostali{border-color:var(--blue);background:rgba(37,99,235,.03)}
+.group-card.active-all{border-color:var(--green);background:rgba(22,163,74,.03)}
+.gc-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.gc-name-OGL{color:var(--orange)}
+.gc-name-Jeronimo{color:var(--purple)}
+.gc-name-Pozostali{color:var(--blue)}
+.gc-kl{font-size:10px;color:var(--text-muted);margin-bottom:10px}
+.gc-stat{display:flex;justify-content:space-between;align-items:baseline;margin-top:5px}
+.gc-val{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.gc-lbl{font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace}
+.gc-badge{font-size:10px;font-family:'DM Mono',monospace;padding:1px 6px;border-radius:5px}
+.badge-no-plan{background:rgba(217,119,6,.1);color:#92400e}
+.badge-has-plan{background:rgba(22,163,74,.1);color:var(--green)}
+
+/* ── Tab bar ── */
+.tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--surface2);padding:4px;border-radius:10px;width:fit-content}
+.tab-btn{padding:6px 16px;border-radius:7px;border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;color:var(--text-muted)}
+.tab-btn.active{background:var(--white);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.tab-btn:hover:not(.active){color:var(--text)}
+
+/* ── Main table ── */
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.plan-table{width:100%;border-collapse:collapse;font-size:12px}
+.plan-table th{background:var(--surface2);color:var(--text-muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+.plan-table th.num{text-align:right}
+.plan-table td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.plan-table tr:last-child>td{border-bottom:none}
+.client-row{cursor:pointer;transition:background .1s}
+.client-row:hover td{background:rgba(250,66,17,.02)}
+.client-row td{background:var(--white)}
+.expand-icon{display:inline-block;transition:transform .2s;font-size:10px;margin-right:4px;color:var(--text-muted)}
+.client-row.open .expand-icon{transform:rotate(90deg)}
+.pak-row{background:var(--surface2)!important}
+.pak-row td{padding:5px 12px 5px 36px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-dim)}
+.pak-row:last-of-type td{border-bottom:1px solid var(--border)}
+.num-cell{font-family:'DM Mono',monospace;text-align:right;font-variant-numeric:tabular-nums}
+
+/* Ratio badge */
+.ratio-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:700}
+.r-up{background:rgba(22,163,74,.12);color:#166534}
+.r-neutral{background:rgba(37,99,235,.1);color:#1e3a8a}
+.r-down{background:rgba(217,119,6,.1);color:#92400e}
+.r-none{background:rgba(138,138,130,.1);color:var(--text-muted)}
+
+/* Progress bar */
+.prog-bar{height:5px;border-radius:3px;background:var(--border);position:relative;min-width:60px}
+.prog-fill{height:100%;border-radius:3px;position:absolute;left:0;top:0}
+
+/* Group color strip */
+.g-strip{display:inline-block;width:3px;height:14px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.g-OGL{background:var(--orange)}
+.g-Jeronimo{background:var(--purple)}
+.g-Pozostali{background:var(--blue)}
+
+/* Owoc chip */
+.owoc-chip{display:inline-block;font-size:10px;padding:2px 6px;border-radius:5px;font-weight:600;white-space:nowrap}
+.o-Malina{background:rgba(250,66,17,.1);color:var(--orange)}
+.o-Truskawka{background:rgba(220,38,38,.1);color:#dc2626}
+.o-Jeżyna{background:rgba(144,19,254,.1);color:var(--purple)}
+.o-Porzeczka{background:rgba(37,99,235,.1);color:var(--blue)}
+.o-Agrest{background:rgba(22,163,74,.1);color:var(--green)}
+
+/* Table footer */
+.table-footer{padding:8px 14px;background:var(--surface2);border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;display:flex;justify-content:space-between;align-items:center}
+
+/* No-plan row */
+.no-plan-row td{opacity:.65}
+.no-plan-note{font-size:10px;color:var(--yellow);font-style:italic}
+</style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav class="nav">
+  <span class="nav-logo">OvocxMalinovi</span>
+  <span class="nav-sep"></span>
+  <a href="zakupy-planowanie.html" class="nav-back">← Zakupy</a>
+  <span class="nav-sep"></span>
+  <span class="nav-title">Plan Zakupów Kartonów 2026</span>
+  <span class="nav-spacer"></span>
+  <span class="nav-badge" id="nav-date-badge"></span>
+</nav>
+
+<main class="main">
+
+  <!-- ── Nagłówek ── -->
+  <div class="page-head">
+    <div class="page-head-row">
+      <div>
+        <h1>Plan Zakupów Kartonów — Sezon 2026</h1>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:4px">
+          Estymacja na podstawie proporcji kartonów 2025 przeskalowanych do planu sprzedaży 2026
+        </p>
+      </div>
+      <div class="page-head-meta">
+        <a href="planowanie-i-sprzedaz.html" target="_blank" class="source-link">
+          <span>📊</span> Plan sprzedaży 2026
+        </a>
+        <a href="https://github.com/janlipczynski-admin/ovocxmalinovi-brain-/commits/main/planowanie-data.js"
+           target="_blank" class="source-link">
+          <span>🕐</span> Historia zmian
+        </a>
+      </div>
+    </div>
+    <div class="alert-info" id="plan-alert">
+      <strong>ℹ️</strong>
+      <span id="plan-alert-text">Ładowanie danych…</span>
+    </div>
+  </div>
+
+  <!-- ── KPI row ── -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Plan sprzedaży 2026</div>
+      <div class="kpi-val" id="kpi-kg" style="color:var(--orange)">—</div>
+      <div class="kpi-sub">kg (suma klientów z planem)</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Szac. kartonów 2026</div>
+      <div class="kpi-val" id="kpi-kart" style="color:var(--blue)">—</div>
+      <div class="kpi-sub">na podstawie proporcji 2025</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Klientów z planem</div>
+      <div class="kpi-val" id="kpi-klienci">—</div>
+      <div class="kpi-sub">z <span id="kpi-total-kl"></span> zmapowanych</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Baza historyczna</div>
+      <div class="kpi-val" id="kpi-hist" style="font-size:16px;color:var(--text-dim)">—</div>
+      <div class="kpi-sub">kartony faktyczne 2025</div>
+    </div>
+  </div>
+
+  <!-- ── Group cards ── -->
+  <div class="group-row" id="group-cards"></div>
+
+  <!-- ── Tabs ── -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="all" onclick="setTab('all')">TOTAL</button>
+    <button class="tab-btn" data-tab="OGL" onclick="setTab('OGL')" style="color:var(--orange)">OGL</button>
+    <button class="tab-btn" data-tab="Jeronimo" onclick="setTab('Jeronimo')" style="color:var(--purple)">Jeronimo (Biedronka)</button>
+    <button class="tab-btn" data-tab="Pozostali" onclick="setTab('Pozostali')">Pozostali</button>
+  </div>
+
+  <!-- ── Tabela ── -->
+  <div class="table-wrap">
+    <table class="plan-table">
+      <thead>
+        <tr>
+          <th style="width:24px"></th>
+          <th>Klient</th>
+          <th>Owoc</th>
+          <th class="num">Kg 2025</th>
+          <th class="num">Kg plan 2026</th>
+          <th class="num" style="width:80px">Zmiana</th>
+          <th class="num">Kart. 2025</th>
+          <th class="num">Kart. plan 2026</th>
+          <th class="num" style="width:90px">Proporcja</th>
+        </tr>
+      </thead>
+      <tbody id="plan-tbody"></tbody>
+    </table>
+    <div class="table-footer" id="plan-footer"></div>
+  </div>
+
+</main>
+
+<script>
+const D = window.PLAN2026_DATA;
+let activeTab = 'all';
+
+// ── Format helpers ──────────────────────────────────────────
+const fmt  = n => n == null ? '—' : Math.round(n).toLocaleString('pl-PL');
+const fmtK = n => n == null ? '—' : (n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n));
+
+function ratioBadge(ratio) {
+  if (ratio == null) return '<span class="ratio-badge r-none">brak planu</span>';
+  const pct = Math.round(ratio*100);
+  const cls = ratio >= 1 ? 'r-up' : ratio >= 0.5 ? 'r-neutral' : 'r-down';
+  const arrow = ratio >= 1 ? '▲' : '▼';
+  return `<span class="ratio-badge ${cls}">${arrow} ${pct}%</span>`;
+}
+
+function owocChip(owoc) {
+  const key = owoc.replace('Truskawka tunelowa','Truskawka').replace('Truskawka szklarniowa','Truskawka').split(' ')[0];
+  return `<span class="owoc-chip o-${key}">${owoc}</span>`;
+}
+
+function gStrip(group) {
+  return `<span class="g-strip g-${group}"></span>`;
+}
+
+function progBar(ratio) {
+  if (ratio == null) return '';
+  const w = Math.min(ratio * 100, 200);
+  const col = ratio >= 1 ? 'var(--green)' : ratio >= 0.5 ? 'var(--blue)' : 'var(--yellow)';
+  return `<div class="prog-bar"><div class="prog-fill" style="width:${w}%;background:${col}"></div></div>`;
+}
+
+// ── Render KPIs ─────────────────────────────────────────────
+function renderKPIs() {
+  const { totals, group_totals, rows } = D;
+  const klienci_z_planem = [...new Set(rows.filter(r=>r.kartony_2026).map(r=>r.klient))].length;
+  const total_klienci    = [...new Set(rows.map(r=>r.klient))].length;
+
+  document.getElementById('kpi-kg').textContent   = fmt(totals.kg_plan_2026);
+  document.getElementById('kpi-kart').textContent = fmt(totals.kartony_2026);
+  document.getElementById('kpi-klienci').textContent = klienci_z_planem;
+  document.getElementById('kpi-total-kl').textContent = total_klienci;
+  document.getElementById('kpi-hist').textContent = fmt(totals.kartony_2025);
+  document.getElementById('nav-date-badge').textContent = 'Sezon 2026 · ' + D.wygenerowano;
+}
+
+// ── Render Group Cards ───────────────────────────────────────
+function renderGroupCards() {
+  const { group_totals } = D;
+  const groups = [
+    {id:'all', label:'TOTAL', klienci:'Wszyscy klienci', color:'green'},
+    {id:'OGL', label:'OGL', klienci:'OGL Food Trade', color:'orange'},
+    {id:'Jeronimo', label:'Jeronimo', klienci:'Biedronka (Jeronimo Martins)', color:'purple'},
+    {id:'Pozostali', label:'Pozostali', klienci: (group_totals['Pozostali']?.klienci||[]).join(', '), color:'blue'}
+  ];
+  const totalAll = D.totals;
+  const totalsMap = {all: {kartony_2025:totalAll.kartony_2025, kartony_2026:totalAll.kartony_2026}, ...group_totals};
+
+  document.getElementById('group-cards').innerHTML = groups.map(g => {
+    const t = totalsMap[g.id] || {};
+    const hasP = (t.kartony_2026||0) > 0;
+    return `
+    <div class="group-card ${activeTab===g.id?'active-'+g.id:''}" onclick="setTab('${g.id}')">
+      <div class="gc-name gc-name-${g.id==='all'?'Pozostali':g.id}">${g.label}</div>
+      <div class="gc-kl" title="${g.klienci}">${g.klienci.length > 60 ? g.klienci.substring(0,60)+'…' : g.klienci}</div>
+      <div class="gc-stat">
+        <div>
+          <div class="gc-lbl">Kart. 2025</div>
+          <div class="gc-val">${fmt(t.kartony_2025)}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="gc-lbl">Kart. plan 2026</div>
+          <div class="gc-val" style="color:${hasP?'var(--green)':'var(--text-muted)'}">${hasP?fmt(t.kartony_2026):'—'}</div>
+        </div>
+      </div>
+      ${hasP ? `<div style="margin-top:6px">${progBar((t.kartony_2026||0)/(t.kartony_2025||1))}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Render Table ─────────────────────────────────────────────
+function renderTable() {
+  const rows = activeTab === 'all'
+    ? D.rows
+    : D.rows.filter(r => r.group === activeTab);
+
+  let html = '';
+  rows.forEach((r, idx) => {
+    const rowId = 'r' + idx;
+    const hasP  = r.kartony_2026 != null;
+    html += `
+    <tr class="client-row ${!hasP?'no-plan-row':''}" onclick="togglePaks('${rowId}',this)">
+      <td><span class="expand-icon">▶</span></td>
+      <td>${gStrip(r.group)}<strong>${r.klient}</strong></td>
+      <td>${owocChip(r.owoc)}</td>
+      <td class="num-cell">${fmt(r.kg_2025)}</td>
+      <td class="num-cell">${hasP ? fmt(r.kg_2026) : '<span class="no-plan-note">brak planu</span>'}</td>
+      <td class="num-cell">${ratioBadge(r.ratio)}</td>
+      <td class="num-cell">${fmt(r.kartony_2025)}</td>
+      <td class="num-cell"><strong>${hasP ? fmt(r.kartony_2026) : '—'}</strong></td>
+      <td class="num-cell">${hasP ? progBar(r.ratio) : ''}</td>
+    </tr>`;
+
+    // Pak sub-rows (hidden by default)
+    html += `<tr id="${rowId}-paks" style="display:none"><td colspan="9" style="padding:0;background:var(--surface2)">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <tr style="background:rgba(0,0,0,.03)">
+          <th style="padding:5px 12px 5px 36px;text-align:left;font-size:10px;color:var(--text-muted);font-weight:600;width:38%">Kod kartonu</th>
+          <th style="padding:5px 8px;text-align:center;font-size:10px;color:var(--text-muted);font-weight:600">Waga</th>
+          <th style="padding:5px 8px;text-align:center;font-size:10px;color:var(--text-muted);font-weight:600">Szt/kart</th>
+          <th style="padding:5px 8px;text-align:right;font-size:10px;color:var(--text-muted);font-weight:600">Udz. 2025</th>
+          <th style="padding:5px 8px;text-align:right;font-size:10px;color:var(--text-muted);font-weight:600">Kart. 2025</th>
+          <th style="padding:5px 8px;text-align:right;font-size:10px;color:var(--text-muted);font-weight:600">Kart. plan 2026</th>
+        </tr>
+        ${r.paks.filter(p=>p.udzial >= 0.5).map(p => `
+        <tr style="border-top:1px solid var(--border)">
+          <td style="padding:5px 12px 5px 36px;font-family:'DM Mono',monospace;font-size:10px">${p.pak}</td>
+          <td style="padding:5px 8px;text-align:center;color:var(--text-muted)">${p.waga_g}g</td>
+          <td style="padding:5px 8px;text-align:center;color:var(--text-muted)">×${p.szt}</td>
+          <td style="padding:5px 8px;text-align:right;color:var(--text-muted)">${p.udzial}%</td>
+          <td style="padding:5px 8px;text-align:right;font-family:'DM Mono',monospace">${fmt(p.kartony_2025)}</td>
+          <td style="padding:5px 8px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:${p.kartony_2026?'var(--green)':'var(--text-muted)'}">${p.kartony_2026 != null ? fmt(p.kartony_2026) : '—'}</td>
+        </tr>`).join('')}
+      </table>
+    </td></tr>`;
+  });
+
+  document.getElementById('plan-tbody').innerHTML = html;
+
+  const withPlan   = rows.filter(r=>r.kartony_2026).length;
+  const totalKart  = rows.filter(r=>r.kartony_2026).reduce((s,r)=>s+(r.kartony_2026||0),0);
+  const totalKart25= rows.reduce((s,r)=>s+r.kartony_2025,0);
+  document.getElementById('plan-footer').innerHTML = `
+    <span>${rows.length} wierszy · ${withPlan} z planem 2026</span>
+    <span>2025: ${fmt(totalKart25)} kart. &nbsp;→&nbsp; <strong>2026 plan: ${fmt(totalKart)} kart.</strong></span>`;
+}
+
+function togglePaks(id, row) {
+  const pr = document.getElementById(id+'-paks');
+  if (!pr) return;
+  const vis = pr.style.display !== 'none';
+  pr.style.display = vis ? 'none' : 'table-row';
+  row.classList.toggle('open', !vis);
+}
+
+function setTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  renderGroupCards();
+  renderTable();
+}
+
+// ── Alert text ───────────────────────────────────────────────
+function renderAlert() {
+  const { rows, totals } = D;
+  const brakPlanu = rows.filter(r=>!r.kartony_2026);
+  const totalKl   = [...new Set(rows.map(r=>r.klient))].length;
+  const zPlanem   = [...new Set(rows.filter(r=>r.kartony_2026).map(r=>r.klient))].length;
+
+  let txt = `Plan bazuje na danych historycznych ZP 2025 (${D.zrodlo_historyczne}).`;
+  if (brakPlanu.length > 0) {
+    const brakKl = [...new Set(brakPlanu.map(r=>r.klient+'|'+r.owoc))];
+    txt += ` Brak planu 2026 dla ${brakKl.length} kombinacji klient/owoc: ${brakKl.slice(0,4).join(', ')}${brakKl.length>4?'…':''}.`;
+  }
+  txt += ` Ratios (kg_plan_2026 / kg_2025) mogą być <1.0 jeśli plan jest wstępny lub niepełny — zaktualizuj dane w `;
+  document.getElementById('plan-alert-text').innerHTML = txt +
+    '<a href="planowanie-i-sprzedaz.html" target="_blank" style="color:#92400e;text-decoration:underline">planowanie-i-sprzedaz.html</a>.';
+}
+
+// ── Init ─────────────────────────────────────────────────────
+renderKPIs();
+renderGroupCards();
+renderTable();
+renderAlert();
+</script>
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stan Magazynowy — OvocxMalinovi</title>
+<script src="stany-data.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange:#fa4211; --purple:#9013fe; --green:#16a34a; --blue:#2563eb; --yellow:#d97706;
+  --grad:linear-gradient(135deg,#fa4211,#9013fe);
+  --bg:#f7f7f5; --white:#fff;
+  --border:#e8e6e1; --border2:#d8d5ce;
+  --text:#1a1a18; --text-dim:#4a4a46; --text-muted:#8a8a82;
+  --surface2:#f0ede8; --nav-h:52px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Nav ── */
+.nav{height:var(--nav-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:100}
+.nav-logo{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;font-size:15px;letter-spacing:-.3px;white-space:nowrap}
+.nav-sep{width:1px;height:20px;background:var(--border2)}
+.nav-back{font-size:12px;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;transition:background .15s}
+.nav-back:hover{background:var(--surface2);color:var(--text-dim)}
+.nav-title{font-size:13px;font-weight:600;color:var(--text)}
+.nav-spacer{flex:1}
+.source-badge{font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;border-radius:8px}
+.source-preset{background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+.source-upload{background:rgba(250,66,17,.08);color:var(--orange);border:1px solid rgba(250,66,17,.2)}
+
+/* ── Main layout ── */
+.main{max-width:1400px;margin:0 auto;padding:20px 16px 40px}
+
+/* ── Header ── */
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.page-head h1{font-size:22px;font-weight:800;letter-spacing:-.4px}
+.page-head-sub{font-size:12px;color:var(--text-muted);margin-top:3px}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;background:var(--white);padding:10px 14px;border-radius:10px;border:1px solid var(--border)}
+.toolbar-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;margin-right:4px}
+.tf-select{padding:6px 10px;border:1px solid var(--border2);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--white);cursor:pointer;outline:none;min-width:160px}
+.tf-select:focus{border-color:var(--orange)}
+.tf-input{padding:6px 10px;border:1px solid var(--border2);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--white);outline:none;width:200px}
+.tf-input:focus{border-color:var(--orange)}
+.toolbar-sep{width:1px;height:24px;background:var(--border2)}
+.btn-mini{padding:6px 12px;border-radius:7px;border:1px solid var(--border2);background:var(--white);font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--text-dim);transition:all .15s;white-space:nowrap}
+.btn-mini:hover{border-color:var(--orange);color:var(--orange)}
+.btn-orange{background:var(--orange);color:var(--white);border-color:var(--orange)}
+.btn-orange:hover{background:#e53d10;color:var(--white)}
+input[type=file]#stan-file{display:none}
+
+/* ── KPI ── */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:800px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.kpi-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace;margin-bottom:4px}
+.kpi-val{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+
+/* ── Table ── */
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.stan-table{width:100%;border-collapse:collapse;font-size:12px}
+.stan-table th{background:var(--surface2);color:var(--text-muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:9px 12px;text-align:left;position:sticky;top:0;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;z-index:1}
+.stan-table th:hover{background:#e5e2dc}
+.stan-table th.sort-asc::after{content:' ↑';color:var(--orange)}
+.stan-table th.sort-desc::after{content:' ↓';color:var(--orange)}
+.stan-table td{padding:7px 12px;border-bottom:1px solid var(--border)}
+.stan-table tr:last-child td{border-bottom:none}
+.stan-table tr:hover td{background:rgba(250,66,17,.025)}
+.num-cell{font-family:'DM Mono',monospace;text-align:right;font-variant-numeric:tabular-nums}
+.table-footer{padding:8px 14px;background:var(--surface2);border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;display:flex;justify-content:space-between}
+
+/* Group chip colors */
+.grp-chip{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap}
+.g-ET{background:rgba(144,19,254,.1);color:var(--purple)}
+.g-OT{background:rgba(250,66,17,.1);color:var(--orange)}
+.g-OJ{background:rgba(37,99,235,.1);color:var(--blue)}
+.g-OZ{background:rgba(22,163,74,.1);color:var(--green)}
+.g-OW{background:rgba(217,119,6,.1);color:var(--yellow)}
+
+/* Mag chips */
+.mag-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.mag-chip{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border2);background:var(--white);transition:all .15s}
+.mag-chip.active{border-color:var(--orange);background:var(--orange);color:var(--white)}
+.mag-chip:hover:not(.active){border-color:var(--orange);color:var(--orange)}
+
+/* Upload mini */
+.upload-mini{display:flex;align-items:center;gap:8px;padding:7px 12px;border:1.5px dashed var(--border2);border-radius:8px;cursor:pointer;font-size:12px;color:var(--text-muted);transition:all .15s}
+.upload-mini:hover{border-color:var(--orange);color:var(--orange)}
+</style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav class="nav">
+  <span class="nav-logo">OvocxMalinovi</span>
+  <span class="nav-sep"></span>
+  <a href="zakupy-planowanie.html" class="nav-back">← Zakupy</a>
+  <span class="nav-sep"></span>
+  <span class="nav-title">Stan Magazynowy Opakowań</span>
+  <span class="nav-spacer"></span>
+  <span class="source-badge source-preset" id="src-badge">📅 25.02.2026</span>
+  <span id="custom-clear-btn" style="display:none;margin-left:6px">
+    <button class="btn-mini" onclick="clearCustom()" style="font-size:11px;padding:3px 8px">✕ Usuń własny plik</button>
+  </span>
+</nav>
+
+<main class="main">
+
+  <!-- ── Header ── -->
+  <div class="page-head">
+    <div>
+      <h1>📦 Stan Magazynowy Opakowań</h1>
+      <div class="page-head-sub">Stany w magazynach na dany dzień — źródło: StreamSoft export</div>
+    </div>
+    <div class="upload-mini" onclick="document.getElementById('stan-file').click()">
+      <span>📂</span>
+      <span id="upload-lbl">Wgraj nowszy plik XLSX ze StreamSoft</span>
+    </div>
+    <input type="file" id="stan-file" accept=".xlsx,.xls" onchange="handleFile(event)">
+  </div>
+
+  <!-- ── Filtry — magazyny jako chipsy ── -->
+  <div class="mag-chips" id="mag-chips"></div>
+
+  <!-- ── KPI ── -->
+  <div class="kpi-row" id="kpi-row"></div>
+
+  <!-- ── Toolbar ── -->
+  <div class="toolbar">
+    <span class="toolbar-label">Filtr:</span>
+    <select class="tf-select" id="f-grp" onchange="render()">
+      <option value="">Wszystkie grupy</option>
+    </select>
+    <div class="toolbar-sep"></div>
+    <input class="tf-input" id="f-search" type="text" placeholder="Szukaj w nazwie…" oninput="render()">
+    <div class="toolbar-sep"></div>
+    <span class="toolbar-label">Sortuj:</span>
+    <select class="tf-select" id="f-sort" onchange="applySortFromSelect()">
+      <option value="stan-desc">Stan ↓ (najwyższy)</option>
+      <option value="stan-asc">Stan ↑ (najniższy)</option>
+      <option value="nazwa-asc">Nazwa A–Z</option>
+      <option value="grp-asc">Grupa A–Z</option>
+    </select>
+  </div>
+
+  <!-- ── Tabela ── -->
+  <div class="table-wrap">
+    <div style="overflow-x:auto;max-height:calc(100vh - 340px);overflow-y:auto">
+      <table class="stan-table">
+        <thead>
+          <tr>
+            <th onclick="colSort('nazwa')">Nazwa</th>
+            <th onclick="colSort('magazyn')">Magazyn</th>
+            <th onclick="colSort('nazwa_grupy')">Grupa</th>
+            <th onclick="colSort('stan')" class="num-cell sort-desc" style="text-align:right">Stan</th>
+            <th onclick="colSort('jm')" style="width:60px">Jm</th>
+            <th onclick="colSort('wartosc')" class="num-cell" style="text-align:right">Wartość (zł)</th>
+          </tr>
+        </thead>
+        <tbody id="stan-tbody"></tbody>
+      </table>
+    </div>
+    <div class="table-footer" id="stan-footer"></div>
+  </div>
+
+</main>
+
+<script>
+const LS_KEY = 'oxm_stan_custom_v1';
+const GRP_CLR = {
+  'Etykiety':                        ['ET','g-ET'],
+  'Opakowania-Transportowe':         ['OT','g-OT'],
+  'Opakowania-Jednostkowe':          ['OJ','g-OJ'],
+  'Opakowania-Zbiorcze':             ['OZ','g-OZ'],
+  'Opakowania-Wkładki absorpcyjne':  ['OW','g-OW'],
+};
+
+let stanData = null;
+let stanDate = '';
+let sortCol  = 'stan';
+let sortDir  = -1;
+let activeMag = '';
+
+// ── Init ────────────────────────────────────────────────────
+function init() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const c = JSON.parse(raw);
+      stanData = c.rekordy; stanDate = c.date;
+      document.getElementById('src-badge').textContent = '📂 '+c.date+' (własny plik)';
+      document.getElementById('src-badge').className   = 'source-badge source-upload';
+      document.getElementById('custom-clear-btn').style.display = 'inline';
+      document.getElementById('upload-lbl').textContent = '↺ Zastąp plik nowszym';
+    }
+  } catch(e) {}
+
+  if (!stanData && window.STANY_DATA) {
+    stanData = window.STANY_DATA.rekordy;
+    stanDate = window.STANY_DATA.data;
+  }
+  if (!stanData) return;
+
+  buildFilters();
+  buildMagChips();
+  render();
+}
+
+function buildFilters() {
+  const sel = document.getElementById('f-grp');
+  const grps = [...new Set(stanData.map(r=>r.nazwa_grupy).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
+  grps.forEach(g => sel.appendChild(new Option(g,g)));
+}
+
+function buildMagChips() {
+  const mags = [...new Set(stanData.map(r=>r.magazyn))].sort((a,b)=>a.localeCompare(b,'pl'));
+  const container = document.getElementById('mag-chips');
+  container.innerHTML = `<div class="mag-chip active" data-mag="" onclick="setMag(this,'')">Wszystkie</div>` +
+    mags.map(m => `<div class="mag-chip" data-mag="${m}" onclick="setMag(this,'${m}')">${m}</div>`).join('');
+}
+
+function setMag(el, mag) {
+  activeMag = mag;
+  document.querySelectorAll('.mag-chip').forEach(c => c.classList.toggle('active', c.dataset.mag === mag));
+  render();
+}
+
+// ── Render ──────────────────────────────────────────────────
+function render() {
+  const grp    = document.getElementById('f-grp').value;
+  const search = document.getElementById('f-search').value.trim().toLowerCase();
+
+  let rows = stanData.filter(r =>
+    (!activeMag || r.magazyn === activeMag) &&
+    (!grp       || r.nazwa_grupy === grp) &&
+    (!search    || (r.nazwa||r.indeks||'').toLowerCase().includes(search))
+  );
+
+  rows.sort((a,b) => {
+    const av = a[sortCol], bv = b[sortCol];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1; if (bv == null) return -1;
+    return (typeof av==='string' ? av.localeCompare(bv,'pl') : av-bv) * sortDir;
+  });
+
+  // KPI
+  const totalStan  = rows.reduce((s,r)=>s+(r.stan||0),0);
+  const totalWart  = rows.reduce((s,r)=>s+(r.wartosc||0),0);
+  const uniqMags   = new Set(rows.map(r=>r.magazyn)).size;
+  const uniqGrps   = new Set(rows.map(r=>r.nazwa_grupy)).size;
+  const kpiByGrp   = {};
+  rows.forEach(r => { kpiByGrp[r.nazwa_grupy] = (kpiByGrp[r.nazwa_grupy]||0)+(r.stan||0); });
+  const topGrp     = Object.entries(kpiByGrp).sort((a,b)=>b[1]-a[1])[0];
+
+  document.getElementById('kpi-row').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Rekordów</div><div class="kpi-val" style="color:var(--orange)">${rows.length}</div></div>
+    <div class="kpi"><div class="kpi-label">Magazyny</div><div class="kpi-val">${uniqMags}</div></div>
+    <div class="kpi"><div class="kpi-label">Łącznie szt.</div><div class="kpi-val" style="font-size:16px">${totalStan.toLocaleString('pl-PL',{maximumFractionDigits:0})}</div></div>
+    <div class="kpi"><div class="kpi-label">Wartość zakupu</div><div class="kpi-val" style="font-size:16px;color:var(--blue)">${totalWart.toLocaleString('pl-PL',{minimumFractionDigits:0,maximumFractionDigits:0})} zł</div></div>
+    <div class="kpi"><div class="kpi-label">Najl. grupa</div><div class="kpi-val" style="font-size:13px;color:var(--purple)">${topGrp?topGrp[0].replace('Opakowania-',''):'—'}</div></div>
+  `;
+
+  // Table rows
+  document.getElementById('stan-tbody').innerHTML = rows.map(r => {
+    const [abbr, cls] = GRP_CLR[r.nazwa_grupy] || ['?',''];
+    const wartosc = r.wartosc > 0 ? r.wartosc.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+    return `<tr>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500" title="${r.nazwa||r.indeks}">${r.nazwa||r.indeks||'—'}</td>
+      <td style="font-size:11px;white-space:nowrap">${r.magazyn}</td>
+      <td><span class="grp-chip ${cls}">${r.nazwa_grupy||'—'}</span></td>
+      <td class="num-cell" style="font-weight:700;font-size:13px">${(r.stan||0).toLocaleString('pl-PL',{maximumFractionDigits:0})}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${r.jm||''}</td>
+      <td class="num-cell" style="color:var(--text-muted)">${wartosc}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text-muted)">Brak wyników</td></tr>';
+
+  document.getElementById('stan-footer').innerHTML = `
+    <span>Wyświetlono ${rows.length} z ${stanData.length} rekordów · stan na ${stanDate}</span>
+    <span><strong>${totalStan.toLocaleString('pl-PL',{maximumFractionDigits:0})} szt.</strong> łącznie</span>`;
+}
+
+// ── Sorting ─────────────────────────────────────────────────
+function colSort(col) {
+  sortDir = sortCol === col ? sortDir * -1 : (col==='stan'||col==='wartosc' ? -1 : 1);
+  sortCol = col;
+  document.querySelectorAll('.stan-table th').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+    if (th.getAttribute('onclick') === `colSort('${col}')`)
+      th.classList.add(sortDir===1?'sort-asc':'sort-desc');
+  });
+  render();
+}
+function applySortFromSelect() {
+  const val = document.getElementById('f-sort').value;
+  const [col,dir] = val.split('-');
+  sortCol = col; sortDir = dir==='desc'?-1:1;
+  render();
+}
+
+// ── File upload ─────────────────────────────────────────────
+function handleFile(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const wb = XLSX.read(ev.target.result,{type:'array'});
+      const m  = file.name.match(/(\d{1,2}[.\-\/]\d{1,2}[.\-\/]\d{4})/);
+      const dateStr = m ? m[1].replace(/[-\/]/g,'.') : file.name.replace(/\.xlsx?$/i,'');
+      const rekordy = [];
+      wb.SheetNames.forEach(sname => {
+        const ws  = wb.Sheets[sname];
+        const raw = XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        if (raw.length < 2) return;
+        const headers = raw[0].map(String);
+        const iN = headers.findIndex(h=>h.toLowerCase().includes('nazwa'));
+        const iS = headers.findIndex(h=>h.toLowerCase()==='stan');
+        const iJ = headers.findIndex(h=>h.toLowerCase()==='jm');
+        const iG = headers.findIndex(h=>h.toLowerCase().includes('nazwa grupy'));
+        const iK = headers.findIndex(h=>h.toLowerCase().includes('kod grupy'));
+        const iW = headers.findIndex(h=>h.toLowerCase().includes('wartość zakupu'));
+        raw.slice(1).forEach(row => {
+          if (!row.some(c=>c!=='')) return;
+          rekordy.push({
+            indeks:      String(row[0]||'').trim(),
+            nazwa:       String(row[iN>=0?iN:2]||'').trim(),
+            stan:        typeof row[iS>=0?iS:3]==='number'?row[iS>=0?iS:3]:0,
+            jm:          String(row[iJ>=0?iJ:10]||'szt.').trim(),
+            wartosc:     typeof row[iW>=0?iW:4]==='number'?Math.round(row[iW>=0?iW:4]*100)/100:0,
+            kod_grupy:   String(row[iK>=0?iK:12]||'').trim(),
+            nazwa_grupy: String(row[iG>=0?iG:13]||'').trim(),
+            magazyn:     sname.trim()
+          });
+        });
+      });
+      if (!rekordy.length) { alert('Brak danych w pliku.'); return; }
+      try { localStorage.setItem(LS_KEY, JSON.stringify({date:dateStr,rekordy})); } catch(e){}
+      stanData = rekordy; stanDate = dateStr;
+      document.getElementById('src-badge').textContent = '📂 '+dateStr+' (własny plik)';
+      document.getElementById('src-badge').className = 'source-badge source-upload';
+      document.getElementById('custom-clear-btn').style.display = 'inline';
+      document.getElementById('upload-lbl').textContent = '↺ Zastąp plik nowszym';
+      // Rebuild filters
+      const sel = document.getElementById('f-grp');
+      sel.innerHTML = '<option value="">Wszystkie grupy</option>';
+      [...new Set(rekordy.map(r=>r.nazwa_grupy).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl')).forEach(g=>sel.appendChild(new Option(g,g)));
+      buildMagChips();
+      render();
+    } catch(err) { alert('Błąd: '+err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function clearCustom() {
+  localStorage.removeItem(LS_KEY);
+  stanData = null; stanDate = '';
+  document.getElementById('custom-clear-btn').style.display='none';
+  document.getElementById('src-badge').textContent='📅 25.02.2026';
+  document.getElementById('src-badge').className='source-badge source-preset';
+  document.getElementById('upload-lbl').textContent='Wgraj nowszy plik XLSX ze StreamSoft';
+  document.getElementById('stan-file').value='';
+  document.getElementById('f-grp').innerHTML='<option value="">Wszystkie grupy</option>';
+  activeMag='';
+  init();
+}
+
+init();
+</script>
+</body>
+</html>
