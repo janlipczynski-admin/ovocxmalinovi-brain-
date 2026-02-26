@@ -65,16 +65,6 @@
   .stat-sub{font-size:10px;color:var(--text-muted);margin-top:2px}
   .stat-val.grad{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 
-  /* COMPARE ROW (Zestawienie Proceduralne) */
-  .stats-compare-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:-6px;margin-bottom:16px}
-  .stat-compare-src{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;display:flex;flex-direction:column;justify-content:center}
-  .stat-compare-src .stat-label{margin-bottom:3px}
-  .stat-compare-src-title{font-size:11px;font-weight:600;color:var(--text-dim)}
-  .stat-compare-src-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:1px}
-  .stat-compare-card{background:var(--white);border:1px solid var(--border);border-left:3px solid #0ea5e9;border-radius:10px;padding:10px 18px}
-  .stat-compare-card .stat-val{font-size:17px}
-  .stat-compare-card .stat-label{color:#0ea5e9}
-
   /* TABLE */
   .table-wrap{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden}
   .table-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border)}
@@ -255,29 +245,6 @@
       <div class="stat-label">Unikalnych kodów</div>
       <div class="stat-val" id="s-kody">—</div>
       <div class="stat-sub">typów opakowań</div>
-    </div>
-  </div>
-
-  <div class="stats-compare-row">
-    <div class="stat-compare-src">
-      <div class="stat-label">Porównanie źródła</div>
-      <div class="stat-compare-src-title">Zest. Proceduralne</div>
-      <div class="stat-compare-src-date">01.01–26.11.2025</div>
-    </div>
-    <div class="stat-compare-card">
-      <div class="stat-label">Wolumen ZP</div>
-      <div class="stat-val" id="s-zp-vol">—</div>
-      <div class="stat-sub">kg wg zest. proc.</div>
-    </div>
-    <div class="stat-compare-card">
-      <div class="stat-label">Kartony ZP</div>
-      <div class="stat-val" id="s-zp-kart">—</div>
-      <div class="stat-sub">szt kartonów</div>
-    </div>
-    <div class="stat-compare-card">
-      <div class="stat-label">Jednostki ZP</div>
-      <div class="stat-val" id="s-zp-jedn">—</div>
-      <div class="stat-sub">szt opakowań małych</div>
     </div>
   </div>
 
@@ -702,38 +669,6 @@ function getFilteredKatalog() {
     }));
 }
 
-function getZpStats() {
-  const typ     = document.getElementById('f-typ').value;
-  const rodzaj  = document.getElementById('f-rodzaj').value;
-  const waga    = document.getElementById('f-waga').value;
-  const topseal = document.getElementById('f-topseal').value;
-  const owoc    = document.getElementById('f-owoc').value;
-  const search  = document.getElementById('f-search').value.toLowerCase().trim();
-
-  const filtered = zpRekordy.filter(r => {
-    if (typ && r.typ_kartonu !== typ) return false;
-    if (rodzaj) {
-      const [rKind, rSize] = rodzaj.split('|');
-      if (r.rodzaj_kartonu !== rKind) return false;
-      if (rSize && r.rozmiar_kartonu !== rSize) return false;
-    }
-    if (waga && r.waga_g !== parseFloat(waga)) return false;
-    if (topseal === '1' && !r.topseal) return false;
-    if (topseal === '0' && r.topseal) return false;
-    if (owoc && r.owoc !== owoc) return false;
-    if (search && !r.pak.toLowerCase().includes(search)) return false;
-    return true;
-  });
-
-  const vol  = filtered.reduce((s, r) => s + (r.wolumen_kg  || 0), 0);
-  const kart = filtered.reduce((s, r) => s + (r.kartonow    || 0), 0);
-  const jedn = filtered.reduce((s, r) => s + (r.jednostek   || 0), 0);
-
-  document.getElementById('s-zp-vol').textContent  = fmtKg(vol) + ' kg';
-  document.getElementById('s-zp-kart').textContent = fmtNum(Math.round(kart));
-  document.getElementById('s-zp-jedn').textContent = fmtNum(Math.round(jedn));
-}
-
 function renderZestawienie() {
   let data = getFilteredKatalog();
 
@@ -765,8 +700,6 @@ function renderZestawienie() {
   document.getElementById('s-kody').textContent = data.length;
   document.getElementById('z-count').textContent = `${data.length} kodów`;
   document.getElementById('badge-zestawienie').textContent = data.length;
-
-  getZpStats();
 
   const tbody = document.getElementById('z-body');
   if (data.length === 0) {
