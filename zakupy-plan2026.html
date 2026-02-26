@@ -767,12 +767,18 @@ function goStep2() {
   if (WZ.periodType === 'months' && WZ.selMonths.size === 0) { alert('Wybierz co najmniej jeden miesiąc.'); return; }
   WZ.step = 2;
   WZ.computed = computeNeeds(); // { group: { pak: data } }
-  // Default assignments by carton size — key: "GROUP||pak_code"
+  // Default assignments by carton size per group — key: "GROUP||pak_code"
+  const GRP_DEFAULTS = {
+    OGL:       { MAŁY: 'K-380X300X90',  DUŻY: 'K-600X400X100' },
+    Jeronimo:  { MAŁY: 'K-380X300X90',  DUŻY: 'K-600X400X105' },
+    Pozostali: { MAŁY: 'K-400X300X90',  DUŻY: 'K-600X400X100' },
+  };
   Object.entries(WZ.computed).forEach(([grp, pakMap]) => {
+    const def = GRP_DEFAULTS[grp] || { MAŁY: 'K-380X300X90', DUŻY: 'K-600X400X100' };
     Object.entries(pakMap).forEach(([pak, d]) => {
       const key = grp + '||' + pak;
       if (!WZ.assignments[key]) {
-        WZ.assignments[key] = d.rozmiar === 'MAŁY' ? 'K-380X300X90' : 'K-600X400X100';
+        WZ.assignments[key] = d.rozmiar === 'MAŁY' ? def.MAŁY : def.DUŻY;
       }
     });
   });
@@ -805,7 +811,7 @@ function renderStep2() {
   </div>
   <p style="font-size:11px;color:var(--text-dim);margin-bottom:14px">
     Dla każdego formatu opakowania (ZP 2025) wybierz karton ze stanu magazynowego.
-    Klucz przypisania: <strong>Mały → K-380X300X90</strong>, <strong>Duży → K-600X400X100</strong> (domyślnie, zmień w razie potrzeby).
+    Domyślne przypisanie: <strong>OGL/Jeronimo Mały → K-380X300X90</strong> · <strong>Pozostali Mały → K-400X300X90</strong> · <strong>Duży → K-600X400X100</strong> (zmień w razie potrzeby).
   </p>`;
 
   selGrpArr.forEach((grp, gi) => {
