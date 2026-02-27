@@ -16,16 +16,95 @@
 2. Zrób `git diff HEAD index.html` i opisz Janowi co zmieniasz
 3. Po pushu: `git fetch origin main && git show origin/main:index.html | grep -c "wig-grid"` — wynik musi być > 0
 
-### 3. TESTY — uruchom przed każdym commitem
-```bash
-node tests/smoke.js
-```
-Jeśli testy nie przejdą — nie commituj.
-
-### 4. DANE FIRMOWE
+### 3. DANE FIRMOWE
 - Pliki JS z danymi (`*-data.js`, `planowanie-data.js`, `opakowania-data.js`) — zmiana tylko na wyraźne polecenie
 - Przed zmianą danych: pokaż Janowi diff, otrzymaj potwierdzenie
 - Po zmianie: uruchom smoke testy
+
+---
+
+## 🧪 STRATEGIA TESTOWANIA — OBOWIĄZUJE BEZWZGLĘDNIE
+
+### Architektura testów (3 warstwy)
+
+```
+tests/
+├── smoke.js       — Warstwa 1: Dane (JS data files)
+├── dashboard.js   — Warstwa 2: Struktura WIG Dashboard
+├── navigation.js  — Warstwa 3: Nawigacja i linki HTML
+└── run-all.sh     — Runner: uruchamia wszystkie 3
+```
+
+### Uruchamianie — przed KAŻDYM commitem
+
+```bash
+bash tests/run-all.sh
+```
+
+Jeśli JAKIKOLWIEK test nie przejdzie → NIE commituj. Napraw najpierw.
+
+---
+
+### Co testuje każda warstwa
+
+#### `smoke.js` — Dane JS
+- Pliki *-data.js ładują się bez błędu
+- ZP_DATA, PLAN_DATA, ZAKUPY_DATA mają wymagane pola
+- Kluczowi klienci (Biedronka, Dino, OGL...) mają rekordy
+- Spójność między plikami (plan vs ZP 2025)
+
+Uruchom gdy: zmieniasz *-data.js
+
+#### `dashboard.js` — WIG Dashboard
+- index.html zawiera wig-grid i 4 WIG-i z właścicielami
+- Wykresy SVG obecne, Google Sheets link obecny
+- Brak zakazanych elementów (stary dashboard, ticker giełdowy)
+
+Uruchom gdy: zmieniasz index.html
+
+#### `navigation.js` — Nawigacja HTML
+*(Dodany po błędzie 2026-02-27: tool-row jako `<div>` bez href zamiast `<a href="...">` )*
+
+- **`.tool-row`, `.back-btn`, `.sub-nav-item` muszą być `<a>` — nie `<div>`**
+- Wszystkie lokalne linki .html prowadzą do istniejących plików
+- Każda strona ma link powrotu do rodzica (wg hierarchii)
+- tool-row href nie jest pusty ani "#"
+- index.html linkuje do wszystkich narzędzi
+- zakupy-planowanie.html linkuje do wszystkich podstron zakupowych
+
+Uruchom gdy: zmieniasz nawigację lub linki w DOWOLNYM pliku HTML
+
+---
+
+### Mapa nawigacji (wymagana przez navigation.js)
+
+```
+index.html
+├── zakupy-planowanie.html  (Planeta Zakupów)
+│   ├── zakupy-stan.html
+│   ├── zakupy-plan2026.html
+│   ├── zakupy-klienci.html
+│   ├── zakupy-harmonogram.html
+│   ├── kartony-dostawcy.html
+│   └── zuzycie-2025.html
+├── opakowania.html
+├── planowanie-i-sprzedaz.html
+└── rozliczenia-rt.html
+```
+
+Gdy dodajesz nową stronę → dodaj do `HTML_FILES` i `REQUIRED_PARENT` w `tests/navigation.js`.
+
+---
+
+### Zasada HTML — wynikająca z błędów
+
+```html
+<!-- ✅ Poprawnie — klikalne = zawsze <a href="..."> -->
+<a class="tool-row" href="zakupy-planowanie.html">...</a>
+
+<!-- ❌ Błąd (navigation.js to wyłapie) -->
+<div class="tool-row">...</div>
+```
 
 ---
 
