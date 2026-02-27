@@ -312,6 +312,142 @@
       color: var(--text);
     }
 
+    /* ── MAPA PROCESÓW ── */
+    .proc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .card-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--accent);
+      text-decoration: none;
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid rgba(250,66,17,0.2);
+      transition: background .15s;
+    }
+
+    .card-link:hover { background: rgba(250,66,17,0.1); }
+
+    .card-body { padding: 14px 16px; }
+
+    .process-list { display: flex; flex-direction: column; gap: 5px; }
+
+    .process-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 11px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      transition: all 0.15s;
+      background: var(--bg);
+    }
+
+    .process-item:hover {
+      border-color: rgba(250,66,17,0.3);
+      background: rgba(250,66,17,0.02);
+      transform: translateX(1px);
+    }
+
+    .process-item.active {
+      border-color: rgba(250,66,17,0.35);
+      background: linear-gradient(to right, rgba(250,66,17,0.04), rgba(144,19,254,0.02));
+    }
+
+    .process-item.has-sheet { cursor: pointer; }
+    .process-item.has-sheet:hover .sheet-badge { opacity: 1; }
+    .process-item.has-sheet .sheet-badge { opacity: 0.45; }
+
+    .sheet-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--accent);
+      margin-left: 6px;
+      transition: opacity .15s;
+    }
+
+    .p-left { display: flex; align-items: center; gap: 10px; }
+
+    .p-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      width: 16px;
+    }
+
+    .p-name { font-size: 13px; font-weight: 500; }
+    .p-owner { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+    .pill {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .pill-ns { background: var(--bg2); color: var(--muted); border: 1px solid var(--border); }
+    .pill-ip { background: rgba(217,119,6,0.1); color: #d97706; border: 1px solid rgba(217,119,6,0.2); }
+    .pill-ok { background: rgba(22,163,74,0.1); color: #16a34a; border: 1px solid rgba(22,163,74,0.2); }
+    .pill-bl { background: rgba(220,38,38,0.1); color: #dc2626; border: 1px solid rgba(220,38,38,0.2); }
+    .pill[data-pid] { cursor: pointer; user-select: none; transition: filter .12s; }
+    .pill[data-pid]:hover { filter: brightness(0.93); }
+
+    .backlog-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .b-item {
+      padding: 9px 11px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .b-title { font-size: 12px; margin-bottom: 5px; }
+
+    .b-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .tag-r { background: rgba(220,38,38,0.08); color: #dc2626; border-color: rgba(220,38,38,0.2); }
+    .tag-y { background: rgba(217,119,6,0.08); color: #d97706; border-color: rgba(217,119,6,0.2); }
+
     /* ── BOTTOM PANELS ── */
     .panels {
       display: grid;
@@ -691,6 +827,132 @@
         </div>
       </div>
     </div>
+
+  <!-- MAPA PROCESÓW -->
+  <div class="proc-grid">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Mapa Procesów</div>
+        <a href="https://docs.google.com/spreadsheets/d/1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY/edit?gid=1555115517#gid=1555115517" target="_blank" class="card-link">↗ Otwórz w Google Sheets</a>
+      </div>
+      <div class="card-body">
+        <div class="section-label">Procesy Główne</div>
+        <div class="process-list">
+          <div class="process-item">
+            <div class="p-left">
+              <div class="p-num">01</div>
+              <div>
+                <div class="p-name">Sprzedaż i Handel</div>
+                <div class="p-owner">Dyrektor handlowy</div>
+              </div>
+            </div>
+            <div class="pill pill-ns" data-pid="01" onclick="toggleStatus(event,'01')" title="Kliknij, żeby zmienić status">Not started</div>
+          </div>
+          <div class="process-item">
+            <div class="p-left">
+              <div class="p-num">02</div>
+              <div>
+                <div class="p-name">Obsługa zamówień OxM</div>
+                <div class="p-owner">Dr. handlowy + Magazyny + Iza + Renia</div>
+              </div>
+            </div>
+            <div class="pill pill-ns" data-pid="02" onclick="toggleStatus(event,'02')" title="Kliknij, żeby zmienić status">Not started</div>
+          </div>
+          <div class="process-item has-sheet" onclick="window.open('rozliczenia-rt.html','_self')">
+            <div class="p-left">
+              <div class="p-num">03</div>
+              <div>
+                <div class="p-name">Rozliczenia RT 2025<span class="sheet-badge">↗ Podgląd</span></div>
+                <div class="p-owner">Dz. Rozliczeń</div>
+              </div>
+            </div>
+            <div class="pill pill-ns" data-pid="03" onclick="toggleStatus(event,'03')" title="Kliknij, żeby zmienić status">Not started</div>
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-top:12px">Procesy Wspierające</div>
+        <div class="process-list">
+          <div class="process-item">
+            <div class="p-left">
+              <div class="p-num">04</div>
+              <div>
+                <div class="p-name">Obsługa reklamacji</div>
+                <div class="p-owner">Olgierd (nowy właściciel)</div>
+              </div>
+            </div>
+            <div class="pill pill-ns" data-pid="04" onclick="toggleStatus(event,'04')" title="Kliknij, żeby zmienić status">Not started</div>
+          </div>
+          <div class="process-item active">
+            <div class="p-left">
+              <div class="p-num">05</div>
+              <div>
+                <div class="p-name">Gospodarka magazynowa</div>
+                <div class="p-owner">Renia + Magazyny · v1.0</div>
+              </div>
+            </div>
+            <div class="pill pill-ip" data-pid="05" onclick="toggleStatus(event,'05')" title="Kliknij, żeby zmienić status">In progress</div>
+          </div>
+          <div class="process-item">
+            <div class="p-left">
+              <div class="p-num">06</div>
+              <div>
+                <div class="p-name">Komunikacja wewnętrzna</div>
+                <div class="p-owner">wszyscy związani z biurem</div>
+              </div>
+            </div>
+            <div class="pill pill-ns" data-pid="06" onclick="toggleStatus(event,'06')" title="Kliknij, żeby zmienić status">Not started</div>
+          </div>
+          <div class="process-item">
+            <div class="p-left">
+              <div class="p-num">07</div>
+              <div>
+                <div class="p-name">Certyfikacja i wymogi prawne</div>
+                <div class="p-owner">Iza i Renia</div>
+              </div>
+            </div>
+            <div class="pill pill-ns" data-pid="07" onclick="toggleStatus(event,'07')" title="Kliknij, żeby zmienić status">Not started</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Backlog</div>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">6 wpisów</span>
+      </div>
+      <div class="card-body">
+        <div class="backlog-list">
+          <div class="b-item">
+            <div class="b-title">Automatyczne potwierdzenie przyjęcia reklamacji do klienta</div>
+            <div class="b-tags"><span class="tag">Usprawnienie</span><span class="tag">Reklamacje</span></div>
+          </div>
+          <div class="b-item">
+            <div class="b-title">Archiwizacja dokumentów do chmury zamiast kuriera do księgowości</div>
+            <div class="b-tags"><span class="tag">Systemowa</span><span class="tag">Komunikacja</span></div>
+          </div>
+          <div class="b-item">
+            <div class="b-title">Kontrola terminu zamknięcia reklamacji — cel: ≤14 dni</div>
+            <div class="b-tags"><span class="tag">Usprawnienie</span><span class="tag">Reklamacje</span></div>
+          </div>
+          <div class="b-item">
+            <div class="b-title">Ustandaryzowanie dokumentu PZ przy przyjęciu surowców na magazyn</div>
+            <div class="b-tags"><span class="tag">Usprawnienie</span><span class="tag tag-y">Magazyn</span></div>
+          </div>
+          <div class="b-item">
+            <div class="b-title">Mail complaints@ nie działa zgodnie z założeniami</div>
+            <div class="b-tags"><span class="tag tag-r">Błąd</span><span class="tag">Komunikacja</span></div>
+          </div>
+          <div class="b-item">
+            <div class="b-title">Regularna kontrola stanów magazynowych vs stany w SS (1x/miesiąc)</div>
+            <div class="b-tags"><span class="tag tag-r">Błąd</span><span class="tag tag-y">Magazyn</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
   <!-- BOTTOM PANELS -->
   <div class="panels">
@@ -1139,6 +1401,35 @@ async function malSend() {
     malAdd('bot', 'Błąd połączenia: ' + e.message);
   }
 }
+
+// ─── PROCESS STATUS (PILL) ────────────────────────────────────────────────────
+const PILL_LABELS   = { ns: 'Not started', ip: 'In progress', ok: 'Done ✓', bl: 'Blocked' };
+const PILL_CYCLE    = ['ns', 'ip', 'ok', 'bl'];
+const PILL_KEY      = 'oxm_process_status';
+const PILL_DEFAULTS = { '01':'ns','02':'ns','03':'ns','04':'ns','05':'ip','06':'ns','07':'ns' };
+
+function toggleStatus(e, pid) {
+  e.stopPropagation();
+  const statuses = JSON.parse(localStorage.getItem(PILL_KEY) || '{}');
+  const cur  = statuses[pid] !== undefined ? statuses[pid] : (PILL_DEFAULTS[pid] || 'ns');
+  const next = PILL_CYCLE[(PILL_CYCLE.indexOf(cur) + 1) % PILL_CYCLE.length];
+  statuses[pid] = next;
+  localStorage.setItem(PILL_KEY, JSON.stringify(statuses));
+  const pill = document.querySelector('.pill[data-pid="' + pid + '"]');
+  if (pill) { pill.className = 'pill pill-' + next; pill.textContent = PILL_LABELS[next]; }
+}
+
+function loadStatuses() {
+  const statuses = JSON.parse(localStorage.getItem(PILL_KEY) || '{}');
+  document.querySelectorAll('.pill[data-pid]').forEach(function(pill) {
+    const pid = pill.dataset.pid;
+    const st  = statuses[pid] !== undefined ? statuses[pid] : (PILL_DEFAULTS[pid] || 'ns');
+    pill.className = 'pill pill-' + st;
+    pill.textContent = PILL_LABELS[st];
+  });
+}
+
+loadStatuses();
 </script>
 </body>
 </html>
