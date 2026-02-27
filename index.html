@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>OvocxMalinovi — WIG Dashboard 2026</title>
+  <title>OvocxMalinovi — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="config.js"></script>
@@ -22,9 +22,7 @@
       --text:   #dde0f0;
       --muted:  rgba(200,204,224,0.45);
       --os:     #e0407b;
-      --h50:    #00c875;
-      --nc:     #4a9eff;
-      --px:     #f5a623;
+      --accent: #fa4211;
       --red:    #ff4d6d;
       --green:  #00c875;
     }
@@ -123,59 +121,6 @@
       color: var(--muted);
     }
 
-    /* ── TICKER ── */
-    .ticker {
-      background: var(--bg3);
-      border-bottom: 1px solid var(--border);
-      height: 28px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-    }
-
-    .ticker-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.14em;
-      color: var(--muted);
-      padding: 0 14px;
-      border-right: 1px solid var(--border);
-      white-space: nowrap;
-    }
-
-    .ticker-track {
-      overflow: hidden;
-      flex: 1;
-      display: flex;
-      align-items: center;
-    }
-
-    .ticker-inner {
-      display: flex;
-      gap: 36px;
-      padding: 0 20px;
-      animation: scroll-left 50s linear infinite;
-      white-space: nowrap;
-    }
-
-    @keyframes scroll-left {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
-    }
-
-    .ti {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-    }
-
-    .ti-n { color: var(--muted); }
-    .ti-v { color: var(--text); }
-    .ti-c.up   { color: var(--green); }
-    .ti-c.down { color: var(--red);   }
-
     /* ── MAIN ── */
     main {
       flex: 1;
@@ -191,125 +136,6 @@
       letter-spacing: 0.2em;
       color: var(--muted);
       text-transform: uppercase;
-    }
-
-    /* ── WIG GRID ── */
-    .wig-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-    }
-
-    .wc {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.25s, box-shadow 0.25s;
-    }
-
-    .wc:hover {
-      border-color: rgba(255,255,255,0.13);
-      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-    }
-
-    .wc::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-    }
-
-    .wc-os::before  { background: var(--os);  }
-    .wc-h50::before { background: var(--h50); }
-    .wc-nc::before  { background: var(--nc);  }
-    .wc-px::before  { background: var(--px);  }
-
-    .wc-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 10px;
-    }
-
-    .wc-name {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      color: var(--muted);
-    }
-
-    .wc-tag {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.08em;
-      padding: 2px 7px;
-      border-radius: 4px;
-    }
-
-    .wc-os  .wc-tag { color: var(--os);  background: rgba(224,64,123,0.1);  }
-    .wc-h50 .wc-tag { color: var(--h50); background: rgba(0,200,117,0.1);   }
-    .wc-nc  .wc-tag { color: var(--nc);  background: rgba(74,158,255,0.1);  }
-    .wc-px  .wc-tag { color: var(--px);  background: rgba(245,166,35,0.1);  }
-
-    .wc-val {
-      font-family: 'DM Mono', monospace;
-      font-size: 30px;
-      font-weight: 500;
-      letter-spacing: -0.02em;
-      line-height: 1;
-      margin-bottom: 5px;
-    }
-
-    .wc-os  .wc-val { color: var(--os);  }
-    .wc-h50 .wc-val { color: var(--h50); }
-    .wc-nc  .wc-val { color: var(--nc);  }
-    .wc-px  .wc-val { color: var(--px);  }
-
-    .wc-chg {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      margin-bottom: 14px;
-      font-family: 'DM Mono', monospace;
-    }
-
-    .wc-chg-abs { font-size: 13px; font-weight: 500; }
-    .wc-chg-pct { font-size: 11px; padding: 2px 6px; border-radius: 4px; }
-
-    .wc-chg.up   .wc-chg-abs { color: var(--green); }
-    .wc-chg.down .wc-chg-abs { color: var(--red);   }
-    .wc-chg.up   .wc-chg-pct { color: var(--green); background: rgba(0,200,117,0.1);  }
-    .wc-chg.down .wc-chg-pct { color: var(--red);   background: rgba(255,77,109,0.1); }
-
-    .wc-chart {
-      width: 100%;
-      height: 56px;
-      display: block;
-      margin-bottom: 14px;
-    }
-
-    .wc-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .wc-stat-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 8px;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-
-    .wc-stat-val {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--text);
     }
 
     /* ── MAPA PROCESÓW ── */
@@ -654,12 +480,8 @@
     .mal-send:hover { opacity: 0.82; }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 1100px) {
-      .wig-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
     @media (max-width: 680px) {
-      .wig-grid  { grid-template-columns: 1fr; }
+      .proc-grid { grid-template-columns: 1fr; }
       .panels    { grid-template-columns: 1fr; }
       .mal-panel { width: calc(100vw - 28px); right: 14px; }
     }
@@ -673,7 +495,7 @@
     <div class="hd-logo-icon">🫐</div>
     <div>
       <div class="hd-logo-name">OvocxMalinovi</div>
-      <div class="hd-logo-sub">WIG DASHBOARD 2026</div>
+      <div class="hd-logo-sub">REORG 2026</div>
     </div>
   </div>
   <div class="hd-right">
@@ -683,150 +505,8 @@
   </div>
 </header>
 
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-label">OXM·MARKET</div>
-  <div class="ticker-track">
-    <div class="ticker-inner" id="tickerInner"></div>
-  </div>
-</div>
-
 <!-- MAIN -->
 <main>
-
-  <div class="section-label">Indeksy WIG — Sezon 2026</div>
-
-  <!-- 4 WIG CARDS -->
-  <div class="wig-grid">
-
-    <!-- OS MALINOVI -->
-    <div class="wc wc-os">
-      <div class="wc-header">
-        <div class="wc-name">OS MALINOVI</div>
-        <div class="wc-tag">OXM·OS</div>
-      </div>
-      <div class="wc-val" id="os-val">1 247.32</div>
-      <div class="wc-chg up" id="os-chg">
-        <span class="wc-chg-abs" id="os-abs">+12.40</span>
-        <span class="wc-chg-pct" id="os-pct">+1.00%</span>
-      </div>
-      <canvas class="wc-chart" id="os-c"></canvas>
-      <div class="wc-stats">
-        <div>
-          <div class="wc-stat-label">Plan kg</div>
-          <div class="wc-stat-val">1 539 t</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">Plan kartony</div>
-          <div class="wc-stat-val">686k</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">Growerów</div>
-          <div class="wc-stat-val">47</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">Wzrost YoY</div>
-          <div class="wc-stat-val" style="color:var(--green)">+48%</div>
-        </div>
-      </div>
-      <div class="raag green"><div class="raag-dot"></div>CEL Q2!</div>
-    </div>
-
-    <!-- HARVEST 50 -->
-    <div class="wc wc-h50">
-      <div class="wc-header">
-        <div class="wc-name">HARVEST 50</div>
-        <div class="wc-tag">OXM·H50</div>
-      </div>
-      <div class="wc-val" id="h50-val">892.15</div>
-      <div class="wc-chg down" id="h50-chg">
-        <span class="wc-chg-abs" id="h50-abs">-3.21</span>
-        <span class="wc-chg-pct" id="h50-pct">-0.36%</span>
-      </div>
-      <canvas class="wc-chart" id="h50-c"></canvas>
-      <div class="wc-stats">
-        <div>
-          <div class="wc-stat-label">Top growerzy</div>
-          <div class="wc-stat-val">50</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">Dostawy</div>
-          <div class="wc-stat-val">92.4%</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">Magazyny</div>
-          <div class="wc-stat-val">4</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">WZ na czas</div>
-          <div class="wc-stat-val" style="color:var(--red)">71.2%</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- NO COMPLAINTS -->
-    <div class="wc wc-nc">
-      <div class="wc-header">
-        <div class="wc-name">NO COMPLAINTS</div>
-        <div class="wc-tag">OXM·NC</div>
-      </div>
-      <div class="wc-val" id="nc-val">9 987.44</div>
-      <div class="wc-chg up" id="nc-chg">
-        <span class="wc-chg-abs" id="nc-abs">+24.70</span>
-        <span class="wc-chg-pct" id="nc-pct">+0.25%</span>
-      </div>
-      <canvas class="wc-chart" id="nc-c"></canvas>
-      <div class="wc-stats">
-        <div>
-          <div class="wc-stat-label">Reklamacje</div>
-          <div class="wc-stat-val">3</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">Rozwiązane</div>
-          <div class="wc-stat-val" style="color:var(--green)">100%</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">Właściciel</div>
-          <div class="wc-stat-val">Olgierd</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">Śr. czas</div>
-          <div class="wc-stat-val">2.1 dni</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PRODUCT X -->
-    <div class="wc wc-px">
-      <div class="wc-header">
-        <div class="wc-name">PRODUCT X</div>
-        <div class="wc-tag">OXM·PX</div>
-      </div>
-      <div class="wc-val" id="px-val">4 521.08</div>
-      <div class="wc-chg up" id="px-chg">
-        <span class="wc-chg-abs" id="px-abs">+156.30</span>
-        <span class="wc-chg-pct" id="px-pct">+3.58%</span>
-      </div>
-      <canvas class="wc-chart" id="px-c"></canvas>
-      <div class="wc-stats">
-        <div>
-          <div class="wc-stat-label">Odmiany BW</div>
-          <div class="wc-stat-val">5</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">Royalties</div>
-          <div class="wc-stat-val">Frutania</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">REORG</div>
-          <div class="wc-stat-val" style="color:var(--px)">W toku</div>
-        </div>
-        <div>
-          <div class="wc-stat-label">Certyfikacje</div>
-          <div class="wc-stat-val">FSC · OZE</div>
-        </div>
-      </div>
-    </div>
 
   <!-- MAPA PROCESÓW -->
   <div class="proc-grid">
@@ -1002,128 +682,6 @@ function tickTime() {
 }
 setInterval(tickTime, 1000);
 tickTime();
-
-// ─── TICKER ──────────────────────────────────────────────────────────────────
-var TICKERS = [
-  { n:'OS·MALINOWI',   v:'1 247.32', c:'+1.00%',  up:true  },
-  { n:'HARVEST·50',    v:'892.15',   c:'-0.36%',  up:false },
-  { n:'NO·COMPLAINTS', v:'9 987.44', c:'+0.25%',  up:true  },
-  { n:'PRODUCT·X',     v:'4 521.08', c:'+3.58%',  up:true  },
-  { n:'MALINY·PLN',    v:'12.40',    c:'+2.10%',  up:true  },
-  { n:'KARTONY·2026',  v:'686 434',  c:'+48.0%',  up:true  },
-  { n:'OGL·FOOD',      v:'244 100',  c:'+12.3%',  up:true  },
-  { n:'JERONIMO·MR',   v:'63 200',   c:'+8.5%',   up:true  },
-  { n:'GROWERZY',      v:'47',       c:'0.00%',   up:true  },
-  { n:'WZ·NA·CZAS',    v:'71.2%',    c:'-4.1%',   up:false },
-];
-
-(function buildTicker() {
-  var items = TICKERS.concat(TICKERS);
-  document.getElementById('tickerInner').innerHTML = items.map(function(t) {
-    return '<span class="ti">' +
-      '<span class="ti-n">' + t.n + '</span>' +
-      '<span class="ti-v">' + t.v + '</span>' +
-      '<span class="ti-c ' + (t.up ? 'up' : 'down') + '">' + t.c + '</span>' +
-      '</span>';
-  }).join('');
-})();
-
-// ─── SPARKLINES ──────────────────────────────────────────────────────────────
-function walk(n, start, vol, bias) {
-  var d = [start];
-  for (var i = 1; i < n; i++) {
-    d.push(Math.max(1, d[i-1] + (Math.random()-0.5+bias*0.12)*vol));
-  }
-  return d;
-}
-
-var WALKS = {
-  os:  walk(60, 1150, 14, 1.2),
-  h50: walk(60,  920,  8, -0.2),
-  nc:  walk(60, 9800, 30, 0.9),
-  px:  walk(60, 4000, 42, 2.1),
-};
-
-function sparkline(id, data, color) {
-  var c = document.getElementById(id);
-  if (!c) return;
-  var dpr = window.devicePixelRatio || 1;
-  c.width  = c.offsetWidth  * dpr;
-  c.height = c.offsetHeight * dpr;
-  var ctx = c.getContext('2d');
-  ctx.scale(dpr, dpr);
-  var W = c.offsetWidth, H = c.offsetHeight;
-  var mn = Math.min.apply(null, data);
-  var mx = Math.max.apply(null, data);
-  var rng = mx - mn || 1;
-  var toX = function(i){ return (i / (data.length - 1)) * W; };
-  var toY = function(v){ return H - ((v - mn) / rng) * (H - 6) - 3; };
-
-  var grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, color + '38');
-  grad.addColorStop(1, color + '00');
-
-  ctx.beginPath();
-  ctx.moveTo(0, H);
-  data.forEach(function(v, i){ ctx.lineTo(toX(i), toY(v)); });
-  ctx.lineTo(W, H);
-  ctx.closePath();
-  ctx.fillStyle = grad;
-  ctx.fill();
-
-  ctx.beginPath();
-  data.forEach(function(v, i){
-    if (i === 0) ctx.moveTo(toX(i), toY(v));
-    else ctx.lineTo(toX(i), toY(v));
-  });
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
-  var lx = toX(data.length - 1), ly = toY(data[data.length - 1]);
-  ctx.beginPath();
-  ctx.arc(lx, ly, 2.5, 0, Math.PI * 2);
-  ctx.fillStyle = color;
-  ctx.fill();
-}
-
-function drawAll() {
-  sparkline('os-c',  WALKS.os,  '#e0407b');
-  sparkline('h50-c', WALKS.h50, '#00c875');
-  sparkline('nc-c',  WALKS.nc,  '#4a9eff');
-  sparkline('px-c',  WALKS.px,  '#f5a623');
-}
-
-window.addEventListener('load', function(){ requestAnimationFrame(drawAll); });
-window.addEventListener('resize', drawAll);
-
-// ─── LIVE VALUES ─────────────────────────────────────────────────────────────
-var WIGS = {
-  os:  { valId:'os-val',  absId:'os-abs',  pctId:'os-pct',  chgId:'os-chg',  val:1247.32, base:1247.32 },
-  h50: { valId:'h50-val', absId:'h50-abs', pctId:'h50-pct', chgId:'h50-chg', val:892.15,  base:892.15  },
-  nc:  { valId:'nc-val',  absId:'nc-abs',  pctId:'nc-pct',  chgId:'nc-chg',  val:9987.44, base:9987.44 },
-  px:  { valId:'px-val',  absId:'px-abs',  pctId:'px-pct',  chgId:'px-chg',  val:4521.08, base:4521.08 },
-};
-
-function fmt(v) {
-  return v.toLocaleString('pl-PL', { minimumFractionDigits:2, maximumFractionDigits:2 });
-}
-
-function tickWIGs() {
-  Object.keys(WIGS).forEach(function(k) {
-    var w = WIGS[k];
-    w.val += (Math.random() - 0.48) * w.base * 0.0018;
-    w.val = Math.max(w.base * 0.75, w.val);
-    var d = w.val - w.base;
-    var p = (d / w.base) * 100;
-    var up = d >= 0;
-    document.getElementById(w.valId).textContent = fmt(w.val);
-    document.getElementById(w.absId).textContent = (up ? '+' : '') + d.toFixed(2);
-    document.getElementById(w.pctId).textContent = (up ? '+' : '') + p.toFixed(2) + '%';
-    document.getElementById(w.chgId).className = 'wc-chg ' + (up ? 'up' : 'down');
-  });
-}
-setInterval(tickWIGs, 3500);
 
 // ─── ACTIVITY FEED ───────────────────────────────────────────────────────────
 var ACTS = [
