@@ -200,7 +200,7 @@ console.log('\n=== 6. Spójność nawigacji (wzajemne linki) ===');
 // zakupy-planowanie.html musi linkować do wszystkich podstron zakupowych
 const ZAKUPY_HUB   = 'zakupy-planowanie.html';
 const ZAKUPY_PAGES = ['zakupy-stan.html', 'zakupy-plan2026.html', 'zakupy-klienci.html',
-                      'zakupy-harmonogram.html', 'kartony-dostawcy.html'];
+                      'zakupy-harmonogram.html', 'kartony-dostawcy.html', 'zuzycie-2025.html'];
 
 test(`${ZAKUPY_HUB} linkuje do wszystkich podstron zakupowych`, () => {
   const html = htmlContents[ZAKUPY_HUB];

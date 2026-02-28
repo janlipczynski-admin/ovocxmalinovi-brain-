@@ -1,0 +1,16 @@
+#!/bin/bash
+# ─────────────────────────────────────────────────────────────────────────────
+# OvocxMalinovi — Pre-commit hook
+# Blokuje commit jeśli jakikolwiek test regresji nie przechodzi.
+# Instalacja: bash hooks/install.sh
+# ─────────────────────────────────────────────────────────────────────────────
+set -e
+
+echo ""
+echo "🔍 Pre-commit: uruchamiam testy regresji..."
+echo ""
+
+# Uruchom pełny suite testów
+bash tests/run-all.sh
+
+echo "✅ Pre-commit: testy przeszły — commit dozwolony"

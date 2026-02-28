@@ -22,38 +22,41 @@ jobs:
         with:
           node-version: '20'
 
-      - name: '[1/9] Smoke testy — dane JS'
+      - name: '[1/10] Smoke testy — dane JS'
         run: node tests/smoke.js
 
-      - name: '[2/9] Dashboard WIG — integralność'
+      - name: '[2/10] Dashboard WIG — integralność'
         run: node tests/dashboard.js
 
-      - name: '[3/9] Nawigacja — linki HTML'
+      - name: '[3/10] Nawigacja — linki HTML'
         run: node tests/navigation.js
 
-      - name: '[4/9] Regression — ceny i marże'
+      - name: '[4/10] Regression — ceny i marże'
         run: node tests/regression-prices.js
 
-      - name: '[5/9] Regression — plany ilościowe'
+      - name: '[5/10] Regression — plany ilościowe'
         run: node tests/regression-plan.js
 
-      - name: '[6/9] Regression — dostawcy i mapa kartonów'
+      - name: '[6/10] Regression — dostawcy i mapa kartonów'
         run: node tests/regression-suppliers.js
 
-      - name: '[7/9] Regression — stany magazynowe'
+      - name: '[7/10] Regression — stany magazynowe'
         run: node tests/regression-inventory.js
 
-      - name: '[8/9] Regression — spójność między plikami'
+      - name: '[8/10] Regression — spójność między plikami'
         run: node tests/regression-crossfile.js
 
-      - name: '[9/9] Regression — dashboard rozszerzony'
+      - name: '[9/10] Regression — dashboard rozszerzony'
         run: node tests/regression-crossfile-dashboard.js
+
+      - name: '[10/10] Regression — rozliczenia RT'
+        run: node tests/regression-rt.js
 
       - name: Podsumowanie
         if: success()
         run: |
           echo ""
           echo "████████████████████████████████████████████████████████"
-          echo "  ✅  Wszystkie 9 suite'ów przeszły                     "
+          echo "  ✅  Wszystkie 10 suite'ów przeszły                    "
           echo "████████████████████████████████████████████████████████"
           echo ""

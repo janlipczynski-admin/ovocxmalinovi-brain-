@@ -15,7 +15,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ── Krok 1: Testy regresji PRZED merge ─────────────────────────────────
+  regression-tests:
+    runs-on: ubuntu-latest
+    name: Testy regresji (gate)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Uruchom pełny suite testów
+        run: bash tests/run-all.sh
+
+  # ── Krok 2: Merge + Deploy (tylko jeśli testy przeszły) ────────────────
   merge-and-deploy:
+    needs: regression-tests
     runs-on: ubuntu-latest
     environment:
       name: github-pages
