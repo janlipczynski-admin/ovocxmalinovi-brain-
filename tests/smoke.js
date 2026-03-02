@@ -229,6 +229,38 @@ test('każdy klient ZS ma co najmniej 1 pak_code z kgpk > 0', () => {
   });
 });
 
+// ── HTML INTEGRALNOŚĆ — martwy kod ────────────────────────────────────────────
+console.log('\n=== Martwy kod / brakujące funkcje w HTML ===');
+
+function checkHtmlDeadCalls(file, checks) {
+  const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  checks.forEach(({ call, id }) => {
+    if (id) {
+      test(`${file}: wywołanie "${call}" ma odpowiadający element #${id}`, () => {
+        const hasCall = html.includes(call);
+        if (!hasCall) return; // brak wywołania — OK
+        assert(html.includes(`id="${id}"`),
+          `"${call}" wywołuje element #${id} który nie istnieje w HTML — crash na starcie`);
+      });
+    } else {
+      test(`${file}: funkcja "${call}" jest zdefiniowana`, () => {
+        const hasCall = new RegExp(`\\b${call}\\s*\\(`).test(html);
+        if (!hasCall) return; // nie wywołana — OK
+        const isDefined = new RegExp(`function\\s+${call}\\s*\\(`).test(html);
+        assert(isDefined, `"${call}()" jest wywoływana ale nie jest zdefiniowana — ReferenceError`);
+      });
+    }
+  });
+}
+
+checkHtmlDeadCalls('opakowania.html', [
+  { call: 'buildPrognoza' },
+  { call: 'renderPrognoza' },
+  { call: 'renderMiesieczna' },
+  { call: 'populateSelect(\'prog-owoc\'', id: 'prog-owoc' },
+  { call: 'populateSelect(\'prog-klient\'', id: 'prog-klient' },
+]);
+
 // ── PODSUMOWANIE ──────────────────────────────────────────────────────────────
 console.log(`\n${'─'.repeat(50)}`);
 console.log(`Wynik: ${passed} zaliczone, ${failed} nieudane`);
