@@ -463,7 +463,7 @@ main{padding:32px 48px}
     <div class="proc-row"><span class="proc-n">02</span><span class="proc-name">Obsługa zamówień OxM</span><span class="pill p-ns">Not started</span></div>
     <div class="proc-row"><span class="proc-n">03</span><span class="proc-name">Rozliczenia tygodniowe</span><span class="pill p-ns">Not started</span></div>
     <div class="proc-row"><span class="proc-n">04</span><span class="proc-name">Obsługa reklamacji</span><span class="pill p-ns">Not started</span></div>
-    <div class="proc-row"><span class="proc-n">05</span><span class="proc-name">Gospodarka magazynowa</span><span class="pill p-ip">In progress</span></div>
+    <a class="proc-row" href="https://docs.google.com/spreadsheets/d/1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY/edit?gid=741010446#gid=741010446" target="_blank" style="text-decoration:none;color:inherit"><span class="proc-n">05</span><span class="proc-name">Gospodarka magazynowa</span><span class="pill p-ip">In progress</span></a>
     <div class="proc-row"><span class="proc-n">06</span><span class="proc-name">Komunikacja wewnętrzna</span><span class="pill p-ns">Not started</span></div>
     <div class="proc-row"><span class="proc-n">07</span><span class="proc-name">Certyfikacja i wymogi prawne</span><span class="pill p-ns">Not started</span></div>
   </div>
@@ -648,10 +648,79 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 
 document.querySelectorAll('.mal-sug').forEach(b=>{
   b.addEventListener('click',()=>{
-    document.querySelector('.mal-in').value=b.textContent.trim().replace(/^.\s/,'');
+    const txt=b.textContent.trim().replace(/^.\s/,'');
+    document.querySelector('.mal-in').value=txt;
     document.querySelector('.mal-in').focus();
   });
 });
+</script>
+
+<script src="config.js"></script>
+<script src="firma-wiedza.js"></script>
+<script>
+(function(){
+  const inp  = document.querySelector('.mal-in');
+  const btn  = document.querySelector('.mal-btn');
+  const bub  = document.querySelector('.mal-bubble');
+  const sugs = document.querySelector('.mal-sugs');
+
+  let history = [];
+
+  async function malSend(msg) {
+    msg = (msg || inp.value).trim();
+    if (!msg) return;
+    inp.value = '';
+    sugs.style.display = 'none';
+
+    bub.style.color = 'var(--muted)';
+    bub.textContent = '…';
+    btn.disabled = true;
+
+    const apiKey = (window.OXM_CONFIG || {}).apiKey || '';
+    if (!apiKey || apiKey === '__ANTHROPIC_KEY__') {
+      bub.style.color = '#e55';
+      bub.textContent = '⚠️ Brak klucza API — dodaj go w config.js';
+      btn.disabled = false;
+      return;
+    }
+
+    history.push({ role: 'user', content: msg });
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-calls': 'true',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: (window.OXM_CONFIG || {}).model || 'claude-sonnet-4-6',
+          max_tokens: 1024,
+          system: (window.FIRMA_WIEDZA || '') + '\n\nJesteś Malinoovkiem — asystentem AI firmy OvocxMalinovi. Odpowiadaj krótko, konkretnie, po polsku.',
+          messages: history
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || res.status);
+      const reply = data.content?.[0]?.text || '(brak odpowiedzi)';
+      history.push({ role: 'assistant', content: reply });
+      bub.style.color = '';
+      bub.textContent = reply;
+    } catch(e) {
+      bub.style.color = '#e55';
+      bub.textContent = '⚠️ Błąd: ' + e.message;
+      history.pop();
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  window.malSend = malSend;
+  btn.addEventListener('click', () => malSend());
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') malSend(); });
+})();
 </script>
 </body>
 </html>
