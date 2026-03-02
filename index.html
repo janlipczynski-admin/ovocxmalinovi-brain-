@@ -645,14 +645,6 @@ function closeModal(e){
 }
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
-
-document.querySelectorAll('.mal-sug').forEach(b=>{
-  b.addEventListener('click',()=>{
-    const txt=b.textContent.trim().replace(/^.\s/,'');
-    document.querySelector('.mal-in').value=txt;
-    document.querySelector('.mal-in').focus();
-  });
-});
 </script>
 
 <script src="config.js"></script>
@@ -665,13 +657,15 @@ document.querySelectorAll('.mal-sug').forEach(b=>{
   const sugs = document.querySelector('.mal-sugs');
 
   let history = [];
+  let busy = false;
 
   async function malSend(msg) {
+    if (busy) return;
     msg = (msg || inp.value).trim();
     if (!msg) return;
+    busy = true;
     inp.value = '';
     sugs.style.display = 'none';
-
     bub.style.color = 'var(--muted)';
     bub.textContent = '…';
     btn.disabled = true;
@@ -679,8 +673,9 @@ document.querySelectorAll('.mal-sug').forEach(b=>{
     const apiKey = (window.OXM_CONFIG || {}).apiKey || '';
     if (!apiKey || apiKey === '__ANTHROPIC_KEY__') {
       bub.style.color = '#e55';
-      bub.textContent = '⚠️ Brak klucza API — dodaj go w config.js';
+      bub.textContent = '⚠️ Brak klucza API. Skontaktuj się z Janem.';
       btn.disabled = false;
+      busy = false;
       return;
     }
 
@@ -692,7 +687,6 @@ document.querySelectorAll('.mal-sug').forEach(b=>{
         headers: {
           'x-api-key': apiKey,
           'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-calls': 'true',
           'content-type': 'application/json'
         },
         body: JSON.stringify({
@@ -710,16 +704,25 @@ document.querySelectorAll('.mal-sug').forEach(b=>{
       bub.textContent = reply;
     } catch(e) {
       bub.style.color = '#e55';
-      bub.textContent = '⚠️ Błąd: ' + e.message;
+      bub.textContent = '⚠️ ' + (e.message || 'Błąd połączenia z API');
       history.pop();
     } finally {
       btn.disabled = false;
+      busy = false;
     }
   }
 
   window.malSend = malSend;
   btn.addEventListener('click', () => malSend());
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') malSend(); });
+
+  // Sugestie — kliknięcie od razu wysyła (nie tylko wypełnia input)
+  document.querySelectorAll('.mal-sug').forEach(b => {
+    b.addEventListener('click', () => {
+      const txt = b.textContent.replace(/^\S+\s/, '').trim(); // usuń emoji
+      malSend(txt);
+    });
+  });
 })();
 </script>
 </body>
