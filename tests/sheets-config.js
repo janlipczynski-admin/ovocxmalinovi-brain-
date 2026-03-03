@@ -95,18 +95,18 @@ test('formatPLN — formatowanie kwot', () => {
 // ── 3. index.html — IDs dla dynamicznego renderowania ────────────────────────
 
 // WIG #1 OS MALINOVI
-test('index.html — circle-os-stanowiska (kółko SVG)', () =>
-  assertIn('id="circle-os-stanowiska"', HTML, 'ID kółka stanowiska WIG#1'));
-test('index.html — text-os-stanowiska (tekst %)', () =>
+test('index.html — text-os-stanowiska (tekst % sub A)', () =>
   assertIn('id="text-os-stanowiska"', HTML, 'ID tekstu stanowiska'));
-test('index.html — circle-os-procesy (kółko SVG)', () =>
-  assertIn('id="circle-os-procesy"', HTML, 'ID kółka procesy WIG#1'));
-test('index.html — text-os-procesy (tekst %)', () =>
+test('index.html — bar-os-stanowiska (pasek sub A)', () =>
+  assertIn('id="bar-os-stanowiska"', HTML, 'ID paska stanowiska'));
+test('index.html — text-os-procesy (tekst % sub B)', () =>
   assertIn('id="text-os-procesy"', HTML, 'ID tekstu procesy'));
-test('index.html — circle-os-rytm (kółko SVG)', () =>
-  assertIn('id="circle-os-rytm"', HTML, 'ID kółka rytm WIG#1'));
-test('index.html — text-os-rytm', () =>
+test('index.html — bar-os-procesy (pasek sub B)', () =>
+  assertIn('id="bar-os-procesy"', HTML, 'ID paska procesy'));
+test('index.html — text-os-rytm (tekst % sub C)', () =>
   assertIn('id="text-os-rytm"', HTML, 'ID tekstu rytm'));
+test('index.html — bar-os-rytm (pasek sub C)', () =>
+  assertIn('id="bar-os-rytm"', HTML, 'ID paska rytm'));
 test('index.html — lag-val-os (liczba ogólna)', () =>
   assertIn('id="lag-val-os"', HTML, 'ID wartości lag WIG#1'));
 test('index.html — lag-bar-os (pasek postępu)', () =>
@@ -128,13 +128,13 @@ test('index.html — proc-pill-1 do proc-pill-7 (wszystkie 7)', () => {
 });
 
 // ── 4. Brak hardcoded fake wartości ───────────────────────────────────────────
-test('index.html — brak hardcoded dasharray 40% stanowiska', () =>
-  assertNotIn('stroke-dasharray="67.9 101.8"', HTML,
-    'Stara hardcoded wartość 40% — usuń i zastąp dynamicznym renderem'));
+test('index.html — brak hardcoded dasharray w sub-WIG A', () =>
+  assertNotIn('circle-os-stanowiska', HTML,
+    'Stary element SVG kółka — zastąpiony paskiem postępu'));
 
-test('index.html — brak hardcoded dasharray 15% procesy', () =>
-  assertNotIn('stroke-dasharray="17.9 101.5"', HTML,
-    'Stara hardcoded wartość 15% — usuń i zastąp dynamicznym renderem'));
+test('index.html — brak hardcoded dasharray w sub-WIG B', () =>
+  assertNotIn('circle-os-procesy', HTML,
+    'Stary element SVG kółka — zastąpiony paskiem postępu'));
 
 
 // ── 5. sheets.js załadowany w index.html ─────────────────────────────────────

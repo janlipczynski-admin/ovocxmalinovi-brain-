@@ -107,15 +107,15 @@ function renderOS(lagRows) {
   const sub3    = extractPostep(lagRows, 'SUB-WIG 3 Postęp');
   const overall = Math.round((sub1 + sub2 + sub3) / 3);
 
-  // SVG circles
-  setAttr('circle-os-stanowiska', 'stroke-dasharray', arcDash(27, sub1));
+  // Sub-WIG progress bars
   setText('text-os-stanowiska', sub1 + '%');
+  setWidth('bar-os-stanowiska', sub1);
 
-  setAttr('circle-os-procesy', 'stroke-dasharray', arcDash(19, sub2));
   setText('text-os-procesy', sub2 + '%');
+  setWidth('bar-os-procesy', sub2);
 
-  setAttr('circle-os-rytm', 'stroke-dasharray', arcDash(14, sub3));
   setText('text-os-rytm', sub3 + '%');
+  setWidth('bar-os-rytm', sub3);
 
   // Lag bar
   setText('lag-val-os', overall + '%');
