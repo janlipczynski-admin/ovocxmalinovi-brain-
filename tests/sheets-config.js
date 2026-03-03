@@ -120,32 +120,6 @@ test('index.html — modal-os-procesy', () =>
 test('index.html — modal-os-rytm', () =>
   assertIn('id="modal-os-rytm"', HTML, 'ID modal rytm'));
 
-// WIG #2 HARVEST 50
-test('index.html — circle-harvest-main (kółko SVG)', () =>
-  assertIn('id="circle-harvest-main"', HTML, 'ID kółka harvest'));
-test('index.html — lag-val-harvest', () =>
-  assertIn('id="lag-val-harvest"', HTML, 'ID wartości lag WIG#2'));
-test('index.html — lag-bar-harvest', () =>
-  assertIn('id="lag-bar-harvest"', HTML, 'ID paska WIG#2'));
-
-// WIG #3 NO COMPLAINTS
-test('index.html — gauge-needle (wskazówka gaugeʼa)', () =>
-  assertIn('id="gauge-needle"', HTML, 'ID wskazówki WIG#3'));
-test('index.html — text-complaints-val', () =>
-  assertIn('id="text-complaints-val"', HTML, 'ID wartości WIG#3'));
-test('index.html — lag-val-complaints', () =>
-  assertIn('id="lag-val-complaints"', HTML, 'ID lag value WIG#3'));
-test('index.html — lag-bar-complaints', () =>
-  assertIn('id="lag-bar-complaints"', HTML, 'ID paska WIG#3'));
-
-// WIG #4 PRODUCT X
-test('index.html — circle-productx-outer (kółko SVG)', () =>
-  assertIn('id="circle-productx-outer"', HTML, 'ID kółka Product X'));
-test('index.html — text-productx-pct', () =>
-  assertIn('id="text-productx-pct"', HTML, 'ID tekstu % Product X'));
-test('index.html — lag-bar-productx', () =>
-  assertIn('id="lag-bar-productx"', HTML, 'ID paska WIG#4'));
-
 // Procesy
 test('index.html — proc-pill-1 do proc-pill-7 (wszystkie 7)', () => {
   for (let i = 1; i <= 7; i++) {
@@ -162,13 +136,6 @@ test('index.html — brak hardcoded dasharray 15% procesy', () =>
   assertNotIn('stroke-dasharray="17.9 101.5"', HTML,
     'Stara hardcoded wartość 15% — usuń i zastąp dynamicznym renderem'));
 
-test('index.html — brak hardcoded dasharray 58% harvest', () =>
-  assertNotIn('stroke-dasharray="164.3 212.5"', HTML,
-    'Stara hardcoded wartość 58% — usuń i zastąp dynamicznym renderem'));
-
-test('index.html — brak hardcoded dasharray 35% productX', () =>
-  assertNotIn('stroke-dasharray="143.3 265.1"', HTML,
-    'Stara hardcoded wartość 35% — usuń i zastąp dynamicznym renderem'));
 
 // ── 5. sheets.js załadowany w index.html ─────────────────────────────────────
 test('index.html — ładuje js/sheets.js', () =>

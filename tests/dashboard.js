@@ -33,17 +33,12 @@ console.log('\n=== WIG Dashboard — test integralności ===\n');
 // 1. Struktura WIG
 test('wig-grid istnieje (struktura WIG)', () => assertContains('wig-grid', 'dashboard nie jest WIG Dashboard 2026'));
 test('WIG #1 OS MALINOVI', () => assertContains('OS MALINOVI', 'Brak WIG #1'));
-test('WIG #2 HARVEST 50',  () => assertContains('HARVEST 50',  'Brak WIG #2'));
-test('WIG #3 NO COMPLAINTS', () => assertContains('NO COMPLAINTS', 'Brak WIG #3'));
-test('WIG #4 PRODUCT X',  () => assertContains('PRODUCT X',   'Brak WIG #4'));
 
 // 2. Właściciele WIG-ów
 test('WIG #1 — właściciel Jan', () => assertContains('WIG #1 · Jan', 'Brak przypisania Jan do WIG #1'));
-test('WIG #2 — właściciel Kacper', () => assertContains('WIG #2 · Kacper', 'Brak przypisania Kacper do WIG #2'));
-test('WIG #3 — właściciel Olgierd', () => assertContains('WIG #3 · Olgierd', 'Brak przypisania Olgierd do WIG #3'));
 
 // 3. Wykresy kołowe SVG
-test('wykresy kołowe SVG — co najmniej 4', () => assertCount('stroke-dasharray', 4, 'stroke-dasharray (koło SVG)'));
+test('wykresy kołowe SVG — co najmniej 2', () => assertCount('stroke-dasharray', 2, 'stroke-dasharray (koło SVG)'));
 test('radial-fill (animacja wejścia koła)', () => assertContains('radial-fill', 'Brak klasy radial-fill'));
 
 // 4. Google Sheets

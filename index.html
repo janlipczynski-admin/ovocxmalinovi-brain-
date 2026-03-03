@@ -36,7 +36,7 @@ header{background:var(--black);padding:0 48px;height:64px;display:flex;align-ite
 
 main{padding:32px 48px}
 
-.wig-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;margin-bottom:3px}
+.wig-grid{display:grid;grid-template-columns:1fr;gap:3px;margin-bottom:3px}
 
 .wig-card{
   background:var(--white);padding:36px 40px;
@@ -255,8 +255,6 @@ main{padding:32px 48px}
     <div class="meta-item"><div class="meta-val" style="color:var(--yellow)">2</div><div class="meta-lbl">W toku</div></div>
     <div class="meta-div"></div>
     <div class="meta-item"><div class="meta-val" style="color:var(--red)">1</div><div class="meta-lbl">Wymaga akcji</div></div>
-    <div class="meta-div"></div>
-    <div class="meta-item"><div class="meta-val" style="color:#555" id="daysLeft">—</div><div class="meta-lbl">Dni do Product X</div></div>
   </div>
 </div>
 
@@ -328,128 +326,6 @@ main{padding:32px 48px}
     <div class="click-hint">↗ szczegóły</div>
   </div>
 
-  <!-- WIG 2: HARVEST 50 — RADIAL PROGRESS -->
-  <div class="wig-card wc-2" onclick="openModal('harvest')">
-    <div class="wig-bg-num">2</div>
-    <div class="wig-top">
-      <div>
-        <div class="wig-label">WIG #2 · Kacper</div>
-        <div class="wig-name">HARVEST 50</div>
-        <div class="wig-owner">600k PLN marży netto · 50 mln obrotu<br>Lead: realizacja planu sprzedaży</div>
-      </div>
-      <div id="raag-harvest" class="raag green"><div class="raag-dot"></div>CEL Q2!</div>
-    </div>
-    <div class="wig-viz">
-      <svg width="240" height="150" viewBox="0 0 240 150">
-        <circle cx="120" cy="80" r="60" fill="none" stroke="#f2f0eb" stroke-width="16"/>
-        <circle cx="120" cy="80" r="60" fill="none" stroke="rgba(250,66,17,.15)" stroke-width="16"
-          stroke-dasharray="94.2 282.6" stroke-dashoffset="94.2" stroke-linecap="butt"/>
-        <circle cx="120" cy="80" r="60" fill="none" stroke="rgba(250,66,17,.4)" stroke-width="16"
-          stroke-dasharray="94.2 282.6" stroke-dashoffset="0" stroke-linecap="butt"/>
-        <circle id="circle-harvest-main" cx="120" cy="80" r="60" fill="none" stroke="var(--orange)" stroke-width="16"
-          stroke-dasharray="0 376.9" stroke-dashoffset="94.2" stroke-linecap="butt"/>
-        <text id="text-harvest-val" x="120" y="73" text-anchor="middle" font-family="Bebas Neue" font-size="32" fill="var(--orange)">0%</text>
-        <text id="text-harvest-sub" x="120" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--muted)">— / 600k PLN</text>
-        <text x="120" y="17" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--muted)">Q4 · 600k</text>
-        <text x="192" y="84" font-family="JetBrains Mono" font-size="9" fill="var(--orange)">Q2 ✓</text>
-        <text x="192" y="96" font-family="JetBrains Mono" font-size="9" fill="var(--yellow)">Q3 →</text>
-        <text x="10" y="84" font-family="JetBrains Mono" font-size="9" fill="var(--orange)">Q1 ✓</text>
-        <circle cx="120" cy="20" r="5" fill="#e0ddd6"/>
-        <circle cx="180" cy="80" r="5" fill="var(--orange)"/>
-        <circle cx="60" cy="80" r="5" fill="var(--orange)"/>
-      </svg>
-    </div>
-    <div class="lag-section">
-      <div class="lag-header">
-        <div><div id="lag-val-harvest" class="lag-current-big" style="color:var(--orange)">— PLN</div><div class="lag-footnote">marży netto szacunkowo</div></div>
-        <div style="text-align:right"><div class="lag-target-lbl">CEL ROCZNY</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--orange)">600 000 PLN</div></div>
-      </div>
-      <div class="lag-bar-track"><div id="lag-bar-harvest" class="lag-bar-fill" style="width:0%;background:var(--orange)"></div></div>
-      <div class="lag-footnote">Q3: ≥350k · Q4: ≥600k · tygodniowe monitorowanie</div>
-    </div>
-    <div class="click-hint">↗ szczegóły</div>
-  </div>
-
-  <!-- WIG 3: NO COMPLAINTS — GAUGE -->
-  <div class="wig-card wc-3" onclick="openModal('complaints')">
-    <div class="wig-bg-num">3</div>
-    <div class="wig-top">
-      <div>
-        <div class="wig-label">WIG #3 · Olgierd</div>
-        <div class="wig-name">NO COMPLAINTS</div>
-        <div class="wig-owner">Reklamacje ≤ 3% wartości sprzedaży<br>Lead: zamknięcie w ≤14 dni</div>
-      </div>
-      <div id="raag-complaints" class="raag yellow"><div class="raag-dot"></div>Wymaga akcji</div>
-    </div>
-    <div class="wig-viz">
-      <svg width="240" height="140" viewBox="0 0 230 130">
-        <path d="M 20 115 A 95 95 0 0 1 210 115" fill="none" stroke="#fee2e2" stroke-width="22"/>
-        <path d="M 20 115 A 95 95 0 0 1 210 115" fill="none" stroke="#fef3c7" stroke-width="22" stroke-dasharray="56.5 226" stroke-dashoffset="0"/>
-        <path d="M 20 115 A 95 95 0 0 1 210 115" fill="none" stroke="#dcfce7" stroke-width="22" stroke-dasharray="37.7 244.8"/>
-        <text x="22" y="105" font-family="JetBrains Mono" font-size="8" fill="var(--green)">0%</text>
-        <text x="200" y="105" text-anchor="end" font-family="JetBrains Mono" font-size="8" fill="var(--red)">10%</text>
-        <line x1="71" y1="34" x2="80" y2="46" stroke="var(--green)" stroke-width="2"/>
-        <text x="54" y="30" font-family="JetBrains Mono" font-size="9" fill="var(--green)" font-weight="500">CEL 3%</text>
-        <circle cx="115" cy="115" r="8" fill="var(--black)"/>
-        <circle cx="115" cy="115" r="3" fill="#f2f0eb"/>
-        <g id="gauge-needle" style="transform:rotate(-90deg);transform-origin:115px 115px">
-          <line x1="115" y1="115" x2="115" y2="28" stroke="var(--yellow)" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="115" cy="28" r="4" fill="var(--yellow)"/>
-        </g>
-        <text id="text-complaints-val" x="115" y="100" text-anchor="middle" font-family="Bebas Neue" font-size="22" fill="var(--yellow)">—%</text>
-        <text x="115" y="112" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--muted)">AKTUALNIE</text>
-      </svg>
-    </div>
-    <div class="lag-section">
-      <div class="lag-header">
-        <div><div id="lag-val-complaints" class="lag-current-big" style="color:var(--yellow)">—%</div><div class="lag-footnote">reklamacji wartości sprzedaży</div></div>
-        <div style="text-align:right"><div class="lag-target-lbl">CEL ROCZNY</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--green)">≤ 3,0%</div></div>
-      </div>
-      <div class="lag-bar-track"><div id="lag-bar-complaints" class="lag-bar-fill" style="width:0%;background:var(--yellow)"></div></div>
-      <div class="lag-footnote">Lead measures — do ustalenia · cotygodniowy raport</div>
-    </div>
-    <div class="click-hint">↗ szczegóły</div>
-  </div>
-
-  <!-- WIG 4: PRODUCT X — COUNTDOWN RINGS -->
-  <div class="wig-card wc-4" onclick="openModal('productx')">
-    <div class="wig-bg-num">4</div>
-    <div class="wig-top">
-      <div>
-        <div class="wig-label">WIG #4 · Jan (CEO)</div>
-        <div class="wig-name">PRODUCT X</div>
-        <div class="wig-owner">🍓 Premium Truskawka · 💡 New Business Development</div>
-      </div>
-      <div class="raag blue"><div class="raag-dot"></div><span id="daysRaag">—</span> dni</div>
-    </div>
-    <div class="wig-viz">
-      <svg width="240" height="150" viewBox="0 0 240 150">
-        <circle cx="120" cy="75" r="65" fill="none" stroke="#f2f0eb" stroke-width="10"/>
-        <circle id="circle-productx-outer" cx="120" cy="75" r="65" fill="none" stroke="var(--purple)" stroke-width="10"
-          stroke-dasharray="0 408.4" stroke-dashoffset="0" stroke-linecap="butt"
-          style="transform:rotate(-90deg);transform-origin:120px 75px"/>
-        <circle cx="120" cy="75" r="44" fill="none" stroke="#f2f0eb" stroke-width="8"/>
-        <circle cx="120" cy="75" r="44" fill="none" stroke="rgba(144,19,254,.4)" stroke-width="8"
-          stroke-dasharray="48.5 228" stroke-linecap="butt"
-          style="transform:rotate(-90deg);transform-origin:120px 75px"/>
-        <text x="120" y="65" text-anchor="middle" font-family="Bebas Neue" font-size="38" fill="var(--purple)" id="daysCountdown">—</text>
-        <text x="120" y="80" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--muted)">DNI DO LAUNCH</text>
-        <text x="120" y="92" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--purple)">30.04.2026</text>
-        <text x="120" y="14" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--muted)">New Business · Q4</text>
-        <text id="text-productx-pct" x="202" y="78" font-family="JetBrains Mono" font-size="8" fill="var(--purple)">0%</text>
-        <circle cx="185" cy="75" r="4" fill="var(--purple)"/>
-      </svg>
-    </div>
-    <div class="lag-section">
-      <div class="lag-header">
-        <div><div class="lag-current-big" style="color:var(--purple)" id="daysCountBig">— dni</div><div class="lag-footnote">do launchu Premium Truskawka</div></div>
-        <div style="text-align:right"><div class="lag-target-lbl">DEADLINE</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--purple)">30.04.2026</div></div>
-      </div>
-      <div class="lag-bar-track"><div id="lag-bar-productx" class="lag-bar-fill" style="width:0%;background:var(--purple)"></div></div>
-      <div class="lag-footnote">New Business: propozycje Q3–Q4 · właściciel: Jan CEO</div>
-    </div>
-    <div class="click-hint">↗ szczegóły</div>
-  </div>
 
 </div><!-- /wig-grid -->
 
@@ -488,8 +364,7 @@ main{padding:32px 48px}
     <div class="mal-bubble">Znam WIGi i procesy OvocxMalinovi. Czym mogę pomóc?</div>
     <div class="mal-sugs">
       <button class="mal-sug">⚙️ Status OS Malinowi 1.0?</button>
-      <button class="mal-sug">⏱ Ile dni do Product X?</button>
-      <button class="mal-sug">💰 HARVEST 50 — gdzie jesteśmy?</button>
+      <button class="mal-sug">📊 Co pokazuje arkusz LAG MEASURES?</button>
     </div>
     <div class="mal-input-row">
       <input class="mal-in" type="text" placeholder="Napisz do Malinoovka...">
@@ -528,14 +403,6 @@ const days=['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
 const months=['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
 document.getElementById('dateLbl').textContent=days[d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear();
 
-const launch=new Date('2026-04-30');
-const diff=Math.ceil((launch-d)/(1000*60*60*24));
-if(diff>0){
-  document.getElementById('daysLeft').textContent=diff;
-  document.getElementById('daysCountdown').textContent=diff;
-  document.getElementById('daysCountBig').textContent=diff+' dni';
-  document.getElementById('daysRaag').textContent=diff;
-}
 
 const modals={
   os:{
@@ -562,71 +429,6 @@ const modals={
           <br><br>Następny krok: <span class="sheets-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY')">otwórz arkusz →</span>
         </div>
       </div>`
-  },
-  harvest:{
-    title:'HARVEST 50',
-    sub:'WIG #2 · Kacper · RAAG: CEL Q2',
-    body:`
-      <div class="modal-section">
-        <div class="modal-section-title">LAG MEASURES <span>wyniki finansowe</span></div>
-        <div class="measure-row"><div><div class="measure-name">Marża netto — Q1</div><div class="measure-sub">marża na handlu towarem zakupionym</div></div><div><div class="measure-val" style="color:var(--orange)">baseline</div><div class="measure-status ms-ok">✓ OK</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Marża netto — Q2</div><div class="measure-sub">cel: ≥ 150 000 PLN</div></div><div><div class="measure-val" style="color:var(--orange)">✓ ≥150k</div><div class="measure-status ms-ok">CEL!</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Marża netto — Q3</div><div class="measure-sub">cel: ≥ 350 000 PLN narastająco</div></div><div><div class="measure-val" style="color:var(--yellow)">~350k</div><div class="measure-status ms-warn">W toku</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Marża netto — Q4 / roczna</div><div class="measure-sub">cel: 600 000 PLN · 50% kosztów spółki</div></div><div><div class="measure-val" style="color:var(--muted)">—</div><div class="measure-status ms-tbd">Q4</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Obrót roczny</div><div class="measure-sub">cel: 50 mln PLN</div></div><div><div class="measure-val" style="color:var(--muted)">TBD</div><div class="measure-status ms-tbd">Do ustalenia</div></div></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-section-title">LEAD MEASURES <span>działania tygodniowe</span></div>
-        <div class="measure-row"><div><div class="measure-name">Realizacja planu sprzedaży</div><div class="measure-sub">% wykonania tygodniowego planu</div></div><div><div class="measure-status ms-tbd">TBD — do zdefiniowania</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Nowe kontakty handlowe</div><div class="measure-sub">liczba nowych klientów / tygodniowo</div></div><div><div class="measure-status ms-tbd">TBD</div></div></div>
-      </div>
-      <div class="sheets-note">
-        <div class="sheets-note-icon">📊</div>
-        <div class="sheets-note-text"><strong>Konfiguracja w Google Sheets</strong>Wpisuj aktualne wartości marży co tydzień w arkuszu DANE_DASHBOARD. Dashboard pobierze je automatycznie. <span class="sheets-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY')">Otwórz arkusz →</span></div>
-      </div>`
-  },
-  complaints:{
-    title:'NO COMPLAINTS',
-    sub:'WIG #3 · Olgierd · RAAG: Wymaga akcji',
-    body:`
-      <div class="modal-section">
-        <div class="modal-section-title">LAG MEASURES <span>wyniki</span></div>
-        <div class="measure-row"><div><div class="measure-name">% reklamacji wartości sprzedaży</div><div class="measure-sub">aktualny poziom — powyżej celu</div></div><div><div class="measure-val" style="color:var(--yellow)">~4,5%</div><div class="measure-status ms-warn">Powyżej celu</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Cel roczny</div><div class="measure-sub">docelowy poziom reklamacji</div></div><div><div class="measure-val" style="color:var(--green)">≤ 3,0%</div><div class="measure-status ms-ok">Cel</div></div></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-section-title">LEAD MEASURES <span>działania cotygodniowe</span></div>
-        <div class="measure-row"><div><div class="measure-name">Zamknięcie reklamacji w ≤14 dni</div><div class="measure-sub">% reklamacji zamkniętych na czas</div></div><div><div class="measure-status ms-tbd">TBD — do zdefiniowania</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Cotygodniowy raport reklamacji</div><div class="measure-sub">Olgierd → Jan, każdy poniedziałek</div></div><div><div class="measure-status ms-tbd">TBD</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Root cause analysis</div><div class="measure-sub">analiza przyczyn dla każdej reklamacji</div></div><div><div class="measure-status ms-tbd">TBD</div></div></div>
-      </div>
-      <div class="sheets-note">
-        <div class="sheets-note-icon">📊</div>
-        <div class="sheets-note-text"><strong>Konfiguracja w Google Sheets</strong>Olgierd wpisuje dane reklamacji co tydzień do arkusza LOG. Dashboard czyta aktualny % automatycznie. <span class="sheets-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY')">Otwórz arkusz →</span></div>
-      </div>`
-  },
-  productx:{
-    title:'PRODUCT X',
-    sub:'WIG #4 · Jan (CEO) · 🍓 Truskawka + 💡 New Business',
-    body:`
-      <div class="modal-section">
-        <div class="modal-section-title">LAG MEASURES — 🍓 PREMIUM TRUSKAWKA</div>
-        <div class="measure-row"><div><div class="measure-name">Launch Premium Truskawka</div><div class="measure-sub">deadline: 30 kwietnia 2026</div></div><div><div class="measure-val" style="color:var(--purple)" id="modalDays">— dni</div><div class="measure-status ms-warn">W trakcie</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Gotowość produktu</div><div class="measure-sub">% przygotowania do launchu</div></div><div><div class="measure-val" style="color:var(--purple)">35%</div><div class="measure-status ms-warn">W toku</div></div></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-section-title">LAG MEASURES — 💡 NEW BUSINESS</div>
-        <div class="measure-row"><div><div class="measure-name">Propozycje nowych kierunków</div><div class="measure-sub">liczba opracowanych propozycji biznesowych</div></div><div><div class="measure-val" style="color:var(--muted)">0</div><div class="measure-status ms-tbd">Q3–Q4</div></div></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-section-title">LEAD MEASURES <span>działania tygodniowe</span></div>
-        <div class="measure-row"><div><div class="measure-name">Postęp przygotowania launchu</div><div class="measure-sub">tygodniowy update statusu</div></div><div><div class="measure-status ms-tbd">TBD — do zdefiniowania</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Research nowych kierunków</div><div class="measure-sub">godziny poświęcone na analizę / tydzień</div></div><div><div class="measure-status ms-tbd">TBD</div></div></div>
-      </div>
-      <div class="sheets-note">
-        <div class="sheets-note-icon">📊</div>
-        <div class="sheets-note-text"><strong>Konfiguracja w Google Sheets</strong>Lead measures dla Product X ustalamy na kolejnym spotkaniu. Wpisz je do arkusza WIG Scoreboard zakładka INICJATYWY. <span class="sheets-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY')">Otwórz arkusz →</span></div>
-      </div>`
   }
 };
 
@@ -635,7 +437,6 @@ function openModal(key){
   document.getElementById('modalTitle').textContent=m.title;
   document.getElementById('modalSub').textContent=m.sub;
   document.getElementById('modalBody').innerHTML=m.body;
-  if(key==='productx'&&diff>0) document.getElementById('modalDays').textContent=diff+' dni';
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow='hidden';
 }

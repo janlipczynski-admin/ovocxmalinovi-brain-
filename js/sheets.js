@@ -142,56 +142,6 @@ function renderOS(lagRows) {
   setText('modal-os-rytm',       sub3 + '%');
 }
 
-// ── WIG #2 — HARVEST 50 ────────────────────────────────────────────────────────
-
-function renderHarvest(data) {
-  const current = Number(data.harvest_current_pln) || 0;
-  const target  = Number(data.harvest_target_pln)  || 600000;
-  const p = Math.min(100, Math.round(current / target * 100));
-
-  setAttr('circle-harvest-main', 'stroke-dasharray', arcDash(60, p));
-  setText('text-harvest-val', p + '%');
-  setText('text-harvest-sub', '~' + formatPLN(current) + ' / ' + formatPLN(target) + ' PLN');
-  setText('lag-val-harvest', '~' + formatPLN(current) + ' PLN');
-  setWidth('lag-bar-harvest', p);
-}
-
-// ── WIG #3 — NO COMPLAINTS ─────────────────────────────────────────────────────
-
-function renderComplaints(data) {
-  const current = Number(data.complaints_current_pct) || 0;
-  const target  = Number(data.complaints_target_pct)  || 3;
-  const maxPct  = 10;
-
-  const angle  = -90 + (Math.min(current, maxPct) / maxPct * 180);
-  const needle = document.getElementById('gauge-needle');
-  if (needle) needle.style.transform = `rotate(${angle.toFixed(1)}deg)`;
-
-  setText('text-complaints-val', '~' + current.toFixed(1) + '%');
-  setText('lag-val-complaints',  '~' + current.toFixed(1) + '%');
-  setWidth('lag-bar-complaints', Math.min(100, current / maxPct * 100));
-
-  const raag = document.getElementById('raag-complaints');
-  if (raag) {
-    if (current <= target) {
-      raag.className = 'raag green';
-      raag.innerHTML = '<div class="raag-dot"></div>On track';
-    } else {
-      raag.className = 'raag yellow';
-      raag.innerHTML = '<div class="raag-dot"></div>Wymaga akcji';
-    }
-  }
-}
-
-// ── WIG #4 — PRODUCT X ────────────────────────────────────────────────────────
-
-function renderProductX(data) {
-  const p = clampPct(data.productx_pct);
-  setAttr('circle-productx-outer', 'stroke-dasharray', arcDash(65, p));
-  setText('text-productx-pct', p + '%');
-  setWidth('lag-bar-productx', p);
-}
-
 // ── PROCESY ───────────────────────────────────────────────────────────────────
 
 function renderProcesses(data) {
@@ -217,9 +167,6 @@ async function initDashboard() {
     const lagRows  = lagTable?.rows || [];
 
     renderOS(lagRows);
-    renderHarvest({});
-    renderComplaints({});
-    renderProductX({});
     renderProcesses({});
 
     console.log('[Sheets] Dashboard załadowany pomyślnie');
