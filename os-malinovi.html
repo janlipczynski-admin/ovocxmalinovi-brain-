@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OvocxMalinovi — WIG #1 OS MALINOVI 1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f2f0eb;--white:#fff;--black:#0f0f0d;--border:#e0ddd6;
+  --text:#0f0f0d;--dim:#6b6860;--muted:#a8a49c;
+  --orange:#fa4211;--blue:#1d4ed8;--purple:#7c3aed;--green:#16a34a;--yellow:#d97706;--red:#dc2626;
+  --blue-l:rgba(29,78,216,.08);--purple-l:rgba(124,58,237,.08);--green-l:rgba(22,163,74,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;min-height:100vh}
+
+/* ── HEADER ── */
+header{background:var(--black);padding:0 48px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:14px}
+.logo img{height:38px;filter:brightness(10)}
+.logo-div{width:1px;height:28px;background:#333}
+.logo-txt{font-family:'JetBrains Mono',monospace;font-size:10px;color:#666;line-height:1.6;letter-spacing:.08em}
+.logo-txt strong{display:block;color:#aaa;font-size:11px}
+.header-r{display:flex;align-items:center;gap:16px}
+.season-badge{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.15em;color:var(--orange)}
+.date-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:#555}
+
+/* ── HERO ── */
+.hero{background:var(--black);padding:40px 48px 36px;border-bottom:3px solid var(--blue)}
+.back-btn{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#555;text-decoration:none;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px;transition:color .15s}
+.back-btn:hover{color:var(--orange)}
+.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,7vw,80px);color:var(--white);letter-spacing:.04em;line-height:.95;margin-bottom:10px}
+.hero-formula{font-family:'JetBrains Mono',monospace;font-size:11px;color:#555;margin-bottom:24px;letter-spacing:.04em}
+.hero-meta{display:flex;gap:32px;align-items:center;flex-wrap:wrap}
+.meta-item{display:flex;flex-direction:column;gap:3px}
+.meta-val{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--white);letter-spacing:.05em;line-height:1}
+.meta-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:#555;text-transform:uppercase;letter-spacing:.1em}
+.meta-div{width:1px;height:36px;background:#222}
+.week-badge{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--blue)}
+
+/* ── MAIN ── */
+main{padding:32px 48px;max-width:1400px;margin:0 auto}
+section{margin-bottom:40px}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── LAG MEASURES ── */
+.lag-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:3px;margin-bottom:3px}
+.lag-card{background:var(--white);padding:20px 24px;position:relative;overflow:hidden}
+.lag-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.lag-a::before{background:var(--blue)}
+.lag-b::before{background:var(--purple)}
+.lag-c::before{background:var(--green)}
+.lag-d::before{background:var(--yellow)}
+.lag-label{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:8px}
+.lag-val{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.03em;line-height:1;margin-bottom:4px}
+.lag-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted)}
+.lag-bar-track{height:4px;background:var(--bg);margin-top:12px;overflow:hidden}
+.lag-bar-fill{height:100%;transition:width .6s ease}
+.lag-overall{background:var(--black);padding:20px 28px;display:flex;flex-direction:column;justify-content:center}
+.lag-overall-val{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--white);letter-spacing:.04em;line-height:1}
+.lag-overall-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:#555;text-transform:uppercase;letter-spacing:.1em;margin-top:4px}
+.lag-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 200px;gap:3px}
+
+/* ── SUB-WIGi ── */
+.sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.sub-card{background:var(--white);padding:28px 32px;position:relative;overflow:hidden}
+.sub-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px}
+.sub-a::before{background:var(--blue)}
+.sub-b::before{background:var(--purple)}
+.sub-c::before{background:var(--green)}
+.sub-tag{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.15em;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sub-tag-badge{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;font-family:'JetBrains Mono',monospace}
+.sub-tag-badge.a{background:rgba(29,78,216,.1);color:var(--blue);border:1px solid rgba(29,78,216,.25)}
+.sub-tag-badge.b{background:rgba(124,58,237,.1);color:var(--purple);border:1px solid rgba(124,58,237,.25)}
+.sub-tag-badge.c{background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.25)}
+.sub-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.04em;line-height:1;margin-bottom:10px}
+.sub-a .sub-name{color:var(--blue)}
+.sub-b .sub-name{color:var(--purple)}
+.sub-c .sub-name{color:var(--green)}
+.sub-desc{font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:16px}
+.sub-metric{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.04em}
+.sub-a .sub-metric{color:var(--blue)}
+.sub-b .sub-metric{color:var(--purple)}
+.sub-c .sub-metric{color:var(--green)}
+.sub-metric-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px}
+.sub-deadline{margin-top:auto;padding-top:16px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sub-deadline strong{color:var(--text)}
+
+/* ── PLAN MARZEC — tabela ── */
+.plan-table{width:100%;border-collapse:collapse;background:var(--white)}
+.plan-table th{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:2px solid var(--text);white-space:nowrap}
+.plan-table th.week-col{text-align:center}
+.plan-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;vertical-align:middle}
+.plan-table td.week-cell{text-align:center}
+.plan-table tr.done-row td{color:var(--muted)}
+.plan-table tr.done-row td .proc-id{opacity:.4}
+.th-current{background:rgba(250,66,17,.06);color:var(--orange) !important}
+.td-current{background:rgba(250,66,17,.04)}
+.proc-id{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);font-weight:500}
+.proc-owner{font-size:10px;color:var(--dim)}
+.week-dot{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%}
+.wd-active{background:var(--blue);color:#fff;font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.wd-review{background:var(--green);color:#fff;font-size:11px}
+.wd-done{background:rgba(22,163,74,.15);color:var(--green);font-size:11px}
+.wd-empty{background:var(--bg);color:var(--border);font-size:9px}
+.milestone-row td{background:rgba(250,66,17,.04);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--orange);font-weight:500;border-top:2px solid rgba(250,66,17,.2)}
+.status-pill{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 8px;white-space:nowrap}
+.sp-done{background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+.sp-ip{background:rgba(217,119,6,.1);color:var(--yellow);border:1px solid rgba(217,119,6,.2)}
+.sp-ns{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+
+/* ── LEAD MEASURES ── */
+.lead-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.lead-card{background:var(--white);padding:28px 32px;position:relative;overflow:hidden}
+.lead-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.lead-a::before{background:var(--blue)}
+.lead-b::before{background:var(--purple)}
+.lead-c::before{background:var(--green)}
+.lead-tag{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.lead-a .lead-tag{color:var(--blue)}
+.lead-b .lead-tag{color:var(--purple)}
+.lead-c .lead-tag{color:var(--green)}
+.lead-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;margin-bottom:8px}
+.lead-target{font-size:11px;color:var(--dim);margin-bottom:18px;line-height:1.5}
+.week-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:14px}
+.wg-cell{background:var(--bg);padding:8px;text-align:center}
+.wg-cell.current{background:rgba(250,66,17,.06);border:1px solid rgba(250,66,17,.2)}
+.wg-week{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.wg-target{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text)}
+.wg-actual{font-family:'JetBrains Mono',monospace;font-size:9px;margin-top:2px}
+.wg-actual.hit{color:var(--green)}
+.wg-actual.miss{color:var(--red)}
+.wg-actual.tbd{color:var(--muted)}
+.sprint-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.sprint-item{display:flex;align-items:center;gap:10px;font-size:11px}
+.sprint-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sd-done{background:var(--green)}
+.sd-active{background:var(--orange);box-shadow:0 0 6px var(--orange);animation:pulse-o 2s infinite}
+.sd-pending{background:var(--border);border:1px solid var(--muted)}
+@keyframes pulse-o{0%,100%{box-shadow:0 0 4px var(--orange)}50%{box-shadow:0 0 10px var(--orange)}}
+.sprint-week{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);min-width:48px}
+.lead-owners{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);border-top:1px solid var(--border);padding-top:10px;margin-top:auto}
+
+/* ── RYTM ── */
+.rhythm-grid{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;align-items:center}
+.rhythm-card{background:var(--white);padding:24px 28px;position:relative}
+.rhythm-arrow{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--muted);padding:0 12px;text-align:center}
+.rhythm-step{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:.15em;color:var(--orange);margin-bottom:4px}
+.rhythm-when{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.rhythm-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;margin-bottom:8px}
+.rhythm-desc{font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:12px}
+.rhythm-meta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted)}
+
+/* ── PROCESS MAP TABLE ── */
+.map-table{width:100%;border-collapse:collapse;background:var(--white)}
+.map-table th{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:10px 16px;text-align:left;border-bottom:2px solid var(--text)}
+.map-table td{padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle}
+.wig-badge{display:inline-flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 7px;margin-right:3px;border:1px solid}
+.wb-a{background:rgba(29,78,216,.08);color:var(--blue);border-color:rgba(29,78,216,.25)}
+.wb-b{background:rgba(124,58,237,.08);color:var(--purple);border-color:rgba(124,58,237,.25)}
+.wb-c{background:rgba(22,163,74,.08);color:var(--green);border-color:rgba(22,163,74,.25)}
+.wb-wig3{background:rgba(22,163,74,.08);color:var(--green);border-color:rgba(22,163,74,.25)}
+
+/* ── ANIMACJE ── */
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.sub-card{animation:up .45s ease both}
+.sub-card:nth-child(1){animation-delay:.05s}
+.sub-card:nth-child(2){animation-delay:.1s}
+.sub-card:nth-child(3){animation-delay:.15s}
+.lag-card,.lag-overall{animation:up .4s ease both}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){
+  main{padding:20px}
+  header,.hero{padding-left:20px;padding-right:20px}
+  .lag-row{grid-template-columns:1fr 1fr}
+  .sub-grid,.lead-grid{grid-template-columns:1fr}
+  .rhythm-grid{grid-template-columns:1fr}
+  .rhythm-arrow{display:none}
+}
+@media(max-width:700px){
+  .lag-row{grid-template-columns:1fr}
+  .hero-meta{gap:16px}
+  .plan-table{font-size:10px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDEwMCAxMDAiPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQ1IiBmaWxsPSIjZmE0MjExIi8+PC9zdmc+" alt="OvocxMalinovi">
+    <div class="logo-div"></div>
+    <div class="logo-txt"><strong>WIG #1 · SCOREBOARD</strong>4 Disciplines of Execution</div>
+  </div>
+  <div class="header-r">
+    <div class="season-badge">SEZON 2026</div>
+    <div class="date-lbl" id="dateLbl"></div>
+  </div>
+</header>
+
+<div class="hero">
+  <a class="back-btn" href="index.html">← Powrót do dashboardu</a>
+  <div class="hero-eyebrow" id="heroEyebrow">WIG #1 · Jan (CEO) · Tydzień —</div>
+  <div class="hero-title" id="heroTitle">OS MALINOVI 1.0</div>
+  <div class="hero-formula" id="heroFormula">—</div>
+  <div class="hero-meta">
+    <div class="meta-item"><div class="week-badge" id="metaWeek">—</div><div class="meta-lbl">Aktualny tydzień</div></div>
+    <div class="meta-div"></div>
+    <div class="meta-item"><div class="meta-val" id="metaDeadline">—</div><div class="meta-lbl">Deadline</div></div>
+    <div class="meta-div"></div>
+    <div class="meta-item"><div class="meta-val" id="metaProgress" style="color:var(--blue)">—%</div><div class="meta-lbl">Ogólny postęp</div></div>
+    <div class="meta-div"></div>
+    <div class="meta-item"><div class="meta-val" id="metaOwner" style="color:var(--orange)">—</div><div class="meta-lbl">Właściciel WIG</div></div>
+  </div>
+</div>
+
+<main>
+
+<!-- ── 1. LAG MEASURES ─────────────────────────────────────────────── -->
+<section>
+  <div class="sec-title">Dyscyplina 1 — Lag Measures · 4 filary systemu operacyjnego</div>
+  <div class="lag-row" id="lagRow">
+    <!-- rendered by JS -->
+  </div>
+</section>
+
+<!-- ── 2. SUB-WIGi ───────────────────────────────────────────────── -->
+<section>
+  <div class="sec-title">Dyscyplina 1 — 3 Sub-WIGi · cele szczegółowe</div>
+  <div class="sub-grid" id="subGrid">
+    <!-- rendered by JS -->
+  </div>
+</section>
+
+<!-- ── 3. PLAN MARZEC ───────────────────────────────────────────── -->
+<section>
+  <div class="sec-title">Sub-WIG A — Plan Marzec · warsztaty procesowe</div>
+  <div style="overflow-x:auto">
+    <table class="plan-table" id="planTable">
+      <!-- rendered by JS -->
+    </table>
+  </div>
+</section>
+
+<!-- ── 4. LEAD MEASURES ─────────────────────────────────────────── -->
+<section>
+  <div class="sec-title">Dyscyplina 2 — Lead Measures · miary wyprzedzające</div>
+  <div class="lead-grid" id="leadGrid">
+    <!-- rendered by JS -->
+  </div>
+</section>
+
+<!-- ── 5. RYTM ──────────────────────────────────────────────────── -->
+<section>
+  <div class="sec-title">Dyscyplina 4 — Rytm rozliczalności · start od T10</div>
+  <div class="rhythm-grid" id="rhythmGrid">
+    <!-- rendered by JS -->
+  </div>
+</section>
+
+<!-- ── 6. MAPOWANIE PROCESÓW ─────────────────────────────────────── -->
+<section>
+  <div class="sec-title">Mapowanie procesów → Sub-WIG</div>
+  <table class="map-table" id="mapTable">
+    <!-- rendered by JS -->
+  </table>
+</section>
+
+</main>
+
+<footer style="background:var(--black);padding:20px 48px;display:flex;align-items:center;justify-content:space-between">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#444" id="footerLeft">WIG #1 MALINOVI OS 1.0 · 4DX Scoreboard</div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#333" id="footerRight">—</div>
+</footer>
+
+<script>
+// ── Data load ──────────────────────────────────────────────────────────────
+async function loadData() {
+  const res = await fetch('data/wig-os.json');
+  if (!res.ok) throw new Error('Nie można załadować data/wig-os.json');
+  return res.json();
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function pct(v, t) { return t ? Math.round(v / t * 100) : 0; }
+function el(id) { return document.getElementById(id); }
+function esc(s) { return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function colorVar(c) {
+  return c === 'blue'   ? 'var(--blue)'
+       : c === 'purple' ? 'var(--purple)'
+       : c === 'green'  ? 'var(--green)'
+       : 'var(--orange)';
+}
+
+// ── Date / header ──────────────────────────────────────────────────────────
+const now = new Date();
+const days = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
+const months = ['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
+el('dateLbl').textContent = days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+
+// ── Render hero ────────────────────────────────────────────────────────────
+function renderHero(d) {
+  const w = d.wig;
+  el('heroEyebrow').textContent = `WIG #1 · ${w.owner} · Tydzień ${w.currentWeek}`;
+  el('heroTitle').textContent   = w.name;
+  el('heroFormula').textContent = w.formula;
+  el('metaWeek').textContent     = w.currentWeek;
+  el('metaDeadline').textContent = w.deadline;
+  el('metaProgress').textContent = w.overallProgress + '%';
+  el('metaOwner').textContent    = w.owner;
+  el('footerLeft').textContent   = `WIG #1 ${w.name} · 4DX Scoreboard v3 · OvocxMalinovi 2026`;
+  el('footerRight').textContent  = `Wygenerowano: ${now.getDate().toString().padStart(2,'0')}.${(now.getMonth()+1).toString().padStart(2,'0')}.${now.getFullYear()} · Tydzień ${w.currentWeek}`;
+}
+
+// ── Render lag measures ────────────────────────────────────────────────────
+function renderLag(d) {
+  const lm  = d.lagMeasures;
+  const cur = d.wig.currentWeek;
+
+  const procPct    = pct(lm.processes.current, lm.processes.target);
+  const toolB      = lm.toolV1.progress;
+  const toolC      = lm.toolV2.progress;
+  const cadencePct = pct(lm.cadence.current, lm.cadence.target);
+
+  const cards = [
+    { cls:'lag-a', label:'A · Procesy opisane',
+      val: `${lm.processes.current}/${lm.processes.target}`,
+      sub: lm.processes.label,
+      barPct: procPct, barColor:'var(--blue)' },
+    { cls:'lag-b', label:'B · Narzędzie mag. v1.0',
+      val: lm.toolV1.current,
+      sub: `→ ${lm.toolV1.target}`,
+      barPct: toolB, barColor:'var(--purple)' },
+    { cls:'lag-c', label:'C · Integracja prod. v2.0',
+      val: lm.toolV2.current,
+      sub: `→ ${lm.toolV2.target}`,
+      barPct: toolC, barColor:'var(--green)' },
+    { cls:'lag-d', label:'Rytm · ciągłość tygodni',
+      val: `${lm.cadence.current}/${lm.cadence.target}`,
+      sub: lm.cadence.label,
+      barPct: cadencePct, barColor:'var(--yellow)' }
+  ];
+
+  const html = cards.map(c => `
+    <div class="lag-card ${c.cls}">
+      <div class="lag-label">${esc(c.label)}</div>
+      <div class="lag-val">${esc(c.val)}</div>
+      <div class="lag-sub">${esc(c.sub)}</div>
+      <div class="lag-bar-track">
+        <div class="lag-bar-fill" style="width:${c.barPct}%;background:${c.barColor}"></div>
+      </div>
+    </div>
+  `).join('');
+
+  const overall = d.wig.overallProgress;
+  el('lagRow').innerHTML = html + `
+    <div class="lag-overall">
+      <div class="lag-overall-val">${overall}%</div>
+      <div class="lag-overall-lbl">Wdrożenie OS</div>
+    </div>
+  `;
+}
+
+// ── Render sub-WIGi ────────────────────────────────────────────────────────
+function renderSubWigs(d) {
+  const lm = d.lagMeasures;
+
+  const metrics = {
+    A: { val: `${lm.processes.current} / ${lm.processes.target} procesów`, sub: 'opisane' },
+    B: { val: lm.toolV1.current, sub: `→ ${lm.toolV1.target}` },
+    C: { val: `${lm.toolV2.current}`, sub: '→ wireframes MAR / v2.0 KWI' }
+  };
+
+  el('subGrid').innerHTML = d.subWigs.map(sw => `
+    <div class="sub-card sub-${sw.color === 'blue' ? 'a' : sw.color === 'purple' ? 'b' : 'c'}">
+      <div class="sub-tag">
+        <span class="sub-tag-badge ${sw.id.toLowerCase()}">${esc(sw.id)}</span>
+        SUB-WIG ${esc(sw.id)}
+      </div>
+      <div class="sub-name">${esc(sw.name)}</div>
+      <div class="sub-desc">${esc(sw.description)}</div>
+      <div class="sub-metric">${esc(metrics[sw.id]?.val || '—')}</div>
+      <div class="sub-metric-lbl">${esc(metrics[sw.id]?.sub || '')}</div>
+      <div class="sub-deadline">→ <strong>${esc(sw.deadline)}</strong></div>
+    </div>
+  `).join('');
+}
+
+// ── Render plan march ──────────────────────────────────────────────────────
+function renderPlan(d) {
+  const cur    = d.wig.currentWeek;
+  const weeks  = ['T10','T11','T12','T13'];
+
+  const thWeeks = weeks.map(w =>
+    `<th class="week-col ${w === cur ? 'th-current' : ''}">${w}</th>`
+  ).join('');
+
+  const statusLabel = { 'done':'Done', 'in-progress':'In progress', 'not-started':'Not started' };
+  const statusClass = { 'done':'sp-done', 'in-progress':'sp-ip', 'not-started':'sp-ns' };
+
+  const weekCell = (state, w) => {
+    const isCur = w === cur;
+    const base  = `week-cell ${isCur ? 'td-current' : ''}`;
+    if (state === 'done')   return `<td class="${base}"><span class="week-dot wd-done">✓</span></td>`;
+    if (state === 'active') return `<td class="${base}"><span class="week-dot wd-active">▶</span></td>`;
+    if (state === 'review') return `<td class="${base}"><span class="week-dot wd-review">✓</span></td>`;
+    return `<td class="${base}"><span class="week-dot wd-empty">·</span></td>`;
+  };
+
+  const rows = d.marchPlan.map(p => `
+    <tr class="${p.status === 'done' ? 'done-row' : ''}">
+      <td><span class="proc-id">${esc(p.id)}</span></td>
+      <td><strong>${esc(p.process)}</strong></td>
+      <td><span class="proc-owner">${esc(p.owner)}</span></td>
+      <td><span class="proc-owner">${esc(p.support)}</span></td>
+      ${weeks.map(w => weekCell(p.weeks[w], w)).join('')}
+      <td><span class="status-pill ${statusClass[p.status] || 'sp-ns'}">${esc(statusLabel[p.status] || p.status)}</span></td>
+    </tr>
+  `).join('');
+
+  el('planTable').innerHTML = `
+    <thead><tr>
+      <th>#</th><th>Proces</th><th>Właściciel warsztatu</th><th>Wsparcie</th>
+      ${thWeeks}
+      <th>Status</th>
+    </tr></thead>
+    <tbody>
+      ${rows}
+      <tr class="milestone-row">
+        <td colspan="${4 + weeks.length + 1}">
+          🎯 KAMIEŃ MILOWY T13 · PRZEGLĄD CEO · WSZYSTKIE OPISY ZATWIERDZONE
+        </td>
+      </tr>
+    </tbody>
+  `;
+}
+
+// ── Render lead measures ───────────────────────────────────────────────────
+function renderLeadMeasures(d) {
+  const lm  = d.leadMeasures;
+  const cur = d.wig.currentWeek;
+
+  // Karta A
+  const weekGrid = Object.entries(lm.A.weeklyTargets).map(([w, target]) => {
+    const actual = lm.A.weeklyActuals[w];
+    const isCur  = w === cur;
+    let actualHtml = '<div class="wg-actual tbd">TBD</div>';
+    if (actual !== null && actual !== undefined) {
+      const hit = Number(actual) >= Number(target);
+      actualHtml = `<div class="wg-actual ${hit ? 'hit' : 'miss'}">${esc(String(actual))}</div>`;
+    }
+    return `
+      <div class="wg-cell ${isCur ? 'current' : ''}">
+        <div class="wg-week">${esc(w)}</div>
+        <div class="wg-target">${esc(String(target))}</div>
+        ${actualHtml}
+      </div>`;
+  }).join('');
+
+  // Karta B + C — sprinty
+  function sprintList(sprints) {
+    return sprints.map(s => `
+      <div class="sprint-item">
+        <div class="sprint-dot ${s.status === 'done' ? 'sd-done' : s.status === 'active' ? 'sd-active' : 'sd-pending'}"></div>
+        <div class="sprint-week">${esc(s.week)}</div>
+        <div>${esc(s.label)}</div>
+      </div>`).join('');
+  }
+
+  el('leadGrid').innerHTML = `
+    <div class="lead-card lead-a">
+      <div class="lead-tag">Sub-WIG A · Procesy</div>
+      <div class="lead-name">${esc(lm.A.name)}</div>
+      <div class="lead-target">${esc(lm.A.target)}</div>
+      <div class="week-grid">${weekGrid}</div>
+      <div class="lead-owners">${esc(lm.A.owners)}</div>
+    </div>
+    <div class="lead-card lead-b">
+      <div class="lead-tag">Sub-WIG B · Narzędzie Mag.</div>
+      <div class="lead-name">${esc(lm.B.name)}</div>
+      <div class="lead-target">${esc(lm.B.target)}</div>
+      <div class="sprint-list">${sprintList(lm.B.sprints)}</div>
+      <div class="lead-owners">${esc(lm.B.owners)}</div>
+    </div>
+    <div class="lead-card lead-c">
+      <div class="lead-tag">Sub-WIG C · Integracja Prod.</div>
+      <div class="lead-name">${esc(lm.C.name)}</div>
+      <div class="lead-target">${esc(lm.C.target)}</div>
+      <div class="sprint-list">${sprintList(lm.C.sprints)}</div>
+      <div class="lead-owners">${esc(lm.C.owners)}</div>
+    </div>
+  `;
+}
+
+// ── Render rhythm ──────────────────────────────────────────────────────────
+function renderRhythm(d) {
+  el('rhythmGrid').innerHTML = d.cadence.map((step, i) => `
+    <div class="rhythm-card">
+      <div class="rhythm-step">${step.step}</div>
+      <div class="rhythm-when">${esc(step.when)}</div>
+      <div class="rhythm-name">${esc(step.name)}</div>
+      <div class="rhythm-desc">${esc(step.description)}</div>
+      <div class="rhythm-meta">👤 ${esc(step.who)} &nbsp;·&nbsp; ⏱ ${esc(step.format)}</div>
+    </div>
+    ${i < d.cadence.length - 1 ? '<div class="rhythm-arrow">→</div>' : ''}
+  `).join('');
+}
+
+// ── Render process map ─────────────────────────────────────────────────────
+function renderMap(d) {
+  const wigClass = { A:'wb-a', B:'wb-b', C:'wb-c', WIG3:'wb-wig3' };
+
+  el('mapTable').innerHTML = `
+    <thead><tr>
+      <th>#</th><th>Proces</th><th>Właściciel</th><th>Powiązanie Sub-WIG</th>
+    </tr></thead>
+    <tbody>
+      ${d.processWigMap.map(p => `
+        <tr>
+          <td><span class="proc-id">${esc(p.id)}</span></td>
+          <td>${esc(p.process)}</td>
+          <td><span class="proc-owner">${esc(p.owner)}</span></td>
+          <td>${p.wigs.map(w => `<span class="wig-badge ${wigClass[w] || ''}">${esc(w)}</span>`).join('')}</td>
+        </tr>`).join('')}
+    </tbody>
+  `;
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+loadData().then(d => {
+  renderHero(d);
+  renderLag(d);
+  renderSubWigs(d);
+  renderPlan(d);
+  renderLeadMeasures(d);
+  renderRhythm(d);
+  renderMap(d);
+}).catch(err => {
+  console.error('[WIG OS] Błąd ładowania danych:', err.message);
+  document.querySelector('main').innerHTML = `
+    <div style="padding:40px;text-align:center;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px">
+      Nie można załadować danych. Sprawdź czy plik <strong>data/wig-os.json</strong> istnieje.<br><br>
+      <small>${err.message}</small>
+    </div>`;
+});
+</script>
+</body>
+</html>

@@ -96,6 +96,21 @@ Gdy dodajesz nową stronę → dodaj do `HTML_FILES` i `REQUIRED_PARENT` w `test
 
 ---
 
+### Architektura danych — Google Sheets + JSON
+
+```
+js/sheets.js          ← data layer: fetch + render SVG dynamicznie (główny dashboard)
+data/wig-os.json      ← dane WIG OS MALINOWI (edytowalne co tydzień — tylko ten plik)
+```
+
+**Zasady:**
+- NIGDY nie wpisuj hardcoded % w SVG (np. `stroke-dasharray="67.9 101.8"` = BŁĄD)
+- Główny dashboard → Google Sheets, zakładka DASHBOARD (format: klucz | wartość)
+- WIG OS MALINOWI → `data/wig-os.json` (Jan edytuje tylko ten plik co tydzień)
+- Test `tests/sheets-config.js` pilnuje braku hardcoded wartości
+
+---
+
 ### Zasada HTML — wynikająca z błędów
 
 ```html

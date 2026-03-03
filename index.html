@@ -126,6 +126,7 @@ main{padding:32px 48px}
 .pill{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 7px;font-weight:500}
 .p-ns{background:var(--bg);color:var(--muted)}
 .p-ip{background:rgba(217,119,6,.1);color:var(--yellow)}
+.p-done{background:rgba(22,163,74,.1);color:var(--green)}
 
 .tool-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text)}
 .tool-row:last-child{border-bottom:none}
@@ -271,7 +272,7 @@ main{padding:32px 48px}
         <div class="wig-name">OS MALINOVI 1.0</div>
         <div class="wig-owner">100% stanowisk · 100% procesów · rytm spotkań</div>
       </div>
-      <div class="raag red"><div class="raag-dot"></div>Rytm — brak</div>
+      <div id="raag-os" class="raag red"><div class="raag-dot"></div>Rytm — brak</div>
     </div>
     <div class="wig-viz">
       <svg width="260" height="175" viewBox="0 0 260 175">
@@ -279,10 +280,10 @@ main{padding:32px 48px}
         <!-- STANOWISKA 40% -->
         <polygon points="51.6,40.8 53.7,30.4 66.3,30.4 68.4,40.8 77.4,43.8 85.3,36.6 95.4,43.9 91.0,53.6 96.5,61.3 107.2,60.1 111.0,72.0 101.7,77.3 101.7,86.7 111.0,92.0 107.2,103.9 96.5,102.7 91.0,110.4 95.4,120.1 85.3,127.4 77.4,120.2 68.4,123.2 66.3,133.6 53.7,133.6 51.6,123.2 42.6,120.2 34.7,127.4 24.6,120.1 29.0,110.4 23.5,102.7 12.8,103.9 9.0,92.0 18.3,86.7 18.3,77.3 9.0,72.0 12.8,60.1 23.5,61.3 29.0,53.6 24.6,43.9 34.7,36.6 42.6,43.8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
         <circle cx="60" cy="82" r="39" fill="#eff6ff"/>
-        <circle cx="60" cy="82" r="27" fill="none" stroke="#e8e5e0" stroke-width="10"/><circle cx="60" cy="82" r="27" fill="none" stroke="#1d4ed8" stroke-width="10" stroke-dasharray="67.9 101.8" stroke-dashoffset="42.4" stroke-linecap="butt"/>
+        <circle cx="60" cy="82" r="27" fill="none" stroke="#e8e5e0" stroke-width="10"/><circle id="circle-os-stanowiska" cx="60" cy="82" r="27" fill="none" stroke="#1d4ed8" stroke-width="10" stroke-dasharray="0 169.6" stroke-dashoffset="42.4" stroke-linecap="butt"/>
         <circle cx="60" cy="82" r="13" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
         <circle cx="60" cy="82" r="4.5" fill="#1d4ed8" opacity=".7"/>
-        <text x="60" y="76" text-anchor="middle" font-family="Bebas Neue" font-size="19" fill="#1d4ed8">40%</text>
+        <text id="text-os-stanowiska" x="60" y="76" text-anchor="middle" font-family="Bebas Neue" font-size="19" fill="#1d4ed8">0%</text>
         <text x="60" y="91" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#1d4ed8">STANOW.</text>
         <text x="60" y="148" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#1d4ed8" font-weight="500">STANOWISKA</text>
         <text x="60" y="159" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--muted)">cel: Q2 2026</text>
@@ -290,10 +291,10 @@ main{padding:32px 48px}
         <!-- PROCESY 15% -->
         <polygon points="151.4,32.7 152.9,24.3 163.1,24.3 164.6,32.7 171.7,35.3 178.3,29.9 186.1,36.4 181.9,43.9 185.7,50.4 194.2,50.5 196.0,60.5 188.0,63.5 186.7,70.9 193.2,76.4 188.1,85.2 180.0,82.4 174.3,87.2 175.7,95.7 166.1,99.1 161.8,91.8 154.2,91.8 149.9,99.1 140.3,95.7 141.7,87.2 136.0,82.4 127.9,85.2 122.8,76.4 129.3,70.9 128.0,63.5 120.0,60.5 121.8,50.5 130.3,50.4 134.1,43.9 129.9,36.4 137.7,29.9 144.3,35.3" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
         <circle cx="158" cy="62" r="27" fill="#fffbeb"/>
-        <circle cx="158" cy="62" r="19" fill="none" stroke="#e8e5e0" stroke-width="8"/><circle cx="158" cy="62" r="19" fill="none" stroke="#d97706" stroke-width="8" stroke-dasharray="17.9 101.5" stroke-dashoffset="29.8" stroke-linecap="butt"/>
+        <circle cx="158" cy="62" r="19" fill="none" stroke="#e8e5e0" stroke-width="8"/><circle id="circle-os-procesy" cx="158" cy="62" r="19" fill="none" stroke="#d97706" stroke-width="8" stroke-dasharray="0 119.4" stroke-dashoffset="29.8" stroke-linecap="butt"/>
         <circle cx="158" cy="62" r="9" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
         <circle cx="158" cy="62" r="3" fill="#d97706" opacity=".7"/>
-        <text x="158" y="57" text-anchor="middle" font-family="Bebas Neue" font-size="15" fill="#d97706">15%</text>
+        <text id="text-os-procesy" x="158" y="57" text-anchor="middle" font-family="Bebas Neue" font-size="15" fill="#d97706">0%</text>
         <text x="158" y="69" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#d97706">PROCESY</text>
         <text x="185" y="113" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#d97706" font-weight="500">PROCESY</text>
         <text x="185" y="124" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--muted)">cel: Q3 2026</text>
@@ -301,10 +302,10 @@ main{padding:32px 48px}
         <!-- RYTM 0% -->
         <polygon points="190.5,96.7 191.8,90.3 200.2,90.3 201.5,96.7 207.2,99.1 212.6,95.5 218.5,101.4 214.9,106.8 217.3,112.5 223.7,113.8 223.7,122.2 217.3,123.5 214.9,129.2 218.5,134.6 212.6,140.5 207.2,136.9 201.5,139.3 200.2,145.7 191.8,145.7 190.5,139.3 184.8,136.9 179.4,140.5 173.5,134.6 177.1,129.2 174.7,123.5 168.3,122.2 168.3,113.8 174.7,112.5 177.1,106.8 173.5,101.4 179.4,95.5 184.8,99.1" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
         <circle cx="196" cy="118" r="20" fill="#fff1f2"/>
-        <circle cx="196" cy="118" r="14" fill="none" stroke="#fee2e2" stroke-width="7"/><circle cx="196" cy="118" r="14" fill="none" stroke="#dc2626" stroke-width="7" stroke-dasharray="0.0 88.0" stroke-dashoffset="22.0" stroke-linecap="butt"/>
+        <circle cx="196" cy="118" r="14" fill="none" stroke="#fee2e2" stroke-width="7"/><circle id="circle-os-rytm" cx="196" cy="118" r="14" fill="none" stroke="#dc2626" stroke-width="7" stroke-dasharray="0.0 88.0" stroke-dashoffset="22.0" stroke-linecap="butt"/>
         <circle cx="196" cy="118" r="7" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
         <circle cx="196" cy="118" r="2.5" fill="#dc2626" opacity=".7"/>
-        <text x="196" y="114" text-anchor="middle" font-family="Bebas Neue" font-size="14" fill="#dc2626">✗</text>
+        <text id="text-os-rytm" x="196" y="114" text-anchor="middle" font-family="Bebas Neue" font-size="14" fill="#dc2626">✗</text>
         <text x="196" y="124" text-anchor="middle" font-family="JetBrains Mono" font-size="6" fill="#dc2626">RYTM</text>
         <text x="196" y="158" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#dc2626" font-weight="500">RYTM</text>
         <text x="196" y="169" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#dc2626">BRAK ✗</text>
@@ -318,10 +319,10 @@ main{padding:32px 48px}
     </div>
     <div class="lag-section">
       <div class="lag-header">
-        <div><div class="lag-current-big" style="color:var(--blue)">25%</div><div class="lag-footnote">ogólna realizacja OS Malinovi</div></div>
+        <div><div id="lag-val-os" class="lag-current-big" style="color:var(--blue)">0%</div><div class="lag-footnote">ogólna realizacja OS Malinovi</div></div>
         <div style="text-align:right"><div class="lag-target-lbl">CEL</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--blue)">100% + rytm</div></div>
       </div>
-      <div class="lag-bar-track"><div class="lag-bar-fill" style="width:25%;background:var(--blue)"></div></div>
+      <div class="lag-bar-track"><div id="lag-bar-os" class="lag-bar-fill" style="width:0%;background:var(--blue)"></div></div>
       <div class="lag-footnote">PILNE: wdrożenie rytmu spotkań · Q2 zakresy · Q3 procesy</div>
     </div>
     <div class="click-hint">↗ szczegóły</div>
@@ -336,7 +337,7 @@ main{padding:32px 48px}
         <div class="wig-name">HARVEST 50</div>
         <div class="wig-owner">600k PLN marży netto · 50 mln obrotu<br>Lead: realizacja planu sprzedaży</div>
       </div>
-      <div class="raag green"><div class="raag-dot"></div>CEL Q2!</div>
+      <div id="raag-harvest" class="raag green"><div class="raag-dot"></div>CEL Q2!</div>
     </div>
     <div class="wig-viz">
       <svg width="240" height="150" viewBox="0 0 240 150">
@@ -345,10 +346,10 @@ main{padding:32px 48px}
           stroke-dasharray="94.2 282.6" stroke-dashoffset="94.2" stroke-linecap="butt"/>
         <circle cx="120" cy="80" r="60" fill="none" stroke="rgba(250,66,17,.4)" stroke-width="16"
           stroke-dasharray="94.2 282.6" stroke-dashoffset="0" stroke-linecap="butt"/>
-        <circle cx="120" cy="80" r="60" fill="none" stroke="var(--orange)" stroke-width="16"
-          stroke-dasharray="164.3 212.5" stroke-dashoffset="94.2" stroke-linecap="butt" class="radial-fill"/>
-        <text x="120" y="73" text-anchor="middle" font-family="Bebas Neue" font-size="32" fill="var(--orange)">58%</text>
-        <text x="120" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--muted)">~350k / 600k PLN</text>
+        <circle id="circle-harvest-main" cx="120" cy="80" r="60" fill="none" stroke="var(--orange)" stroke-width="16"
+          stroke-dasharray="0 376.9" stroke-dashoffset="94.2" stroke-linecap="butt"/>
+        <text id="text-harvest-val" x="120" y="73" text-anchor="middle" font-family="Bebas Neue" font-size="32" fill="var(--orange)">0%</text>
+        <text id="text-harvest-sub" x="120" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--muted)">— / 600k PLN</text>
         <text x="120" y="17" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--muted)">Q4 · 600k</text>
         <text x="192" y="84" font-family="JetBrains Mono" font-size="9" fill="var(--orange)">Q2 ✓</text>
         <text x="192" y="96" font-family="JetBrains Mono" font-size="9" fill="var(--yellow)">Q3 →</text>
@@ -360,10 +361,10 @@ main{padding:32px 48px}
     </div>
     <div class="lag-section">
       <div class="lag-header">
-        <div><div class="lag-current-big" style="color:var(--orange)">~350k PLN</div><div class="lag-footnote">marży netto szacunkowo</div></div>
+        <div><div id="lag-val-harvest" class="lag-current-big" style="color:var(--orange)">— PLN</div><div class="lag-footnote">marży netto szacunkowo</div></div>
         <div style="text-align:right"><div class="lag-target-lbl">CEL ROCZNY</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--orange)">600 000 PLN</div></div>
       </div>
-      <div class="lag-bar-track"><div class="lag-bar-fill" style="width:58%;background:var(--orange)"></div></div>
+      <div class="lag-bar-track"><div id="lag-bar-harvest" class="lag-bar-fill" style="width:0%;background:var(--orange)"></div></div>
       <div class="lag-footnote">Q3: ≥350k · Q4: ≥600k · tygodniowe monitorowanie</div>
     </div>
     <div class="click-hint">↗ szczegóły</div>
@@ -378,7 +379,7 @@ main{padding:32px 48px}
         <div class="wig-name">NO COMPLAINTS</div>
         <div class="wig-owner">Reklamacje ≤ 3% wartości sprzedaży<br>Lead: zamknięcie w ≤14 dni</div>
       </div>
-      <div class="raag yellow"><div class="raag-dot"></div>Wymaga akcji</div>
+      <div id="raag-complaints" class="raag yellow"><div class="raag-dot"></div>Wymaga akcji</div>
     </div>
     <div class="wig-viz">
       <svg width="240" height="140" viewBox="0 0 230 130">
@@ -391,20 +392,20 @@ main{padding:32px 48px}
         <text x="54" y="30" font-family="JetBrains Mono" font-size="9" fill="var(--green)" font-weight="500">CEL 3%</text>
         <circle cx="115" cy="115" r="8" fill="var(--black)"/>
         <circle cx="115" cy="115" r="3" fill="#f2f0eb"/>
-        <g style="transform:rotate(-9deg);transform-origin:115px 115px">
+        <g id="gauge-needle" style="transform:rotate(-90deg);transform-origin:115px 115px">
           <line x1="115" y1="115" x2="115" y2="28" stroke="var(--yellow)" stroke-width="3" stroke-linecap="round"/>
           <circle cx="115" cy="28" r="4" fill="var(--yellow)"/>
         </g>
-        <text x="115" y="100" text-anchor="middle" font-family="Bebas Neue" font-size="22" fill="var(--yellow)">~4,5%</text>
+        <text id="text-complaints-val" x="115" y="100" text-anchor="middle" font-family="Bebas Neue" font-size="22" fill="var(--yellow)">—%</text>
         <text x="115" y="112" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--muted)">AKTUALNIE</text>
       </svg>
     </div>
     <div class="lag-section">
       <div class="lag-header">
-        <div><div class="lag-current-big" style="color:var(--yellow)">~4,5%</div><div class="lag-footnote">reklamacji wartości sprzedaży</div></div>
+        <div><div id="lag-val-complaints" class="lag-current-big" style="color:var(--yellow)">—%</div><div class="lag-footnote">reklamacji wartości sprzedaży</div></div>
         <div style="text-align:right"><div class="lag-target-lbl">CEL ROCZNY</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--green)">≤ 3,0%</div></div>
       </div>
-      <div class="lag-bar-track"><div class="lag-bar-fill" style="width:45%;background:var(--yellow)"></div></div>
+      <div class="lag-bar-track"><div id="lag-bar-complaints" class="lag-bar-fill" style="width:0%;background:var(--yellow)"></div></div>
       <div class="lag-footnote">Lead measures — do ustalenia · cotygodniowy raport</div>
     </div>
     <div class="click-hint">↗ szczegóły</div>
@@ -424,8 +425,8 @@ main{padding:32px 48px}
     <div class="wig-viz">
       <svg width="240" height="150" viewBox="0 0 240 150">
         <circle cx="120" cy="75" r="65" fill="none" stroke="#f2f0eb" stroke-width="10"/>
-        <circle cx="120" cy="75" r="65" fill="none" stroke="var(--purple)" stroke-width="10"
-          stroke-dasharray="143.3 265.1" stroke-dashoffset="0" stroke-linecap="butt"
+        <circle id="circle-productx-outer" cx="120" cy="75" r="65" fill="none" stroke="var(--purple)" stroke-width="10"
+          stroke-dasharray="0 408.4" stroke-dashoffset="0" stroke-linecap="butt"
           style="transform:rotate(-90deg);transform-origin:120px 75px"/>
         <circle cx="120" cy="75" r="44" fill="none" stroke="#f2f0eb" stroke-width="8"/>
         <circle cx="120" cy="75" r="44" fill="none" stroke="rgba(144,19,254,.4)" stroke-width="8"
@@ -435,7 +436,7 @@ main{padding:32px 48px}
         <text x="120" y="80" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--muted)">DNI DO LAUNCH</text>
         <text x="120" y="92" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--purple)">30.04.2026</text>
         <text x="120" y="14" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--muted)">New Business · Q4</text>
-        <text x="202" y="78" font-family="JetBrains Mono" font-size="8" fill="var(--purple)">35%</text>
+        <text id="text-productx-pct" x="202" y="78" font-family="JetBrains Mono" font-size="8" fill="var(--purple)">0%</text>
         <circle cx="185" cy="75" r="4" fill="var(--purple)"/>
       </svg>
     </div>
@@ -444,7 +445,7 @@ main{padding:32px 48px}
         <div><div class="lag-current-big" style="color:var(--purple)" id="daysCountBig">— dni</div><div class="lag-footnote">do launchu Premium Truskawka</div></div>
         <div style="text-align:right"><div class="lag-target-lbl">DEADLINE</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--purple)">30.04.2026</div></div>
       </div>
-      <div class="lag-bar-track"><div class="lag-bar-fill" style="width:35%;background:var(--purple)"></div></div>
+      <div class="lag-bar-track"><div id="lag-bar-productx" class="lag-bar-fill" style="width:0%;background:var(--purple)"></div></div>
       <div class="lag-footnote">New Business: propozycje Q3–Q4 · właściciel: Jan CEO</div>
     </div>
     <div class="click-hint">↗ szczegóły</div>
@@ -459,18 +460,19 @@ main{padding:32px 48px}
       <a href="https://docs.google.com/spreadsheets/d/1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY/edit?gid=1555115517#gid=1555115517" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--orange);text-decoration:none;border:1px solid rgba(250,66,17,.3);padding:3px 8px;">↗ Google Sheets</a>
     </div>
     <div style="height:1px;background:var(--text);margin:8px 0 14px"></div>
-    <div class="proc-row"><span class="proc-n">01</span><span class="proc-name">Sprzedaż i Handel</span><span class="pill p-ns">Not started</span></div>
-    <div class="proc-row"><span class="proc-n">02</span><span class="proc-name">Obsługa zamówień OxM</span><span class="pill p-ns">Not started</span></div>
-    <div class="proc-row"><span class="proc-n">03</span><span class="proc-name">Rozliczenia tygodniowe</span><span class="pill p-ns">Not started</span></div>
-    <div class="proc-row"><span class="proc-n">04</span><span class="proc-name">Obsługa reklamacji</span><span class="pill p-ns">Not started</span></div>
-    <a class="proc-row" href="https://docs.google.com/spreadsheets/d/1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY/edit?gid=741010446#gid=741010446" target="_blank" style="text-decoration:none;color:inherit"><span class="proc-n">05</span><span class="proc-name">Gospodarka magazynowa</span><span class="pill p-ip">In progress</span></a>
-    <div class="proc-row"><span class="proc-n">06</span><span class="proc-name">Komunikacja wewnętrzna</span><span class="pill p-ns">Not started</span></div>
-    <div class="proc-row"><span class="proc-n">07</span><span class="proc-name">Certyfikacja i wymogi prawne</span><span class="pill p-ns">Not started</span></div>
+    <div class="proc-row"><span class="proc-n">01</span><span class="proc-name">Sprzedaż i Handel</span><span id="proc-pill-1" class="pill p-ns">Not started</span></div>
+    <div class="proc-row"><span class="proc-n">02</span><span class="proc-name">Obsługa zamówień OxM</span><span id="proc-pill-2" class="pill p-ns">Not started</span></div>
+    <div class="proc-row"><span class="proc-n">03</span><span class="proc-name">Rozliczenia tygodniowe</span><span id="proc-pill-3" class="pill p-ns">Not started</span></div>
+    <div class="proc-row"><span class="proc-n">04</span><span class="proc-name">Obsługa reklamacji</span><span id="proc-pill-4" class="pill p-ns">Not started</span></div>
+    <a class="proc-row" href="https://docs.google.com/spreadsheets/d/1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY/edit?gid=741010446#gid=741010446" target="_blank" style="text-decoration:none;color:inherit"><span class="proc-n">05</span><span class="proc-name">Gospodarka magazynowa</span><span id="proc-pill-5" class="pill p-ip">In progress</span></a>
+    <div class="proc-row"><span class="proc-n">06</span><span class="proc-name">Komunikacja wewnętrzna</span><span id="proc-pill-6" class="pill p-ns">Not started</span></div>
+    <div class="proc-row"><span class="proc-n">07</span><span class="proc-name">Certyfikacja i wymogi prawne</span><span id="proc-pill-7" class="pill p-ns">Not started</span></div>
   </div>
 
   <div class="strip-card">
     <div class="strip-title">NARZĘDZIA</div>
     <div style="height:1px;background:var(--text);margin:8px 0 14px"></div>
+    <a class="tool-row" href="os-malinovi.html"><div class="tool-left"><span class="tool-ico">⚙️</span><div><div class="tool-nm">WIG #1 OS MALINOVI</div><div class="tool-ds">Scoreboard 4DX — procesy, rytm, narzędzia</div></div></div><span class="tool-arr">→</span></a>
     <a class="tool-row" href="zakupy-planowanie.html"><div class="tool-left"><span class="tool-ico">🛒</span><div><div class="tool-nm">Planeta Zakupów</div><div class="tool-ds">Planowanie, harmonogram, stany</div></div></div><span class="tool-arr">→</span></a>
     <a class="tool-row" href="opakowania.html"><div class="tool-left"><span class="tool-ico">📦</span><div><div class="tool-nm">Planer Opakowań 2026</div><div class="tool-ds">Szacowanie zapotrzebowania</div></div></div><span class="tool-arr">→</span></a>
     <a class="tool-row" href="planowanie-i-sprzedaz.html"><div class="tool-left"><span class="tool-ico">📊</span><div><div class="tool-nm">Planowanie i Sprzedaż</div><div class="tool-ds">Dashboard planowania i marż</div></div></div><span class="tool-arr">→</span></a>
@@ -519,6 +521,7 @@ main{padding:32px 48px}
   </div>
 </div>
 
+<script src="js/sheets.js"></script>
 <script>
 const d=new Date();
 const days=['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
@@ -541,9 +544,9 @@ const modals={
     body:`
       <div class="modal-section">
         <div class="modal-section-title">LAG MEASURES <span>wyniki — mierzone tygodniowo</span></div>
-        <div class="measure-row"><div><div class="measure-name">Stanowiska obsadzone</div><div class="measure-sub">% kluczowych ról z opisami i właścicielami</div></div><div><div class="measure-val" style="color:var(--blue)">40%</div><div class="measure-status ms-warn">Q2 w toku</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Procesy udokumentowane</div><div class="measure-sub">% z 7 procesów — status: in progress</div></div><div><div class="measure-val" style="color:var(--blue)">15%</div><div class="measure-status ms-warn">Q3 cel</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Rytm spotkań wdrożony</div><div class="measure-sub">cotygodniowe, miesięczne, kwartalne</div></div><div><div class="measure-val" style="color:var(--red)">0%</div><div class="measure-status ms-bad">Brak</div></div></div>
+        <div class="measure-row"><div><div class="measure-name">Stanowiska obsadzone</div><div class="measure-sub">% kluczowych ról z opisami i właścicielami</div></div><div><div id="modal-os-stanowiska" class="measure-val" style="color:var(--blue)">0%</div><div class="measure-status ms-warn">Q2 w toku</div></div></div>
+        <div class="measure-row"><div><div class="measure-name">Procesy udokumentowane</div><div class="measure-sub">% z 7 procesów — status: in progress</div></div><div><div id="modal-os-procesy" class="measure-val" style="color:var(--blue)">0%</div><div class="measure-status ms-warn">Q3 cel</div></div></div>
+        <div class="measure-row"><div><div class="measure-name">Rytm spotkań wdrożony</div><div class="measure-sub">cotygodniowe, miesięczne, kwartalne</div></div><div><div id="modal-os-rytm" class="measure-val" style="color:var(--red)">0%</div><div class="measure-status ms-bad">Brak</div></div></div>
       </div>
       <div class="modal-section">
         <div class="modal-section-title">LEAD MEASURES <span>działania — mierzone cotygodniowo</span></div>

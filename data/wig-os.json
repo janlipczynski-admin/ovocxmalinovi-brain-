@@ -1,0 +1,146 @@
+{
+  "wig": {
+    "name": "MALINOVI OS 1.0",
+    "owner": "Jan (CEO)",
+    "formula": "Z chaosu i wiedzy w głowach → firma działa jak system",
+    "deadline": "Q2 2026",
+    "currentWeek": "T10",
+    "overallProgress": 18
+  },
+  "lagMeasures": {
+    "processes": { "current": 2, "target": 7, "label": "Procesy opisane" },
+    "toolV1": { "current": "POC", "target": "v1.0", "progress": 30, "label": "Narzędzie mag. v1.0" },
+    "toolV2": { "current": "0%", "target": "v2.0", "progress": 0, "label": "Integracja prod. v2.0" },
+    "cadence": { "current": 0, "target": 4, "label": "Rytm — ciągłość tygodni" }
+  },
+  "subWigs": [
+    {
+      "id": "A",
+      "name": "MAPA PROCESÓW",
+      "description": "7/7 procesów opisanych w arkuszach z właścicielami, krokami, wejściami/wyjściami. Wzorzec: Gospodarka magazynowa i Obsługa zamówień.",
+      "deadline": "28 MAR",
+      "color": "blue"
+    },
+    {
+      "id": "B",
+      "name": "NARZĘDZIE MAG. v1.0",
+      "description": "Działająca wersja webapp do koordynacji zamawiania towarów i budowania zapasów magazynowych przed sezonem dla wspólników.",
+      "deadline": "31 MAR",
+      "color": "purple"
+    },
+    {
+      "id": "C",
+      "name": "INTEGRACJA PROD. v2.0",
+      "description": "Dashboard integrujący plany produkcyjne producentów z zamówieniami od klientów i dysponowaniem na magazyny. Synergia z WIG #2 HARVEST 50 (Kacper).",
+      "deadline": "30 KWI",
+      "color": "green"
+    }
+  ],
+  "marchPlan": [
+    {
+      "id": "05", "process": "Gospodarka magazynowa",
+      "owner": "Dz. Zaopatrzenia", "support": "—",
+      "status": "done",
+      "weeks": { "T10": "done", "T11": "done", "T12": "done", "T13": "done" }
+    },
+    {
+      "id": "02", "process": "Obsługa zamówień",
+      "owner": "Iza (dokańcza)", "support": "Jan",
+      "status": "in-progress",
+      "weeks": { "T10": "active", "T11": "review", "T12": null, "T13": null }
+    },
+    {
+      "id": "01", "process": "Sprzedaż i Handel",
+      "owner": "Kacper (Dr. handlowy)", "support": "Jan",
+      "status": "not-started",
+      "weeks": { "T10": "active", "T11": "active", "T12": "review", "T13": null }
+    },
+    {
+      "id": "03", "process": "Rozliczenia tygodniowe",
+      "owner": "Iza", "support": "Adrian",
+      "status": "not-started",
+      "weeks": { "T10": null, "T11": "active", "T12": "active", "T13": "review" }
+    },
+    {
+      "id": "04", "process": "Obsługa reklamacji",
+      "owner": "Olgierd (Dr. operacyjny)", "support": "Jan",
+      "status": "not-started",
+      "weeks": { "T10": null, "T11": "active", "T12": "active", "T13": "review" }
+    },
+    {
+      "id": "06", "process": "Komunikacja wewnętrzna",
+      "owner": "Renia", "support": "—",
+      "status": "not-started",
+      "weeks": { "T10": null, "T11": null, "T12": "active", "T13": "review" }
+    },
+    {
+      "id": "07", "process": "Certyfikacja i wymogi",
+      "owner": "Renia", "support": "—",
+      "status": "not-started",
+      "weeks": { "T10": null, "T11": null, "T12": "active", "T13": "review" }
+    }
+  ],
+  "leadMeasures": {
+    "A": {
+      "name": "Zamknięte procesy per tydzień",
+      "target": "5 procesów w 4 tygodnie",
+      "weeklyTargets": { "T10": 2, "T11": 2, "T12": 2, "T13": "CEO ✓" },
+      "weeklyActuals": { "T10": null, "T11": null, "T12": null, "T13": null },
+      "owners": "Kacper, Iza, Olgierd, Renia · Jan wspiera"
+    },
+    "B": {
+      "name": "Sprint review co tydzień",
+      "target": "Od POC do v1.0 w 4 sprintach",
+      "sprints": [
+        { "week": "POC",  "label": "POC gotowy",           "status": "done" },
+        { "week": "T10",  "label": "Zakres v1.0 ustalony", "status": "active" },
+        { "week": "T11",  "label": "Core features",        "status": "pending" },
+        { "week": "T12",  "label": "Testy z magazynami",   "status": "pending" },
+        { "week": "T13",  "label": "v1.0 release",         "status": "pending" }
+      ],
+      "owners": "Jan + Claude/AI · Testy: Dz. Zaopatrzenia"
+    },
+    "C": {
+      "name": "Wireframes + prototyp do końca marca",
+      "target": "Marzec: wireframes. Kwiecień: budowa v2.0",
+      "sprints": [
+        { "week": "T10-T11", "label": "Wymagania z Kacprem", "status": "active" },
+        { "week": "T12",     "label": "Wireframes",          "status": "pending" },
+        { "week": "T13",     "label": "Prototyp opisany",    "status": "pending" }
+      ],
+      "owners": "Jan + Kacper · Synergia WIG #2 HARVEST 50"
+    }
+  },
+  "cadence": [
+    {
+      "step": 1, "when": "DO ŚRODY",
+      "name": "Update od właścicieli",
+      "description": "Każdy właściciel procesu / filaru raportuje swój postęp asynchronicznie (Slack / mail). Co zrobiłem? Gdzie jestem?",
+      "who": "Kacper, Iza, Olgierd, Renia",
+      "format": "Async"
+    },
+    {
+      "step": 2, "when": "ŚR / CZW. RANO",
+      "name": "Scoreboard update",
+      "description": "Jan aktualizuje tablicę wyników na podstawie raportów. Lag measures, lead measures, statusy procesów.",
+      "who": "Jan",
+      "format": "10 min"
+    },
+    {
+      "step": 3, "when": "CZWARTEK",
+      "name": "WIG Huddle",
+      "description": "Spotkanie przy tablicy wyników. 3 pytania 4DX: co zrobiłem dla WIG? Co zrobię? Gdzie jestem zablokowany?",
+      "who": "Jan + właściciele",
+      "format": "15–20 min"
+    }
+  ],
+  "processWigMap": [
+    { "id": "01", "process": "Sprzedaż i Handel",       "owner": "Kacper",                "wigs": ["A"] },
+    { "id": "02", "process": "Obsługa zamówień",        "owner": "??? (do potw.)",         "wigs": ["A","B","C"] },
+    { "id": "03", "process": "Rozliczenia tygodniowe",  "owner": "Iza (Adrian wspiera)",   "wigs": ["A"] },
+    { "id": "04", "process": "Obsługa reklamacji",      "owner": "Olgierd",                "wigs": ["A","WIG3"] },
+    { "id": "05", "process": "Gospodarka magazynowa",   "owner": "Dz. Zaopatrzenia",       "wigs": ["A","B"] },
+    { "id": "06", "process": "Komunikacja wewnętrzna",  "owner": "Renia",                  "wigs": ["A"] },
+    { "id": "07", "process": "Certyfikacja i wymogi",   "owner": "Renia",                  "wigs": ["A"] }
+  ]
+}
