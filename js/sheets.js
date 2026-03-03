@@ -2,59 +2,71 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // OvocxMalinovi — Google Sheets Data Layer
 //
-// Źródło danych: zakładka DASHBOARD w arkuszu WIG Scoreboard
-// Format:  kolumna A = klucz  |  kolumna B = wartość
+// Źródła danych:
+//   LAG MEASURES  (gid=1735907035) — postęp SUB-WIG 1/2/3 dla WIG #1 OS MALINOVI
+//   LEAD MEASURES (gid=1844898951) — lead measures
 //
-// Wymagana konfiguracja arkusza:
-//   • Plik → Udostępnij → "Każdy z linkiem może wyświetlać"
-//   • Zakładka o nazwie: DASHBOARD
-//   • Klucze (kolumna A) — lista poniżej w EXPECTED_KEYS
-//
-// Połączenie:  gviz JSON (nie wymaga API key)
+// Struktura wierszy Postęp:
+//   A = "SUB-WIG X Postęp"  |  B = waga(1)  |  C = T10  |  D = T11  |  E = T12 ...
+//   Wartości: ułamki dziesiętne (0.125 = 12.5%)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SHEETS_CONFIG = {
-  id:  '1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY',
-  tab: 'DASHBOARD'
+  id:              '1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY',
+  lagMeasuresGid:  '1735907035',
+  leadMeasuresGid: '1844898951'
 };
 
-// Klucze oczekiwane w zakładce DASHBOARD (do walidacji w testach)
-const EXPECTED_KEYS = [
-  'os_stanowiska_pct',   // WIG#1: % stanowisk (0-100)
-  'os_procesy_pct',      // WIG#1: % procesów (0-100)
-  'os_rytm',             // WIG#1: rytm wdrożony? 0=NIE, 100=TAK
-  'harvest_current_pln', // WIG#2: marża netto bieżąca (PLN)
-  'harvest_target_pln',  // WIG#2: cel roczny PLN (domyślnie 600000)
-  'complaints_current_pct', // WIG#3: % reklamacji wartości sprzedaży
-  'complaints_target_pct',  // WIG#3: cel (domyślnie 3.0)
-  'productx_pct',        // WIG#4: postęp Product X (0-100)
-  'proc_01', 'proc_02', 'proc_03', 'proc_04',
-  'proc_05', 'proc_06', 'proc_07'  // Procesy: not_started | in_progress | done
-];
+// ISO week number (1–53)
+function isoWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+// W wierszach Postęp: C = T10 (colIndex 2), D = T11 (colIndex 3), ...
+// BASE_WEEK=10 odpowiada kolumnie C (index 2)
+const BASE_WEEK = 10;
+const BASE_COL  = 2;
+
+function weekColIndex() {
+  return BASE_COL + (isoWeek(new Date()) - BASE_WEEK);
+}
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
 
-async function fetchSheetData() {
-  const { id, tab } = SHEETS_CONFIG;
-  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tab)}&range=A:B`;
+async function fetchGviz(gid) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEETS_CONFIG.id}/gviz/tq?tqx=out:json&gid=${gid}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Sheets HTTP ${res.status}`);
   const text = await res.text();
   const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
   if (!match) throw new Error('Nieprawidłowy format odpowiedzi Sheets');
-  const json = JSON.parse(match[1]);
-  const data = {};
-  (json.table?.rows || []).forEach(row => {
-    const k = row.c?.[0]?.v;
-    const v = row.c?.[1]?.v;
-    if (k != null) data[String(k).trim()] = v;
-  });
-  return data;
+  return JSON.parse(match[1]).table;
+}
+
+// ── Parsowanie ────────────────────────────────────────────────────────────────
+
+// Zwraca % (0-100) z wiersza "SUB-WIG X Postęp" dla bieżącego tygodnia
+function extractPostep(rows, label) {
+  const col = weekColIndex();
+  for (const row of rows) {
+    const cells = row.c || [];
+    if (String(cells[0]?.v || '').trim() === label) {
+      const v = cells[col]?.v;
+      if (v == null) return 0;
+      const n = Number(v);
+      // Arkusz przechowuje ułamki (0.125) — zamień na %
+      return Math.round(n <= 1 ? n * 100 : n);
+    }
+  }
+  return 0;
 }
 
 // ── SVG helpers ───────────────────────────────────────────────────────────────
 
-// Generuje stroke-dasharray dla kółka postępu (r = promień, pct = 0-100)
 function arcDash(r, pct) {
   const c    = 2 * Math.PI * r;
   const fill = Math.max(0, Math.min(100, pct)) / 100 * c;
@@ -77,7 +89,7 @@ function setAttr(id, attr, val) {
 
 function setWidth(id, pct) {
   const el = document.getElementById(id);
-  if (el) el.style.width = pct + '%';
+  if (el) el.style.width = clampPct(pct) + '%';
 }
 
 function formatPLN(n) {
@@ -87,23 +99,23 @@ function formatPLN(n) {
   return String(Math.round(num));
 }
 
-// ── WIG #1 — OS MALINOVI ──────────────────────────────────────────────────────
+// ── WIG #1 — OS MALINOVI (z LAG MEASURES) ─────────────────────────────────────
 
-function renderOS(data) {
-  const stn     = clampPct(data.os_stanowiska_pct);
-  const prc     = clampPct(data.os_procesy_pct);
-  const ryt     = clampPct(data.os_rytm);
-  const overall = Math.round((stn + prc + ryt) / 3);
+function renderOS(lagRows) {
+  const sub1    = extractPostep(lagRows, 'SUB-WIG 1 Postęp');
+  const sub2    = extractPostep(lagRows, 'SUB-WIG 2 Postęp');
+  const sub3    = extractPostep(lagRows, 'SUB-WIG 3 Postęp');
+  const overall = Math.round((sub1 + sub2 + sub3) / 3);
 
   // SVG circles
-  setAttr('circle-os-stanowiska', 'stroke-dasharray', arcDash(27, stn));
-  setText('text-os-stanowiska', stn + '%');
+  setAttr('circle-os-stanowiska', 'stroke-dasharray', arcDash(27, sub1));
+  setText('text-os-stanowiska', sub1 + '%');
 
-  setAttr('circle-os-procesy', 'stroke-dasharray', arcDash(19, prc));
-  setText('text-os-procesy', prc + '%');
+  setAttr('circle-os-procesy', 'stroke-dasharray', arcDash(19, sub2));
+  setText('text-os-procesy', sub2 + '%');
 
-  setAttr('circle-os-rytm', 'stroke-dasharray', arcDash(14, ryt));
-  setText('text-os-rytm', ryt === 100 ? '✓' : '✗');
+  setAttr('circle-os-rytm', 'stroke-dasharray', arcDash(14, sub3));
+  setText('text-os-rytm', sub3 + '%');
 
   // Lag bar
   setText('lag-val-os', overall + '%');
@@ -112,7 +124,7 @@ function renderOS(data) {
   // RAAG badge
   const raag = document.getElementById('raag-os');
   if (raag) {
-    if (ryt === 100 && stn >= 80 && prc >= 80) {
+    if (overall >= 80) {
       raag.className = 'raag green';
       raag.innerHTML = '<div class="raag-dot"></div>On track';
     } else if (overall >= 20) {
@@ -125,12 +137,12 @@ function renderOS(data) {
   }
 
   // Modal
-  setText('modal-os-stanowiska', stn + '%');
-  setText('modal-os-procesy',    prc + '%');
-  setText('modal-os-rytm',       ryt === 100 ? '100%' : '0%');
+  setText('modal-os-stanowiska', sub1 + '%');
+  setText('modal-os-procesy',    sub2 + '%');
+  setText('modal-os-rytm',       sub3 + '%');
 }
 
-// ── WIG #2 — HARVEST 50 ───────────────────────────────────────────────────────
+// ── WIG #2 — HARVEST 50 ────────────────────────────────────────────────────────
 
 function renderHarvest(data) {
   const current = Number(data.harvest_current_pln) || 0;
@@ -144,14 +156,13 @@ function renderHarvest(data) {
   setWidth('lag-bar-harvest', p);
 }
 
-// ── WIG #3 — NO COMPLAINTS ────────────────────────────────────────────────────
+// ── WIG #3 — NO COMPLAINTS ─────────────────────────────────────────────────────
 
 function renderComplaints(data) {
   const current = Number(data.complaints_current_pct) || 0;
   const target  = Number(data.complaints_target_pct)  || 3;
   const maxPct  = 10;
 
-  // Wskazówka gaugeʼa: -90° = 0%,  +90° = 10%  (180° zakres)
   const angle  = -90 + (Math.min(current, maxPct) / maxPct * 180);
   const needle = document.getElementById('gauge-needle');
   if (needle) needle.style.transform = `rotate(${angle.toFixed(1)}deg)`;
@@ -160,7 +171,6 @@ function renderComplaints(data) {
   setText('lag-val-complaints',  '~' + current.toFixed(1) + '%');
   setWidth('lag-bar-complaints', Math.min(100, current / maxPct * 100));
 
-  // RAAG
   const raag = document.getElementById('raag-complaints');
   if (raag) {
     if (current <= target) {
@@ -189,11 +199,11 @@ function renderProcesses(data) {
   const label = { not_started: 'Not started', in_progress: 'In progress', done: 'Done ✓' };
 
   for (let i = 1; i <= 7; i++) {
-    const key = 'proc_0' + i;
-    const val = String(data[key] || 'not_started').trim();
+    const key  = 'proc_0' + i;
+    const val  = String(data[key] || 'not_started').trim();
     const pill = document.getElementById('proc-pill-' + i);
     if (pill) {
-      pill.className  = 'pill ' + (cls[val] || 'p-ns');
+      pill.className   = 'pill ' + (cls[val] || 'p-ns');
       pill.textContent = label[val] || val;
     }
   }
@@ -203,25 +213,25 @@ function renderProcesses(data) {
 
 async function initDashboard() {
   try {
-    const data = await fetchSheetData();
-    renderOS(data);
-    renderHarvest(data);
-    renderComplaints(data);
-    renderProductX(data);
-    renderProcesses(data);
+    const lagTable = await fetchGviz(SHEETS_CONFIG.lagMeasuresGid);
+    const lagRows  = lagTable?.rows || [];
+
+    renderOS(lagRows);
+    renderHarvest({});
+    renderComplaints({});
+    renderProductX({});
+    renderProcesses({});
+
     console.log('[Sheets] Dashboard załadowany pomyślnie');
   } catch (err) {
-    console.warn('[Sheets] Nie udało się pobrać danych z Google Sheets:', err.message);
-    // Dashboard pozostaje w stanie neutralnym (0%) — nie crashuje
+    console.warn('[Sheets] Błąd ładowania danych:', err.message);
   }
 }
 
-// W przeglądarce: inicjalizuj po załadowaniu DOM
-// W Node.js (testy): tylko eksportuj funkcje pomocnicze
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', initDashboard);
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { SHEETS_CONFIG, EXPECTED_KEYS, arcDash, clampPct, formatPLN };
+  module.exports = { SHEETS_CONFIG, arcDash, clampPct, formatPLN, isoWeek, weekColIndex };
 }

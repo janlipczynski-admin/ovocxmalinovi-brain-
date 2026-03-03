@@ -40,14 +40,14 @@ test('sheets.js istnieje', () =>
 test('SHEETS_CONFIG — ID arkusza obecny', () =>
   assertIn('1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY', SHEETS, 'ID arkusza WIG Scoreboard'));
 
-test('SHEETS_CONFIG — zakładka DASHBOARD', () =>
-  assertIn("'DASHBOARD'", SHEETS, 'Nazwa zakładki DASHBOARD'));
+test('SHEETS_CONFIG — lagMeasuresGid obecny', () =>
+  assertIn("'1735907035'", SHEETS, 'gid zakładki LAG MEASURES'));
 
-test('EXPECTED_KEYS — klucze danych zdefiniowane', () =>
-  assertIn('EXPECTED_KEYS', SHEETS, 'Lista oczekiwanych kluczy'));
+test('SHEETS_CONFIG — leadMeasuresGid obecny', () =>
+  assertIn("'1844898951'", SHEETS, 'gid zakładki LEAD MEASURES'));
 
-test('fetchSheetData() — funkcja fetch zdefiniowana', () =>
-  assertIn('fetchSheetData', SHEETS, 'Funkcja pobierania danych'));
+test('fetchGviz() — funkcja fetch zdefiniowana', () =>
+  assertIn('fetchGviz', SHEETS, 'Funkcja pobierania danych z gviz'));
 
 test('arcDash() — generator stroke-dasharray', () =>
   assertIn('arcDash', SHEETS, 'Funkcja obliczająca łuk SVG'));
