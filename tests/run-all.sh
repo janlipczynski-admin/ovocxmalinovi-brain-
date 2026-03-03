@@ -24,6 +24,10 @@ echo "▶  [3/10] Nawigacja i linki (navigation.js)"
 node tests/navigation.js
 
 echo ""
+echo "▶  [3b] Google Sheets Data Layer (sheets-config.js)"
+node tests/sheets-config.js
+
+echo ""
 echo "▶  [4/10] Regression: Ceny i marże (regression-prices.js)"
 node tests/regression-prices.js
 
