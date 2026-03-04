@@ -4,9 +4,10 @@
 //
 // Arkusz: 2026_Ovocxmalinovi_dashboard
 //   URL: https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/
-//   LAG MEASURES  (gid=322339268)  https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=322339268
-//   LEAD MEASURES (gid=1844898951) https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=1844898951
-//   DASHBOARD     (gid=2102307131) https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=2102307131
+//   WIGI               (gid=1699564336) https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=1699564336
+//   OS_LAG MEASURES    (gid=322339268)  https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=322339268
+//   OS_LEAD MEASURES   (gid=1844898951) https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=1844898951
+//   DASHBOARD          (gid=2102307131) https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=2102307131
 //
 // Struktura wierszy Postęp (LAG MEASURES):
 //   A = "LAG-XX Postęp (średnia %)"  |  B = Deadline  |  C = T12  |  D = T13 ...
