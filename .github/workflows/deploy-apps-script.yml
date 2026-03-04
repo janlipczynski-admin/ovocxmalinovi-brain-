@@ -1,0 +1,46 @@
+name: Deploy Apps Script
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'js/apps-script.gs'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install clasp
+        run: npm install -g @google/clasp
+
+      - name: Write clasp credentials
+        run: |
+          cat > ~/.clasprc.json << 'EOF'
+          {
+            "token": {
+              "access_token": "",
+              "refresh_token": "${{ secrets.CLASP_REFRESH_TOKEN }}",
+              "scope": "https://www.googleapis.com/auth/script.projects https://www.googleapis.com/auth/drive.file",
+              "token_type": "Bearer"
+            },
+            "oauth2ClientSettings": {
+              "clientId": "1072944905499-vm2v2i5dvn0a0d2o4ca36i1vge8cvbn0.apps.googleusercontent.com",
+              "clientSecret": "v6V3fKV_zWU7iw1DrpO1rknX",
+              "redirectUri": "http://localhost"
+            },
+            "isLocalCreds": false
+          }
+          EOF
+
+      - name: Write .clasp.json
+        run: |
+          echo '{"scriptId":"13bvCR-54Xdk_-CwQAaklfA2BJwg_bhpymgp0_j8VXK9xm_ZmV-8QtNaH","rootDir":"js"}' > .clasp.json
+
+      - name: Push to Apps Script
+        run: clasp push --force
