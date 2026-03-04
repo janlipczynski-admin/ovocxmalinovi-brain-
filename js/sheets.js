@@ -107,15 +107,38 @@ function renderOS(lagRows) {
   const sub3    = extractPostep(lagRows, 'SUB-WIG 3 Postęp');
   const overall = Math.round((sub1 + sub2 + sub3) / 3);
 
-  // Sub-WIG progress bars
+  function osColor(pct) {
+    if (pct >= 70) return 'var(--green)';
+    if (pct >= 30) return 'var(--yellow)';
+    return 'var(--red)';
+  }
+
+  // Gear A — Mapa Procesów
+  const cA = osColor(sub1);
+  setAttr('gear-os-a', 'fill', cA);
+  setAttr('ring-os-a', 'stroke', cA);
+  setAttr('ring-os-a', 'stroke-dasharray', arcDash(32, sub1));
+  setAttr('hub-os-a', 'fill', cA);
   setText('text-os-stanowiska', sub1 + '%');
-  setWidth('bar-os-stanowiska', sub1);
+  setAttr('text-os-stanowiska', 'fill', cA);
 
+  // Gear B — Narzędzie v1.0
+  const cB = osColor(sub2);
+  setAttr('gear-os-b', 'fill', cB);
+  setAttr('ring-os-b', 'stroke', cB);
+  setAttr('ring-os-b', 'stroke-dasharray', arcDash(32, sub2));
+  setAttr('hub-os-b', 'fill', cB);
   setText('text-os-procesy', sub2 + '%');
-  setWidth('bar-os-procesy', sub2);
+  setAttr('text-os-procesy', 'fill', cB);
 
+  // Gear C — Integracja v2.0
+  const cC = osColor(sub3);
+  setAttr('gear-os-c', 'fill', cC);
+  setAttr('ring-os-c', 'stroke', cC);
+  setAttr('ring-os-c', 'stroke-dasharray', arcDash(32, sub3));
+  setAttr('hub-os-c', 'fill', cC);
   setText('text-os-rytm', sub3 + '%');
-  setWidth('bar-os-rytm', sub3);
+  setAttr('text-os-rytm', 'fill', cC);
 
   // Lag bar
   setText('lag-val-os', overall + '%');

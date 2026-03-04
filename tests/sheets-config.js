@@ -94,19 +94,25 @@ test('formatPLN — formatowanie kwot', () => {
 
 // ── 3. index.html — IDs dla dynamicznego renderowania ────────────────────────
 
-// WIG #1 OS MALINOVI
-test('index.html — text-os-stanowiska (tekst % sub A)', () =>
-  assertIn('id="text-os-stanowiska"', HTML, 'ID tekstu stanowiska'));
-test('index.html — bar-os-stanowiska (pasek sub A)', () =>
-  assertIn('id="bar-os-stanowiska"', HTML, 'ID paska stanowiska'));
-test('index.html — text-os-procesy (tekst % sub B)', () =>
-  assertIn('id="text-os-procesy"', HTML, 'ID tekstu procesy'));
-test('index.html — bar-os-procesy (pasek sub B)', () =>
-  assertIn('id="bar-os-procesy"', HTML, 'ID paska procesy'));
-test('index.html — text-os-rytm (tekst % sub C)', () =>
-  assertIn('id="text-os-rytm"', HTML, 'ID tekstu rytm'));
-test('index.html — bar-os-rytm (pasek sub C)', () =>
-  assertIn('id="bar-os-rytm"', HTML, 'ID paska rytm'));
+// WIG #1 OS MALINOVI — koła zębate
+test('index.html — gear-os-a (koło zębate A)', () =>
+  assertIn('id="gear-os-a"', HTML, 'ID koła zębatego A'));
+test('index.html — ring-os-a (pierścień A)', () =>
+  assertIn('id="ring-os-a"', HTML, 'ID pierścienia A'));
+test('index.html — text-os-stanowiska (% sub A)', () =>
+  assertIn('id="text-os-stanowiska"', HTML, 'ID tekstu % A'));
+test('index.html — gear-os-b (koło zębate B)', () =>
+  assertIn('id="gear-os-b"', HTML, 'ID koła zębatego B'));
+test('index.html — ring-os-b (pierścień B)', () =>
+  assertIn('id="ring-os-b"', HTML, 'ID pierścienia B'));
+test('index.html — text-os-procesy (% sub B)', () =>
+  assertIn('id="text-os-procesy"', HTML, 'ID tekstu % B'));
+test('index.html — gear-os-c (koło zębate C)', () =>
+  assertIn('id="gear-os-c"', HTML, 'ID koła zębatego C'));
+test('index.html — ring-os-c (pierścień C)', () =>
+  assertIn('id="ring-os-c"', HTML, 'ID pierścienia C'));
+test('index.html — text-os-rytm (% sub C)', () =>
+  assertIn('id="text-os-rytm"', HTML, 'ID tekstu % C'));
 test('index.html — lag-val-os (liczba ogólna)', () =>
   assertIn('id="lag-val-os"', HTML, 'ID wartości lag WIG#1'));
 test('index.html — lag-bar-os (pasek postępu)', () =>
@@ -127,14 +133,13 @@ test('index.html — proc-pill-1 do proc-pill-7 (wszystkie 7)', () => {
   }
 });
 
-// ── 4. Brak hardcoded fake wartości ───────────────────────────────────────────
-test('index.html — brak hardcoded dasharray w sub-WIG A', () =>
+// ── 4. Brak elementów poprzednich wersji ─────────────────────────────────────
+test('index.html — brak paska bar-os-stanowiska (stara wersja)', () =>
+  assertNotIn('id="bar-os-stanowiska"', HTML,
+    'Stary pasek postępu — zastąpiony kołem zębatym'));
+test('index.html — brak circle-os-stanowiska (stara wersja SVG)', () =>
   assertNotIn('circle-os-stanowiska', HTML,
-    'Stary element SVG kółka — zastąpiony paskiem postępu'));
-
-test('index.html — brak hardcoded dasharray w sub-WIG B', () =>
-  assertNotIn('circle-os-procesy', HTML,
-    'Stary element SVG kółka — zastąpiony paskiem postępu'));
+    'Stary element SVG kółka — zastąpiony kołem zębatym'));
 
 
 // ── 5. sheets.js załadowany w index.html ─────────────────────────────────────
