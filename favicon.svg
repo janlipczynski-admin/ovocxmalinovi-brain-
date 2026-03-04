@@ -1,17 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Malina / berry -->
-  <circle cx="16" cy="18" r="11" fill="#c0392b"/>
-  <!-- Drupelets (segmenty maliny) -->
-  <circle cx="13" cy="15" r="3.2" fill="#e74c3c"/>
-  <circle cx="19" cy="15" r="3.2" fill="#e74c3c"/>
-  <circle cx="16" cy="12.5" r="3.2" fill="#e74c3c"/>
-  <circle cx="13" cy="21" r="3.2" fill="#e74c3c"/>
-  <circle cx="19" cy="21" r="3.2" fill="#e74c3c"/>
-  <circle cx="16" cy="23" r="3.2" fill="#e74c3c"/>
-  <!-- Highlight -->
-  <circle cx="12" cy="13" r="1.5" fill="rgba(255,255,255,0.3)"/>
-  <!-- Szypułka -->
-  <path d="M16 7 Q14 4 11 3" stroke="#27ae60" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-  <path d="M16 7 Q18 4 21 3" stroke="#27ae60" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-  <path d="M16 7 Q16 4 16 2" stroke="#27ae60" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <!-- Tło -->
+  <rect width="32" height="32" rx="7" fill="#0f0f0f"/>
+  <!-- Łuk tła (gauge track) -->
+  <path d="M 7 22 A 10 10 0 0 1 25 22" fill="none" stroke="#2a2a2a" stroke-width="3" stroke-linecap="round"/>
+  <!-- Łuk aktywny (ok. 60% wypełnienia) -->
+  <path d="M 7 22 A 10 10 0 0 1 21.7 13.5" fill="none" stroke="#fa4211" stroke-width="3" stroke-linecap="round"/>
+  <!-- Centrum -->
+  <circle cx="16" cy="22" r="2" fill="#fa4211"/>
+  <!-- Igła -->
+  <line x1="16" y1="22" x2="11" y2="11" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Kropki skali -->
+  <circle cx="7" cy="22" r="1" fill="#444"/>
+  <circle cx="25" cy="22" r="1" fill="#444"/>
+  <circle cx="16" cy="12" r="1" fill="#444"/>
 </svg>
