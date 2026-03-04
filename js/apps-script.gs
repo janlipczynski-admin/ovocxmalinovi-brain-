@@ -24,9 +24,9 @@ const GID = {
   WIGI:                1492902022,
   OS_LAG:              322339268,
   OS_LEAD:             1844898951,
-  HARVEST_LAG:         null,   // TODO: wpisz gid po kliknięciu w zakładkę HARVEST_LAG MEASURES
-  HARVEST_LEAD:        null,   // TODO: wpisz gid po kliknięciu w zakładkę HARVEST_LEAD MEASURES
-  NOCOMPLAINTS_LAG:    null,   // TODO: wpisz gid po kliknięciu w zakładkę NOCOMPLAINTS_LAG MEASURES
+  HARVEST_LAG:         200348167,
+  HARVEST_LEAD:        259840012,
+  NOCOMPLAINTS_LAG:    716489223,
   NOCOMPLAINTS_LEAD:   null    // TODO: wpisz gid po kliknięciu w zakładkę NOCOMPLAINTS_LEAD MEASURES
 };
 
