@@ -81,61 +81,75 @@ function readLagMeasures(sheet) {
 
   const weekLabel = 'T' + isoWeekNumber();
 
-  // Skanuj WSZYSTKIE wiersze w poszukiwaniu kolumny bieżącego tygodnia
-  let weekCol      = -1;
-  let headerRowIdx = -1;
-  outer:
+  // 1. WIG Status — wiersz z "WIG Status" w kol.0, wartość w kol.1 (fallback ogólny)
+  let wigStatus = 0;
   for (let r = 0; r < values.length; r++) {
-    for (let c = 0; c < values[r].length; c++) {
-      if (String(values[r][c] || '').trim() === weekLabel) {
-        weekCol      = c;
-        headerRowIdx = r;
-        break outer;
-      }
+    if (String(values[r][0] || '').trim() === 'WIG Status') {
+      const n = Number(values[r][1]);
+      if (!isNaN(n)) wigStatus = Math.round(n <= 1 ? n * 100 : n);
+      break;
     }
   }
 
-  // Szukaj etykiety w pierwszych 4 kolumnach każdego wiersza
-  function extractRow(label) {
-    for (let r = 0; r < values.length; r++) {
-      for (let c = 0; c < Math.min(values[r].length, 4); c++) {
-        if (String(values[r][c] || '').trim() === label) {
-          const row = values[r];
-          // Preferuj bieżący tydzień
-          if (weekCol >= 0 && weekCol < row.length) {
-            const v = row[weekCol];
-            if (v != null && v !== '') {
-              const n = Number(v);
-              if (!isNaN(n)) return Math.round(n <= 1 ? n * 100 : n);
-            }
+  // 2. Skanuj cały arkusz — śledź aktualny weekCol (aktualizuj przy każdym nagłówku T10/T11/...)
+  //    i zbieraj wszystkie wiersze "Postęp (średnia %)"
+  let currentWeekCol = -1;
+  const postepValues = [];
+
+  for (let r = 0; r < values.length; r++) {
+    const row = values[r];
+
+    // Czy ten wiersz to nagłówek z kolumnami tygodniowymi?
+    for (let c = 0; c < row.length; c++) {
+      if (String(row[c] || '').trim() === weekLabel) {
+        currentWeekCol = c;
+        break;
+      }
+    }
+
+    // Czy ten wiersz zawiera "Postęp (średnia %)"?
+    for (let c = 0; c < Math.min(row.length, 4); c++) {
+      if (String(row[c] || '').trim().indexOf('Postęp (średnia %)') >= 0) {
+        let val = 0;
+        if (currentWeekCol >= 0 && currentWeekCol < row.length) {
+          const v = row[currentWeekCol];
+          if (v != null && v !== '') {
+            const n = Number(v);
+            if (!isNaN(n)) val = Math.round(n <= 1 ? n * 100 : n);
           }
-          // Fallback: ostatnia niepusta wartość numeryczna w wierszu
-          for (let i = row.length - 1; i >= 1; i--) {
-            if (row[i] !== '' && row[i] != null && !isNaN(Number(row[i]))) {
-              return Math.round(Number(row[i]) <= 1 ? Number(row[i]) * 100 : Number(row[i]));
-            }
-          }
-          return 0;
         }
+        // Fallback: ostatnia niepusta liczba w wierszu
+        if (val === 0) {
+          for (let i = row.length - 1; i >= 1; i--) {
+            if (row[i] !== '' && row[i] != null) {
+              const n = Number(row[i]);
+              if (!isNaN(n) && n > 0) { val = Math.round(n <= 1 ? n * 100 : n); break; }
+            }
+          }
+        }
+        postepValues.push(val);
+        break;
       }
     }
-    return 0;
   }
 
-  const lag01 = extractRow('LAG-01 Postęp (średnia %)');
-  const lag02 = extractRow('LAG-02 Postęp (średnia %)');
-  const lag03 = extractRow('LAG-03 Postęp (średnia %)');
+  const lag01   = postepValues[0] != null ? postepValues[0] : wigStatus;
+  const lag02   = postepValues[1] != null ? postepValues[1] : wigStatus;
+  const lag03   = postepValues[2] != null ? postepValues[2] : wigStatus;
+  const overall = postepValues.length > 0
+    ? Math.round((lag01 + lag02 + lag03) / 3)
+    : wigStatus;
 
   return {
     weekLabel,
-    weekCol,
-    headerRowIdx,
+    currentWeekCol,
+    wigStatus,
+    postepValues,
     lag01,
     lag02,
     lag03,
-    overall: Math.round((lag01 + lag02 + lag03) / 3),
-    // debug: pierwsze 8 wierszy — usuń gdy wszystko działa
-    raw: values.slice(0, 8).map(function(r) {
+    overall,
+    raw: values.slice(0, 10).map(function(r) {
       return r.slice(0, 8).map(function(c) { return String(c || ''); });
     })
   };
