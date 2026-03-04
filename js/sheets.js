@@ -23,7 +23,7 @@ const SHEETS_CONFIG = {
   lagMeasuresGid:  '322339268',
   leadMeasuresGid: '1844898951',
   // Uzupełnij po wdrożeniu Apps Script (js/apps-script.gs):
-  appsScriptUrl:   ''
+  appsScriptUrl:   'https://script.google.com/macros/s/AKfycbzy3UK1jGVLGPb11Goks72YE_cQ7wakAiqlqdHCubdGH3URsqYbDRwhbcjiODTR7LHrFg/exec'
 };
 
 // ISO week number (1–53)
