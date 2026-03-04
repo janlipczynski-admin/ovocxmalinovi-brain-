@@ -1,1 +1,3 @@
 # config.js jest commitowany — każdy pull daje aktualny klucz
+secrets/
+*.json
