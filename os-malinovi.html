@@ -414,11 +414,14 @@ function makePulseChart(history, color, currentWeek) {
     content += `<text x="${(padL + (history.length - 1) * segW + segW / 2 + 6).toFixed(1)}" y="${(padT + chartH - Math.min(1, planPts[planPts.length-1].plan / 100) * chartH + 3).toFixed(1)}" font-family="'JetBrains Mono',monospace" font-size="7" fill="var(--orange)" opacity="0.8">PLAN</text>`;
   }
 
+  const currentWeekIdx = history.findIndex(function(pt) { return pt.week === currentWeek; });
+
   history.forEach(function(pt, i) {
-    const x      = padL + i * segW + segW / 2;
-    const isCur  = pt.week === currentWeek;
-    const hasPct = pt.postep !== null && pt.postep !== undefined;
-    const pct    = hasPct ? Math.min(100, Math.max(0, pt.postep)) : 0;
+    const x         = padL + i * segW + segW / 2;
+    const isCur     = pt.week === currentWeek;
+    const isFuture  = currentWeekIdx >= 0 && i > currentWeekIdx;
+    const hasPct    = !isFuture && pt.postep !== null && pt.postep !== undefined;
+    const pct       = hasPct ? Math.min(100, Math.max(0, pt.postep)) : 0;
 
     if (hasPct) {
       const barH = Math.max(2, (pct / 100) * chartH);
