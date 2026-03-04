@@ -45,6 +45,7 @@ if not src_path.exists():
 try:
     from google.oauth2 import service_account
     from googleapiclient.discovery import build
+    import google_auth_httplib2, httplib2
 except ImportError:
     print('❌  Brakujące biblioteki. Uruchom:')
     print('    pip install google-auth google-auth-httplib2 google-api-python-client')
@@ -56,7 +57,11 @@ SCOPES = ['https://www.googleapis.com/auth/script.projects']
 creds = service_account.Credentials.from_service_account_file(
     str(key_path), scopes=SCOPES
 )
-service = build('script', 'v1', credentials=creds, cache_discovery=False)
+import httplib2
+http = google_auth_httplib2.AuthorizedHttp(
+    creds, http=httplib2.Http(disable_ssl_certificate_validation=True)
+)
+service = build('script', 'v1', http=http, cache_discovery=False)
 
 # ── Wczytaj źródło ─────────────────────────────────────────────────────────────
 source = src_path.read_text(encoding='utf-8')
