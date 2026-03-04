@@ -9,12 +9,21 @@
 // Struktura wierszy Postęp (LAG MEASURES):
 //   A = "LAG-XX Postęp (średnia %)"  |  B = Deadline  |  C = T12  |  D = T13 ...
 //   Wartości: ułamki (0.125 = 12.5%) lub procenty (41.43 = 41.43%)
+//
+// FETCH STRATEGY:
+//   1. Jeśli SHEETS_CONFIG.appsScriptUrl jest ustawiony → fetchAppsScript() (preferowany)
+//   2. Fallback → fetchGviz() (wymaga "Publikuj w internecie" na arkuszu)
+//
+//   appsScriptUrl uzupełnij po wdrożeniu js/apps-script.gs w Google Apps Script:
+//   Arkusz → Rozszerzenia → Apps Script → Wdróż → Nowe wdrożenie → Aplikacja internetowa
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SHEETS_CONFIG = {
   id:              '1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ',
   lagMeasuresGid:  '322339268',
-  leadMeasuresGid: '1844898951'
+  leadMeasuresGid: '1844898951',
+  // Uzupełnij po wdrożeniu Apps Script (js/apps-script.gs):
+  appsScriptUrl:   ''
 };
 
 // ISO week number (1–53)
@@ -50,6 +59,16 @@ function findWeekCol(rows) {
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
 
+// Pobiera z Apps Script Web App → zwraca { lag, lead, updated }
+async function fetchAppsScript() {
+  const res = await fetch(SHEETS_CONFIG.appsScriptUrl);
+  if (!res.ok) throw new Error(`Apps Script HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error('Apps Script: ' + data.error);
+  return data;
+}
+
+// Fallback: gviz API (wymaga arkusza opublikowanego w internecie)
 async function fetchGviz(gid) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEETS_CONFIG.id}/gviz/tq?tqx=out:json&gid=${gid}`;
   const res = await fetch(url);
@@ -125,22 +144,19 @@ function formatPLN(n) {
   return String(Math.round(num));
 }
 
-// ── WIG #1 — OS MALINOVI (z LAG MEASURES) ─────────────────────────────────────
+// ── WIG #1 — OS MALINOVI ───────────────────────────────────────────────────────
 
-function renderOS(lagRows) {
-  const weekCol = findWeekCol(lagRows);
-  const sub1    = extractPostep(lagRows, 'LAG-01 Postęp (średnia %)', weekCol);
-  const sub2    = extractPostep(lagRows, 'LAG-02 Postęp (średnia %)', weekCol);
-  const sub3    = extractPostep(lagRows, 'LAG-03 Postęp (średnia %)', weekCol);
+function osColor(pct) {
+  if (pct >= 70) return 'var(--green)';
+  if (pct >= 30) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+// Wspólna logika renderowania — używana przez oba źródła danych
+function renderOSValues(sub1, sub2, sub3) {
   const overall = Math.round((sub1 + sub2 + sub3) / 3);
 
-  function osColor(pct) {
-    if (pct >= 70) return 'var(--green)';
-    if (pct >= 30) return 'var(--yellow)';
-    return 'var(--red)';
-  }
-
-  // Gear A — Mapa Procesów
+  // Gear A
   const cA = osColor(sub1);
   setAttr('gear-os-a', 'fill', cA);
   setAttr('ring-os-a', 'stroke', cA);
@@ -149,7 +165,7 @@ function renderOS(lagRows) {
   setText('text-os-stanowiska', sub1 + '%');
   setAttr('text-os-stanowiska', 'fill', cA);
 
-  // Gear B — Narzędzie v1.0
+  // Gear B
   const cB = osColor(sub2);
   setAttr('gear-os-b', 'fill', cB);
   setAttr('ring-os-b', 'stroke', cB);
@@ -158,7 +174,7 @@ function renderOS(lagRows) {
   setText('text-os-procesy', sub2 + '%');
   setAttr('text-os-procesy', 'fill', cB);
 
-  // Gear C — Integracja v2.0
+  // Gear C
   const cC = osColor(sub3);
   setAttr('gear-os-c', 'fill', cC);
   setAttr('ring-os-c', 'stroke', cC);
@@ -166,6 +182,15 @@ function renderOS(lagRows) {
   setAttr('hub-os-c', 'fill', cC);
   setText('text-os-rytm', sub3 + '%');
   setAttr('text-os-rytm', 'fill', cC);
+
+  // Główne koło zębate WIG (nowy element — jedno duże)
+  const cMain = osColor(overall);
+  setAttr('gear-os-main', 'fill', cMain);
+  setAttr('ring-os-main', 'stroke', cMain);
+  setAttr('ring-os-main', 'stroke-dasharray', arcDash(52, overall));
+  setAttr('hub-os-main', 'fill', cMain);
+  setText('text-os-overall', overall + '%');
+  setAttr('text-os-overall', 'fill', cMain);
 
   // Lag bar
   setText('lag-val-os', overall + '%');
@@ -186,10 +211,33 @@ function renderOS(lagRows) {
     }
   }
 
-  // Modal
+  // Modal / detail
   setText('modal-os-stanowiska', sub1 + '%');
   setText('modal-os-procesy',    sub2 + '%');
   setText('modal-os-rytm',       sub3 + '%');
+
+  // LAG bars w widoku szczegółowym
+  setWidth('lag-bar-os-01', sub1);
+  setWidth('lag-bar-os-02', sub2);
+  setWidth('lag-bar-os-03', sub3);
+  setText('lag-val-os-01', sub1 + '%');
+  setText('lag-val-os-02', sub2 + '%');
+  setText('lag-val-os-03', sub3 + '%');
+}
+
+// Renderuje WIG #1 z JSON zwróconego przez Apps Script
+function renderOSJson(lag) {
+  if (!lag || lag.error) { console.warn('[Sheets] lag error:', lag?.error); return; }
+  renderOSValues(lag.lag01 || 0, lag.lag02 || 0, lag.lag03 || 0);
+}
+
+// Renderuje WIG #1 z wierszy gviz (fallback)
+function renderOS(lagRows) {
+  const weekCol = findWeekCol(lagRows);
+  const sub1    = extractPostep(lagRows, 'LAG-01 Postęp (średnia %)', weekCol);
+  const sub2    = extractPostep(lagRows, 'LAG-02 Postęp (średnia %)', weekCol);
+  const sub3    = extractPostep(lagRows, 'LAG-03 Postęp (średnia %)', weekCol);
+  renderOSValues(sub1, sub2, sub3);
 }
 
 // ── PROCESY ───────────────────────────────────────────────────────────────────
@@ -213,12 +261,17 @@ function renderProcesses(data) {
 
 async function initDashboard() {
   try {
-    const lagTable = await fetchGviz(SHEETS_CONFIG.lagMeasuresGid);
-    const lagRows  = lagTable?.rows || [];
-
-    renderOS(lagRows);
-    renderProcesses({});
-
+    if (SHEETS_CONFIG.appsScriptUrl) {
+      // ── Ścieżka Apps Script (preferowana, nie wymaga publikowania arkusza)
+      const data = await fetchAppsScript();
+      if (data.lag) renderOSJson(data.lag);
+      renderProcesses({});
+    } else {
+      // ── Fallback: gviz API (wymaga opublikowanego arkusza)
+      const lagTable = await fetchGviz(SHEETS_CONFIG.lagMeasuresGid);
+      renderOS(lagTable?.rows || []);
+      renderProcesses({});
+    }
     console.log('[Sheets] Dashboard załadowany pomyślnie');
   } catch (err) {
     console.warn('[Sheets] Błąd ładowania danych:', err.message);
