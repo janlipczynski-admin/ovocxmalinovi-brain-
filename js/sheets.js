@@ -180,8 +180,8 @@ function osColor(pct) {
 }
 
 // Wspólna logika renderowania — używana przez oba źródła danych
-function renderOSValues(sub1, sub2, sub3) {
-  const overall = Math.round((sub1 + sub2 + sub3) / 3);
+function renderOSValues(sub1, sub2, sub3, overallOverride) {
+  const overall = overallOverride !== undefined ? overallOverride : Math.round((sub1 + sub2 + sub3) / 3);
 
   // Gear A
   const cA = osColor(sub1);
@@ -255,7 +255,7 @@ function renderOSValues(sub1, sub2, sub3) {
 // Renderuje WIG #1 z JSON zwróconego przez Apps Script
 function renderOSJson(lag) {
   if (!lag || lag.error) { console.warn('[Sheets] lag error:', lag?.error); return; }
-  renderOSValues(lag.lag01 || 0, lag.lag02 || 0, lag.lag03 || 0);
+  renderOSValues(lag.lag01 || 0, lag.lag02 || 0, lag.lag03 || 0, lag.overall);
 }
 
 // Renderuje WIG #1 z wierszy gviz (fallback)
