@@ -70,10 +70,8 @@ function jsonResponse(obj) {
 
 // ── LAG MEASURES ──────────────────────────────────────────────────────────────
 //
-// Struktura zakładki LAG MEASURES:
-//   Wiersz 1: nagłówki — kol.A = "Miara", kol.B = "Deadline", kol.C = T12, kol.D = T13, ...
-//   Szukamy wierszy z etykietami "LAG-01 Postęp (średnia %)", "LAG-02 ...", "LAG-03 ..."
-//   Wartości: ułamki (0.125 = 12.5%) lub procenty (41.43 = 41.43%)
+// Skrypt skanuje CAŁY arkusz — nie zakłada stałej pozycji nagłówków ani etykiet.
+// Wartości: ułamki (0.125 = 12.5%) lub procenty (41.43 = 41.43%)
 
 function readLagMeasures(sheet) {
   if (!sheet) return { error: 'Brak zakładki OS_LAG MEASURES (gid=' + GID.OS_LAG + ')' };
@@ -81,30 +79,44 @@ function readLagMeasures(sheet) {
   const values = sheet.getDataRange().getValues();
   if (values.length < 2) return { error: 'Pusta zakładka OS_LAG MEASURES' };
 
-  // Znajdź kolumnę bieżącego tygodnia ISO (T10, T11, ...)
-  const weekLabel  = 'T' + isoWeekNumber();
-  const headerRow  = values[0];
+  const weekLabel = 'T' + isoWeekNumber();
+
+  // Skanuj WSZYSTKIE wiersze w poszukiwaniu kolumny bieżącego tygodnia
   let weekCol      = -1;
-  for (let i = 1; i < headerRow.length; i++) {
-    if (String(headerRow[i] || '').trim() === weekLabel) { weekCol = i; break; }
+  let headerRowIdx = -1;
+  outer:
+  for (let r = 0; r < values.length; r++) {
+    for (let c = 0; c < values[r].length; c++) {
+      if (String(values[r][c] || '').trim() === weekLabel) {
+        weekCol      = c;
+        headerRowIdx = r;
+        break outer;
+      }
+    }
   }
 
+  // Szukaj etykiety w pierwszych 4 kolumnach każdego wiersza
   function extractRow(label) {
     for (let r = 0; r < values.length; r++) {
-      if (String(values[r][0] || '').trim() === label) {
-        // Preferuj bieżący tydzień, fallback: ostatnia niepusta wartość
-        const row = values[r];
-        let v = weekCol >= 0 ? row[weekCol] : null;
-        if (v == null || v === '') {
-          for (let i = row.length - 1; i >= 1; i--) {
-            if (row[i] !== '' && row[i] != null && !isNaN(Number(row[i]))) {
-              v = row[i]; break;
+      for (let c = 0; c < Math.min(values[r].length, 4); c++) {
+        if (String(values[r][c] || '').trim() === label) {
+          const row = values[r];
+          // Preferuj bieżący tydzień
+          if (weekCol >= 0 && weekCol < row.length) {
+            const v = row[weekCol];
+            if (v != null && v !== '') {
+              const n = Number(v);
+              if (!isNaN(n)) return Math.round(n <= 1 ? n * 100 : n);
             }
           }
+          // Fallback: ostatnia niepusta wartość numeryczna w wierszu
+          for (let i = row.length - 1; i >= 1; i--) {
+            if (row[i] !== '' && row[i] != null && !isNaN(Number(row[i]))) {
+              return Math.round(Number(row[i]) <= 1 ? Number(row[i]) * 100 : Number(row[i]));
+            }
+          }
+          return 0;
         }
-        if (v == null || v === '') return 0;
-        const n = Number(v);
-        return isNaN(n) ? 0 : Math.round(n <= 1 ? n * 100 : n);
       }
     }
     return 0;
@@ -117,10 +129,15 @@ function readLagMeasures(sheet) {
   return {
     weekLabel,
     weekCol,
+    headerRowIdx,
     lag01,
     lag02,
     lag03,
-    overall: Math.round((lag01 + lag02 + lag03) / 3)
+    overall: Math.round((lag01 + lag02 + lag03) / 3),
+    // debug: pierwsze 8 wierszy — usuń gdy wszystko działa
+    raw: values.slice(0, 8).map(function(r) {
+      return r.slice(0, 8).map(function(c) { return String(c || ''); });
+    })
   };
 }
 
