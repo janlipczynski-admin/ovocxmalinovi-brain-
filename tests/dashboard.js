@@ -48,7 +48,7 @@ test('radial-fill (animacja wejścia koła)', () => assertContains('radial-fill'
 
 // 4. Google Sheets
 test('link Google Sheets obecny', () =>
-  assertContains('spreadsheets/d/1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY', 'Brak linku do arkusza WIG Scoreboard'));
+  assertContains('spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ', 'Brak linku do arkusza 2026_Ovocxmalinovi_dashboard'));
 
 // 5. Brak niepożądanych elementów (poprzednie błędne wersje)
 test('brak "Mapa Procesów" jako sekcja (to nie jest ten dashboard)', () => {

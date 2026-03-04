@@ -38,10 +38,10 @@ test('sheets.js istnieje', () =>
   assert(fs.existsSync(path.join(ROOT, 'js/sheets.js')), 'Brak pliku js/sheets.js'));
 
 test('SHEETS_CONFIG — ID arkusza obecny', () =>
-  assertIn('1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY', SHEETS, 'ID arkusza WIG Scoreboard'));
+  assertIn('1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ', SHEETS, 'ID arkusza 2026_Ovocxmalinovi_dashboard'));
 
 test('SHEETS_CONFIG — lagMeasuresGid obecny', () =>
-  assertIn("'1735907035'", SHEETS, 'gid zakładki LAG MEASURES'));
+  assertIn("'322339268'", SHEETS, 'gid zakładki LAG MEASURES'));
 
 test('SHEETS_CONFIG — leadMeasuresGid obecny', () =>
   assertIn("'1844898951'", SHEETS, 'gid zakładki LEAD MEASURES'));

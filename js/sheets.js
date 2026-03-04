@@ -2,18 +2,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // OvocxMalinovi — Google Sheets Data Layer
 //
-// Źródła danych:
-//   LAG MEASURES  (gid=1735907035) — postęp SUB-WIG 1/2/3 dla WIG #1 OS MALINOVI
+// Arkusz: 2026_Ovocxmalinovi_dashboard
+//   LAG MEASURES  (gid=322339268) — postęp LAG-01/02/03 dla WIG #1 OS MALINOVI
 //   LEAD MEASURES (gid=1844898951) — lead measures
 //
-// Struktura wierszy Postęp:
-//   A = "SUB-WIG X Postęp"  |  B = waga(1)  |  C = T10  |  D = T11  |  E = T12 ...
-//   Wartości: ułamki dziesiętne (0.125 = 12.5%)
+// Struktura wierszy Postęp (LAG MEASURES):
+//   A = "LAG-XX Postęp (średnia %)"  |  B = Deadline  |  C = T12  |  D = T13 ...
+//   Wartości: ułamki (0.125 = 12.5%) lub procenty (41.43 = 41.43%)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SHEETS_CONFIG = {
-  id:              '1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY',
-  lagMeasuresGid:  '1735907035',
+  id:              '1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ',
+  lagMeasuresGid:  '322339268',
   leadMeasuresGid: '1844898951'
 };
 
@@ -26,13 +26,26 @@ function isoWeek(date) {
   return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
-// W wierszach Postęp: C = T10 (colIndex 2), D = T11 (colIndex 3), ...
-// BASE_WEEK=10 odpowiada kolumnie C (index 2)
-const BASE_WEEK = 10;
+// Kolumny tygodniowe: BASE_WEEK=12 = kolumna C (index 2) — fallback dla nowego arkusza
+// findWeekCol() dynamicznie szuka nagłówka "T10"/"T11"/... w wierszach danych
+const BASE_WEEK = 12;
 const BASE_COL  = 2;
 
 function weekColIndex() {
   return BASE_COL + (isoWeek(new Date()) - BASE_WEEK);
+}
+
+// Dynamicznie szuka indeksu kolumny z bieżącym tygodniem ("T10", "T11", ...)
+function findWeekCol(rows) {
+  const currentWeek = isoWeek(new Date());
+  const weekLabel = 'T' + currentWeek;
+  for (let ri = 0; ri < Math.min(rows.length, 8); ri++) {
+    const cells = rows[ri].c || [];
+    for (let i = 1; i < cells.length; i++) {
+      if (String(cells[i]?.v || '').trim() === weekLabel) return i;
+    }
+  }
+  return BASE_COL + (currentWeek - BASE_WEEK);
 }
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
@@ -49,17 +62,30 @@ async function fetchGviz(gid) {
 
 // ── Parsowanie ────────────────────────────────────────────────────────────────
 
-// Zwraca % (0-100) z wiersza "SUB-WIG X Postęp" dla bieżącego tygodnia
-function extractPostep(rows, label) {
-  const col = weekColIndex();
+// Zwraca % (0-100) z wiersza Postęp dla bieżącego tygodnia (weekCol)
+// Fallback: ostatnia niepusta wartość numeryczna w wierszu
+function extractPostep(rows, label, weekCol) {
   for (const row of rows) {
     const cells = row.c || [];
     if (String(cells[0]?.v || '').trim() === label) {
-      const v = cells[col]?.v;
-      if (v == null) return 0;
-      const n = Number(v);
-      // Arkusz przechowuje ułamki (0.125) — zamień na %
-      return Math.round(n <= 1 ? n * 100 : n);
+      if (weekCol > 0 && weekCol < cells.length) {
+        const v = cells[weekCol]?.v;
+        if (v != null && v !== '') {
+          const n = Number(v);
+          if (!isNaN(n)) return Math.round(n <= 1 ? n * 100 : n);
+        }
+      }
+      // Fallback: ostatnia niepusta wartość numeryczna (arkusz może nie mieć danych bieżącego tygodnia)
+      let lastVal = null;
+      for (let i = 1; i < cells.length; i++) {
+        const v = cells[i]?.v;
+        if (v != null && v !== '') {
+          const n = Number(v);
+          if (!isNaN(n)) lastVal = n;
+        }
+      }
+      if (lastVal !== null) return Math.round(lastVal <= 1 ? lastVal * 100 : lastVal);
+      return 0;
     }
   }
   return 0;
@@ -102,9 +128,10 @@ function formatPLN(n) {
 // ── WIG #1 — OS MALINOVI (z LAG MEASURES) ─────────────────────────────────────
 
 function renderOS(lagRows) {
-  const sub1    = extractPostep(lagRows, 'SUB-WIG 1 Postęp');
-  const sub2    = extractPostep(lagRows, 'SUB-WIG 2 Postęp');
-  const sub3    = extractPostep(lagRows, 'SUB-WIG 3 Postęp');
+  const weekCol = findWeekCol(lagRows);
+  const sub1    = extractPostep(lagRows, 'LAG-01 Postęp (średnia %)', weekCol);
+  const sub2    = extractPostep(lagRows, 'LAG-02 Postęp (średnia %)', weekCol);
+  const sub3    = extractPostep(lagRows, 'LAG-03 Postęp (średnia %)', weekCol);
   const overall = Math.round((sub1 + sub2 + sub3) / 3);
 
   function osColor(pct) {
@@ -203,5 +230,5 @@ if (typeof document !== 'undefined') {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { SHEETS_CONFIG, arcDash, clampPct, formatPLN, isoWeek, weekColIndex };
+  module.exports = { SHEETS_CONFIG, arcDash, clampPct, formatPLN, isoWeek, weekColIndex, findWeekCol };
 }

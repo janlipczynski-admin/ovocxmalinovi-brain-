@@ -7,7 +7,7 @@
 ### 1. KANONICZNY DASHBOARD = WIG Dashboard 2026
 - Plik: `index.html`
 - Zawiera: 4 WIG-i (OS MALINOVI / HARVEST 50 / NO COMPLAINTS / PRODUCT X) z kołowymi wykresami SVG
-- Spreadsheet: `1LEHtdzY-vVbNw4riaCL3DZ6qa7NQgTix5ra9w_kfvoY`
+- Spreadsheet: `1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ` (2026_Ovocxmalinovi_dashboard)
 - **NIGDY nie usuwaj WIG-ów, nie zastępuj dashboardem procesów, nie "naprawiaj" layoutu bez wyraźnego polecenia Jana**
 - **NIGDY nie przywracaj starych commitów bez weryfikacji zawartości**
 
