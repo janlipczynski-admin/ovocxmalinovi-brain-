@@ -81,33 +81,18 @@ function readLagMeasures(sheet) {
 
   const weekLabel = 'T' + isoWeekNumber();
 
-  // 1. WIG Status — wiersz z "WIG Status" w kol.0, wartość w kol.1 (fallback ogólny)
-  let wigStatus = 0;
-  for (let r = 0; r < values.length; r++) {
-    if (String(values[r][0] || '').trim() === 'WIG Status') {
-      const n = Number(values[r][1]);
-      if (!isNaN(n)) wigStatus = Math.round(n <= 1 ? n * 100 : n);
-      break;
-    }
-  }
-
-  // 2. Skanuj cały arkusz — śledź aktualny weekCol (aktualizuj przy każdym nagłówku T10/T11/...)
-  //    i zbieraj wszystkie wiersze "Postęp (średnia %)"
+  // Skanuj cały arkusz — śledź weekCol (zmienia się przy każdym sub-nagłówku T10/T11/...)
+  // Zbieraj wiersze z "Postęp (średnia %)" i odczytuj wartość z bieżącego weekCol
   let currentWeekCol = -1;
   const postepValues = [];
 
   for (let r = 0; r < values.length; r++) {
     const row = values[r];
 
-    // Czy ten wiersz to nagłówek z kolumnami tygodniowymi?
     for (let c = 0; c < row.length; c++) {
-      if (String(row[c] || '').trim() === weekLabel) {
-        currentWeekCol = c;
-        break;
-      }
+      if (String(row[c] || '').trim() === weekLabel) { currentWeekCol = c; break; }
     }
 
-    // Czy ten wiersz zawiera "Postęp (średnia %)"?
     for (let c = 0; c < Math.min(row.length, 4); c++) {
       if (String(row[c] || '').trim().indexOf('Postęp (średnia %)') >= 0) {
         let val = 0;
@@ -118,32 +103,20 @@ function readLagMeasures(sheet) {
             if (!isNaN(n)) val = Math.round(n <= 1 ? n * 100 : n);
           }
         }
-        // Fallback: ostatnia niepusta liczba w wierszu
-        if (val === 0) {
-          for (let i = row.length - 1; i >= 1; i--) {
-            if (row[i] !== '' && row[i] != null) {
-              const n = Number(row[i]);
-              if (!isNaN(n) && n > 0) { val = Math.round(n <= 1 ? n * 100 : n); break; }
-            }
-          }
-        }
         postepValues.push(val);
         break;
       }
     }
   }
 
-  const lag01   = postepValues[0] != null ? postepValues[0] : wigStatus;
-  const lag02   = postepValues[1] != null ? postepValues[1] : wigStatus;
-  const lag03   = postepValues[2] != null ? postepValues[2] : wigStatus;
-  const overall = postepValues.length > 0
-    ? Math.round((lag01 + lag02 + lag03) / 3)
-    : wigStatus;
+  const lag01   = postepValues[0] || 0;
+  const lag02   = postepValues[1] || 0;
+  const lag03   = postepValues[2] || 0;
+  const overall = postepValues.length > 0 ? Math.round((lag01 + lag02 + lag03) / 3) : 0;
 
   return {
     weekLabel,
     currentWeekCol,
-    wigStatus,
     postepValues,
     lag01,
     lag02,
