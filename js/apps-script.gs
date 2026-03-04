@@ -35,17 +35,22 @@ function getSheetById(ss, gid) {
   return ss.getSheets().find(function(s) { return s.getSheetId() === gid; }) || null;
 }
 
+// ── ID arkusza (potrzebne gdy skrypt jest standalone, nie bound) ────────────────
+const SPREADSHEET_ID = '1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ';
+
 // ── Główny handler ─────────────────────────────────────────────────────────────
 
 function doGet(e) {
   try {
-    const ss  = SpreadsheetApp.getActiveSpreadsheet();
-    const tab = e && e.parameter && e.parameter.tab;
+    // openById działa zarówno w standalone jak i bound script
+    const ss       = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const tab      = e && e.parameter && e.parameter.tab;
+    const callback = e && e.parameter && e.parameter.callback;
 
     // Tryb debug: tylko jedna zakładka
     if (tab === 'lag') {
       const result = readLagMeasures(getSheetById(ss, GID.OS_LAG));
-      return jsonResponse(result);
+      return jsonResponse(result, callback);
     }
 
     // Pełny payload dashboardu
@@ -55,16 +60,24 @@ function doGet(e) {
       updated: new Date().toISOString()
     };
 
-    return jsonResponse(data);
+    return jsonResponse(data, callback);
 
   } catch (err) {
-    return jsonResponse({ error: err.message, stack: err.stack });
+    const cb = e && e.parameter && e.parameter.callback;
+    return jsonResponse({ error: err.message, stack: err.stack }, cb);
   }
 }
 
-function jsonResponse(obj) {
+// Obsługuje zarówno zwykły JSON jak i JSONP (gdy callback jest podany)
+function jsonResponse(obj, callback) {
+  const json = JSON.stringify(obj);
+  if (callback) {
+    return ContentService
+      .createTextOutput(callback + '(' + json + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService
-    .createTextOutput(JSON.stringify(obj))
+    .createTextOutput(json)
     .setMimeType(ContentService.MimeType.JSON);
 }
 
