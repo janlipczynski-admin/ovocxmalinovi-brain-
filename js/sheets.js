@@ -8,6 +8,11 @@
 //   OS_LAG MEASURES    (gid=322339268)  https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=322339268
 //   OS_LEAD MEASURES   (gid=1844898951) https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=1844898951
 //   DASHBOARD          (gid=2102307131) https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=2102307131
+//   HARVEST_LAG        (gid=???) — potrzebny gid
+//   HARVEST_LEAD       (gid=???) — potrzebny gid
+//   NOCOMPLAINTS_LAG   (gid=???) — potrzebny gid
+//
+//   Opublikowany HTML: https://docs.google.com/spreadsheets/d/e/2PACX-1vSimi_8QNgrYdyybHFgP1gaoPBET-_4OfNFY1b39NSjRBg_8puY28ZMYoifKh5DaDC8MxSiJdvPJX3d/pubhtml
 //
 // Struktura wierszy Postęp (LAG MEASURES):
 //   A = "LAG-XX Postęp (średnia %)"  |  B = Deadline  |  C = T12  |  D = T13 ...
