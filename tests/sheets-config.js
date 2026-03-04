@@ -94,23 +94,31 @@ test('formatPLN — formatowanie kwot', () => {
 
 // ── 3. index.html — IDs dla dynamicznego renderowania ────────────────────────
 
-// WIG #1 OS MALINOVI — koła zębate
-test('index.html — gear-os-a (koło zębate A)', () =>
-  assertIn('id="gear-os-a"', HTML, 'ID koła zębatego A'));
-test('index.html — ring-os-a (pierścień A)', () =>
-  assertIn('id="ring-os-a"', HTML, 'ID pierścienia A'));
+// WIG #1 OS MALINOVI — jedno duże koło + sub-gear IDs (ukryte, dla sheets.js)
+test('index.html — gear-os-main (główne koło WIG)', () =>
+  assertIn('id="gear-os-main"', HTML, 'ID głównego koła zębatego WIG'));
+test('index.html — ring-os-main (pierścień główny)', () =>
+  assertIn('id="ring-os-main"', HTML, 'ID pierścienia głównego WIG'));
+test('index.html — hub-os-main (centrum koła)', () =>
+  assertIn('id="hub-os-main"', HTML, 'ID centrum koła WIG'));
+test('index.html — text-os-overall (% ogólny WIG)', () =>
+  assertIn('id="text-os-overall"', HTML, 'ID tekstu % ogólnego WIG'));
+test('index.html — gear-os-a (sub-gear A ukryte)', () =>
+  assertIn('id="gear-os-a"', HTML, 'ID sub-gear A (ukryte, sheets.js compat)'));
+test('index.html — ring-os-a (pierścień A ukryty)', () =>
+  assertIn('id="ring-os-a"', HTML, 'ID pierścień A (ukryty)'));
 test('index.html — text-os-stanowiska (% sub A)', () =>
   assertIn('id="text-os-stanowiska"', HTML, 'ID tekstu % A'));
-test('index.html — gear-os-b (koło zębate B)', () =>
-  assertIn('id="gear-os-b"', HTML, 'ID koła zębatego B'));
-test('index.html — ring-os-b (pierścień B)', () =>
-  assertIn('id="ring-os-b"', HTML, 'ID pierścienia B'));
+test('index.html — gear-os-b (sub-gear B ukryte)', () =>
+  assertIn('id="gear-os-b"', HTML, 'ID sub-gear B (ukryte)'));
+test('index.html — ring-os-b (pierścień B ukryty)', () =>
+  assertIn('id="ring-os-b"', HTML, 'ID pierścień B (ukryty)'));
 test('index.html — text-os-procesy (% sub B)', () =>
   assertIn('id="text-os-procesy"', HTML, 'ID tekstu % B'));
-test('index.html — gear-os-c (koło zębate C)', () =>
-  assertIn('id="gear-os-c"', HTML, 'ID koła zębatego C'));
-test('index.html — ring-os-c (pierścień C)', () =>
-  assertIn('id="ring-os-c"', HTML, 'ID pierścienia C'));
+test('index.html — gear-os-c (sub-gear C ukryte)', () =>
+  assertIn('id="gear-os-c"', HTML, 'ID sub-gear C (ukryte)'));
+test('index.html — ring-os-c (pierścień C ukryty)', () =>
+  assertIn('id="ring-os-c"', HTML, 'ID pierścień C (ukryty)'));
 test('index.html — text-os-rytm (% sub C)', () =>
   assertIn('id="text-os-rytm"', HTML, 'ID tekstu % C'));
 test('index.html — lag-val-os (liczba ogólna)', () =>
