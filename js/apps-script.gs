@@ -122,10 +122,20 @@ function readLagMeasures(sheet) {
     }
   }
 
-  const lag01   = postepValues[0] || 0;
-  const lag02   = postepValues[1] || 0;
-  const lag03   = postepValues[2] || 0;
-  const overall = postepValues.length > 0 ? Math.round((lag01 + lag02 + lag03) / 3) : 0;
+  const lag01 = postepValues[0] || 0;
+  const lag02 = postepValues[1] || 0;
+  const lag03 = postepValues[2] || 0;
+
+  // Preferuj wartość z B1 (formuła w arkuszu) — dokładna średnia ważona
+  // Fallback: średnia tylko ze znalezionych (nie dziel przez 3 gdy brakuje danych)
+  let overall = 0;
+  const wigStatusRaw = values[0] && values[0][1];
+  if (wigStatusRaw !== '' && wigStatusRaw !== null && !isNaN(Number(wigStatusRaw))) {
+    const n = Number(wigStatusRaw);
+    overall = Math.round(n <= 1 ? n * 100 : n);
+  } else if (postepValues.length > 0) {
+    overall = Math.round(postepValues.reduce(function(a,b){return a+b;}, 0) / postepValues.length);
+  }
 
   return {
     weekLabel,
