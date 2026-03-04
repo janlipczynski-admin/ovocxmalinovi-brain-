@@ -288,25 +288,11 @@ function renderProcesses(data) {
 
 async function initDashboard() {
   try {
-    // ── Główne źródło: data/wig-os.json (Jan edytuje co tydzień)
-    const res = await fetch('data/wig-os.json');
-    if (!res.ok) throw new Error('Brak data/wig-os.json');
-    const json = await res.json();
-    const overall = json?.wig?.overallProgress || 0;
-    const sub1 = json?.lagMeasures?.processes ? Math.round((json.lagMeasures.processes.current / json.lagMeasures.processes.target) * 100) : 0;
-    const sub2 = json?.lagMeasures?.toolV1?.progress || 0;
-    const sub3 = json?.lagMeasures?.toolV2?.progress || 0;
-    renderOSValues(sub1, sub2, sub3);
-    console.log('[Sheets] Dashboard załadowany z wig-os.json');
+    const data = await fetchAppsScript();
+    if (data.lag) renderOSJson(data.lag);
+    console.log('[Sheets] Dashboard załadowany z Apps Script');
   } catch (err) {
     console.warn('[Sheets] Błąd ładowania danych:', err.message);
-    // Fallback: Apps Script
-    try {
-      const data = await fetchAppsScript();
-      if (data.lag) renderOSJson(data.lag);
-    } catch (e2) {
-      console.warn('[Sheets] Fallback Apps Script też nie działa:', e2.message);
-    }
   }
 }
 
