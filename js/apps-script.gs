@@ -27,7 +27,7 @@ const GID = {
   HARVEST_LAG:         200348167,
   HARVEST_LEAD:        259840012,
   NOCOMPLAINTS_LAG:    716489223,
-  NOCOMPLAINTS_LEAD:   null    // TODO: wpisz gid po kliknięciu w zakładkę NOCOMPLAINTS_LEAD MEASURES
+  NOCOMPLAINTS_LEAD:   1872002
 };
 
 // ── Helper: pobierz zakładkę po gid ───────────────────────────────────────────

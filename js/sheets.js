@@ -11,7 +11,7 @@
 //   HARVEST_LAG        (gid=200348167)  https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=200348167
 //   HARVEST_LEAD       (gid=259840012)  https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=259840012
 //   NOCOMPLAINTS_LAG   (gid=716489223)  https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=716489223
-//   NOCOMPLAINTS_LEAD  (gid=???) — potrzebny gid
+//   NOCOMPLAINTS_LEAD  (gid=1872002)     https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=1872002
 //
 //   Opublikowany HTML: https://docs.google.com/spreadsheets/d/e/2PACX-1vSimi_8QNgrYdyybHFgP1gaoPBET-_4OfNFY1b39NSjRBg_8puY28ZMYoifKh5DaDC8MxSiJdvPJX3d/pubhtml
 //
