@@ -69,12 +69,30 @@ function findWeekCol(rows) {
 // ── Fetch ─────────────────────────────────────────────────────────────────────
 
 // Pobiera z Apps Script Web App → zwraca { lag, lead, updated }
-async function fetchAppsScript() {
-  const res = await fetch(SHEETS_CONFIG.appsScriptUrl);
-  if (!res.ok) throw new Error(`Apps Script HTTP ${res.status}`);
-  const data = await res.json();
-  if (data.error) throw new Error('Apps Script: ' + data.error);
-  return data;
+// Używa JSONP żeby ominąć blokadę CORS przy redirect Apps Script
+function fetchAppsScript() {
+  return new Promise(function(resolve, reject) {
+    const cbName = '_oxmCb' + Date.now();
+    const url = SHEETS_CONFIG.appsScriptUrl + '?callback=' + cbName;
+    const script = document.createElement('script');
+    const timer = setTimeout(function() {
+      cleanup();
+      reject(new Error('Apps Script timeout'));
+    }, 10000);
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = function(data) {
+      cleanup();
+      if (data && data.error) { reject(new Error('Apps Script: ' + data.error)); return; }
+      resolve(data);
+    };
+    script.src = url;
+    script.onerror = function() { cleanup(); reject(new Error('Apps Script load error')); };
+    document.head.appendChild(script);
+  });
 }
 
 // Fallback: gviz API (wymaga arkusza opublikowanego w internecie)
