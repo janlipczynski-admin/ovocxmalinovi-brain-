@@ -12,11 +12,28 @@
  *
  * ENDPOINT:
  *   GET {url}         → pełny JSON ze wszystkimi danymi dashboardu
- *   GET {url}?tab=lag → tylko zakładka LAG MEASURES (debug)
+ *   GET {url}?tab=lag → tylko zakładka OS_LAG MEASURES (debug)
  *
  * ROZSZERZANIE:
  *   Dodaj nową funkcję readXxx(sheet) i wstaw wynik do obiektu data w doGet().
  */
+
+// ── GID zakładek (odporne na zmiany nazw) ──────────────────────────────────────
+// GID nie zmienia się przy zmianie nazwy zakładki — bezpieczne
+const GID = {
+  WIGI:                1492902022,
+  OS_LAG:              322339268,
+  OS_LEAD:             1844898951,
+  HARVEST_LAG:         null,   // TODO: wpisz gid po kliknięciu w zakładkę HARVEST_LAG MEASURES
+  HARVEST_LEAD:        null,   // TODO: wpisz gid po kliknięciu w zakładkę HARVEST_LEAD MEASURES
+  NOCOMPLAINTS_LAG:    null,   // TODO: wpisz gid po kliknięciu w zakładkę NOCOMPLAINTS_LAG MEASURES
+  NOCOMPLAINTS_LEAD:   null    // TODO: wpisz gid po kliknięciu w zakładkę NOCOMPLAINTS_LEAD MEASURES
+};
+
+// ── Helper: pobierz zakładkę po gid ───────────────────────────────────────────
+function getSheetById(ss, gid) {
+  return ss.getSheets().find(function(s) { return s.getSheetId() === gid; }) || null;
+}
 
 // ── Główny handler ─────────────────────────────────────────────────────────────
 
@@ -27,14 +44,14 @@ function doGet(e) {
 
     // Tryb debug: tylko jedna zakładka
     if (tab === 'lag') {
-      const result = readLagMeasures(ss.getSheetByName('LAG MEASURES'));
+      const result = readLagMeasures(getSheetById(ss, GID.OS_LAG));
       return jsonResponse(result);
     }
 
     // Pełny payload dashboardu
     const data = {
-      lag:     readLagMeasures(ss.getSheetByName('LAG MEASURES')),
-      lead:    readLeadMeasures(ss.getSheetByName('LEAD MEASURES')),
+      lag:     readLagMeasures(getSheetById(ss, GID.OS_LAG)),
+      lead:    readLeadMeasures(getSheetById(ss, GID.OS_LEAD)),
       updated: new Date().toISOString()
     };
 
@@ -59,10 +76,10 @@ function jsonResponse(obj) {
 //   Wartości: ułamki (0.125 = 12.5%) lub procenty (41.43 = 41.43%)
 
 function readLagMeasures(sheet) {
-  if (!sheet) return { error: 'Brak zakładki LAG MEASURES' };
+  if (!sheet) return { error: 'Brak zakładki OS_LAG MEASURES (gid=' + GID.OS_LAG + ')' };
 
   const values = sheet.getDataRange().getValues();
-  if (values.length < 2) return { error: 'Pusta zakładka LAG MEASURES' };
+  if (values.length < 2) return { error: 'Pusta zakładka OS_LAG MEASURES' };
 
   // Znajdź kolumnę bieżącego tygodnia ISO (T10, T11, ...)
   const weekLabel  = 'T' + isoWeekNumber();
@@ -113,7 +130,7 @@ function readLagMeasures(sheet) {
 // Zwraca surowe wiersze dla debugowania (max 20 wierszy).
 
 function readLeadMeasures(sheet) {
-  if (!sheet) return { error: 'Brak zakładki LEAD MEASURES' };
+  if (!sheet) return { error: 'Brak zakładki OS_LEAD MEASURES (gid=' + GID.OS_LEAD + ')' };
 
   const values = sheet.getDataRange().getValues();
   // TODO: zamień na właściwy parsing po poznaniu struktury
