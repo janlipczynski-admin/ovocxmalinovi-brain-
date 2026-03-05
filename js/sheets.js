@@ -284,16 +284,80 @@ function renderProcesses(data) {
   }
 }
 
+// ── Error banner ──────────────────────────────────────────────────────────────
+
+function showSheetsError(msg, details) {
+  var banner = document.getElementById('sheets-error');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'sheets-error';
+    banner.style.cssText = 'background:#fff3cd;color:#856404;border:1px solid #ffc107;' +
+      'border-radius:8px;padding:12px 16px;margin:8px 0;font-size:13px;display:none;';
+    var grid = document.querySelector('.wig-grid');
+    if (grid) grid.parentNode.insertBefore(banner, grid);
+  }
+  banner.innerHTML = '<strong>⚠ Dane z Google Sheets niedostępne</strong><br>' +
+    msg + (details ? '<br><small style="opacity:.7">' + details + '</small>' : '');
+  banner.style.display = 'block';
+}
+
+function classifyError(err) {
+  var m = err.message || '';
+  if (m.indexOf('403') >= 0 || m.indexOf('permission') >= 0 || m.indexOf('Forbidden') >= 0) {
+    return {
+      type: '403',
+      msg: 'Brak uprawnień (HTTP 403). Sprawdź czy Apps Script jest wdrożony z dostępem "Wszyscy" ' +
+           'i czy arkusz jest udostępniony.',
+      detail: 'Checklista: 1) Sheets/Drive/Apps Script API włączone w GCP ' +
+              '2) OAuth scope\'y: spreadsheets + drive ' +
+              '3) Arkusz udostępniony (Editor) dla service account ' +
+              '4) Apps Script: Wdróż → Kto ma dostęp: Wszyscy'
+    };
+  }
+  if (m.indexOf('timeout') >= 0 || m.indexOf('Timeout') >= 0) {
+    return { type: 'timeout', msg: 'Timeout — Apps Script nie odpowiedział w 10s.', detail: null };
+  }
+  if (m.indexOf('load error') >= 0 || m.indexOf('network') >= 0 || m.indexOf('Failed to fetch') >= 0) {
+    return { type: 'network', msg: 'Błąd sieci — nie udało się połączyć z Google.', detail: null };
+  }
+  return { type: 'unknown', msg: 'Błąd: ' + m, detail: null };
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 async function initDashboard() {
+  var lastError = null;
+
+  // 1. Próba: Apps Script (preferowana)
   try {
-    const data = await fetchAppsScript();
+    var data = await fetchAppsScript();
     if (data.lag) renderOSJson(data.lag);
     console.log('[Sheets] Dashboard załadowany z Apps Script');
+    return;
   } catch (err) {
-    console.warn('[Sheets] Błąd ładowania danych:', err.message);
+    lastError = err;
+    var info = classifyError(err);
+    console.warn('[Sheets] Apps Script błąd (' + info.type + '):', err.message);
+    if (info.detail) console.info('[Sheets] ' + info.detail);
   }
+
+  // 2. Fallback: gviz API (wymaga arkusza opublikowanego w internecie)
+  try {
+    console.log('[Sheets] Próba fallback przez gviz...');
+    var lagTable = await fetchGviz(SHEETS_CONFIG.lagMeasuresGid);
+    if (lagTable && lagTable.rows) {
+      renderOS(lagTable.rows);
+      console.log('[Sheets] Dashboard załadowany z gviz (fallback)');
+      return;
+    }
+  } catch (err2) {
+    lastError = err2;
+    console.warn('[Sheets] gviz fallback też nie zadziałał:', err2.message);
+  }
+
+  // 3. Oba źródła zawiodły — pokaż komunikat
+  var info = classifyError(lastError);
+  showSheetsError(info.msg, info.detail);
 }
 
 if (typeof document !== 'undefined') {
@@ -301,5 +365,5 @@ if (typeof document !== 'undefined') {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { SHEETS_CONFIG, arcDash, clampPct, formatPLN, isoWeek, weekColIndex, findWeekCol };
+  module.exports = { SHEETS_CONFIG, arcDash, clampPct, formatPLN, isoWeek, weekColIndex, findWeekCol, classifyError };
 }

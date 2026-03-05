@@ -10,6 +10,30 @@
  *      - Kto ma dostęp: Wszyscy
  *   4. Skopiuj URL wdrożenia → wklej do js/sheets.js jako SHEETS_CONFIG.appsScriptUrl
  *
+ * ROZWIĄZYWANIE BŁĘDU 403:
+ *   Jeśli dashboard zwraca 403, sprawdź te 3 warstwy:
+ *
+ *   Warstwa 1 — Dostęp do arkusza Google Sheet:
+ *     • Otwórz arkusz → Udostępnij → upewnij się, że konto (lub service account) ma rolę Edytor
+ *     • Dla service account: dodaj email SA (xxx@yyy.iam.gserviceaccount.com) jako Edytor
+ *
+ *   Warstwa 2 — API Google (GCP):
+ *     • Google Cloud Console → APIs & Services → Library
+ *     • Włącz: Google Sheets API, Google Drive API, Google Apps Script API
+ *     • OAuth scope'y muszą zawierać: spreadsheets, drive (lub drive.file)
+ *
+ *   Warstwa 3 — Wdrożenie Apps Script:
+ *     • Wdróż → Nowe wdrożenie → typ: Aplikacja internetowa
+ *     • "Uruchom jako": Ja (konto właściciela arkusza)
+ *     • "Kto ma dostęp": Wszyscy (KRYTYCZNE — bez tego 403!)
+ *     • Po każdej zmianie kodu: Wdróż → Zarządzaj wdrożeniami → Nowa wersja
+ *     • Stary URL nie aktualizuje się automatycznie — zawsze kopiuj nowy URL
+ *
+ *   Dodatkowe przyczyny 403:
+ *     • Google Workspace admin może blokować aplikacje (allowlist/Trust)
+ *     • Token bez wymaganych scope'ów → "insufficientPermissions"
+ *     • Inny profil Google w przeglądarce niż właściciel arkusza
+ *
  * ENDPOINT:
  *   GET {url}         → pełny JSON ze wszystkimi danymi dashboardu
  *   GET {url}?tab=lag → tylko zakładka OS_LAG MEASURES (debug)
