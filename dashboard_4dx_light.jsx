@@ -123,10 +123,6 @@ function lagWeekColsFallback(wc) {
 // Pobierz wartości tygodniowe z wiersza (T10–T15), domyślnie 0 gdy brak
 function getWeekValues(rows, row, weekCols) {
   if (row === null || !rows[row]) return WEEKS.map(() => 0);
-  const rawCells = WEEKS.map(w => weekCols[w] !== undefined ? rows[row][weekCols[w]] : undefined);
-  console.log('getWeekValues DEBUG row=' + row, rawCells.map((c, i) => ({
-    week: WEEKS[i], raw: c, type: typeof c, isObj: c !== null && typeof c === 'object'
-  })));
   return WEEKS.map(w => weekCols[w] !== undefined ? sf(rows[row][weekCols[w]]) : 0);
 }
 
@@ -209,6 +205,11 @@ function parseLag(rows) {
     if (col0.includes('proces') && col1.includes('target')) {
       processHeaderRow = i;
       processWeekCols = lagWeekColsFallback(findWeekColumns(rows, i));
+      console.log('STRUCT DEBUG — processHeaderRow:', i);
+      console.log('STRUCT DEBUG — processWeekCols:', JSON.stringify(processWeekCols));
+      console.log('STRUCT DEBUG — headerRow pełny:', rows[i]);
+      console.log('STRUCT DEBUG — dataRow+1 pełny:', rows[i + 1]);
+      console.log('STRUCT DEBUG — dataRow+2 pełny:', rows[i + 2]);
       break;
     }
   }
