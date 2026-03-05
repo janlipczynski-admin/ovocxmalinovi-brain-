@@ -326,19 +326,15 @@ function classifyError(err) {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 async function initDashboard() {
-  // WIG OS MALINOVI overall — Jan ustawia ręcznie co tydzień (jedyna liczba do zmiany)
-  const wigOsOverall = 5; // ← TU WPISZ % I ZAPISZ
-
   var lastError = null;
 
-  // 1. Próba: Apps Script (preferowana)
+  // 1. Próba: Apps Script (preferowana) — overall pochodzi z B1 arkusza OS_LAG MEASURES
   try {
     const data = await fetchAppsScript();
     if (data.lag) {
-      if (wigOsOverall !== undefined) data.lag.overall = wigOsOverall;
       renderOSJson(data.lag);
+      console.log('[Sheets] Dashboard załadowany. OS overall:', data.lag.overall);
     }
-    console.log('[Sheets] Dashboard załadowany. OS overall:', wigOsOverall ?? data.lag?.overall);
   } catch (err) {
     lastError = err;
     var info = classifyError(err);
@@ -352,8 +348,8 @@ async function initDashboard() {
     console.log('[Sheets] Próba fallback przez gviz...');
     var lagTable = await fetchGviz(SHEETS_CONFIG.lagMeasuresGid);
     if (lagTable && lagTable.rows) {
-      renderOS(lagTable.rows, wigOsOverall);
-      console.log('[Sheets] Dashboard załadowany z gviz (fallback). OS overall override:', wigOsOverall);
+      renderOS(lagTable.rows);
+      console.log('[Sheets] Dashboard załadowany z gviz (fallback)');
       return;
     }
   } catch (err2) {
