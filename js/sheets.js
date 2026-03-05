@@ -326,18 +326,8 @@ function classifyError(err) {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 async function initDashboard() {
-  // WIG OS MALINOVI overall — źródło prawdy: data/wig-os.json (Jan edytuje co tydzień)
-  // Ładujemy zawsze, niezależnie od źródła danych (Apps Script lub gviz)
-  let wigOsOverall;
-  try {
-    const wigOsRes = await fetch('data/wig-os.json');
-    if (wigOsRes.ok) {
-      const wigOs = await wigOsRes.json();
-      if (typeof wigOs?.wig?.overallProgress === 'number') {
-        wigOsOverall = wigOs.wig.overallProgress;
-      }
-    }
-  } catch (e) { /* ignoruj */ }
+  // WIG OS MALINOVI overall — Jan ustawia ręcznie co tydzień (jedyna liczba do zmiany)
+  const wigOsOverall = 5; // ← TU WPISZ % I ZAPISZ
 
   var lastError = null;
 
