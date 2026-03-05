@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4DX Scoreboard — OvocxMalinovi</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+</head>
+<body style="margin:0;background:#f8fafc">
+  <div id="root" style="font-family:sans-serif;padding:48px;color:#64748b;text-align:center">
+    Ładowanie 4DX Dashboard…
+  </div>
+
+  <!-- React 18 + ReactDOM (UMD — dostępne globalnie jako window.React / window.ReactDOM) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel standalone — kompiluje JSX w przeglądarce -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!--
+    Pobiera dashboard_4dx_light.jsx, kompiluje JSX → JS przez Babel,
+    wyodrębnia eksport default i renderuje komponent.
+    Wymaga serwera HTTP (nie działa przez file://).
+  -->
+  <script>
+  (function () {
+    fetch('./dashboard_4dx_light.jsx')
+      .then(function (r) {
+        if (!r.ok) throw new Error('Błąd pobierania pliku JSX: HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function (code) {
+        // Kompilacja JSX → JS (CommonJS, żeby wyodrębnić export default)
+        var compiled = Babel.transform(code, {
+          presets: ['react'],
+          plugins: ['transform-modules-commonjs']
+        }).code;
+
+        // Uruchom skompilowany moduł z własnym obiektem exports
+        var exports_ = {};
+        // eslint-disable-next-line no-new-func
+        var fn = new Function('React', 'exports', 'require', compiled);
+        fn(
+          window.React,
+          exports_,
+          function (id) { console.warn('[4DX] nieobsługiwany require:', id); return {}; }
+        );
+
+        var Dashboard4DX = exports_['default'] || exports_.default;
+        if (!Dashboard4DX) throw new Error('Nie znaleziono export default w dashboard_4dx_light.jsx');
+
+        ReactDOM.createRoot(document.getElementById('root'))
+          .render(React.createElement(Dashboard4DX));
+      })
+      .catch(function (err) {
+        document.getElementById('root').innerHTML =
+          '<div style="max-width:560px;margin:48px auto;background:#fff3cd;border:1px solid #ffc107;' +
+          'border-radius:12px;padding:24px 28px;color:#856404;font-family:sans-serif">' +
+          '<strong style="font-size:16px">⚠ Błąd ładowania 4DX Dashboard</strong><br><br>' +
+          '<span style="font-size:13px">' + err.message + '</span><br><br>' +
+          '<span style="font-size:12px;color:#92400e">Upewnij się, że strona jest serwowana przez HTTP ' +
+          '(nie file://), np. przez <code>python3 -m http.server</code> lub GitHub Pages.</span>' +
+          '</div>';
+      });
+  })();
+  </script>
+</body>
+</html>
