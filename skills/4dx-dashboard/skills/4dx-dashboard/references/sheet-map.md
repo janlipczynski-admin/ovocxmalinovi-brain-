@@ -1,0 +1,422 @@
+# Mapa arkuszy — DYNAMICZNE parsowanie oparte na markerach
+
+Ten dokument opisuje jak parsować arkusz `2026_Ovocxmalinovi_dashboard`
+**bez polegania na stałych numerach wierszy**. Parser szuka markerów
+tekstowych i buduje mapę pozycji dynamicznie.
+
+Dzięki temu:
+- Dodanie nowego procesu, LAG-a, SUB-WIG-a — parser go automatycznie znajdzie
+- Przesunięcie wierszy — nie psuje parsowania
+- Zmiana nazw — parser szuka wzorców, nie dokładnych tekstów
+
+---
+
+## Filozofia parsowania
+
+```
+1. KALIBRACJA — skanuj arkusz, znajdź markery sekcji
+2. SEGMENTACJA — podziel arkusz na bloki między markerami
+3. EKSTRAKCJA — z każdego bloku wyciągnij dane wg wzorca
+```
+
+**NIGDY nie używaj stałych numerów wierszy.** Zawsze szukaj markerów.
+
+---
+
+## Funkcje pomocnicze
+
+```python
+import pandas as pd
+import numpy as np
+import re
+
+WEEKS = ['T10', 'T11', 'T12', 'T13', 'T14', 'T15']
+
+def sf(val):
+    """Bezpieczna konwersja na float. NaN/None/tekst → 0."""
+    if val is None or (isinstance(val, float) and np.isnan(val)):
+        return 0
+    try:
+        return float(val)
+    except:
+        if isinstance(val, str) and val.endswith('%'):
+            try: return float(val.rstrip('%')) / 100
+            except: return 0
+        return 0
+
+def ss(val):
+    """Bezpieczna konwersja na string. NaN → ''."""
+    if val is None or (isinstance(val, float) and np.isnan(val)):
+        return ''
+    return str(val).strip()
+
+def find_rows(df, col, pattern, regex=False):
+    """Znajdź wszystkie wiersze gdzie kolumna col zawiera pattern."""
+    results = []
+    for i in range(len(df)):
+        val = ss(df.iloc[i, col])
+        if regex:
+            if re.search(pattern, val, re.IGNORECASE):
+                results.append(i)
+        else:
+            if pattern.lower() in val.lower():
+                results.append(i)
+    return results
+
+def find_row(df, col, pattern, regex=False):
+    """Znajdź PIERWSZY wiersz. Zwraca indeks lub None."""
+    rows = find_rows(df, col, pattern, regex)
+    return rows[0] if rows else None
+
+def find_week_columns(df, header_row):
+    """Znajdź indeksy kolumn T10–T15 w wierszu nagłówkowym."""
+    week_cols = {}
+    for col in range(df.shape[1]):
+        val = ss(df.iloc[header_row, col])
+        if val in WEEKS:
+            week_cols[val] = col
+    return week_cols
+
+def get_week_values(df, row, week_cols):
+    """Pobierz wartości tygodniowe z wiersza, w kolejności T10–T15."""
+    return [sf(df.iloc[row, week_cols[w]]) for w in WEEKS if w in week_cols]
+```
+
+---
+
+## 1. Arkusz: `WIGI`
+
+**Marker:** "WIG#" w kolumnie 2.
+
+```python
+def parse_wigs(df):
+    wigs = []
+    for i in range(len(df)):
+        id_val = ss(df.iloc[i, 2])
+        if id_val.startswith('WIG#'):
+            wigs.append({
+                'name': ss(df.iloc[i, 1]),
+                'id': id_val,
+                'description': ss(df.iloc[i, 3])
+            })
+    return wigs
+```
+
+---
+
+## 2. Arkusze LAG MEASURES
+
+**Dotyczy:** każdego arkusza kończącego się na `_LAG MEASURES`.
+
+### Kalibracja
+
+```python
+def calibrate_lag(df):
+    cal = {}
+    cal['wig_status_row'] = find_row(df, 0, 'WIG Status')
+
+    # Header procesów — szukaj wiersza z "Proces" w kol 0 ORAZ "Target" w kol 1
+    # (sam tekst "Proces" może pojawić się w nazwie sekcji LAG-01)
+    for i in range(len(df)):
+        if ss(df.iloc[i, 0]) == 'Proces' and 'target' in ss(df.iloc[i, 1]).lower():
+            cal['process_header_row'] = i
+            cal['process_week_cols'] = find_week_columns(df, i)
+            break
+
+    # Koniec listy procesów
+    cal['lag01_progress_row'] = find_row(df, 0, 'LAG-01 Postęp')
+    cal['lag01_plan_row'] = find_row(df, 0, 'LAG-01 Plan')
+    cal['lag01_ontrack_row'] = find_row(df, 0, 'LAG-01 On track')
+
+    # Wszystkie dodatkowe LAG-i (LAG-02, LAG-03, ..., LAG-N)
+    lag_markers = find_rows(df, 0, r'LAG-0[2-9]|LAG-[1-9][0-9]', regex=True)
+    cal['additional_lags'] = []
+    for marker_row in lag_markers:
+        lag_name = ss(df.iloc[marker_row, 0])
+        header_row = None
+        for r in range(marker_row + 1, min(marker_row + 3, len(df))):
+            if 'measure' in ss(df.iloc[r, 0]).lower() or 'target' in ss(df.iloc[r, 1]).lower():
+                header_row = r
+                break
+        deadline = ''
+        if header_row:
+            for c in range(df.shape[1]):
+                val = ss(df.iloc[header_row, c])
+                if 'deadline' in val.lower():
+                    deadline = val
+                    break
+        cal['additional_lags'].append({
+            'name': lag_name, 'marker_row': marker_row,
+            'header_row': header_row, 'deadline': deadline,
+        })
+    return cal
+```
+
+### Ekstrakcja
+
+```python
+def parse_lag(df):
+    cal = calibrate_lag(df)
+    result = {}
+    result['wig_status'] = sf(df.iloc[cal['wig_status_row'], 1]) if cal.get('wig_status_row') is not None else 0
+
+    wc = cal.get('process_week_cols', {})
+    if cal.get('process_header_row') is not None and cal.get('lag01_progress_row') is not None:
+        processes = []
+        for row in range(cal['process_header_row'] + 1, cal['lag01_progress_row']):
+            name = ss(df.iloc[row, 0])
+            if not name: continue
+            processes.append({
+                'name': name, 'target': ss(df.iloc[row, 1]),
+                'values': get_week_values(df, row, wc) if wc else []
+            })
+        result['lag01'] = {
+            'processes': processes,
+            'progress': get_week_values(df, cal['lag01_progress_row'], wc) if wc else [],
+            'plan': get_week_values(df, cal['lag01_plan_row'], wc) if cal.get('lag01_plan_row') and wc else [],
+            'on_track': get_week_values(df, cal['lag01_ontrack_row'], wc) if cal.get('lag01_ontrack_row') and wc else [],
+        }
+    else:
+        result['lag01'] = {'processes': [], 'progress': [], 'plan': [], 'on_track': []}
+
+    result['additional_lags'] = []
+    for lag_info in cal.get('additional_lags', []):
+        lag_data = {'name': lag_info['name'], 'deadline': lag_info['deadline']}
+        if lag_info.get('header_row') is not None:
+            hr = lag_info['header_row']
+            target = ss(df.iloc[hr + 1, 1]) if hr + 1 < len(df) else ''
+            lag_data['is_tbd'] = target.upper() == 'TBD' or target == ''
+            lag_data['target'] = target
+            criteria = []
+            for r in range(hr + 2, min(hr + 12, len(df))):
+                val = ss(df.iloc[r, 0])
+                if not val: break
+                criteria.append(val)
+            lag_data['criteria'] = criteria
+            lag_wc = find_week_columns(df, hr)
+            if lag_wc and not lag_data['is_tbd']:
+                lag_data['values'] = get_week_values(df, hr + 1, lag_wc)
+        else:
+            lag_data['is_tbd'] = True
+            lag_data['criteria'] = []
+        result['additional_lags'].append(lag_data)
+    return result
+```
+
+---
+
+## 3. Arkusze LEAD MEASURES
+
+**Dotyczy:** każdego arkusza kończącego się na `_LEAD MEASURES`.
+
+### Kalibracja
+
+```python
+def calibrate_lead(df):
+    cal = {}
+    for i in range(len(df)):
+        if ss(df.iloc[i, 0]) == 'Deadline' and ss(df.iloc[i, 1]) == 'Opis':
+            cal['main_header_row'] = i
+            cal['week_cols'] = find_week_columns(df, i)
+            break
+
+    if 'main_header_row' in cal:
+        cal['lead_score_row'] = cal['main_header_row'] + 1
+
+    # Znajdź SUB-WIG-i (bez wierszy Postęp/On track)
+    sub_wig_rows = []
+    for i in range(len(df)):
+        val = ss(df.iloc[i, 0])
+        if re.match(r'SUB-WIG\s+\d+\s+', val) and 'Postęp' not in val and 'On track' not in val:
+            sub_wig_rows.append((i, val))
+
+    cal['sub_wigs'] = []
+    for idx, (marker_row, marker_text) in enumerate(sub_wig_rows):
+        sw = {'marker_row': marker_row, 'name': marker_text}
+        for r in range(marker_row + 1, min(marker_row + 3, len(df))):
+            if 'deadline' in ss(df.iloc[r, 0]).lower():
+                sw['header_row'] = r
+                sw['task_week_cols'] = find_week_columns(df, r)
+                break
+
+        if 'header_row' in sw:
+            next_boundary = sub_wig_rows[idx + 1][0] if idx + 1 < len(sub_wig_rows) else len(df)
+            tasks = []
+            for r in range(sw['header_row'] + 1, next_boundary):
+                dl = ss(df.iloc[r, 0])
+                desc = ss(df.iloc[r, 1])
+                full = ss(df.iloc[r, 0])
+                if 'Postęp' in full:
+                    sw['progress_row'] = r
+                elif 'On track' in full:
+                    sw['ontrack_row'] = r
+                elif dl.startswith('T') and desc:
+                    tasks.append(r)
+            sw['task_rows'] = tasks
+        cal['sub_wigs'].append(sw)
+    return cal
+```
+
+### Ekstrakcja
+
+```python
+def parse_lead(df):
+    cal = calibrate_lead(df)
+    wc = cal.get('week_cols', {})
+    result = {}
+
+    if cal.get('lead_score_row') is not None and wc:
+        result['lead_score'] = {
+            'target': sf(df.iloc[cal['lead_score_row'], 2]),
+            'values': get_week_values(df, cal['lead_score_row'], wc)
+        }
+    else:
+        result['lead_score'] = {'target': 1, 'values': [0]*6}
+
+    result['sub_wigs'] = []
+    for sw_cal in cal.get('sub_wigs', []):
+        sw_data = {'name': sw_cal['name'], 'tasks': []}
+        twc = sw_cal.get('task_week_cols', wc)
+        for row in sw_cal.get('task_rows', []):
+            sw_data['tasks'].append({
+                'deadline': ss(df.iloc[row, 0]),
+                'description': ss(df.iloc[row, 1]),
+                'target': sf(df.iloc[row, 2]),
+                'values': get_week_values(df, row, twc) if twc else []
+            })
+        if sw_cal.get('progress_row') is not None and twc:
+            sw_data['progress'] = get_week_values(df, sw_cal['progress_row'], twc)
+        else:
+            sw_data['progress'] = [0]*len(WEEKS)
+        result['sub_wigs'].append(sw_data)
+    return result
+```
+
+---
+
+## 4. Arkusz: `MAPA PROCESÓW`
+
+```python
+def parse_mapa(df):
+    processes = []
+    header_rows = []
+    for i in range(len(df)):
+        row_text = ' '.join([ss(df.iloc[i, c]) for c in range(min(5, df.shape[1]))])
+        if '#' in row_text and 'TYP' in row_text and 'PROCES' in row_text:
+            header_rows.append(i)
+    for hr in header_rows:
+        for r in range(hr + 1, len(df)):
+            pid = ss(df.iloc[r, 0])
+            if not pid or not pid.isdigit(): break
+            processes.append({
+                'id': int(pid), 'type': ss(df.iloc[r, 1]),
+                'name': ss(df.iloc[r, 2]), 'owner': ss(df.iloc[r, 3]),
+                'version': ss(df.iloc[r, 4]), 'status': ss(df.iloc[r, 5]),
+            })
+    return processes
+```
+
+---
+
+## 5. Arkusz: `OCENA 4DX`
+
+```python
+def parse_ocena(df):
+    target_row = find_row(df, 0, 'Docelowa średnia')
+    target_avg = sf(df.iloc[target_row, 1]) if target_row is not None else 0
+    header_row = find_row(df, 0, 'Proces')
+    if header_row is None: return {'target': target_avg, 'processes': []}
+    week_cols = find_week_columns(df, header_row)
+    avg_rows = find_rows(df, 0, 'Średnia')
+    processes = []
+    for avg_row in avg_rows:
+        proc_name = ss(df.iloc[avg_row, 0]).replace('Średnia ', '')
+        criteria = {}
+        for r in range(avg_row - 1, header_row, -1):
+            criterion = ss(df.iloc[r, 1])
+            if not criterion:
+                if ss(df.iloc[r, 0]) and ss(df.iloc[r, 0]) != proc_name: break
+                continue
+            criteria[criterion] = get_week_values(df, r, week_cols) if week_cols else []
+        avg_values = get_week_values(df, avg_row, week_cols) if week_cols else []
+        processes.append({'name': proc_name, 'criteria': criteria, 'avg': avg_values})
+    return {'target': target_avg, 'processes': processes}
+```
+
+---
+
+## 6. Arkusz: `BACKLOG`
+
+```python
+def parse_backlog(df):
+    header_row = None
+    for i in range(len(df)):
+        row_text = ' '.join([ss(df.iloc[i, c]) for c in range(min(15, df.shape[1]))])
+        if 'KATEGORIA' in row_text and 'STATUS' in row_text:
+            header_row = i
+            break
+    if header_row is None: return []
+    col_names = [ss(df.iloc[header_row, c]) for c in range(df.shape[1])]
+    items = []
+    for row in range(header_row + 1, len(df)):
+        has_data = any(ss(df.iloc[row, c]) for c in range(min(15, df.shape[1])))
+        if not has_data: continue
+        item = {}
+        for c, name in enumerate(col_names):
+            if name:
+                key = re.sub(r'[^\w\s]', '', name).strip().lower().replace(' ', '_')
+                if key: item[key] = ss(df.iloc[row, c])
+        if item: items.append(item)
+    return items
+```
+
+---
+
+## 7. GŁÓWNA FUNKCJA
+
+```python
+def parse_4dx_dashboard(path):
+    xls = pd.ExcelFile(path)
+    all_sheets = xls.sheet_names
+    result = {'wigs': [], 'wig_data': {}, 'processes': [], 'backlog': [], 'ocena': {}}
+
+    if 'WIGI' in all_sheets:
+        result['wigs'] = parse_wigs(pd.read_excel(path, sheet_name='WIGI', header=None))
+
+    # Dynamicznie znajdź pary LAG/LEAD
+    for s in all_sheets:
+        if s.endswith('_LAG MEASURES'):
+            prefix = s.replace('_LAG MEASURES', '')
+            lag_df = pd.read_excel(path, sheet_name=s, header=None)
+            lag_data = parse_lag(lag_df)
+            lead_sheet = f'{prefix}_LEAD MEASURES'
+            lead_data = parse_lead(pd.read_excel(path, sheet_name=lead_sheet, header=None)) if lead_sheet in all_sheets else {}
+            has_data = lag_data.get('wig_status', 0) > 0 or any(p.get('values', [0])[0] > 0 for p in lag_data.get('lag01', {}).get('processes', []))
+            result['wig_data'][prefix] = {'has_data': has_data, 'lag': lag_data, 'lead': lead_data}
+
+    if 'MAPA PROCESÓW' in all_sheets:
+        result['processes'] = parse_mapa(pd.read_excel(path, sheet_name='MAPA PROCESÓW', header=None))
+    if 'OCENA 4DX' in all_sheets:
+        result['ocena'] = parse_ocena(pd.read_excel(path, sheet_name='OCENA 4DX', header=None))
+    if 'BACKLOG' in all_sheets:
+        result['backlog'] = parse_backlog(pd.read_excel(path, sheet_name='BACKLOG', header=None))
+
+    return result
+```
+
+---
+
+## Markery tekstowe — podsumowanie
+
+| Sekcja | Marker | Gdzie szukać |
+|--------|--------|-------------|
+| WIG-i | `WIG#` | kol 2 arkusza WIGI |
+| WIG Status | `WIG Status` | kol 0 arkuszy LAG |
+| Procesy DoD | header `Proces` → koniec `LAG-01 Postęp` | kol 0 |
+| LAG-i dodatkowe | regex `LAG-0[2-9]\|LAG-[1-9][0-9]` | kol 0 |
+| SUB-WIG-i | regex `SUB-WIG\s+\d+` (bez Postęp/On track) | kol 0 |
+| Zadania LEAD | `T10`–`T15` w kol 0 po headerze SUB-WIG | kol 0 |
+| Mapa procesów | header `# + TYP + PROCES` | kol 0–4 |
+| OCENA procesy | `Średnia [nazwa]` | kol 0 |
+| BACKLOG | header `KATEGORIA + STATUS` | cały wiersz |
+| Pary arkuszy | sufiks `_LAG MEASURES` / `_LEAD MEASURES` | nazwy sheetów |
