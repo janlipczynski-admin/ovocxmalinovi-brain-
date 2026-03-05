@@ -288,9 +288,24 @@ function renderProcesses(data) {
 
 async function initDashboard() {
   try {
+    // WIG OS MALINOVI overall — źródło prawdy: data/wig-os.json (Jan edytuje co tydzień)
+    let wigOsOverall;
+    try {
+      const wigOsRes = await fetch('data/wig-os.json');
+      if (wigOsRes.ok) {
+        const wigOs = await wigOsRes.json();
+        if (typeof wigOs?.wig?.overallProgress === 'number') {
+          wigOsOverall = wigOs.wig.overallProgress;
+        }
+      }
+    } catch (e) { /* ignoruj — Apps Script użyje swojej wartości */ }
+
     const data = await fetchAppsScript();
-    if (data.lag) renderOSJson(data.lag);
-    console.log('[Sheets] Dashboard załadowany z Apps Script');
+    if (data.lag) {
+      if (wigOsOverall !== undefined) data.lag.overall = wigOsOverall;
+      renderOSJson(data.lag);
+    }
+    console.log('[Sheets] Dashboard załadowany. OS overall:', wigOsOverall ?? data.lag?.overall);
   } catch (err) {
     console.warn('[Sheets] Błąd ładowania danych:', err.message);
   }
