@@ -247,24 +247,33 @@ function renderOSValues(sub1, sub2, sub3, overallOverride) {
   setText('modal-os-procesy',    sub2 + '%');
   setText('modal-os-rytm',       sub3 + '%');
 
-  // LAG bars w widoku szczegółowym
+  // LAG mini-grid (index.html) + LAG bars w widoku szczegółowym
   setWidth('lag-bar-os-01', sub1);
   setWidth('lag-bar-os-02', sub2);
   setWidth('lag-bar-os-03', sub3);
   setText('lag-val-os-01', sub1 + '%');
   setText('lag-val-os-02', sub2 + '%');
   setText('lag-val-os-03', sub3 + '%');
+  // Kolor mini-val zależny od postępu
+  var elV01 = document.getElementById('lag-val-os-01');
+  var elV02 = document.getElementById('lag-val-os-02');
+  var elV03 = document.getElementById('lag-val-os-03');
+  if (elV01) elV01.style.color = osColor(sub1);
+  if (elV02) elV02.style.color = osColor(sub2);
+  if (elV03) elV03.style.color = osColor(sub3);
 }
 
 // Renderuje WIG #1 z JSON zwróconego przez Apps Script
 function renderOSJson(lag) {
   if (!lag || lag.error) { console.warn('[Sheets] lag error:', lag?.error); return; }
-  // Liczymy overall z LAG-01 do LAG-04, pomijamy zera (brak danych ≠ 0%)
-  var subVals = [lag.lag01, lag.lag02, lag.lag03, lag.lag04].filter(function(v) { return v > 0; });
-  var computed = subVals.length
-    ? Math.round(subVals.reduce(function(a, b) { return a + b; }, 0) / subVals.length)
-    : 0;
-  renderOSValues(lag.lag01 || 0, lag.lag02 || 0, lag.lag03 || 0, computed);
+  // overall pochodzi z B1 arkusza (formuła Jana: average niepustych B7/B20/B29/B38)
+  renderOSValues(lag.lag01 || 0, lag.lag02 || 0, lag.lag03 || 0, lag.overall);
+  // LAG-04 — mini grid (osobny element poza renderOSValues)
+  var v04 = clampPct(lag.lag04 || 0);
+  setText('lag-val-os-04', v04 + '%');
+  setWidth('lag-bar-os-04', v04);
+  var el04 = document.getElementById('lag-val-os-04');
+  if (el04) el04.style.color = osColor(v04);
 }
 
 // Renderuje WIG #1 z wierszy gviz (fallback)

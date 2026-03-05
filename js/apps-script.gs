@@ -250,10 +250,40 @@ function readLagMeasures(sheet) {
   var d03 = makeLagDetail(2);
   var d04 = makeLagDetail(3);
 
-  // Overall: średnia z LAG-01..04 — tylko niepuste (brak danych ≠ 0%)
-  // Celowo ignorujemy B1 arkusza — formuła w arkuszu jest pomocnicza, nie źródłem prawdy
-  var vals = [d01.current, d02.current, d03.current, d04.current].filter(function(v) { return v > 0; });
-  var overall = vals.length ? Math.round(vals.reduce(function(a,b){return a+b;},0) / vals.length) : 0;
+  // === Odczyt komórek podsumowujących (formuły Jana) ===
+  // B7  = LAG-01 status (LOOKUP ostatnia niepusta wartość Postęp)
+  // B20 = LAG-02 status
+  // B29 = LAG-03 status
+  // B38 = LAG-04 status
+  // B1  = overall WIG = average niepustych z B7/B20/B29/B38
+  function cellPct(rowIdx) {
+    var v = values[rowIdx] && values[rowIdx][1];
+    if (v == null || v === '') return null;
+    var n = Number(v);
+    if (isNaN(n)) return null;
+    return Math.round(n <= 1 ? n * 100 : n);
+  }
+
+  var b7  = cellPct(6);   // B7
+  var b20 = cellPct(19);  // B20
+  var b29 = cellPct(28);  // B29
+  var b38 = cellPct(37);  // B38
+  var b1  = cellPct(0);   // B1 = overall
+
+  // Użyj B7/B20/B29/B38 jako "current" jeśli Jan wpisał formuły (bardziej dokładne)
+  if (b7  !== null) d01.current = b7;
+  if (b20 !== null) d02.current = b20;
+  if (b29 !== null) d03.current = b29;
+  if (b38 !== null) d04.current = b38;
+
+  // Overall: B1 jeśli Jan ma formułę, fallback: compute z niepustych d01-d04
+  var overall;
+  if (b1 !== null && b1 > 0) {
+    overall = b1;
+  } else {
+    var vals = [d01.current, d02.current, d03.current, d04.current].filter(function(v) { return v > 0; });
+    overall = vals.length ? Math.round(vals.reduce(function(a,b){return a+b;},0) / vals.length) : 0;
+  }
 
   return {
     weekLabel:   currentWeekLabel,
