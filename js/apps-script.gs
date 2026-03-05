@@ -331,3 +331,18 @@ function isoWeekNumber() {
   var yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
   return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
 }
+
+// ── Funkcja testowa — uruchom z edytora, sprawdzi połączenie i dane OS LAG ────
+function testOSLag() {
+  var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = getSheetById(ss, GID.OS_LAG);
+  if (!sheet) { Logger.log('BŁĄD: nie znaleziono zakładki OS_LAG (gid=' + GID.OS_LAG + ')'); return; }
+  var result = readLagMeasures(sheet);
+  Logger.log('overall : ' + result.overall + '%');
+  Logger.log('lag01   : ' + result.lag01   + '%');
+  Logger.log('lag02   : ' + result.lag02   + '%');
+  Logger.log('lag03   : ' + result.lag03   + '%');
+  Logger.log('lag04   : ' + result.lag04   + '%');
+  Logger.log('week    : ' + result.week);
+  Logger.log('Pełny JSON: ' + JSON.stringify(result));
+}
