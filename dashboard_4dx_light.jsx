@@ -110,6 +110,16 @@ function findWeekColumns(rows, headerRow) {
   return wc;
 }
 
+// Fallback dla arkuszy LAG gdy gviz nie zwraca labeli kolumn tygodniowych.
+// Kolumny C-H (indeksy 2-7) to zawsze T10-T15 w arkuszach *_LAG MEASURES.
+function lagWeekColsFallback(wc) {
+  if (Object.keys(wc).length >= 2) return wc;
+  const fallback = {};
+  WEEKS.forEach((w, i) => { fallback[w] = i + 2; }); // C=2, D=3, E=4, F=5, G=6, H=7
+  console.warn('[4DX parseLag] Brak labeli tygodniowych w nagłówku — używam fallback C-H (indeksy 2-7)');
+  return fallback;
+}
+
 // Pobierz wartości tygodniowe z wiersza (T10–T15), domyślnie 0 gdy brak
 function getWeekValues(rows, row, weekCols) {
   if (row === null || !rows[row]) return WEEKS.map(() => 0);
@@ -194,7 +204,7 @@ function parseLag(rows) {
     const col1 = ss(rows[i][1]).toLowerCase();
     if (col0.includes('proces') && col1.includes('target')) {
       processHeaderRow = i;
-      processWeekCols = findWeekColumns(rows, i);
+      processWeekCols = lagWeekColsFallback(findWeekColumns(rows, i));
       break;
     }
   }
@@ -255,7 +265,7 @@ function parseLag(rows) {
       criteria.push(val);
     }
 
-    const lagWc  = findWeekColumns(rows, headerRow);
+    const lagWc  = lagWeekColsFallback(findWeekColumns(rows, headerRow));
     const values = (!is_tbd && Object.keys(lagWc).length) ? getWeekValues(rows, headerRow + 1, lagWc) : [];
     return { name: lagName, is_tbd, target, criteria, values };
   });
