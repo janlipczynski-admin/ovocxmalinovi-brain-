@@ -96,7 +96,12 @@ function findWeekColumns(rows, headerRow) {
     if (rowIdx < 0 || !rows[rowIdx]) return;
     rows[rowIdx].forEach((cell, i) => {
       const v = ss(cell);
-      if (WEEKS.includes(v) && !(v in wc)) wc[v] = i;
+      if (WEEKS.includes(v) && !(v in wc)) { wc[v] = i; return; }
+      // Fallback: gviz zwraca v=10 gdy komórka ma format "T"0 (a cell.f już przetworzone wyżej)
+      if (typeof cell === 'number' && Number.isInteger(cell) && cell >= 10 && cell <= 15) {
+        const wk = 'T' + cell;
+        if (WEEKS.includes(wk) && !(wk in wc)) wc[wk] = i;
+      }
     });
   };
   tryRow(headerRow);
@@ -125,7 +130,13 @@ async function fetchGvizSheet(param) {
   if (!match) throw new Error('Nieprawidłowy format odpowiedzi gviz');
   const table = JSON.parse(match[1]).table;
   const rows = (table.rows || []).map(row =>
-    (row.c || []).map(cell => (cell && cell.v !== undefined) ? cell.v : null)
+    (row.c || []).map(cell => {
+      if (!cell || cell.v === undefined) return null;
+      // Jeśli sformatowana wartość pasuje do wzorca tygodnia (T10-T15), użyj jej.
+      // Arkusz może używać formatu niestandardowego "T"0 → gviz zwraca v=10, f="T10".
+      if (cell.f && /^T\d{1,2}$/.test(String(cell.f).trim())) return String(cell.f).trim();
+      return cell.v;
+    })
   );
   console.log(`[4DX fetch] ${param}: ${rows.length} wierszy × ${rows[0]?.length ?? 0} kolumn`);
   console.log(`[4DX fetch] ${param} pierwsze 5 wierszy:`, rows.slice(0, 5).map(r => r?.map(v => v === null ? '∅' : v)));
