@@ -231,12 +231,6 @@ function parseLag(rows) {
       console.log(`  proces [${r}] "${name}" → values:`, vals);
       processes.push({ name, target: ss(rows[r][1]), values: vals });
     }
-    console.log('PROCESY DEBUG:', processes.map(p => ({
-      name: p.name,
-      weekCols: processWeekCols,
-      rawValues: p.values,
-      isComplete: p.values.some(v => v >= 0.99)
-    })));
     lag01 = {
       processes,
       progress: getWeekValues(rows, lag01ProgressRow, processWeekCols),
