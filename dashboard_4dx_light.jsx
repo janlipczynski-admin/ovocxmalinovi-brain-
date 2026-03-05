@@ -56,11 +56,12 @@ function ss(val) {
   return String(val).trim();
 }
 
-// Bezpieczna konwersja na float. Obsługuje ułamki (0.125) i procenty (12.5%)
+// Bezpieczna konwersja na float. Obsługuje ułamki (0.125), procenty (12.5%) i polski format (12,5%)
 function sf(val) {
   if (val === null || val === undefined) return 0;
   if (typeof val === 'number') return val;
-  const str = String(val).trim();
+  // Zamień przecinek na kropkę (polski format: "100,00%" → "100.00%", "28,57" → "28.57")
+  const str = String(val).trim().replace(',', '.');
   if (str.endsWith('%')) { const n = parseFloat(str); return isNaN(n) ? 0 : n / 100; }
   const n = parseFloat(str);
   return isNaN(n) ? 0 : n;
@@ -85,14 +86,22 @@ function findRows(rows, col, pattern, regex = false) {
   return out;
 }
 
-// Znajdź indeksy kolumn T10–T15 w wierszu nagłówkowym
+// Znajdź indeksy kolumn T10–T15 w wierszu nagłówkowym.
+// Jeśli nie znaleziono T10-T15 w danym wierszu, szuka 1–2 wiersze wyżej —
+// w arkuszu T10-T15 mogą być w oddzielnym wierszu nad "Proces | Target (DoD)".
 function findWeekColumns(rows, headerRow) {
   const wc = {};
-  if (headerRow === null || !rows[headerRow]) return wc;
-  rows[headerRow].forEach((cell, i) => {
-    const v = ss(cell);
-    if (WEEKS.includes(v)) wc[v] = i;
-  });
+  if (headerRow === null) return wc;
+  const tryRow = (rowIdx) => {
+    if (rowIdx < 0 || !rows[rowIdx]) return;
+    rows[rowIdx].forEach((cell, i) => {
+      const v = ss(cell);
+      if (WEEKS.includes(v) && !(v in wc)) wc[v] = i;
+    });
+  };
+  tryRow(headerRow);
+  if (Object.keys(wc).length < 2) tryRow(headerRow - 1);
+  if (Object.keys(wc).length < 2) tryRow(headerRow - 2);
   return wc;
 }
 
@@ -108,15 +117,19 @@ function getWeekValues(rows, row, weekCols) {
 // Wymaga arkusza opublikowanego w internecie (Plik → Udostępnij → Opublikuj w internecie).
 async function fetchGvizSheet(param) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&${param}`;
+  console.log('[4DX fetch]', param);
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const text = await res.text();
   const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
   if (!match) throw new Error('Nieprawidłowy format odpowiedzi gviz');
   const table = JSON.parse(match[1]).table;
-  return (table.rows || []).map(row =>
+  const rows = (table.rows || []).map(row =>
     (row.c || []).map(cell => (cell && cell.v !== undefined) ? cell.v : null)
   );
+  console.log(`[4DX fetch] ${param}: ${rows.length} wierszy × ${rows[0]?.length ?? 0} kolumn`);
+  console.log(`[4DX fetch] ${param} pierwsze 5 wierszy:`, rows.slice(0, 5).map(r => r?.map(v => v === null ? '∅' : v)));
+  return rows;
 }
 
 // Opcjonalnie: Apps Script JSONP — gdy APPS_SCRIPT_URL_4DX jest ustawiony
@@ -150,25 +163,36 @@ function parseWigs(rows) {
 
 // Parser arkuszy *_LAG MEASURES — dynamiczne markery tekstowe
 function parseLag(rows) {
+  console.group('[4DX parseLag] wierszy:', rows.length);
+  // Pokaż surowe wiersze (max 30) — kolumny 0-9
+  rows.slice(0, 30).forEach((r, i) =>
+    console.log(`  [${String(i).padStart(2)}]`, r ? r.slice(0, 10).map(v => v === null ? '∅' : v) : 'null')
+  );
+
   // WIG Status — zagregowany wynik WIG-a
   const wigStatusRow = findRow(rows, 0, 'WIG Status');
   const wig_status = wigStatusRow !== null ? sf(rows[wigStatusRow][1]) : 0;
+  console.log('wigStatusRow:', wigStatusRow, '→ wig_status:', wig_status);
 
-  // Nagłówek procesów — wiersz z 'Proces' w kol 0 I 'target' w kol 1
+  // Nagłówek procesów — wiersz z 'Proces' (includes, nie ===) w kol 0 I 'target' w kol 1
   let processHeaderRow = null;
   let processWeekCols = {};
   for (let i = 0; i < rows.length; i++) {
     if (!rows[i]) continue;
-    if (ss(rows[i][0]) === 'Proces' && ss(rows[i][1]).toLowerCase().includes('target')) {
+    const col0 = ss(rows[i][0]).toLowerCase();
+    const col1 = ss(rows[i][1]).toLowerCase();
+    if (col0.includes('proces') && col1.includes('target')) {
       processHeaderRow = i;
       processWeekCols = findWeekColumns(rows, i);
       break;
     }
   }
+  console.log('processHeaderRow:', processHeaderRow, '→ processWeekCols:', processWeekCols);
 
   const lag01ProgressRow = findRow(rows, 0, 'LAG-01 Postęp');
   const lag01PlanRow     = findRow(rows, 0, 'LAG-01 Plan');
   const lag01OntrackRow  = findRow(rows, 0, 'LAG-01 On track');
+  console.log('lag01ProgressRow:', lag01ProgressRow, 'planRow:', lag01PlanRow, 'ontrackRow:', lag01OntrackRow);
 
   let lag01 = {
     processes: [],
@@ -182,7 +206,9 @@ function parseLag(rows) {
     for (let r = processHeaderRow + 1; r < lag01ProgressRow; r++) {
       const name = ss(rows[r] ? rows[r][0] : null);
       if (!name) continue;
-      processes.push({ name, target: ss(rows[r][1]), values: getWeekValues(rows, r, processWeekCols) });
+      const vals = getWeekValues(rows, r, processWeekCols);
+      console.log(`  proces [${r}] "${name}" → values:`, vals);
+      processes.push({ name, target: ss(rows[r][1]), values: vals });
     }
     lag01 = {
       processes,
@@ -191,6 +217,7 @@ function parseLag(rows) {
       on_track: lag01OntrackRow !== null ? getWeekValues(rows, lag01OntrackRow, processWeekCols) : WEEKS.map(() => 0),
     };
   }
+  console.log('lag01.processes:', lag01.processes.length, 'processWeekCols keys:', Object.keys(processWeekCols));
 
   // Dodatkowe LAG-i (LAG-02, LAG-03, ...) — marker regex
   const additionalLagMarkers = findRows(rows, 0, 'LAG-0[2-9]|LAG-[1-9][0-9]', true);
@@ -222,6 +249,7 @@ function parseLag(rows) {
     return { name: lagName, is_tbd, target, criteria, values };
   });
 
+  console.groupEnd();
   return { wig_status, lag01, additional_lags };
 }
 
