@@ -1,5 +1,6 @@
 # config.js jest commitowany — każdy pull daje aktualny klucz
 secrets/
 *.json
+!js/appsscript.json
 .secrets/
 # GCP Service Account key
