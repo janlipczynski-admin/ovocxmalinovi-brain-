@@ -259,12 +259,12 @@ function renderOSJson(lag) {
 }
 
 // Renderuje WIG #1 z wierszy gviz (fallback)
-function renderOS(lagRows) {
+function renderOS(lagRows, overallOverride) {
   const weekCol = findWeekCol(lagRows);
   const sub1    = extractPostep(lagRows, 'LAG-01 Postęp (średnia %)', weekCol);
   const sub2    = extractPostep(lagRows, 'LAG-02 Postęp (średnia %)', weekCol);
   const sub3    = extractPostep(lagRows, 'LAG-03 Postęp (średnia %)', weekCol);
-  renderOSValues(sub1, sub2, sub3);
+  renderOSValues(sub1, sub2, sub3, overallOverride);
 }
 
 // ── PROCESY ───────────────────────────────────────────────────────────────────
@@ -326,22 +326,23 @@ function classifyError(err) {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 async function initDashboard() {
+  // WIG OS MALINOVI overall — źródło prawdy: data/wig-os.json (Jan edytuje co tydzień)
+  // Ładujemy zawsze, niezależnie od źródła danych (Apps Script lub gviz)
+  let wigOsOverall;
+  try {
+    const wigOsRes = await fetch('data/wig-os.json');
+    if (wigOsRes.ok) {
+      const wigOs = await wigOsRes.json();
+      if (typeof wigOs?.wig?.overallProgress === 'number') {
+        wigOsOverall = wigOs.wig.overallProgress;
+      }
+    }
+  } catch (e) { /* ignoruj */ }
+
   var lastError = null;
 
   // 1. Próba: Apps Script (preferowana)
   try {
-    // WIG OS MALINOVI overall — źródło prawdy: data/wig-os.json (Jan edytuje co tydzień)
-    let wigOsOverall;
-    try {
-      const wigOsRes = await fetch('data/wig-os.json');
-      if (wigOsRes.ok) {
-        const wigOs = await wigOsRes.json();
-        if (typeof wigOs?.wig?.overallProgress === 'number') {
-          wigOsOverall = wigOs.wig.overallProgress;
-        }
-      }
-    } catch (e) { /* ignoruj — Apps Script użyje swojej wartości */ }
-
     const data = await fetchAppsScript();
     if (data.lag) {
       if (wigOsOverall !== undefined) data.lag.overall = wigOsOverall;
@@ -361,8 +362,8 @@ async function initDashboard() {
     console.log('[Sheets] Próba fallback przez gviz...');
     var lagTable = await fetchGviz(SHEETS_CONFIG.lagMeasuresGid);
     if (lagTable && lagTable.rows) {
-      renderOS(lagTable.rows);
-      console.log('[Sheets] Dashboard załadowany z gviz (fallback)');
+      renderOS(lagTable.rows, wigOsOverall);
+      console.log('[Sheets] Dashboard załadowany z gviz (fallback). OS overall override:', wigOsOverall);
       return;
     }
   } catch (err2) {
