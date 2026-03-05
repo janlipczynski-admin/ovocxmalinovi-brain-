@@ -2,7 +2,7 @@
 name: 4dx-dashboard
 description: >
   Skill do budowania i aktualizacji dashboardu 4DX Light dla OvocxMalinovi.
-  Parsuje dane z Google Sheets (lub pliku .xlsx) i renderuje interaktywny dashboard React/JSX.
+  Dashboard fetchuje dane NA ŻYWO z Google Sheets przez gviz API (Apps Script + gviz fallback).
   Używaj tego skilla zawsze, gdy użytkownik mówi o: dashboardzie 4DX, scoreboardzie OvocxMalinovi,
   WIG-ach, LAG measures, LEAD measures, mapie procesów, procesach DoD, sub-WIG-ach,
   arkuszu 4DX, aktualizacji postępów tygodniowych, parsowaniu danych z Google Sheets dla 4DX,
@@ -13,201 +13,164 @@ description: >
 
 # 4DX Dashboard — OvocxMalinovi
 
-Skill do parsowania arkusza Google Sheets (lub .xlsx) z danymi 4DX Light i generowania
-interaktywnego dashboardu React/JSX.
+Dashboard 4DX Light czyta dane **NA ŻYWO z Google Sheets** i renderuje interaktywny React/JSX.
+Nie potrzebuje pliku .xlsx — sam fetchuje arkusz przez przeglądarkę.
 
-## Kiedy używać
+## Plik docelowy
 
-- Użytkownik chce zbudować/zaktualizować dashboard 4DX
-- Użytkownik pyta o postępy w WIG-ach, LAG-ach, LEAD-ach
-- Użytkownik przesyła plik .xlsx z danymi 4DX
-- Użytkownik chce podpiąć dashboard do Google Sheets
-- Użytkownik chce wdrożyć dashboard przez Claude Code
+```
+dashboard_4dx_light.jsx   ← standalone React/JSX, samodzielny data layer
+```
 
-## Architektura danych
-
-Źródło prawdy: **Google Sheets** (arkusz `2026_Ovocxmalinovi_dashboard`)
-Dashboard: **React/JSX** renderowany jako artifact lub standalone app
+## Architektura — Live Google Sheets
 
 ```
 Google Sheets (źródło prawdy)
-    ↓ pobieranie danych
-Parser (Python/JS) — ten skill opisuje JAK parsować
-    ↓ dane JSON
-Dashboard React/JSX — wizualizacja
+    ↓ gviz API (fetch przez przeglądarkę)  ← PRIMARY
+    ↓ Apps Script JSONP                     ← OPTIONAL (gdy wdrożony)
+Parser JS — dynamiczne markery tekstowe
+    ↓ dane w pamięci React
+Dashboard React/JSX — useState + useEffect
 ```
 
-## Struktura arkusza — MAPA PARSOWANIA
+### Przepływ danych
 
-Arkusz zawiera **14 arkuszy (sheetów)**. Poniżej dokładna mapa każdego z nich.
-Szczegóły parsowania (numery wierszy, kolumn) znajdują się w:
+1. `useEffect` wywołuje `loadDashboardData()` przy montowaniu komponentu
+2. `loadDashboardData()` fetchuje wszystkie arkusze **równolegle** przez `Promise.allSettled`
+3. Każdy arkusz parsowany przez dedykowaną funkcję (`parseLag`, `parseLead`, `parseMapa`, ...)
+4. Dane trafiają do `useState` → rerenderuje dashboard z danymi live
 
-→ **`references/sheet-map.md`** — przeczytaj ZAWSZE przed parsowaniem
+### Mechanizm fetch — taki sam jak js/sheets.js
 
-### Arkusze i ich rola
+```js
+// PRIMARY: Apps Script JSONP (gdy APPS_SCRIPT_URL_4DX ustawiony)
+// FALLBACK: gviz API (działa bez auth, wymaga "Opublikuj w internecie")
 
-| Arkusz | Rola | Parsowanie |
-|--------|------|------------|
-| `WIGI` | Definicje 4 WIG-ów (nazwy, opisy) | Proste — 5 wierszy, 4 kolumny |
-| `OS_LAG MEASURES` | LAG measures dla WIG#1 OS MALINOVI | Złożone — sekcje LAG-01 do LAG-04 |
-| `OS_LEAD MEASURES` | LEAD measures dla WIG#1 OS MALINOVI | Złożone — 4 SUB-WIG-i z zadaniami |
-| `HARVEST_LAG MEASURES` | LAG measures dla WIG#2 (puste) | Identyczna struktura jak OS_LAG |
-| `HARVEST_LEAD MEASURES` | LEAD measures dla WIG#2 (puste) | Identyczna struktura jak OS_LEAD |
-| `NOCOMPLAINTS_LAG MEASURES` | LAG measures dla WIG#3 (puste) | Identyczna struktura jak OS_LAG |
-| `NOCOMPLAINTS_LEAD MEASURES` | LEAD measures dla WIG#3 (puste) | Identyczna struktura jak OS_LEAD |
-| `OCENA 4DX` | Samoocena procesów (skala 1–5) | Sekcje per proces, 5 kryteriów |
-| `MAPA PROCESÓW` | 7 procesów — status dokumentacji | Tabela z metadanymi |
-| `BACKLOG` | Backlog zmian i pomysłów | Duża tabela, 15 kolumn |
-| `Uwagi` | Notatki ze spotkania | Tekst swobodny |
-| `Gospodarka magazynowa` | Opis procesu — karta DoD | Sekcje: metryka, cel, kroki |
-| `Obsługa zamówień OxM` | Opis procesu — karta DoD | Sekcje: metryka, cel, kroki |
-| `_BIBLIOTEKA` | Listy rozwijane (słowniki) | Kategorie, statusy, pilności |
-
-## Kluczowe zasady parsowania
-
-### 1. Kolumny tygodniowe — ZAWSZE T10–T15
-
-Dane tygodniowe są w kolumnach o indeksach (0-based):
-- **LAG sheets**: kolumny 2–7 (T10, T11, T12, T13, T14, T15)
-- **LEAD sheets**: kolumny 3–8 (T10, T11, T12, T13, T14, T15)
-
-NIGDY nie zakładaj, że kolumna 0 = T10. Sprawdź wiersz nagłówkowy (row 3).
-
-### 2. Wartości LEAD — system 0 / 0.5 / 1
-
-```
-0   = nie rozpoczęte
-0.5 = w toku
-1   = zrobione
-```
-
-### 3. LAG-02, LAG-03, LAG-04 — mogą być TBD
-
-Te sekcje mogą mieć status "TBD" — w takim przypadku:
-- Kryteria będą puste lub z tekstem "Kryterium X (TBD)"
-- Dashboard powinien pokazywać badge "TBD" zamiast progress bara
-- Gdy użytkownik uzupełni kryteria, parser automatycznie je podchwyci
-
-### 4. WIG Status — wiersz 0, kolumna 1
-
-Każdy arkusz LAG zaczyna się od `WIG Status` w komórce [0,0] i wartości
-liczbowej w [0,1]. To jest zagregowany wynik WIG-a (0.0 – 1.0).
-
-### 5. Identyczna struktura dla każdego WIG-a
-
-Arkusze `OS_`, `HARVEST_`, `NOCOMPLAINTS_` mają IDENTYCZNĄ strukturę.
-Parser powinien używać jednej funkcji parametryzowanej prefixem WIG-a.
-
-## Pobieranie danych
-
-### Wariant A: Z pliku .xlsx
-
-```python
-import pandas as pd
-
-SHEETS = {
-    'WIGI': 'WIGI',
-    'OS_LAG': 'OS_LAG MEASURES',
-    'OS_LEAD': 'OS_LEAD MEASURES',
-    'HARVEST_LAG': 'HARVEST_LAG MEASURES',
-    'HARVEST_LEAD': 'HARVEST_LEAD MEASURES',
-    'NOCOMPLAINTS_LAG': 'NOCOMPLAINTS_LAG MEASURES',
-    'NOCOMPLAINTS_LEAD': 'NOCOMPLAINTS_LEAD MEASURES',
-    'OCENA': 'OCENA 4DX',
-    'MAPA': 'MAPA PROCESÓW',
-    'BACKLOG': 'BACKLOG',
+async function fetchGvizSheet(param) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&${param}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+  const table = JSON.parse(match[1]).table;
+  return (table.rows || []).map(row =>
+    (row.c || []).map(cell => (cell && cell.v !== undefined) ? cell.v : null)
+  );
 }
-
-def load_xlsx(path):
-    data = {}
-    for key, sheet_name in SHEETS.items():
-        data[key] = pd.read_excel(path, sheet_name=sheet_name, header=None)
-    return data
 ```
 
-### Wariant B: Z Google Sheets API
+## Arkusze i GID-y
 
-```python
-import gspread
-from google.oauth2.service_account import Credentials
+| Klucz | Arkusz | GID / param |
+|-------|--------|-------------|
+| `WIGI` | WIGI | `gid=1699564336` |
+| `OS_LAG` | OS_LAG MEASURES | `gid=322339268` |
+| `OS_LEAD` | OS_LEAD MEASURES | `gid=1844898951` |
+| `HARVEST_LAG` | HARVEST_LAG MEASURES | `gid=200348167` |
+| `HARVEST_LEAD` | HARVEST_LEAD MEASURES | `gid=259840012` |
+| `NOCOMPLAINTS_LAG` | NOCOMPLAINTS_LAG MEASURES | `gid=716489223` |
+| `NOCOMPLAINTS_LEAD` | NOCOMPLAINTS_LEAD MEASURES | `gid=1872002` |
+| `MAPA` | MAPA PROCESÓW | `sheet=MAPA%20PROCES%C3%93W` |
+| `BACKLOG` | BACKLOG | `sheet=BACKLOG` |
 
-SPREADSHEET_ID = '<ID arkusza>'  # użytkownik musi podać
+## Parsowanie — DYNAMICZNE MARKERY TEKSTOWE
 
-def load_gsheets(creds_path):
-    creds = Credentials.from_service_account_file(creds_path,
-        scopes=['https://www.googleapis.com/auth/spreadsheets.readonly'])
-    gc = gspread.authorize(creds)
-    sh = gc.open_by_key(SPREADSHEET_ID)
+**NIGDY nie używaj stałych numerów wierszy.** Parser szuka markerów.
+Szczegółowa specyfikacja: `references/sheet-map.md`
 
-    data = {}
-    for key, sheet_name in SHEETS.items():
-        ws = sh.worksheet(sheet_name)
-        data[key] = ws.get_all_values()
-    return data
+### Funkcje pomocnicze (JS)
+
+```js
+function ss(val)  // bezpieczna konwersja na string
+function sf(val)  // bezpieczna konwersja na float (obsługuje % i ułamki)
+function findRow(rows, col, pattern, regex=false)   // pierwszy pasujący wiersz
+function findRows(rows, col, pattern, regex=false)  // wszystkie pasujące
+function findWeekColumns(rows, headerRow)           // { T10: 2, T11: 3, ... }
+function getWeekValues(rows, row, weekCols)         // [0.14, 0.14, ...]
 ```
 
-### Wariant C: Eksport CSV z Google Sheets (najprostszy)
+### Parsery arkuszy
 
+| Parser | Marker | Co zwraca |
+|--------|--------|-----------|
+| `parseWigs(rows)` | `WIG#` w kol 2 | `[{id, name, description}]` |
+| `parseLag(rows)` | `WIG Status`, `Proces`+`Target`, `LAG-01 Postęp`, `LAG-0[2-9]` | `{wig_status, lag01, additional_lags}` |
+| `parseLead(rows)` | `Deadline`+`Opis`, `SUB-WIG\s+\d+` | `{lead_score, sub_wigs}` |
+| `parseMapa(rows)` | `# + TYP + PROCES` w pierwszych 5 kolumnach | `[{id, type, name, owner, status}]` |
+| `countBacklog(rows)` | `KATEGORIA + STATUS` | liczba pozycji |
+
+### Kluczowe zasady
+
+1. **Kolumny tygodniowe** — szukaj `T10`–`T15` w wierszu nagłówkowym, nie zakładaj stałych indeksów
+2. **Wartości LEAD** — `0` = nie, `0.5` = w toku, `1` = zrobione
+3. **LAG-02/03/04** — mogą mieć `is_tbd: true` → pokaż badge TBD zamiast progress bara
+4. **WIG#2/3/4** — mogą mieć zerowe dane → pokaż "Brak danych"
+5. **WIG_STATIC** — kolory, właściciele, deadline — statyczne w kodzie (nie w Sheets)
+
+## Dane statyczne (wbudowane w kod)
+
+```js
+const WIG_STATIC = [
+  { key: 'OS',           color: '#6366f1', owner: 'Jan',     deadline: '2026-04-30' },
+  { key: 'HARVEST',      color: '#f59e0b', owner: 'Kacper',  deadline: '' },
+  { key: 'NOCOMPLAINTS', color: '#22c55e', owner: 'Olgierd', deadline: '' },
+  { key: 'XPRODUCT',     color: '#ef4444', owner: 'Jan',     deadline: '' },
+];
 ```
-https://docs.google.com/spreadsheets/d/{ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME}
+
+## Stany komponentu
+
+```js
+const [data,    setData]    = useState(null);    // null = loading
+const [loading, setLoading] = useState(true);
+const [error,   setError]   = useState(null);
+const [activeWig, setActiveWig] = useState('OS');
+const [selectedWeek, setSelectedWeek] = useState(...);  // domyślnie bieżący tydzień ISO
 ```
 
-## Generowanie dashboardu
+## Wymagane sekcje dashboardu
 
-Po sparsowaniu danych, wygeneruj plik React/JSX z następującą strukturą.
-Szablon kodu dashboardu znajduje się w:
+1. **Loading skeleton** — animacja pulse podczas fetchowania
+2. **Error state** — banner z diagnostyką (co sprawdzić) + przycisk retry
+3. **Header** — tytuł, czas pobrania danych, selector tygodnia (T10–T15), przycisk odśwież
+4. **WIG Tabs** — 4 zakładki z % postępu
+5. **WIG Hero Card** — opis, deadline, dni do końca, ring progress SVG
+6. **KPI Cards** — Procesy wg DoD, LEAD %, SUB-WIG-i, LAG TBD
+7. **LAG + LEAD grid** — LAG measures (checkboxy, TBD badge) + LEAD measures (SUB-WIG-i z zadaniami)
+8. **Mapa procesów** — tabela (warunkowo — gdy data.processes.length > 0)
+9. **Backlog summary** — licznik (warunkowo — gdy data.backlog_count !== null)
 
-→ **`references/dashboard-template.md`** — przeczytaj przy generowaniu kodu
-
-### Wymagane sekcje dashboardu
-
-1. **Header** — Tytuł "4DX Scoreboard", data, selector tygodnia (T10–T15)
-2. **WIG Tabs** — Przełączanie między 4 WIG-ami
-3. **WIG Hero Card** — Opis WIG-a, deadline, dni do końca, ring progress
-4. **KPI Cards** — Procesy wg DoD, Działania LEAD, Aktywne SUB-WIG, LAG do ustalenia
-5. **LAG Measures** — Lista procesów z checkboxami, progress bar, sekcje TBD
-6. **LEAD Measures** — SUB-WIG-i z zadaniami per tydzień, progress bary
-7. **Mapa procesów** — Tabela 7 procesów ze statusami
-
-### Kolorystyka i styl
+## Kolorystyka
 
 - Primary: `#6366f1` (indigo)
 - Success: `#22c55e`
 - Warning: `#f59e0b`
 - Danger: `#ef4444`
 - Background: `#f8fafc`
-- Font: DM Sans + DM Serif Display
+- Font: DM Sans + DM Serif Display (Google Fonts)
 
-## Wdrożenie przez Claude Code
+## Wymaganie — arkusz musi być opublikowany
 
-### Krok 1: Przygotowanie
+Arkusz Google Sheets musi być publiczny przez gviz API:
+**Plik → Udostępnij → Opublikuj w internecie → Cały dokument → Strony internetowe**
 
-```bash
-# Zainstaluj zależności
-pip install pandas openpyxl gspread
-```
+Inaczej `fetchGvizSheet` otrzyma błąd 403 i dashboard pokaże error state z diagnostyką.
 
-### Krok 2: Parsowanie i generowanie
+## Opcjonalnie: Apps Script (pełne dane 4DX)
 
-Claude Code powinien:
-1. Przeczytać `references/sheet-map.md` dla dokładnych pozycji danych
-2. Sparsować arkusz używając kodu z sekcji "Pobieranie danych"
-3. Wygenerować dashboard React/JSX używając `references/dashboard-template.md`
-4. Zapisać wynik jako `dashboard_4dx_light.jsx`
+Gdy Jan wdroży Apps Script obsługujący pełne dane 4DX (wszystkie WIG-i):
+1. Ustaw `APPS_SCRIPT_URL_4DX` w konfiguracji
+2. Dashboard spróbuje Apps Script JSONP najpierw
+3. Fallback na gviz jeśli Apps Script zawiedzie
 
-### Krok 3: Iteracja
-
-Gdy użytkownik aktualizuje dane w Google Sheets:
-1. Pobierz nowe dane (xlsx lub API)
-2. Przeparsuj — parser automatycznie obsłuży nowe wartości
-3. Wygeneruj zaktualizowany dashboard
+Endpoint Apps Script musi zwrócić strukturę kompatybilną z `loadDashboardData()`.
 
 ## Rozwiązywanie problemów
 
 | Problem | Przyczyna | Rozwiązanie |
 |---------|-----------|-------------|
-| Claude Code myli kolumny | Nie czyta sheet-map.md | Zawsze czytaj references/sheet-map.md |
-| Puste dane dla WIG#2–4 | Arkusze HARVEST/NOCOMPLAINTS puste | Pokaż "brak danych" w dashboardzie |
-| LAG-02/03/04 puste | Status TBD | Pokaż badge TBD, nie progress bar |
-| Złe procenty | Podwójne parsowanie headerów | Pomijaj wiersze 0–3 (metadata) |
-| Dane nie aktualizują się | Zahardkodowane wartości | Zawsze parsuj z arkusza, nie z kodu |
+| Błąd 403 | Arkusz nie opublikowany | Plik → Opublikuj w internecie |
+| Puste dane LAG/LEAD | Arkusze HARVEST/NOCOMPLAINTS puste | Dashboard pokazuje "Brak danych" |
+| LAG-02/03/04 TBD | Kryteria niezdefiniowane | Badge TBD widoczny — to oczekiwane |
+| Brak wykresu MAPA | Brak nagłówka # TYP PROCES | Sprawdź strukturę arkusza MAPA PROCESÓW |
+| Parser nie znajduje tygodni | Brak nagłówków T10–T15 | Sprawdź czy arkusz ma wiersz nagłówkowy z T10, T11... |
+| Zahardkodowane kolory/właściciel | Zmienione WIG_STATIC | Edytuj WIG_STATIC w dashboard_4dx_light.jsx |
