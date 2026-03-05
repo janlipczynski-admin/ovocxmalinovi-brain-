@@ -259,8 +259,8 @@ function renderOSValues(sub1, sub2, sub3, overallOverride) {
 // Renderuje WIG #1 z JSON zwróconego przez Apps Script
 function renderOSJson(lag) {
   if (!lag || lag.error) { console.warn('[Sheets] lag error:', lag?.error); return; }
-  // Liczymy overall tylko z niepustych sub-lagów (pomijamy zera — brak danych ≠ 0%)
-  var subVals = [lag.lag01, lag.lag02, lag.lag03].filter(function(v) { return v > 0; });
+  // Liczymy overall z LAG-01 do LAG-04, pomijamy zera (brak danych ≠ 0%)
+  var subVals = [lag.lag01, lag.lag02, lag.lag03, lag.lag04].filter(function(v) { return v > 0; });
   var computed = subVals.length
     ? Math.round(subVals.reduce(function(a, b) { return a + b; }, 0) / subVals.length)
     : 0;

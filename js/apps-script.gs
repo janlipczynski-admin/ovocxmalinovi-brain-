@@ -250,16 +250,10 @@ function readLagMeasures(sheet) {
   var d03 = makeLagDetail(2);
   var d04 = makeLagDetail(3);
 
-  // Overall: z B1 arkusza (formuła) lub średnia niepustych
-  var overall = 0;
-  var b1 = values[0] && values[0][1];
-  if (b1 !== '' && b1 !== null && !isNaN(Number(b1))) {
-    var n = Number(b1);
-    overall = Math.round(n <= 1 ? n * 100 : n);
-  } else {
-    var vals = [d01.current, d02.current, d03.current, d04.current].filter(function(v) { return v > 0; });
-    overall = vals.length ? Math.round(vals.reduce(function(a,b){return a+b;},0) / vals.length) : 0;
-  }
+  // Overall: średnia z LAG-01..04 — tylko niepuste (brak danych ≠ 0%)
+  // Celowo ignorujemy B1 arkusza — formuła w arkuszu jest pomocnicza, nie źródłem prawdy
+  var vals = [d01.current, d02.current, d03.current, d04.current].filter(function(v) { return v > 0; });
+  var overall = vals.length ? Math.round(vals.reduce(function(a,b){return a+b;},0) / vals.length) : 0;
 
   return {
     weekLabel:   currentWeekLabel,
