@@ -355,7 +355,8 @@ async function initDashboard() {
     if (info.detail) console.info('[Sheets] ' + info.detail);
   }
 
-  // 2. Fallback: gviz API (wymaga arkusza opublikowanego w internecie)
+  // 2. Fallback: gviz API — TYLKO jeśli Apps Script zawiódł
+  if (!lastError) return;
   try {
     console.log('[Sheets] Próba fallback przez gviz...');
     var lagTable = await fetchGviz(SHEETS_CONFIG.lagMeasuresGid);
