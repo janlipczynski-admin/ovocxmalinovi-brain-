@@ -205,11 +205,6 @@ function parseLag(rows) {
     if (col0.includes('proces') && col1.includes('target')) {
       processHeaderRow = i;
       processWeekCols = lagWeekColsFallback(findWeekColumns(rows, i));
-      console.log('STRUCT DEBUG — processHeaderRow:', i);
-      console.log('STRUCT DEBUG — processWeekCols:', JSON.stringify(processWeekCols));
-      console.log('STRUCT DEBUG — headerRow pełny:', rows[i]);
-      console.log('STRUCT DEBUG — dataRow+1 pełny:', rows[i + 1]);
-      console.log('STRUCT DEBUG — dataRow+2 pełny:', rows[i + 2]);
       break;
     }
   }
