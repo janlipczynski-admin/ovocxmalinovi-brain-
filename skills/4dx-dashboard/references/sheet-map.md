@@ -11,6 +11,80 @@ Dzięki temu:
 
 ---
 
+## ⚠️ WAŻNE: Format danych gviz API
+
+> Dotyczy wyłącznie ścieżki gviz (`fetchGvizSheet`). Parsowanie Excel/pandas nie ma tych ograniczeń.
+
+### 1. Czytaj `.v`, nie `.f`
+
+gviz API zwraca komórki jako obiekty `{v: wartość, f: "sformatowany tekst"}`.
+**Zawsze czytaj pole `.v` (value).** Pole `.f` (formatted) zawiera tekst lokalny — nie parsuj go.
+
+```js
+// ✅ Poprawnie
+cell.v  // → 1.0
+
+// ❌ Błąd
+cell.f  // → "100,00%" (format polski — nie parsuj!)
+```
+
+### 2. Kolumny tygodniowe nie mają labeli — używaj fallbacku
+
+Kolumny tygodniowe w arkuszach LAG (`C`–`H`) mają `label=""` w odpowiedzi gviz.
+**Nie szukaj "T10" w nagłówkach kolumn.** Zamiast tego użyj stałego fallbacku:
+
+| Kolumna arkusza | Indeks gviz | Tydzień |
+|-----------------|-------------|---------|
+| C               | 2           | T10     |
+| D               | 3           | T11     |
+| E               | 4           | T12     |
+| F               | 5           | T13     |
+| G               | 6           | T14     |
+| H               | 7           | T15     |
+
+```js
+// Fallback gdy findWeekColumns() zwróci < 2 kluczy:
+const fallback = {};
+WEEKS.forEach((w, i) => { fallback[w] = i + 2; }); // C=2 … H=7
+```
+
+### 3. Wartości procentowe — zakres 0.0–1.0
+
+Dane tygodniowe to wartości zmiennoprzecinkowe:
+
+| `.v`     | Znaczenie |
+|----------|-----------|
+| `1.0`    | 100%      |
+| `0.0`    | 0%        |
+| `0.2857` | 28.57%    |
+
+Nigdy nie parsuj `.f` (np. `"28,57%"`) — użyj `.v` bezpośrednio.
+
+### 4. WIG Status — jedyny wyjątek: string w kolumnie B
+
+Wiersz z `"WIG Status"` w kolumnie A zawiera wartość procentową w kolumnie B jako **STRING** (np. `"28,57%"`). To jedyny przypadek, gdzie trzeba parsować string:
+
+```js
+// Wiersz WIG Status: kol A = "WIG Status", kol B = "28,57%" (string)
+function parseWigStatus(val) {
+  if (typeof val === 'number') return val;           // czasem już number
+  if (typeof val === 'string' && val.includes(','))
+    return parseFloat(val.replace(',', '.').replace('%', '')) / 100;
+  return parseFloat(val) || 0;
+}
+```
+
+### 5. Układ kolumn w arkuszach LAG
+
+| Kolumna | Indeks | Typ    | Zawartość              |
+|---------|--------|--------|------------------------|
+| A       | 0      | string | Nazwa / marker sekcji  |
+| B       | 1      | string | Target / Opis (DoD)    |
+| C–H     | 2–7    | number | Dane tygodniowe T10–T15|
+| I       | 8      | string | Dodatkowe info         |
+
+---
+
 ## Filozofia parsowania
 
 ```
