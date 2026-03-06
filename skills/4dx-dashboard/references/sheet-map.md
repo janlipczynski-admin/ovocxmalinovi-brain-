@@ -83,6 +83,66 @@ function parseWigStatus(val) {
 | C–H     | 2–7    | number | Dane tygodniowe T10–T15|
 | I       | 8      | string | Dodatkowe info         |
 
+### 6. Lekcje z sesji debugowania — 2026-03-06
+
+> Konkretne ustalenia po analizie gviz response dla arkusza OS MALINOVI_LAG MEASURES.
+
+#### Problem: findWeekColumns() zwracał `{}`
+
+**Przyczyna:** Wiersz `processHeaderRow` (marker z "Proces" + "Target (DoD)") ma w kolumnach C–H wartość `null` (puste komórki) — **nigdy nie zawiera etykiet T10-T15**. Etykiety tygodniowe pojawiają się tylko w wierszach LAG-01 Postęp / SUB-WIG (arkusze LEAD). W arkuszach LAG kolumny danych tygodniowych są po prostu nienazwane.
+
+**Konsekwencja:** findWeekColumns() na headerRow procesów zawsze zwróci `{}`. Fallback jest OBOWIĄZKOWY, nie opcjonalny.
+
+#### Zweryfikowana struktura arkusza (gviz rows[]):
+
+```
+rows[7]  = processHeaderRow:
+  [0]: "Proces"
+  [1]: "Target (DoD)"
+  [2]: null   ← brak "T10"!
+  [3]: null   ← brak "T11"!
+  [4]: null   ← brak "T12"!
+  [5]: null   ← brak "T13"!
+  [6]: null   ← brak "T14"!
+  [7]: null   ← brak "T15"!
+  [8]: null
+
+rows[8]  = "Sprzedaż i Handel":
+  [0]: "Sprzedaż i Handel"
+  [1]: "100%"   ← Target jako string
+  [2]: 0        ← T10 (number, NIE string)
+  [3]: 0        ← T11
+  [4]: 0        ← T12
+  [5]: 0        ← T13
+  [6]: 0        ← T14
+  [7]: 0        ← T15
+  [8]: null
+```
+
+#### Poprawna logika fallbacku (JS):
+
+```js
+// Po znalezieniu processHeaderRow — ZAWSZE sprawdź liczbę kluczy
+let processWeekCols = findWeekColumns(rows, processHeaderRow);
+if (Object.keys(processWeekCols).length < 2) {
+  // Fallback: C=idx2, D=idx3, E=idx4, F=idx5, G=idx6, H=idx7
+  const fallback = {};
+  WEEKS.forEach((w, i) => { fallback[w] = i + 2; });
+  processWeekCols = fallback;
+}
+```
+
+#### Wartości danych w wierszach procesów:
+
+| Sytuacja | `.v` | Znaczenie |
+|----------|------|-----------|
+| Proces ukończony | `1.0` (number) | 100% ✅ |
+| Proces niezaczęty | `0` (number) | 0% |
+| Brak danych | `null` lub `undefined` | traktuj jako 0 |
+| Cel (kol B) | `"100%"` (string) | nie używaj do obliczeń |
+
+**Kluczowa zasada:** `cell.v >= 0.99` → proces ukończony w danym tygodniu.
+
 ---
 
 ## Filozofia parsowania
