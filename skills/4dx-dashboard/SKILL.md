@@ -164,6 +164,62 @@ Gdy Jan wdroży Apps Script obsługujący pełne dane 4DX (wszystkie WIG-i):
 
 Endpoint Apps Script musi zwrócić strukturę kompatybilną z `loadDashboardData()`.
 
+## Nawigacja i powiązania między stronami
+
+### Zasada: zawsze `<a href="...">`, nigdy `<div>`
+
+Linki nawigacyjne MUSZĄ być elementem `<a>` z `href`. Nigdy `<div>`, `<span>` ani inny element bez href.
+Dotyczy klas: `.tool-row`, `.back-btn`, `.sub-nav-item`, `.tool-os`.
+
+### Mapa nawigacji (pełna)
+
+```
+index.html  (centralny hub — zawiera WSZYSTKIE narzędzia)
+├── os-malinovi.html        ← WIG OS MALINOVI scoreboard
+├── dashboard-4dx.html      ← 4DX React scoreboard (wszystkie WIG-i, live Sheets)
+├── zakupy-planowanie.html  ← Planeta Zakupów
+│   ├── zakupy-stan.html
+│   ├── zakupy-plan2026.html
+│   ├── zakupy-klienci.html
+│   ├── zakupy-harmonogram.html
+│   ├── kartony-dostawcy.html
+│   └── zuzycie-2025.html
+├── opakowania.html
+├── planowanie-i-sprzedaz.html
+└── rozliczenia-rt.html
+```
+
+### Powiązania procesów DoD z narzędziami
+
+| # | Proces | Plik | Uwagi |
+|---|--------|------|-------|
+| 01 | Sprzedaż i Handel | `planowanie-i-sprzedaz.html` | |
+| 02 | Obsługa zamówień OxM | Google Sheets (zewnętrzny) | brak dedykowanej strony HTML |
+| 03 | Rozliczenia tygodniowe | `rozliczenia-rt.html` | |
+| 04 | Obsługa reklamacji | — | brak strony, na razie bez linku |
+| 05 | Gospodarka magazynowa | `zakupy-planowanie.html` | |
+| 06 | Komunikacja wewnętrzna | — | brak strony, na razie bez linku |
+| 07 | Certyfikacja i wymogi | — | brak strony, na razie bez linku |
+
+Google Sheets ID: `1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ`
+
+### Linki nawigacyjne w każdym pliku
+
+| Plik | Back-link | Narzędzia powiązane |
+|------|-----------|---------------------|
+| `os-malinovi.html` | `← Powrót do dashboardu` → index.html | sekcja 7: procesy 01, 02, 03, 05 |
+| `dashboard-4dx.html` | `← Strona główna` → index.html | mini-nav: procesy 01, 02, 03, 05 |
+| `index.html` | — (to jest root) | NARZĘDZIA: pełna lista (canonical) |
+
+### Gdy dodajesz nową stronę dla procesu
+
+1. Dodaj plik HTML z `back-btn` do odpowiedniego rodzica
+2. Dodaj wpis do `tests/navigation.js` → `HTML_FILES` i `REQUIRED_PARENT`
+3. Zaktualizuj tabelę powyżej
+4. Dodaj link w `os-malinovi.html` sekcja 7 i `dashboard-4dx.html` mini-nav
+
+---
+
 ## Rozwiązywanie problemów
 
 | Problem | Przyczyna | Rozwiązanie |

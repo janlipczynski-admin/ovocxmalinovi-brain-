@@ -213,6 +213,13 @@ section{margin-bottom:40px}
   .hero-meta{gap:16px}
   .plan-table{font-size:10px}
 }
+.tool-os{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--text);transition:padding-left .15s}
+.tool-os:last-child{border-bottom:none}
+.tool-os:hover{padding-left:4px}
+.tool-os-n{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);min-width:190px}
+.tool-os-lbl{flex:1;font-size:13px;font-weight:500}
+.tool-os-arr{font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--muted);transition:color .15s}
+.tool-os:hover .tool-os-arr{color:var(--orange)}
 </style>
 </head>
 <body>
@@ -317,6 +324,15 @@ section{margin-bottom:40px}
   <table class="map-table" id="mapTable">
     <!-- rendered by JS -->
   </table>
+</section>
+
+<!-- ── 7. NARZĘDZIA POWIĄZANE ────────────────────────────────────── -->
+<section>
+  <div class="sec-title">Narzędzia powiązane — otwórz narzędzie procesu</div>
+  <a class="tool-os" href="planowanie-i-sprzedaz.html"><span class="tool-os-n">01 Sprzedaż i Handel</span><span class="tool-os-lbl">Planowanie i Sprzedaż</span><span class="tool-os-arr">→</span></a>
+  <a class="tool-os" href="https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit" target="_blank"><span class="tool-os-n">02 Obsługa zamówień OxM</span><span class="tool-os-lbl">Google Sheets — arkusz 4DX</span><span class="tool-os-arr">↗</span></a>
+  <a class="tool-os" href="rozliczenia-rt.html"><span class="tool-os-n">03 Rozliczenia tygodniowe</span><span class="tool-os-lbl">Rozliczenia RT</span><span class="tool-os-arr">→</span></a>
+  <a class="tool-os" href="zakupy-planowanie.html"><span class="tool-os-n">05 Gospodarka magazynowa</span><span class="tool-os-lbl">Planeta Zakupów — stany, harmonogram</span><span class="tool-os-arr">→</span></a>
 </section>
 
 </main>
