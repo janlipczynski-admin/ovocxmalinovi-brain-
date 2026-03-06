@@ -175,8 +175,8 @@ Dotyczy klas: `.tool-row`, `.back-btn`, `.sub-nav-item`, `.tool-os`.
 
 ```
 index.html  (centralny hub — zawiera WSZYSTKIE narzędzia)
-├── os-malinovi.html        ← WIG OS MALINOVI scoreboard
-├── dashboard-4dx.html      ← 4DX React scoreboard (wszystkie WIG-i, live Sheets)
+├── dashboard-4dx.html      ← GŁÓWNY: 4DX React scoreboard (wszystkie WIG-i, live Sheets)
+├── os-malinovi.html        ← LEGACY (przestarzały, ma baner redirect → dashboard-4dx.html)
 ├── zakupy-planowanie.html  ← Planeta Zakupów
 │   ├── zakupy-stan.html
 │   ├── zakupy-plan2026.html
@@ -207,16 +207,19 @@ Google Sheets ID: `1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ`
 
 | Plik | Back-link | Narzędzia powiązane |
 |------|-----------|---------------------|
-| `os-malinovi.html` | `← Powrót do dashboardu` → index.html | sekcja 7: procesy 01, 02, 03, 05 |
 | `dashboard-4dx.html` | `← Strona główna` → index.html | mini-nav: procesy 01, 02, 03, 05 |
+| `os-malinovi.html` | `← Powrót do dashboardu` → index.html | **LEGACY** — baner redirect na górze |
 | `index.html` | — (to jest root) | NARZĘDZIA: pełna lista (canonical) |
+
+> **WIG #1 "SZCZEGÓŁY"** w index.html → `dashboard-4dx.html` (nie os-malinovi.html!)
+> **os-malinovi.html** to plik legacy — nie usuwać, nie linkować z nowych miejsc.
 
 ### Gdy dodajesz nową stronę dla procesu
 
 1. Dodaj plik HTML z `back-btn` do odpowiedniego rodzica
 2. Dodaj wpis do `tests/navigation.js` → `HTML_FILES` i `REQUIRED_PARENT`
 3. Zaktualizuj tabelę powyżej
-4. Dodaj link w `os-malinovi.html` sekcja 7 i `dashboard-4dx.html` mini-nav
+4. Dodaj link w `dashboard-4dx.html` mini-nav (NIE w os-malinovi.html — to legacy)
 
 ---
 
