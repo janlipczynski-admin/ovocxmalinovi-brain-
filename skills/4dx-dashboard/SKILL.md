@@ -176,7 +176,6 @@ Dotyczy klas: `.tool-row`, `.back-btn`, `.sub-nav-item`, `.tool-os`.
 ```
 index.html  (centralny hub — zawiera WSZYSTKIE narzędzia)
 ├── dashboard-4dx.html      ← GŁÓWNY: 4DX React scoreboard (wszystkie WIG-i, live Sheets)
-├── os-malinovi.html        ← LEGACY (przestarzały, ma baner redirect → dashboard-4dx.html)
 ├── zakupy-planowanie.html  ← Planeta Zakupów
 │   ├── zakupy-stan.html
 │   ├── zakupy-plan2026.html
@@ -208,18 +207,17 @@ Google Sheets ID: `1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ`
 | Plik | Back-link | Narzędzia powiązane |
 |------|-----------|---------------------|
 | `dashboard-4dx.html` | `← Strona główna` → index.html | mini-nav: procesy 01, 02, 03, 05 |
-| `os-malinovi.html` | `← Powrót do dashboardu` → index.html | **LEGACY** — baner redirect na górze |
 | `index.html` | — (to jest root) | NARZĘDZIA: pełna lista (canonical) |
 
-> **WIG #1 "SZCZEGÓŁY"** w index.html → `dashboard-4dx.html` (nie os-malinovi.html!)
-> **os-malinovi.html** to plik legacy — nie usuwać, nie linkować z nowych miejsc.
+> **WIG #1 karta** w index.html (onclick + "szczegóły") → `dashboard-4dx.html`
+> `os-malinovi.html` usunięty 2026-03-06 — zastąpiony przez `dashboard-4dx.html`
 
 ### Gdy dodajesz nową stronę dla procesu
 
 1. Dodaj plik HTML z `back-btn` do odpowiedniego rodzica
 2. Dodaj wpis do `tests/navigation.js` → `HTML_FILES` i `REQUIRED_PARENT`
 3. Zaktualizuj tabelę powyżej
-4. Dodaj link w `dashboard-4dx.html` mini-nav (NIE w os-malinovi.html — to legacy)
+4. Dodaj link w `dashboard-4dx.html` mini-nav
 
 ---
 
