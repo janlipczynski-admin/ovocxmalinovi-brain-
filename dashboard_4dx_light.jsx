@@ -25,7 +25,7 @@ const SHEET_DEFS = [
 
 // Dane statyczne WIG-ów (kolor, właściciel, deadline) — nie przechowywane w Sheets
 const WIG_STATIC = [
-  { key: 'OS',           color: '#6366f1', owner: 'Jan',     deadline: '2026-04-30' },
+  { key: 'OS',           color: '#6366f1', owner: 'Jan',     deadline: '2026-05-30' },
   { key: 'HARVEST',      color: '#f59e0b', owner: 'Kacper',  deadline: '' },
   { key: 'NOCOMPLAINTS', color: '#22c55e', owner: 'Olgierd', deadline: '' },
   { key: 'XPRODUCT',     color: '#ef4444', owner: 'Jan',     deadline: '' },
@@ -38,7 +38,7 @@ const WIG_PAIRS = [
   { key: 'NOCOMPLAINTS', lagKey: 'NOCOMPLAINTS_LAG',  leadKey: 'NOCOMPLAINTS_LEAD' },
 ];
 
-const WEEKS = ['T10', 'T11', 'T12', 'T13', 'T14', 'T15'];
+const WEEKS = ['T10', 'T11', 'T12', 'T13', 'T14', 'T15', 'T16', 'T17', 'T18'];
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 
@@ -98,7 +98,7 @@ function findWeekColumns(rows, headerRow) {
       const v = ss(cell);
       if (WEEKS.includes(v) && !(v in wc)) { wc[v] = i; return; }
       // Fallback: gviz zwraca v=10 gdy komórka ma format "T"0 (a cell.f już przetworzone wyżej)
-      if (typeof cell === 'number' && Number.isInteger(cell) && cell >= 10 && cell <= 15) {
+      if (typeof cell === 'number' && Number.isInteger(cell) && cell >= 10 && cell <= 18) {
         const wk = 'T' + cell;
         if (WEEKS.includes(wk) && !(wk in wc)) wc[wk] = i;
       }
@@ -115,8 +115,8 @@ function findWeekColumns(rows, headerRow) {
 function lagWeekColsFallback(wc) {
   if (Object.keys(wc).length >= 2) return wc;
   const fallback = {};
-  WEEKS.forEach((w, i) => { fallback[w] = i + 2; }); // C=2, D=3, E=4, F=5, G=6, H=7
-  console.warn('[4DX parseLag] Brak labeli tygodniowych w nagłówku — używam fallback C-H (indeksy 2-7)');
+  WEEKS.forEach((w, i) => { fallback[w] = i + 2; }); // C=2, D=3, ..., K=10 (T10–T18)
+  console.warn('[4DX parseLag] Brak labeli tygodniowych w nagłówku — używam fallback C-K (indeksy 2-10)');
   return fallback;
 }
 
@@ -265,8 +265,13 @@ function parseLag(rows) {
       criteria.push(val);
     }
 
-    const lagWc  = lagWeekColsFallback(findWeekColumns(rows, headerRow));
-    const values = (!is_tbd && Object.keys(lagWc).length) ? getWeekValues(rows, headerRow + 1, lagWc) : [];
+    const lagWc = lagWeekColsFallback(findWeekColumns(rows, headerRow));
+    // Szukaj dedykowanego wiersza "LAG-XX Postęp (średnia %)" — priorytet nad headerRow+1
+    const lagNumMatch = lagName.match(/LAG-0*(\d+)/i);
+    const lagNumStr   = lagNumMatch ? String(parseInt(lagNumMatch[1])).padStart(2, '0') : null;
+    const progressRow = lagNumStr ? findRow(rows, 0, `LAG-${lagNumStr} Post`) : null;
+    const valuesRow   = progressRow !== null ? progressRow : headerRow + 1;
+    const values      = (!is_tbd && Object.keys(lagWc).length) ? getWeekValues(rows, valuesRow, lagWc) : [];
     return { name: lagName, is_tbd, target, criteria, values };
   });
 
@@ -294,11 +299,13 @@ function parseLead(rows) {
     values: leadScoreRow !== null ? getWeekValues(rows, leadScoreRow, weekCols) : WEEKS.map(() => 0),
   };
 
-  // Znajdź markery SUB-WIG-ów (bez 'Postęp' / 'On track' w tym samym wierszu)
+  // Znajdź markery LEAD-ów / SUB-WIG-ów (bez 'Postęp' / 'On track' w tym samym wierszu)
+  // Obsługuje nowy format "Lead X" i stary "SUB-WIG X"
   const subWigRows = [];
   for (let i = 0; i < rows.length; i++) {
     const val = ss(rows[i] ? rows[i][0] : null);
-    if (/^SUB-WIG\s+\d+/.test(val) && !val.includes('Postęp') && !val.includes('On track')) {
+    const isLeadMarker = /^Lead\s+\d+/i.test(val) || /^SUB-WIG\s+\d+/.test(val);
+    if (isLeadMarker && !val.includes('Postęp') && !val.toLowerCase().includes('on track')) {
       subWigRows.push([i, val]);
     }
   }
@@ -405,8 +412,20 @@ async function loadDashboardData() {
     throw new Error('Nie udało się pobrać żadnego arkusza. Sprawdź czy arkusz jest opublikowany (Udostępnij → Opublikuj w internecie). Błędy: ' + errors.join('; '));
   }
 
+  // Aktualny tydzień z WIGI!E1 (wiersz 0, kolumna E = indeks 4)
+  let currentWeek = null;
+  const wigiRows = sheets['WIGI'] || [];
+  if (wigiRows[0] && wigiRows[0][4] !== null && wigiRows[0][4] !== undefined) {
+    const weekNum = parseInt(wigiRows[0][4]);
+    if (!isNaN(weekNum)) {
+      const wk = 'T' + weekNum;
+      if (WEEKS.includes(wk)) currentWeek = wk;
+    }
+  }
+  console.log('[4DX] currentWeek z WIGI!E1:', currentWeek);
+
   // WIGI — nazwy, ID, opisy
-  const wigDefs = parseWigs(sheets['WIGI'] || []);
+  const wigDefs = parseWigs(wigiRows);
   const wigs = WIG_STATIC.map((stat, i) => ({
     key:         stat.key,
     color:       stat.color,
@@ -434,7 +453,7 @@ async function loadDashboardData() {
   const processes    = parseMapa(sheets['MAPA'] || []);
   const backlog_count = countBacklog(sheets['BACKLOG'] || []);
 
-  return { wigs, wig_data, processes, backlog_count };
+  return { wigs, wig_data, processes, backlog_count, currentWeek };
 }
 
 // ─── REACT KOMPONENTY ─────────────────────────────────────────────────────────
@@ -550,6 +569,10 @@ export default function Dashboard4DX() {
         if (!cancelled) {
           setData(loadedData);
           setLastUpdated(new Date());
+          // Ustaw tydzień z WIGI!E1 (nadpisuje domyślny isoWeek)
+          if (loadedData.currentWeek && WEEKS.includes(loadedData.currentWeek)) {
+            setSelectedWeek(loadedData.currentWeek);
+          }
         }
       } catch (e) {
         if (!cancelled) setError(e.message);
