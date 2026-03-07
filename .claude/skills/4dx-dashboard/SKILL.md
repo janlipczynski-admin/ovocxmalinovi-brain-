@@ -84,7 +84,7 @@ function ss(val)  // bezpieczna konwersja na string
 function sf(val)  // bezpieczna konwersja na float (obsługuje % i ułamki)
 function findRow(rows, col, pattern, regex=false)   // pierwszy pasujący wiersz
 function findRows(rows, col, pattern, regex=false)  // wszystkie pasujące
-function findWeekColumns(rows, headerRow)           // { T10: 2, T11: 3, ... }
+function findWeekColumns(rows, headerRow)           // { T10: 2, T11: 3, ... } (T10–T18)
 function getWeekValues(rows, row, weekCols)         // [0.14, 0.14, ...]
 ```
 
@@ -92,19 +92,23 @@ function getWeekValues(rows, row, weekCols)         // [0.14, 0.14, ...]
 
 | Parser | Marker | Co zwraca |
 |--------|--------|-----------|
-| `parseWigs(rows)` | `WIG#` w kol 2 | `[{id, name, description}]` |
-| `parseLag(rows)` | `WIG Status`, `Proces`+`Target`, `LAG-01 Postęp`, `LAG-0[2-9]` | `{wig_status, lag01, additional_lags}` |
-| `parseLead(rows)` | `Deadline`+`Opis`, `SUB-WIG\s+\d+` | `{lead_score, sub_wigs}` |
+| `parseWigs(rows)` | `WIG#` w kol 2; aktualny tydzień z `rows[0][4]` (WIGI!E1) | `[{id, name, description}]` |
+| `parseLag(rows)` | `WIG Status`, `Proces`+`Target`, `LAG-01 Postęp`, `LAG-0[2-9]`, **`LAG-XX Postęp`** per LAG | `{wig_status, lag01, additional_lags}` |
+| `parseLead(rows)` | `Deadline`+`Opis`, **`Lead\s+\d+`** (też `SUB-WIG\s+\d+` fallback) | `{lead_score, sub_wigs}` |
 | `parseMapa(rows)` | `# + TYP + PROCES` w pierwszych 5 kolumnach | `[{id, type, name, owner, status}]` |
 | `countBacklog(rows)` | `KATEGORIA + STATUS` | liczba pozycji |
 
 ### Kluczowe zasady
 
-1. **Kolumny tygodniowe** — szukaj `T10`–`T15` w wierszu nagłówkowym, nie zakładaj stałych indeksów
-2. **Wartości LEAD** — `0` = nie, `0.5` = w toku, `1` = zrobione
-3. **LAG-02/03/04** — mogą mieć `is_tbd: true` → pokaż badge TBD zamiast progress bara
-4. **WIG#2/3/4** — mogą mieć zerowe dane → pokaż "Brak danych"
-5. **WIG_STATIC** — kolory, właściciele, deadline — statyczne w kodzie (nie w Sheets)
+1. **Kolumny tygodniowe** — szukaj `T10`–`T18` w wierszu nagłówkowym, nie zakładaj stałych indeksów
+2. **Aktualny tydzień** — czytaj z `WIGI!E1` (`rows[0][4]`), nie hardkoduj
+3. **Wartości LEAD** — `0` = nie, `0.5` = w toku, `1` = zrobione
+4. **LAG-02/03/04** — mogą mieć `is_tbd: true` → pokaż badge TBD zamiast progress bara
+5. **Postęp LAG-a** — czytaj z wiersza `LAG-XX Postęp (średnia %)`, nie licz samodzielnie
+6. **LEAD markery** — szukaj `Lead \d+` (nowy format) lub `SUB-WIG \d+` (stary fallback)
+7. **WIG#2/3/4** — mają puste arkusze → pokaż "Brak danych"
+8. **WIG_STATIC** — kolory, właściciele, deadline — statyczne w kodzie (nie w Sheets)
+9. **Logika biznesowa** — przeczytaj `references/business-logic.md` przed zmianami
 
 ## Dane statyczne (wbudowane w kod)
 

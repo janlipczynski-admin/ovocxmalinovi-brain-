@@ -30,7 +30,7 @@ import pandas as pd
 import numpy as np
 import re
 
-WEEKS = ['T10', 'T11', 'T12', 'T13', 'T14', 'T15']
+WEEKS = ['T10', 'T11', 'T12', 'T13', 'T14', 'T15', 'T16', 'T17', 'T18']
 
 def sf(val):
     """Bezpieczna konwersja na float. NaN/None/tekst → 0."""
@@ -86,7 +86,10 @@ def get_week_values(df, row, week_cols):
 
 ## 1. Arkusz: `WIGI`
 
-**Marker:** "WIG#" w kolumnie 2.
+**Aktualny tydzień:** `WIGI!E1` = wiersz 0, kolumna E (indeks 4) — liczba tygodnia (np. 10 → T10).
+Dashboard odczytuje ten wiersz przy starcie i ustawia `selectedWeek` dynamicznie.
+
+**Marker WIG-ów:** "WIG#" w kolumnie 2.
 
 ```python
 def parse_wigs(df):
@@ -100,6 +103,9 @@ def parse_wigs(df):
                 'description': ss(df.iloc[i, 3])
             })
     return wigs
+
+# Aktualny tydzień: df.iloc[0, 4] → int → 'T' + str(int)
+current_week = 'T' + str(int(df.iloc[0, 4])) if df.shape[0] > 0 else 'T10'
 ```
 
 ---
@@ -128,7 +134,8 @@ def calibrate_lag(df):
     cal['lag01_plan_row'] = find_row(df, 0, 'LAG-01 Plan')
     cal['lag01_ontrack_row'] = find_row(df, 0, 'LAG-01 On track')
 
-    # Wszystkie dodatkowe LAG-i (LAG-02, LAG-03, ..., LAG-N)
+    # Wszystkie dodatkowe LAG-i (LAG-02, LAG-03, LAG-04, LAG-05, ...)
+    # Każdy LAG ma wiersz "LAG-XX Postęp (średnia %)" — czytaj STAMTĄD, nie z headerRow+1
     lag_markers = find_rows(df, 0, r'LAG-0[2-9]|LAG-[1-9][0-9]', regex=True)
     cal['additional_lags'] = []
     for marker_row in lag_markers:
@@ -223,11 +230,13 @@ def calibrate_lead(df):
     if 'main_header_row' in cal:
         cal['lead_score_row'] = cal['main_header_row'] + 1
 
-    # Znajdź SUB-WIG-i (bez wierszy Postęp/On track)
+    # Znajdź markery LEAD-ów (format 2026: "Lead X") lub stary "SUB-WIG X"
+    # Wiersze Postęp/On track są WYKLUCZONE
     sub_wig_rows = []
     for i in range(len(df)):
         val = ss(df.iloc[i, 0])
-        if re.match(r'SUB-WIG\s+\d+\s+', val) and 'Postęp' not in val and 'On track' not in val:
+        is_marker = bool(re.match(r'^Lead\s+\d+', val, re.IGNORECASE)) or bool(re.match(r'^SUB-WIG\s+\d+', val))
+        if is_marker and 'Postęp' not in val and 'on track' not in val.lower():
             sub_wig_rows.append((i, val))
 
     cal['sub_wigs'] = []
@@ -411,11 +420,14 @@ def parse_4dx_dashboard(path):
 | Sekcja | Marker | Gdzie szukać |
 |--------|--------|-------------|
 | WIG-i | `WIG#` | kol 2 arkusza WIGI |
-| WIG Status | `WIG Status` | kol 0 arkuszy LAG |
+| **Aktualny tydzień** | `WIGI!E1` = `rows[0][4]` | wiersz 0, kolumna E arkusza WIGI |
+| WIG Status | `WIG Status` | kol 0 arkuszy LAG (= ŚREDNIA LAG-01..LAG-05) |
 | Procesy DoD | header `Proces` → koniec `LAG-01 Postęp` | kol 0 |
 | LAG-i dodatkowe | regex `LAG-0[2-9]\|LAG-[1-9][0-9]` | kol 0 |
-| SUB-WIG-i | regex `SUB-WIG\s+\d+` (bez Postęp/On track) | kol 0 |
-| Zadania LEAD | `T10`–`T15` w kol 0 po headerze SUB-WIG | kol 0 |
+| **Postęp LAG-a** | `LAG-XX Postęp (średnia %)` | kol 0, czytaj dla aktualnego tygodnia |
+| **LEAD-y (nowy format)** | regex `^Lead\s+\d+` (bez Postęp/on track) | kol 0 |
+| SUB-WIG-i (stary format) | regex `^SUB-WIG\s+\d+` (bez Postęp/On track) | kol 0 (fallback) |
+| Zadania LEAD | `T10`–`T18` w kol 0 po headerze LEAD | kol 0 |
 | Mapa procesów | header `# + TYP + PROCES` | kol 0–4 |
 | OCENA procesy | `Średnia [nazwa]` | kol 0 |
 | BACKLOG | header `KATEGORIA + STATUS` | cały wiersz |
