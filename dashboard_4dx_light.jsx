@@ -397,8 +397,9 @@ function parseLead(rows, currentWeek) {
   for (let i = 0; i < rows.length; i++) {
     const a = cellStr(rows[i], 0);
     // Match "Lead 1 - ...", "Lead 2 - ...", "SUB-WIG 0 ...", "SUB-WIG 1 ..."
-    const leadMatch = a.match(/^Lead\s*(\d+)\s*[-–—]/i);
-    const subWigMatch = a.match(/^SUB-WIG\s*(\d+)\s/i);
+    // Permisywny regex: wystarczy "Lead X" (dowolny separator lub brak)
+    const leadMatch = a.match(/^Lead\s+(\d+)/i);
+    const subWigMatch = a.match(/^SUB-WIG\s*(\d+)/i);
 
     if ((leadMatch || subWigMatch) &&
         !a.toLowerCase().includes('post') &&
@@ -407,6 +408,10 @@ function parseLead(rows, currentWeek) {
       leadMarkers.push({ row: i, name: a, num: leadMatch ? leadMatch[1] : subWigMatch[1] });
       console.log(`[parseLead] marker: row ${i}: "${a}"`);
     }
+  }
+  if (leadMarkers.length === 0) {
+    console.warn('[parseLead] BRAK markerów Lead! Pierwsze 10 wartości col A:',
+      rows.slice(0, 10).map((r, i) => `[${i}]="${r?.c?.[0]?.v ?? 'null'}"`).join(' | '));
   }
 
   // Parsuj każdy Lead
@@ -653,37 +658,8 @@ const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
       {/* ── MAIN ROW ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 28px 1fr', cursor: 'pointer' }}
         onClick={() => setOpen(o => !o)}>
-        {/* LEAD cell */}
-        <div style={{ padding: '13px 12px 13px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 11,
-              background: '#eff0ff', color: '#4f46e5', whiteSpace: 'nowrap' }}>{leadLabel}</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#1a2030', flex: 1,
-              lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {leadDesc || leadLabel}
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-            <div style={{ flex: 1 }}><ProgressBar value={leadProg} color="#6366f1" /></div>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#6366f1', minWidth: 34, textAlign: 'right' }}>
-              {Math.round(leadProg * 100)}%
-            </span>
-            <Sparkline values={leadSparkValues} color="#6366f1" wi={wi} />
-          </div>
-          {lead && (
-            <div style={{ fontSize: 11, color: '#94a3b8' }}>
-              {lead.tasks.filter(t => t.done).length}/{lead.tasks.length} zadań
-            </div>
-          )}
-        </div>
-
-        {/* Arrow */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: '#f1f3f8', borderLeft: '1px solid #eaecf3', borderRight: '1px solid #eaecf3',
-          fontSize: 15, color: wigColor, fontWeight: 700 }}>→</div>
-
-        {/* LAG cell */}
-        <div style={{ padding: '13px 20px 13px 12px' }}>
+        {/* LAG cell — wynik (po lewej) */}
+        <div style={{ padding: '13px 20px 13px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
             <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 11,
               background: wigColor + '18', color: wigColor, whiteSpace: 'nowrap' }}>{lagLabel}</span>
@@ -706,7 +682,12 @@ const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
             {!lag?.is_tbd && <Sparkline values={lagSparkValues} color={wigColor} wi={wi} />}
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <OnTrackBadge ok={onTrack} />
+            {lagProg > 0 && (
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 12,
+                background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0', whiteSpace: 'nowrap' }}>
+                On track
+              </span>
+            )}
             <span style={{ fontSize: 11, color: '#94a3b8' }}>
               {lag?.isLag01
                 ? `${lag.processes?.filter(p => (p.values[WEEKS[wi]] ?? 0) >= 0.99).length ?? 0}/${lag.processes?.length ?? 0} proc.`
@@ -714,47 +695,43 @@ const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
             </span>
           </div>
         </div>
+
+        {/* Arrow ← LEAD wpływa na LAG */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: '#f1f3f8', borderLeft: '1px solid #eaecf3', borderRight: '1px solid #eaecf3',
+          fontSize: 15, color: wigColor, fontWeight: 700 }}>←</div>
+
+        {/* LEAD cell — działania (po prawej) */}
+        <div style={{ padding: '13px 20px 13px 12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 11,
+              background: '#eff0ff', color: '#4f46e5', whiteSpace: 'nowrap' }}>{leadLabel}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#1a2030', flex: 1,
+              lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {leadDesc || leadLabel}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+            <div style={{ flex: 1 }}><ProgressBar value={leadProg} color="#6366f1" /></div>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#6366f1', minWidth: 34, textAlign: 'right' }}>
+              {Math.round(leadProg * 100)}%
+            </span>
+            <Sparkline values={leadSparkValues} color="#6366f1" wi={wi} />
+          </div>
+          {lead && (
+            <div style={{ fontSize: 11, color: '#94a3b8' }}>
+              {lead.tasks.filter(t => t.done).length}/{lead.tasks.length} zadań
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── EXPANDED ── */}
       {open && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 28px 1fr',
           borderTop: '1px solid #eaecf3', background: '#f3f5fb' }}>
-          {/* LEAD tasks */}
-          <div style={{ padding: '12px 12px 16px 20px', borderRight: '1px solid #eaecf3' }}>
-            <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.9,
-              color: '#6366f1', marginBottom: 10 }}>Zadania LEAD</div>
-            {lead?.tasks?.length ? lead.tasks.map((t, i) => {
-              const val  = t.values[WEEKS[wi]] ?? 0;
-              const done = t.done || val >= 1;
-              const wip  = val >= 0.5 && !done;
-              return (
-                <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'flex-start' }}>
-                  <div style={{ width: 17, height: 17, borderRadius: 5, flexShrink: 0, marginTop: 1,
-                    background: done ? '#22c55e' : wip ? '#f59e0b' : '#dde1ea',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {done && <span style={{ color:'#fff', fontSize:9, fontWeight:800 }}>✓</span>}
-                    {wip  && <span style={{ color:'#fff', fontSize:9 }}>…</span>}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, color: done ? '#1a2030' : '#64748b', lineHeight: 1.4 }}>
-                      {t.desc}
-                    </div>
-                    {t.deadline && (
-                      <div style={{ fontSize: 10, color: '#a0aec0', marginTop: 1 }}>{t.deadline}</div>
-                    )}
-                  </div>
-                </div>
-              );
-            }) : (
-              <div style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>Brak zadań</div>
-            )}
-          </div>
-
-          <div style={{ background: '#e8eaf2', borderLeft: '1px solid #eaecf3', borderRight: '1px solid #eaecf3' }} />
-
-          {/* LAG details */}
-          <div style={{ padding: '12px 20px 16px 12px' }}>
+          {/* LAG details — po lewej */}
+          <div style={{ padding: '12px 20px 16px 20px' }}>
             <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.9,
               color: wigColor, marginBottom: 10 }}>
               {lag?.isLag01 ? 'Procesy DoD' : 'Kryteria LAG'}
@@ -785,6 +762,39 @@ const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
               <div style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>
                 {lag?.is_tbd ? 'Kryteria do zdefiniowania' : 'Brak danych'}
               </div>
+            )}
+          </div>
+
+          <div style={{ background: '#e8eaf2', borderLeft: '1px solid #eaecf3', borderRight: '1px solid #eaecf3' }} />
+
+          {/* LEAD tasks — po prawej */}
+          <div style={{ padding: '12px 20px 16px 12px' }}>
+            <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.9,
+              color: '#6366f1', marginBottom: 10 }}>Zadania LEAD</div>
+            {lead?.tasks?.length ? lead.tasks.map((t, i) => {
+              const val  = t.values[WEEKS[wi]] ?? 0;
+              const done = t.done || val >= 1;
+              const wip  = val >= 0.5 && !done;
+              return (
+                <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'flex-start' }}>
+                  <div style={{ width: 17, height: 17, borderRadius: 5, flexShrink: 0, marginTop: 1,
+                    background: done ? '#22c55e' : wip ? '#f59e0b' : '#dde1ea',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {done && <span style={{ color:'#fff', fontSize:9, fontWeight:800 }}>✓</span>}
+                    {wip  && <span style={{ color:'#fff', fontSize:9 }}>…</span>}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, color: done ? '#1a2030' : '#64748b', lineHeight: 1.4 }}>
+                      {t.desc}
+                    </div>
+                    {t.deadline && (
+                      <div style={{ fontSize: 10, color: '#a0aec0', marginTop: 1 }}>{t.deadline}</div>
+                    )}
+                  </div>
+                </div>
+              );
+            }) : (
+              <div style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>Brak zadań</div>
             )}
           </div>
         </div>
