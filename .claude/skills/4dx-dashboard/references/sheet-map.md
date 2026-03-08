@@ -4,6 +4,21 @@ Ten dokument opisuje jak parsować arkusz `2026_Ovocxmalinovi_dashboard`
 **bez polegania na stałych numerach wierszy**. Parser szuka markerów
 tekstowych i buduje mapę pozycji dynamicznie.
 
+---
+
+## GID-y arkuszy (zweryfikowane 2026-03-08)
+
+| Arkusz | GID |
+|--------|-----|
+| WIGI | `1699564336` |
+| OS_LAG MEASURES | `322339268` |
+| OS_LEAD MEASURES | `2102307131` |
+| HARVEST_LAG MEASURES | `200348167` |
+| HARVEST_LEAD MEASURES | `259840012` |
+
+> **Uwaga:** GID dla OS_LEAD MEASURES to `2102307131` — nie `1844898951` (stary, nieaktualny).
+> Zawsze weryfikuj GID-y otwierając arkusz i sprawdzając URL: `...spreadsheets/d/ID/edit#gid=GID`.
+
 Dzięki temu:
 - Dodanie nowego procesu, LAG-a, SUB-WIG-a — parser go automatycznie znajdzie
 - Przesunięcie wierszy — nie psuje parsowania
