@@ -130,280 +130,347 @@ async function fetchGvizSheet(param) {
   const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
   if (!match) throw new Error('Nieprawidłowy format odpowiedzi gviz');
   const table = JSON.parse(match[1]).table;
-  const rows = (table.rows || []).map(row =>
-    (row.c || []).map(cell => {
-      if (!cell || cell.v === undefined || cell.v === null) return null;
-      return cell.v; // zawsze .v — surowa wartość
-    })
-  );
-  console.log(`[4DX] ${param}: ${rows.length} wierszy × ${rows[0]?.length ?? 0} kol. | pierwsze 5:`,
-    rows.slice(0, 5).map(r => r?.map(v => v === null ? '∅' : v)));
+  const rows = table.rows || [];
+  console.log(`[4DX] ${param}: ${rows.length} wierszy × ${rows[0]?.c?.length ?? 0} kol. | pierwsze 5:`,
+    rows.slice(0, 5).map(r => r?.c?.map(c => c?.v === null || c?.v === undefined ? '∅' : c?.v)));
   return rows;
 }
 
 // ─── PARSERY ───────────────────────────────────────────────────────────────────
 
 function parseWigs(rows) {
-  // Aktualny tydzień: wiersz 0, kolumna E (indeks 4)
-  let currentWeek = null;
-  const rawWeek = rows[0]?.[4];
-  if (rawWeek !== null && rawWeek !== undefined) {
-    const n = parseInt(rawWeek);
-    if (!isNaN(n) && WEEKS.includes('T' + n)) currentWeek = 'T' + n;
+  let currentWeek = 'T10';
+  let wigs = [];
+
+  // Wiersz 0: col E (indeks 4) = aktualny tydzień
+  if (rows[0]) {
+    for (let c = 0; c < (rows[0].c || []).length; c++) {
+      const v = rows[0].c[c] ? rows[0].c[c].v : null;
+      if (typeof v === 'number' && v >= 10 && v <= 30) {
+        currentWeek = `T${Math.round(v)}`;
+        break;
+      }
+    }
   }
-  console.log('[parseWigs] WIGI!E1 raw:', rawWeek, '→ currentWeek:', currentWeek);
-  // Diagnostyka: WIGI wiersz 2 (indeks 1), kolumna D (indeks 3) — opis WIG#1
-  const wigRow2 = rows[1] || null;
-  console.log('[parseWigs] WIGI wiersz 2 (rows[1]) raw:', wigRow2);
-  console.log('[parseWigs] WIGI wiersz 2, kolumna D (rows[1][3]) raw:', wigRow2?.[3] ?? 'BRAK (null/undefined)');
-  const wigs = rows
-    .filter(row => row && ss(row[2]).startsWith('WIG#'))
-    .map(row => ({ id: ss(row[2]), name: ss(row[1]), description: ss(row[3]) }));
-  console.log('[parseWigs] wigi:', wigs.map(w => `${w.id} = "${w.name}" (D: "${w.description}")`));
-  return { wigs, currentWeek };
+  console.log('[parseWigs] currentWeek:', currentWeek);
+
+  // WIG-i — wiersze z "WIG#X" w col C (indeks 2)
+  for (let i = 0; i < rows.length; i++) {
+    const c = rows[i].c;
+    if (!c) continue;
+    const colC = c[2] ? String(c[2].v || '') : '';
+    if (colC.startsWith('WIG#')) {
+      const name = c[1] ? String(c[1].v || '') : '';
+      const desc = c[3] ? String(c[3].v || '') : '';
+      wigs.push({ id: colC, name, description: desc });
+      console.log(`[parseWigs] ${colC}: ${name} — ${desc.substring(0, 50)}...`);
+    }
+  }
+
+  return { currentWeek, wigs };
 }
 
-// Parser arkuszy *_LAG MEASURES
-// FIX #1: exact match 'proces' (nie includes) → unika dopasowania nazwy LAG-01
-// FIX #2: additionalLagMarkers filtruje wiersze Postęp/Plan/On track
-// FIX #3: is_tbd tylko gdy dosłownie "TBD", nie gdy 0 lub pusty
-function parseLag(rows) {
-  console.group('[parseLag] wierszy:', rows.length);
+function parseLag(rows, currentWeek) {
+  const result = { wig_status: 0, lag01: null, additional_lags: [], wig_description: '' };
 
-  const wigStatusRow = findRow(rows, 0, 'WIG Status');
-  const wig_status   = wigStatusRow !== null ? sf(rows[wigStatusRow][1]) : 0;
-  console.log('wigStatus row:', wigStatusRow, '→', wig_status);
+  // Helper: bezpieczne czytanie wartości z komórki gviz
+  function cellVal(row, colIdx) {
+    if (!row || !row.c || !row.c[colIdx]) return null;
+    return row.c[colIdx].v;
+  }
+  function cellStr(row, colIdx) {
+    const v = cellVal(row, colIdx);
+    if (v === null || v === undefined) return '';
+    return String(v).trim();
+  }
+  function cellNum(row, colIdx) {
+    const v = cellVal(row, colIdx);
+    if (v === null || v === undefined) return 0;
+    if (typeof v === 'number') return v;
+    // Handle string percentages "28,57%" or "0.2"
+    const s = String(v).replace(',', '.').replace('%', '');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : (s.includes('%') || n > 1 ? n / 100 : n);
+  }
 
-  // BUG1 DIAG: pokaż kolumnę A dla wierszy 5-8 (1-indexed = indeksy 4-7)
-  console.log('[parseLag BUG1 DIAG] wiersze 5-8 kolumna A:',
-    [4, 5, 6, 7].map(i => `row${i + 1}[A]="${ss(rows[i]?.[0])}" [B]="${ss(rows[i]?.[1])}"`));
-
-  // FIX BUG1: includes('proces') + trim() zamiast === 'proces' (gviz może dodawać białe znaki)
-  let processHeaderRow = null;
-  let processWeekCols  = {};
+  // 1. WIG Status — wiersz z "WIG Status" w col A
   for (let i = 0; i < rows.length; i++) {
-    if (!rows[i]) continue;
-    const c0 = ss(rows[i][0]).toLowerCase().trim();
-    const c1 = ss(rows[i][1]).toLowerCase();
-    if (c0.includes('proces') && c1.includes('target')) {
-      processHeaderRow = i;
-      processWeekCols  = lagWeekColsFallback(findWeekColumns(rows, i));
-      console.log(`[parseLag BUG1 FIX] processHeaderRow=${i} — col A: "${ss(rows[i][0])}", col B: "${ss(rows[i][1])}"`);
+    if (cellStr(rows[i], 0) === 'WIG Status') {
+      // Wartość w col B — może być string "3,02%" lub number 0.03
+      const raw = cellVal(rows[i], 1);
+      if (typeof raw === 'number') {
+        result.wig_status = raw;
+      } else if (typeof raw === 'string') {
+        const s = raw.replace(',', '.').replace('%', '');
+        result.wig_status = parseFloat(s) / (raw.includes('%') ? 100 : 1) || 0;
+      }
       break;
     }
   }
-  console.log('processHeaderRow:', processHeaderRow, 'weekCols:', processWeekCols);
 
-  const lag01ProgressRow = findRow(rows, 0, 'LAG-01 Post');
-  const lag01PlanRow     = findRow(rows, 0, 'LAG-01 Plan');
-  const lag01OntrackRow  = findRow(rows, 0, 'LAG-01 On track');
-  console.log('lag01 rows — postep:', lag01ProgressRow, 'plan:', lag01PlanRow, 'ontrack:', lag01OntrackRow);
-
-  let lag01 = { processes: [], progress: WEEKS.map(() => 0), plan: WEEKS.map(() => 0), on_track: WEEKS.map(() => 0) };
-  if (processHeaderRow !== null && lag01ProgressRow !== null) {
-    const processes = [];
-    for (let r = processHeaderRow + 1; r < lag01ProgressRow; r++) {
-      const name = ss(rows[r]?.[0]);
-      if (!name) continue;
-      processes.push({ name, target: ss(rows[r][1]), values: getWeekValues(rows, r, processWeekCols) });
+  // 2. WIG Description — wiersz z deadline (data) w col A, opis w col B
+  for (let i = 0; i < rows.length; i++) {
+    const a = cellStr(rows[i], 0);
+    if (a.match(/^20\d\d-\d\d-\d\d/)) {  // np. "2026-05-30"
+      result.wig_description = cellStr(rows[i], 1);
+      result.wig_deadline = a;
+      break;
     }
-    lag01 = {
-      processes,
-      progress: getWeekValues(rows, lag01ProgressRow, processWeekCols),
-      plan:     lag01PlanRow    ? getWeekValues(rows, lag01PlanRow, processWeekCols)    : WEEKS.map(() => 0),
-      on_track: lag01OntrackRow ? getWeekValues(rows, lag01OntrackRow, processWeekCols) : WEEKS.map(() => 0),
-    };
-    console.log(`lag01: ${processes.length} procesów (szukano między wierszem ${processHeaderRow + 1} a ${lag01ProgressRow}):`);
-    processes.forEach(p => console.log(`  - "${p.name}" | T10: ${p.values[0]} (1.0=ukończone)`));
-    console.log('lag01 postęp T10:', lag01.progress[0], '| on_track T10:', lag01.on_track[0]);
-  } else {
-    console.warn('lag01: brak processHeaderRow lub lag01ProgressRow');
   }
 
-  // FIX: wyklucz wiersze Postęp / Plan / On track z markerów LAG
-  const additionalLagMarkers = findRows(rows, 0, 'LAG-0[2-9]|LAG-[1-9][0-9]', true).filter(i => {
-    const v = ss(rows[i]?.[0]);
-    return !v.includes('Post') && !v.toLowerCase().includes('plan') && !v.toLowerCase().includes('on track');
-  });
-  console.log('additionalLagMarkers (filtered):', additionalLagMarkers.map(i => ss(rows[i][0])));
+  // 3. Znajdź header procesów — wiersz z "Proces" w col A
+  let processHeaderRow = -1;
+  for (let i = 0; i < rows.length; i++) {
+    const a = cellStr(rows[i], 0);
+    if (a === 'Proces' || a === 'Process') {
+      processHeaderRow = i;
+      console.log('[parseLag] processHeaderRow:', i, 'col A:', a, 'col B:', cellStr(rows[i], 1));
+      break;
+    }
+  }
 
-  const additional_lags = additionalLagMarkers.map(markerRow => {
-    const lagName = ss(rows[markerRow][0]);
+  // 4. Znajdź wiersz "LAG-01 Postęp"
+  let lag01ProgressRow = -1;
+  for (let i = 0; i < rows.length; i++) {
+    const a = cellStr(rows[i], 0);
+    if (a.includes('LAG-01') && a.toLowerCase().includes('post')) {
+      lag01ProgressRow = i;
+      break;
+    }
+  }
 
-    // Szukaj nagłówka w następnych 4 wierszach
-    let headerRow = null;
-    for (let r = markerRow + 1; r < Math.min(markerRow + 5, rows.length); r++) {
-      if (!rows[r]) continue;
-      const c0 = ss(rows[r][0]).toLowerCase();
-      const c1 = ss(rows[r][1]).toLowerCase();
-      if (c0.includes('measure') || c0 === 'kryterium' || c1.includes('target')) {
-        headerRow = r; break;
+  // 5. Kolumny tygodniowe — ZAWSZE C-H (indeksy 2-7) dla LAG
+  const weekCols = { T10: 2, T11: 3, T12: 4, T13: 5, T14: 6, T15: 7 };
+  const weekKey = currentWeek; // np. "T10"
+  const weekColIdx = weekCols[weekKey];
+
+  // 6. Parsuj procesy LAG-01
+  if (processHeaderRow >= 0 && lag01ProgressRow >= 0) {
+    const processes = [];
+    for (let i = processHeaderRow + 1; i < lag01ProgressRow; i++) {
+      const name = cellStr(rows[i], 0);
+      if (!name) continue;
+      const values = {};
+      for (const [wk, ci] of Object.entries(weekCols)) {
+        values[wk] = cellNum(rows[i], ci);
+      }
+      processes.push({ name, values });
+      console.log(`[parseLag] proces: "${name}" | T10: ${values.T10} (1.0=ukończone)`);
+    }
+    const progress = cellNum(rows[lag01ProgressRow], weekColIdx);
+    result.lag01 = {
+      processes,
+      progress,
+      done: processes.filter(p => p.values[weekKey] >= 0.99).length,
+      total: processes.length
+    };
+    console.log(`[parseLag] LAG-01: ${result.lag01.done}/${result.lag01.total} procesów, postęp: ${progress}`);
+  } else {
+    console.error('[parseLag] NIE ZNALEZIONO processHeaderRow lub lag01ProgressRow!',
+      { processHeaderRow, lag01ProgressRow });
+    result.lag01 = { processes: [], progress: 0, done: 0, total: 0 };
+  }
+
+  // 7. Dodatkowe LAG-i (LAG-02, LAG-03, ..., LAG-N)
+  for (let i = 0; i < rows.length; i++) {
+    const a = cellStr(rows[i], 0);
+    const match = a.match(/^LAG-0?(\d+)\s*[—–-]/);
+    if (match && parseInt(match[1]) >= 2) {
+      const lagName = a;
+      const lagNum = parseInt(match[1]);
+
+      // Znajdź wiersz Postęp dla tego LAG-a
+      let progressRow = -1;
+      let progressVal = 0;
+      for (let j = i + 1; j < Math.min(i + 20, rows.length); j++) {
+        const ja = cellStr(rows[j], 0);
+        if (ja.includes(`LAG-0${lagNum}`) && ja.toLowerCase().includes('post')) {
+          progressRow = j;
+          // Postęp może być w kolumnie B lub w kolumnie weekColIdx
+          const fromWeekCol = cellNum(rows[j], weekColIdx);
+          const fromColB = cellNum(rows[j], 1);
+          progressVal = fromWeekCol || fromColB;
+          break;
+        }
+        // Jeśli trafimy na następny LAG marker, stop
+        if (ja.match(/^LAG-0?\d+\s*[—–-]/) && !ja.includes(`LAG-0${lagNum}`)) break;
+      }
+
+      // Policz kryteria
+      let criteria = 0;
+      let headerRow = -1;
+      for (let j = i + 1; j < Math.min(i + 3, rows.length); j++) {
+        const ja = cellStr(rows[j], 0).toLowerCase();
+        if (ja.includes('measure') || ja.includes('target')) {
+          headerRow = j;
+          break;
+        }
+      }
+      if (headerRow >= 0) {
+        for (let j = headerRow + 1; j < Math.min(headerRow + 10, rows.length); j++) {
+          const ja = cellStr(rows[j], 0);
+          if (!ja || ja.includes('LAG-') || ja === '') break;
+          criteria++;
+        }
+      }
+
+      const is_tbd = cellStr(rows[headerRow + 1] || rows[i], 1).toUpperCase() === 'TBD';
+
+      result.additional_lags.push({
+        id: `LAG-0${lagNum}`,
+        name: lagName,
+        progress: progressVal,
+        criteria,
+        is_tbd,
+      });
+      console.log(`[parseLag] ${lagName} | postęp T10: ${progressVal} | kryteria: ${criteria} | tbd: ${is_tbd}`);
+    }
+  }
+
+  return result;
+}
+
+function parseLead(rows, currentWeek) {
+  const result = { lead_score: 0, leads: [] };
+
+  function cellVal(row, colIdx) {
+    if (!row || !row.c || !row.c[colIdx]) return null;
+    return row.c[colIdx].v;
+  }
+  function cellStr(row, colIdx) {
+    const v = cellVal(row, colIdx);
+    if (v === null || v === undefined) return '';
+    return String(v).trim();
+  }
+  function cellNum(row, colIdx) {
+    const v = cellVal(row, colIdx);
+    if (v === null || v === undefined) return 0;
+    if (typeof v === 'number') return v;
+    const s = String(v).replace(',', '.').replace('%', '');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+
+  // Kolumny tygodniowe LEAD: D-I (indeksy 3-8) dla T10-T15
+  // LUB D-L (indeksy 3-11) dla T10-T18
+  const weekCols = {};
+  // Próbuj znaleźć header z numerami tygodni
+  for (let i = 0; i < Math.min(10, rows.length); i++) {
+    const a = cellStr(rows[i], 0);
+    if (a.toLowerCase().includes('deadline')) {
+      // Skanuj kolumny od C/D w poszukiwaniu numerów 10, 11, 12...
+      for (let c = 3; c < (rows[i].c || []).length; c++) {
+        const v = cellVal(rows[i], c);
+        if (typeof v === 'number' && v >= 10 && v <= 30) {
+          weekCols[`T${Math.round(v)}`] = c;
+        } else if (typeof v === 'string' && v.match(/^T?\d+$/)) {
+          const num = parseInt(v.replace('T', ''));
+          if (num >= 10 && num <= 30) weekCols[`T${num}`] = c;
+        }
+      }
+      break;
+    }
+  }
+  // Fallback jeśli nie znaleziono
+  if (Object.keys(weekCols).length === 0) {
+    console.warn('[parseLead] fallback kolumn: D=T10, E=T11, ..., I=T15');
+    for (let w = 10; w <= 15; w++) weekCols[`T${w}`] = w - 7; // D=3, E=4, ..., I=8
+  }
+  console.log('[parseLead] weekCols:', weekCols);
+
+  const weekKey = currentWeek; // "T10"
+  const weekColIdx = weekCols[weekKey];
+
+  // LEAD score — wiersz z "LEAD score" w col B
+  for (let i = 0; i < Math.min(10, rows.length); i++) {
+    const b = cellStr(rows[i], 1);
+    if (b.toLowerCase().includes('lead score')) {
+      result.lead_score = cellNum(rows[i], weekColIdx);
+      console.log('[parseLead] LEAD score:', result.lead_score);
+      break;
+    }
+  }
+
+  // Znajdź WSZYSTKIE markery Lead-ów
+  // Szukaj: "Lead X -" LUB "SUB-WIG X" (ale NIE "Postęp" ani "On track")
+  const leadMarkers = [];
+  for (let i = 0; i < rows.length; i++) {
+    const a = cellStr(rows[i], 0);
+    // Match "Lead 1 - ...", "Lead 2 - ...", "SUB-WIG 0 ...", "SUB-WIG 1 ..."
+    const leadMatch = a.match(/^Lead\s*(\d+)\s*[-–—]/i);
+    const subWigMatch = a.match(/^SUB-WIG\s*(\d+)\s/i);
+
+    if ((leadMatch || subWigMatch) &&
+        !a.toLowerCase().includes('post') &&
+        !a.toLowerCase().includes('on track') &&
+        !a.toLowerCase().includes('leas ')) {  // Skip "Leas 1" (literówka w Postęp)
+      leadMarkers.push({ row: i, name: a, num: leadMatch ? leadMatch[1] : subWigMatch[1] });
+      console.log(`[parseLead] marker: row ${i}: "${a}"`);
+    }
+  }
+
+  // Parsuj każdy Lead
+  for (let idx = 0; idx < leadMarkers.length; idx++) {
+    const marker = leadMarkers[idx];
+    const nextMarkerRow = idx + 1 < leadMarkers.length ? leadMarkers[idx + 1].row : rows.length;
+
+    // Znajdź header (wiersz z "Deadline" po markerze)
+    let headerRow = -1;
+    for (let j = marker.row + 1; j < Math.min(marker.row + 3, rows.length); j++) {
+      if (cellStr(rows[j], 0).toLowerCase().includes('deadline')) {
+        headerRow = j;
+        break;
       }
     }
-    if (headerRow === null) {
-      console.warn(lagName, '— brak headerRow');
-      return { name: lagName, is_tbd: false, criteria: [], values: WEEKS.map(() => 0) };
-    }
 
-    // Wyodrębnij kryteria (aż do pustego wiersza lub kolejnego markera)
-    const criteria = [];
-    for (let r = headerRow + 1; r < Math.min(headerRow + 15, rows.length); r++) {
-      const v = ss(rows[r]?.[0]);
-      if (!v || v.includes('Post') || v.toLowerCase().includes('plan') || v.toLowerCase().includes('on track')) break;
-      criteria.push(v);
-    }
-
-    // FIX: is_tbd tylko gdy target jest dosłownie "TBD"
-    const firstDataTarget = ss(rows[headerRow + 1]?.[1]);
-    const is_tbd = firstDataTarget.toUpperCase() === 'TBD';
-
-    // Postęp z wiersza "LAG-XX Postęp (średnia %)"
-    const lagNumMatch = lagName.match(/LAG-(\d+)/i);
-    const lagNum      = lagNumMatch ? lagNumMatch[1].padStart(2, '0') : null;
-    const progressRow = lagNum ? findRow(rows, 0, `LAG-${lagNum} Post`) : null;
-    const lagWc       = lagWeekColsFallback(findWeekColumns(rows, headerRow));
-    let   values      = progressRow !== null ? getWeekValues(rows, progressRow, lagWc) : WEEKS.map(() => 0);
-
-    // BUG3 FIX: jeśli getWeekValues daje same 0, sprawdź kol B (indeks 1) jako scalar progress
-    // OS_LAG może mieć wartość bezpośrednio w kol B (nie tygodniową kol C+)
-    if (progressRow !== null) {
-      console.log(`[parseLag BUG3 DIAG] ${lagName} progressRow=${progressRow} — raw row:`,
-        rows[progressRow]?.map((v, i) => `[${i}]=${v === null ? 'null' : v}`).join(' '));
-      if (values.every(v => v === 0)) {
-        const colBVal = sf(rows[progressRow]?.[1]);
-        if (colBVal > 0) {
-          console.warn(`[parseLag BUG3 FIX] ${lagName} kol C-H = 0, używam kol B (indeks 1): ${colBVal}`);
-          values = WEEKS.map(() => colBVal);
+    // Znajdź zadania (wiersze po headerze z liczbą w col A = deadline tygodnia)
+    const tasks = [];
+    if (headerRow >= 0) {
+      for (let j = headerRow + 1; j < nextMarkerRow; j++) {
+        const a = cellStr(rows[j], 0);
+        const b = cellStr(rows[j], 1);
+        // Wiersz z zadaniem: col A = numer tygodnia (10, 11...), col B = opis
+        if (a.match(/^\d+$/) && b) {
+          const deadline = parseInt(a);
+          const values = {};
+          for (const [wk, ci] of Object.entries(weekCols)) {
+            values[wk] = cellNum(rows[j], ci);
+          }
+          tasks.push({ deadline: `T${deadline}`, desc: b, values, done: values[weekKey] >= 0.99 });
         }
       }
     }
 
-    console.log(lagName, '\u2192 headerRow:', headerRow, 'progressRow:', progressRow, 'is_tbd:', is_tbd,
-      'postęp T10:', values[0]);
-    return { name: lagName, is_tbd, criteria, values };
-  });
-
-  // Opis WIG-a: szukaj wiersza z datą w kol A (deadline) i opisem w kol B
-  // Fallback dla WIGI → kol D gdy gviz zwraca null
-  let wig_description = '';
-  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-  for (let i = 0; i < rows.length; i++) {
-    const colA = ss(rows[i]?.[0]);
-    const colB = ss(rows[i]?.[1]);
-    if (datePattern.test(colA.trim()) && colB) {
-      wig_description = colB;
-      console.log(`[parseLag] wig_description z wiersza ${i} (deadline: "${colA}"):`, colB);
-      break;
-    }
-  }
-  if (!wig_description) console.log('[parseLag] wig_description: nie znaleziono wiersza z datą w kol A');
-
-  console.log('[parseLag] PODSUMOWANIE:');
-  console.log('  WIG Status:', wig_status, `(${Math.round(wig_status * 100)}%)`);
-  additional_lags.forEach(l => console.log(`  ${l.name} | postęp T10: ${l.values[0]} | is_tbd: ${l.is_tbd}`));
-  console.groupEnd();
-  return { wig_status, lag01, additional_lags, wig_description };
-}
-
-// Parser arkuszy *_LEAD MEASURES
-// FIX: headers=0 + exact 'deadline'/'opis' match + szerszy zakres szukania swHeaderRow
-// FIX: zadania — przyjmij każdy wiersz z niepustym opisem (nie tylko /^T\d+/)
-function parseLead(rows) {
-  console.group('[parseLead] wierszy:', rows.length);
-
-  // Główny nagłówek: wiersz z 'Deadline' w kol 0 i 'Opis' w kol 1
-  let mainHeaderRow = null;
-  let weekCols = {};
-  for (let i = 0; i < rows.length; i++) {
-    if (!rows[i]) continue;
-    if (ss(rows[i][0]).toLowerCase() === 'deadline' && ss(rows[i][1]).toLowerCase() === 'opis') {
-      mainHeaderRow = i;
-      weekCols = leadWeekColsFallback(findWeekColumns(rows, i));
-      console.log('mainHeaderRow:', i, 'weekCols:', weekCols);
-      break;
-    }
-  }
-  if (mainHeaderRow === null) console.warn('[parseLead] nie znaleziono mainHeaderRow (Deadline|Opis)');
-
-  const leadScoreRow = mainHeaderRow !== null ? mainHeaderRow + 1 : null;
-  const lead_score = {
-    target: leadScoreRow !== null && rows[leadScoreRow] ? sf(rows[leadScoreRow][2]) : 1,
-    values: leadScoreRow !== null ? getWeekValues(rows, leadScoreRow, weekCols) : WEEKS.map(() => 0),
-  };
-
-  // Markery Lead-ów: "Lead \d+" lub stary "SUB-WIG \d+" — bez Postęp/On track
-  // FIX BUG2: usunięto anchor ^ — "Lead 1 - Procesy i role (DoD)" matchuje /Lead\s+\d+/i
-  const subWigRows = [];
-  for (let i = 0; i < rows.length; i++) {
-    const val = ss(rows[i]?.[0]).trim();
-    const isMarker = /Lead\s+\d+/i.test(val) || /SUB-WIG\s+\d+/i.test(val);
-    if (isMarker && !val.includes('Post') && !val.toLowerCase().includes('on track')) {
-      console.log(`[parseLead BUG2 FIX] marker row ${i}: "${val}"`);
-      subWigRows.push([i, val]);
-    }
-  }
-  if (subWigRows.length === 0) {
-    console.warn('[parseLead BUG2 DIAG] brak markerów Lead — pierwsze 10 wartości col A:',
-      rows.slice(0, 10).map((r, i) => `row${i}="${ss(r?.[0])}"`));
-  }
-  console.log('Lead markers:', subWigRows.map(([i, v]) => v));
-
-  const sub_wigs = subWigRows.map(([markerRow, markerText], idx) => {
-    const sw = { name: markerText, tasks: [], progress: WEEKS.map(() => 0) };
-
-    // Nagłówek Lead-a: szukaj 'deadline' w kol 0, do 4 wierszy dalej
-    let swHeaderRow = null;
-    let taskWc = {};
-    for (let r = markerRow + 1; r < Math.min(markerRow + 5, rows.length); r++) {
-      if (!rows[r]) continue;
-      if (ss(rows[r][0]).toLowerCase() === 'deadline') {
-        swHeaderRow = r;
-        taskWc = leadWeekColsFallback(findWeekColumns(rows, r));
-        if (Object.keys(taskWc).length < 2) taskWc = weekCols;
-        break;
+    // Znajdź wiersz Postęp (między markerem a następnym markerem)
+    let progressVal = 0;
+    let onTrackVal = 'brak';
+    for (let j = marker.row; j < nextMarkerRow; j++) {
+      const a = cellStr(rows[j], 0).toLowerCase();
+      if (a.includes('post') && (a.includes('lead') || a.includes('sub-wig') || a.includes('leas'))) {
+        progressVal = cellNum(rows[j], weekColIdx);
+        console.log(`[parseLead] ${marker.name} Postęp row ${j}: ${progressVal}`);
+      }
+      if (a.includes('on track') && (a.includes('lead') || a.includes('sub-wig'))) {
+        const raw = cellStr(rows[j], weekColIdx);
+        onTrackVal = raw || 'brak';
       }
     }
-    // Fallback: użyj głównego weekCols jeśli brak sub-headera
-    if (Object.keys(taskWc).length < 2) taskWc = weekCols;
 
-    const nextBoundary = idx + 1 < subWigRows.length ? subWigRows[idx + 1][0] : rows.length;
-    const startRow     = swHeaderRow !== null ? swHeaderRow + 1 : markerRow + 1;
-    let progressRow    = null;
-    let onTrackRow     = null;
-    const taskRowIdxs  = [];
+    const doneCount = tasks.filter(t => t.done).length;
 
-    for (let r = startRow; r < nextBoundary; r++) {
-      const full     = ss(rows[r]?.[0]);
-      const fullLow  = full.toLowerCase();
-      const desc     = ss(rows[r]?.[1]);
-      // Uwaga: w arkuszu może być literówka "Leas" zamiast "Lead" — includes('Post') łapie obydwa
-      if (full.includes('Post') || full.includes('post'))  { progressRow = r; }
-      else if (fullLow.includes('on track'))               { onTrackRow = r; }
-      else if (desc)                                       { taskRowIdxs.push(r); }
-    }
+    result.leads.push({
+      id: `Lead ${marker.num}`,
+      name: marker.name,
+      progress: progressVal,
+      onTrack: onTrackVal,
+      tasks,
+      done: doneCount,
+      total: tasks.length,
+    });
+    console.log(`[parseLead] ${marker.name} | postęp: ${progressVal} | on_track: ${onTrackVal} | zadań: ${doneCount}/${tasks.length}`);
+  }
 
-    sw.progress    = progressRow !== null ? getWeekValues(rows, progressRow, taskWc)                                          : WEEKS.map(() => 0);
-    // on_track_raw: wartość tekstowa "TAK"/"NIE" z arkusza, osobno dla każdego tygodnia
-    sw.on_track_raw = onTrackRow !== null
-      ? WEEKS.map(w => taskWc[w] !== undefined ? ss(rows[onTrackRow][taskWc[w]]) : '')
-      : WEEKS.map(() => '');
-    sw.tasks = taskRowIdxs.map(r => ({
-      deadline:    ss(rows[r][0]),
-      description: ss(rows[r][1]),
-      target:      sf(rows[r][2]),
-      values:      getWeekValues(rows, r, taskWc),
-    }));
-    console.log(markerText, '→ swHeader:', swHeaderRow, 'progressRow:', progressRow,
-      'onTrackRow:', onTrackRow, 'tasks:', sw.tasks.length,
-      '| postęp T10:', sw.progress[0], '| on_track T10:', sw.on_track_raw[0] || 'brak');
-    return sw;
-  });
-
-  console.log('[parseLead] PODSUMOWANIE:');
-  console.log('  Lead markers znalezione:', subWigRows.map(([i, v]) => v));
-  sub_wigs.forEach(sw => console.log(`  ${sw.name} | postęp T10: ${sw.progress[0]} | on_track T10: ${sw.on_track_raw[0] || 'brak'} | zadań: ${sw.tasks.length}`));
-  console.groupEnd();
-  return { lead_score, sub_wigs };
+  return result;
 }
 
 function parseMapa(rows) {
@@ -478,11 +545,11 @@ async function loadDashboardData() {
     const lagRows  = sheets[lagKey];
     const leadRows = sheets[leadKey];
     if (!lagRows) { wig_data[key] = { has_data: false }; continue; }
-    const lag      = parseLag(lagRows);
+    const lag      = parseLag(lagRows, currentWeek);
     const lead     = leadRows
-      ? parseLead(leadRows)
-      : { lead_score: { target: 1, values: WEEKS.map(() => 0) }, sub_wigs: [] };
-    const has_data = lag.wig_status > 0 || lag.lag01.processes.length > 0;
+      ? parseLead(leadRows, currentWeek)
+      : { lead_score: 0, leads: [] };
+    const has_data = lag.wig_status > 0 || (lag.lag01?.processes?.length || 0) > 0;
     wig_data[key]  = { has_data, lag, lead };
   }
   // WIG-i bez arkuszy
@@ -568,19 +635,17 @@ const OnTrackBadge = ({ ok }) => (
 const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
   const [open, setOpen] = useState(false);
 
-  const lagProg  = lag  ? (lag.values?.[wi]   ?? 0) : 0;
-  const leadProg = lead ? (lead.progress?.[wi] ?? 0) : 0;
-  const onTrack  = lag?.isLag01
-    ? (lag.on_track?.[wi] ?? 0) >= 1
-    : lagProg > 0;
+  const lagProg  = lag  ? (lag.progress ?? 0) : 0;
+  const leadProg = lead ? (lead.progress ?? 0) : 0;
+  const onTrack  = lagProg > 0;
 
   const lagLabel  = lag  ? ss(lag.name).match(/^LAG-\d+/i)?.[0]  || lag.name  : '—';
   const lagDesc   = lag  ? ss(lag.name).split(/—(.+)/)[1]?.trim() || ''        : '';
   const leadLabel = lead ? ss(lead.name).match(/^(Lead|SUB-WIG)\s+\d+/i)?.[0] || lead.name : '—';
   const leadDesc  = lead ? ss(lead.name).split(/[-—](.+)/)[1]?.trim() || ''    : '';
 
-  const leadSparkValues = lead ? (lead.progress || WEEKS.map(() => 0)) : WEEKS.map(() => 0);
-  const lagSparkValues  = lag  ? (lag.values    || WEEKS.map(() => 0)) : WEEKS.map(() => 0);
+  const leadSparkValues = WEEKS.map(() => lead?.progress || 0);
+  const lagSparkValues  = WEEKS.map(() => lag?.progress  || 0);
 
   return (
     <div style={{ borderBottom: '1px solid #eaecf3', background: open ? '#f8f9fe' : '#fff',
@@ -607,7 +672,7 @@ const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
           </div>
           {lead && (
             <div style={{ fontSize: 11, color: '#94a3b8' }}>
-              {lead.tasks.filter(t => (t.values[wi] ?? 0) >= 1).length}/{lead.tasks.length} zadań
+              {lead.tasks.filter(t => t.done).length}/{lead.tasks.length} zadań
             </div>
           )}
         </div>
@@ -644,8 +709,8 @@ const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
             <OnTrackBadge ok={onTrack} />
             <span style={{ fontSize: 11, color: '#94a3b8' }}>
               {lag?.isLag01
-                ? `${lag.processes?.filter(p => (p.values[wi] ?? 0) >= 1).length ?? 0}/${lag.processes?.length ?? 0} proc.`
-                : lag ? `${lag.criteria?.length ?? 0} kryt.` : '—'}
+                ? `${lag.processes?.filter(p => (p.values[WEEKS[wi]] ?? 0) >= 0.99).length ?? 0}/${lag.processes?.length ?? 0} proc.`
+                : lag ? `${typeof lag.criteria === 'number' ? lag.criteria : (lag.criteria?.length ?? 0)} kryt.` : '—'}
             </span>
           </div>
         </div>
@@ -660,8 +725,8 @@ const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
             <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.9,
               color: '#6366f1', marginBottom: 10 }}>Zadania LEAD</div>
             {lead?.tasks?.length ? lead.tasks.map((t, i) => {
-              const val  = t.values[wi] ?? 0;
-              const done = val >= 1;
+              const val  = t.values[WEEKS[wi]] ?? 0;
+              const done = t.done || val >= 1;
               const wip  = val >= 0.5 && !done;
               return (
                 <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'flex-start' }}>
@@ -673,7 +738,7 @@ const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 12, color: done ? '#1a2030' : '#64748b', lineHeight: 1.4 }}>
-                      {t.description}
+                      {t.desc}
                     </div>
                     {t.deadline && (
                       <div style={{ fontSize: 10, color: '#a0aec0', marginTop: 1 }}>{t.deadline}</div>
@@ -696,15 +761,15 @@ const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
             </div>
             {lag?.isLag01 ? (
               lag.processes?.map((p, i) => {
-                const val = p.values[wi] ?? 0;
+                const val = p.values[WEEKS[wi]] ?? 0;
                 return (
                   <div key={i} style={{ display: 'flex', gap: 7, marginBottom: 6, alignItems: 'center' }}>
                     <div style={{ width: 15, height: 15, borderRadius: 4, flexShrink: 0,
-                      background: val >= 1 ? '#22c55e' : '#dde1ea',
+                      background: val >= 0.99 ? '#22c55e' : '#dde1ea',
                       display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {val >= 1 && <span style={{ color:'#fff', fontSize:8, fontWeight:800 }}>✓</span>}
+                      {val >= 0.99 && <span style={{ color:'#fff', fontSize:8, fontWeight:800 }}>✓</span>}
                     </div>
-                    <span style={{ fontSize: 12, color: val >= 1 ? '#1a2030' : '#64748b', flex: 1 }}>
+                    <span style={{ fontSize: 12, color: val >= 0.99 ? '#1a2030' : '#64748b', flex: 1 }}>
                       {p.name}
                     </span>
                   </div>
@@ -766,26 +831,23 @@ export default function Dashboard4DX() {
     if (!wd?.has_data) return { allLags: [], allLeads: [], kpi: null };
     const { lag, lead } = wd;
 
-    // LAG-01 normalizowany: values = progress, on_track = on_track, isLag01 = true
+    // LAG-01 normalizowany: progress = scalar bieżącego tygodnia, isLag01 = true
     const lag01norm = {
       name:      'LAG-01 — % procesów opisanych wg DoD',
       is_tbd:    false,
       isLag01:   true,
-      values:    lag.lag01.progress,
-      on_track:  lag.lag01.on_track,
-      plan:      lag.lag01.plan,
-      processes: lag.lag01.processes,
+      progress:  lag.lag01?.progress || 0,
+      processes: lag.lag01?.processes || [],
       criteria:  [],
     };
     const lags  = [lag01norm, ...lag.additional_lags.map(l => ({ ...l, isLag01: false }))];
-    const leads = lead.sub_wigs;
+    const leads = lead.leads || [];
 
     const activeLags  = lags.filter(l => !l.is_tbd).length;
     const activeLeads = leads.length;
-    const onTrackCnt  = lags.filter((l, i) => {
+    const onTrackCnt  = lags.filter(l => {
       if (l.is_tbd) return false;
-      if (l.isLag01) return (l.on_track?.[wi] ?? 0) >= 1;
-      return (l.values?.[wi] ?? 0) > 0;
+      return (l.progress ?? 0) > 0;
     }).length;
     const avgLag = lag.wig_status || 0;
 
