@@ -188,8 +188,8 @@ function parseLead(rows, currentWeek) {
   const leadMarkers = [];
   for (let i = 0; i < rows.length; i++) {
     const a = cellStr(rows[i], 0);
-    const leadMatch = a.match(/^Lead\s*(\d+)\s*[-–—]/i);
-    const subWigMatch = a.match(/^SUB-WIG\s*(\d+)\s/i);
+    const leadMatch = a.match(/^Lead\s+(\d+)/i);       // permissive — no dash required
+    const subWigMatch = a.match(/^SUB-WIG\s*(\d+)/i);  // permissive — no trailing space required
     if ((leadMatch || subWigMatch) &&
         !a.toLowerCase().includes('post') &&
         !a.toLowerCase().includes('on track') &&
