@@ -351,67 +351,77 @@ function parseLead(rows, currentWeek) {
     return isNaN(n) ? 0 : n;
   }
 
-  // Kolumny tygodniowe LEAD: D-I (indeksy 3-8) dla T10-T15
-  // LUB D-L (indeksy 3-11) dla T10-T18
-  const weekCols = {};
-  // Próbuj znaleźć header z numerami tygodni
-  for (let i = 0; i < Math.min(10, rows.length); i++) {
-    const a = cellStr(rows[i], 0);
-    if (a.toLowerCase().includes('deadline')) {
-      // Skanuj kolumny od C/D w poszukiwaniu numerów 10, 11, 12...
-      for (let c = 3; c < (rows[i].c || []).length; c++) {
-        const v = cellVal(rows[i], c);
-        if (typeof v === 'number' && v >= 10 && v <= 30) {
-          weekCols[`T${Math.round(v)}`] = c;
-        } else if (typeof v === 'string' && v.match(/^T?\d+$/)) {
-          const num = parseInt(v.replace('T', ''));
-          if (num >= 10 && num <= 30) weekCols[`T${num}`] = c;
-        }
+  function scanWeekCols(row) {
+    const wc = {};
+    for (let c = 2; c < (row?.c || []).length; c++) {
+      const v = cellVal(row, c);
+      if (typeof v === 'number' && Number.isInteger(v) && v >= 10 && v <= 30) {
+        wc[`T${v}`] = c;
+      } else if (typeof v === 'string' && /^T?\d+$/.test(v)) {
+        const num = parseInt(v.replace('T', ''));
+        if (num >= 10 && num <= 30) wc[`T${num}`] = c;
       }
+    }
+    return wc;
+  }
+
+  // Szukaj GŁÓWNEGO nagłówka (wiersz z "Deadline" w col A lub B) — skanuj WSZYSTKIE wiersze
+  const weekCols = {};
+  let mainHeaderRow = -1;
+  for (let i = 0; i < rows.length; i++) {
+    const a = cellStr(rows[i], 0).toLowerCase();
+    const b = cellStr(rows[i], 1).toLowerCase();
+    if (a.startsWith('deadline') || b.startsWith('deadline')) {
+      mainHeaderRow = i;
+      const found = scanWeekCols(rows[i]);
+      Object.assign(weekCols, found);
       break;
     }
   }
+
   // Fallback jeśli nie znaleziono
   if (Object.keys(weekCols).length === 0) {
     console.warn('[parseLead] fallback kolumn: D=T10, E=T11, ..., I=T15');
     for (let w = 10; w <= 15; w++) weekCols[`T${w}`] = w - 7; // D=3, E=4, ..., I=8
   }
-  console.log('[parseLead] weekCols:', weekCols);
+  console.log('[parseLead] weekCols:', weekCols, '| mainHeaderRow:', mainHeaderRow);
 
-  const weekKey = currentWeek; // "T10"
+  const weekKey = currentWeek;
   const weekColIdx = weekCols[weekKey];
 
-  // LEAD score — wiersz z "LEAD score" w col B
-  for (let i = 0; i < Math.min(10, rows.length); i++) {
-    const b = cellStr(rows[i], 1);
-    if (b.toLowerCase().includes('lead score')) {
-      result.lead_score = cellNum(rows[i], weekColIdx);
-      console.log('[parseLead] LEAD score:', result.lead_score);
+  // LEAD score — szukaj w WSZYSTKICH wierszach "LEAD score" w col B lub A
+  for (let i = 0; i < rows.length; i++) {
+    const a = cellStr(rows[i], 0).toLowerCase();
+    const b = cellStr(rows[i], 1).toLowerCase();
+    if (b.includes('lead score') || a.includes('lead score')) {
+      result.lead_score = weekColIdx !== undefined ? cellNum(rows[i], weekColIdx) : 0;
+      console.log('[parseLead] LEAD score row', i, ':', result.lead_score);
       break;
     }
   }
 
   // Znajdź WSZYSTKIE markery Lead-ów
-  // Szukaj: "Lead X -" LUB "SUB-WIG X" (ale NIE "Postęp" ani "On track")
+  // Format: "Lead X - nazwa" LUB "Lead X — nazwa" (podwójna spacja też OK)
+  // Regex: /^Lead\s*(\d+)\s*[-–—]/i  (wymaga myślnika po numerze)
+  // Fallback: SUB-WIG X (stary format)
+  // Wykluczenia: wiersze "Postęp" i "On track"
   const leadMarkers = [];
   for (let i = 0; i < rows.length; i++) {
     const a = cellStr(rows[i], 0);
-    // Match "Lead 1 - ...", "Lead 2 - ...", "SUB-WIG 0 ...", "SUB-WIG 1 ..."
-    // Permisywny regex: wystarczy "Lead X" (dowolny separator lub brak)
-    const leadMatch = a.match(/^Lead\s+(\d+)/i);
+    const aLow = a.toLowerCase();
+    if (aLow.includes('post') || aLow.includes('on track')) continue;
+
+    const leadMatch  = a.match(/^Lead\s*(\d+)\s*[-–—]/i);
     const subWigMatch = a.match(/^SUB-WIG\s*(\d+)/i);
 
-    if ((leadMatch || subWigMatch) &&
-        !a.toLowerCase().includes('post') &&
-        !a.toLowerCase().includes('on track') &&
-        !a.toLowerCase().includes('leas ')) {  // Skip "Leas 1" (literówka w Postęp)
+    if (leadMatch || subWigMatch) {
       leadMarkers.push({ row: i, name: a, num: leadMatch ? leadMatch[1] : subWigMatch[1] });
       console.log(`[parseLead] marker: row ${i}: "${a}"`);
     }
   }
   if (leadMarkers.length === 0) {
-    console.warn('[parseLead] BRAK markerów Lead! Pierwsze 10 wartości col A:',
-      rows.slice(0, 10).map((r, i) => `[${i}]="${r?.c?.[0]?.v ?? 'null'}"`).join(' | '));
+    console.warn('[parseLead] BRAK markerów Lead! Pierwsze 15 wierszy col A:',
+      rows.slice(0, 15).map((r, i) => `[${i}]="${r?.c?.[0]?.v ?? 'null'}"`).join(' | '));
   }
 
   // Parsuj każdy Lead
@@ -419,50 +429,60 @@ function parseLead(rows, currentWeek) {
     const marker = leadMarkers[idx];
     const nextMarkerRow = idx + 1 < leadMarkers.length ? leadMarkers[idx + 1].row : rows.length;
 
-    // Znajdź header (wiersz z "Deadline" po markerze)
+    // Znajdź nagłówek tego LEAD-a (wiersz z "Deadline" po markerze, max 4 wiersze dalej)
     let headerRow = -1;
-    for (let j = marker.row + 1; j < Math.min(marker.row + 3, rows.length); j++) {
-      if (cellStr(rows[j], 0).toLowerCase().includes('deadline')) {
+    for (let j = marker.row + 1; j < Math.min(marker.row + 4, rows.length); j++) {
+      const a = cellStr(rows[j], 0).toLowerCase();
+      const b = cellStr(rows[j], 1).toLowerCase();
+      if (a.startsWith('deadline') || b.startsWith('deadline')) {
         headerRow = j;
         break;
       }
     }
 
-    // Znajdź zadania (wiersze po headerze z liczbą w col A = deadline tygodnia)
+    // Kolumny tygodniowe dla tego LEAD-a (wykrywane z jego headera)
+    let leadWeekCols = weekCols;
+    if (headerRow >= 0) {
+      const lc = scanWeekCols(rows[headerRow]);
+      if (Object.keys(lc).length >= 2) leadWeekCols = lc;
+    }
+    const leadWeekColIdx = leadWeekCols[weekKey];
+
+    // Znajdź zadania (col A = numer tygodnia, col B = opis)
     const tasks = [];
     if (headerRow >= 0) {
       for (let j = headerRow + 1; j < nextMarkerRow; j++) {
         const a = cellStr(rows[j], 0);
         const b = cellStr(rows[j], 1);
-        // Wiersz z zadaniem: col A = numer tygodnia (10, 11...), col B = opis
+        const aLow = a.toLowerCase();
+        if (aLow.includes('post') || aLow.includes('on track')) continue;
         if (a.match(/^\d+$/) && b) {
-          const deadline = parseInt(a);
           const values = {};
-          for (const [wk, ci] of Object.entries(weekCols)) {
+          for (const [wk, ci] of Object.entries(leadWeekCols)) {
             values[wk] = cellNum(rows[j], ci);
           }
-          tasks.push({ deadline: `T${deadline}`, desc: b, values, done: values[weekKey] >= 0.99 });
+          tasks.push({ deadline: `T${parseInt(a)}`, desc: b, values,
+            done: (values[weekKey] ?? 0) >= 0.99 });
         }
       }
     }
 
-    // Znajdź wiersz Postęp (między markerem a następnym markerem)
+    // Znajdź wiersz Postęp i On track
     let progressVal = 0;
     let onTrackVal = 'brak';
     for (let j = marker.row; j < nextMarkerRow; j++) {
       const a = cellStr(rows[j], 0).toLowerCase();
-      if (a.includes('post') && (a.includes('lead') || a.includes('sub-wig') || a.includes('leas'))) {
-        progressVal = cellNum(rows[j], weekColIdx);
+      // Postęp: "Lead X ... post..." lub "Leas X ... post..." (literówka)
+      if (a.includes('post') && (a.includes('lead') || a.includes('leas') || a.includes('sub-wig'))) {
+        progressVal = leadWeekColIdx !== undefined ? cellNum(rows[j], leadWeekColIdx) : 0;
         console.log(`[parseLead] ${marker.name} Postęp row ${j}: ${progressVal}`);
       }
       if (a.includes('on track') && (a.includes('lead') || a.includes('sub-wig'))) {
-        const raw = cellStr(rows[j], weekColIdx);
-        onTrackVal = raw || 'brak';
+        onTrackVal = leadWeekColIdx !== undefined ? (cellStr(rows[j], leadWeekColIdx) || 'brak') : 'brak';
       }
     }
 
     const doneCount = tasks.filter(t => t.done).length;
-
     result.leads.push({
       id: `Lead ${marker.num}`,
       name: marker.name,
@@ -626,13 +646,6 @@ const TbdBadge = () => (
     background: '#fff7ed', color: '#9a3412', border: '1px solid #fed7aa' }}>TBD</span>
 );
 
-const OnTrackBadge = ({ ok }) => (
-  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 12,
-    background: ok ? '#dcfce7' : '#fef9c3', color: ok ? '#16a34a' : '#a16207',
-    border: `1px solid ${ok ? '#bbf7d0' : '#fef08a'}`, whiteSpace: 'nowrap' }}>
-    {ok ? 'On track' : 'Monitor'}
-  </span>
-);
 
 // ─── SCOREBOARD ROW ────────────────────────────────────────────────────────────
 // lead i lag to znormalizowane obiekty: { name, values (tablica 9 tyg), tasks/processes, is_tbd, ... }
@@ -642,7 +655,6 @@ const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
 
   const lagProg  = lag  ? (lag.progress ?? 0) : 0;
   const leadProg = lead ? (lead.progress ?? 0) : 0;
-  const onTrack  = lagProg > 0;
 
   const lagLabel  = lag  ? ss(lag.name).match(/^LAG-\d+/i)?.[0]  || lag.name  : '—';
   const lagDesc   = lag  ? ss(lag.name).split(/—(.+)/)[1]?.trim() || ''        : '';
@@ -1098,14 +1110,14 @@ export default function Dashboard4DX() {
                 background: '#f8f9fc', borderBottom: '2px solid #e8edf2' }}>
                 <div style={{ padding: '11px 12px 11px 20px', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase',
-                    letterSpacing: 1, color: '#6366f1' }}>LEAD Measures</span>
-                  <span style={{ fontSize: 10, color: '#94a3b8' }}>działania tygodniowe</span>
+                    letterSpacing: 1, color: wm.color }}>LAG Measures</span>
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>wyniki pomiaru</span>
                 </div>
                 <div style={{ background: '#edf0f6', borderLeft: '1px solid #e8edf2', borderRight: '1px solid #e8edf2' }} />
                 <div style={{ padding: '11px 20px 11px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase',
-                    letterSpacing: 1, color: wm.color }}>LAG Measures</span>
-                  <span style={{ fontSize: 10, color: '#94a3b8' }}>wyniki pomiaru</span>
+                    letterSpacing: 1, color: '#6366f1' }}>LEAD Measures</span>
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>działania tygodniowe</span>
                 </div>
               </div>
 
