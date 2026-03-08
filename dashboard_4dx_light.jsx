@@ -152,6 +152,10 @@ function parseWigs(rows) {
     if (!isNaN(n) && WEEKS.includes('T' + n)) currentWeek = 'T' + n;
   }
   console.log('[parseWigs] WIGI!E1 raw:', rawWeek, '→ currentWeek:', currentWeek);
+  // Diagnostyka: WIGI wiersz 2 (indeks 1), kolumna D (indeks 3) — opis WIG#1
+  const wigRow2 = rows[1] || null;
+  console.log('[parseWigs] WIGI wiersz 2 (rows[1]) raw:', wigRow2);
+  console.log('[parseWigs] WIGI wiersz 2, kolumna D (rows[1][3]) raw:', wigRow2?.[3] ?? 'BRAK (null/undefined)');
   const wigs = rows
     .filter(row => row && ss(row[2]).startsWith('WIG#'))
     .map(row => ({ id: ss(row[2]), name: ss(row[1]), description: ss(row[3]) }));
@@ -170,16 +174,21 @@ function parseLag(rows) {
   const wig_status   = wigStatusRow !== null ? sf(rows[wigStatusRow][1]) : 0;
   console.log('wigStatus row:', wigStatusRow, '→', wig_status);
 
-  // FIX: exact '=== proces' (po toLowerCase), nie includes
+  // BUG1 DIAG: pokaż kolumnę A dla wierszy 5-8 (1-indexed = indeksy 4-7)
+  console.log('[parseLag BUG1 DIAG] wiersze 5-8 kolumna A:',
+    [4, 5, 6, 7].map(i => `row${i + 1}[A]="${ss(rows[i]?.[0])}" [B]="${ss(rows[i]?.[1])}"`));
+
+  // FIX BUG1: includes('proces') + trim() zamiast === 'proces' (gviz może dodawać białe znaki)
   let processHeaderRow = null;
   let processWeekCols  = {};
   for (let i = 0; i < rows.length; i++) {
     if (!rows[i]) continue;
-    const c0 = ss(rows[i][0]).toLowerCase();
+    const c0 = ss(rows[i][0]).toLowerCase().trim();
     const c1 = ss(rows[i][1]).toLowerCase();
-    if (c0 === 'proces' && c1.includes('target')) {
+    if (c0.includes('proces') && c1.includes('target')) {
       processHeaderRow = i;
       processWeekCols  = lagWeekColsFallback(findWeekColumns(rows, i));
+      console.log(`[parseLag BUG1 FIX] processHeaderRow=${i} — col A: "${ss(rows[i][0])}", col B: "${ss(rows[i][1])}"`);
       break;
     }
   }
@@ -255,16 +264,38 @@ function parseLag(rows) {
     const lagWc       = lagWeekColsFallback(findWeekColumns(rows, headerRow));
     const values      = progressRow !== null ? getWeekValues(rows, progressRow, lagWc) : WEEKS.map(() => 0);
 
+    // BUG3 DIAG: jeśli postęp T10 = 0 a progressRow znaleziony, pokaż raw wartości wiersza (kol C-H)
+    if (progressRow !== null && values[0] === 0) {
+      console.warn(`[parseLag BUG3 DIAG] ${lagName} progressRow=${progressRow} wartość T10=0 — raw row[C-H]:`,
+        rows[progressRow]?.slice(2, 9).map((v, i) => `col${i + 2}=${v === null ? 'null' : v}`));
+      console.warn(`[parseLag BUG3 DIAG] lagWc:`, lagWc, `| row col0="${ss(rows[progressRow]?.[0])}"`);
+    }
+
     console.log(lagName, '→ headerRow:', headerRow, 'progressRow:', progressRow, 'is_tbd:', is_tbd,
       'postęp T10:', values[0]);
     return { name: lagName, is_tbd, criteria, values };
   });
 
+  // Opis WIG-a: szukaj wiersza z datą w kol A (deadline) i opisem w kol B
+  // Fallback dla WIGI → kol D gdy gviz zwraca null
+  let wig_description = '';
+  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+  for (let i = 0; i < rows.length; i++) {
+    const colA = ss(rows[i]?.[0]);
+    const colB = ss(rows[i]?.[1]);
+    if (datePattern.test(colA.trim()) && colB) {
+      wig_description = colB;
+      console.log(`[parseLag] wig_description z wiersza ${i} (deadline: "${colA}"):`, colB);
+      break;
+    }
+  }
+  if (!wig_description) console.log('[parseLag] wig_description: nie znaleziono wiersza z datą w kol A');
+
   console.log('[parseLag] PODSUMOWANIE:');
   console.log('  WIG Status:', wig_status, `(${Math.round(wig_status * 100)}%)`);
   additional_lags.forEach(l => console.log(`  ${l.name} | postęp T10: ${l.values[0]} | is_tbd: ${l.is_tbd}`));
   console.groupEnd();
-  return { wig_status, lag01, additional_lags };
+  return { wig_status, lag01, additional_lags, wig_description };
 }
 
 // Parser arkuszy *_LEAD MEASURES
@@ -294,13 +325,19 @@ function parseLead(rows) {
   };
 
   // Markery Lead-ów: "Lead \d+" lub stary "SUB-WIG \d+" — bez Postęp/On track
+  // FIX BUG2: usunięto anchor ^ — "Lead 1 - Procesy i role (DoD)" matchuje /Lead\s+\d+/i
   const subWigRows = [];
   for (let i = 0; i < rows.length; i++) {
-    const val = ss(rows[i]?.[0]);
-    const isMarker = /^Lead\s+\d+/i.test(val) || /^SUB-WIG\s+\d+/i.test(val);
+    const val = ss(rows[i]?.[0]).trim();
+    const isMarker = /Lead\s+\d+/i.test(val) || /SUB-WIG\s+\d+/i.test(val);
     if (isMarker && !val.includes('Post') && !val.toLowerCase().includes('on track')) {
+      console.log(`[parseLead BUG2 FIX] marker row ${i}: "${val}"`);
       subWigRows.push([i, val]);
     }
+  }
+  if (subWigRows.length === 0) {
+    console.warn('[parseLead BUG2 DIAG] brak markerów Lead — pierwsze 10 wartości col A:',
+      rows.slice(0, 10).map((r, i) => `row${i}="${ss(r?.[0])}"`));
   }
   console.log('Lead markers:', subWigRows.map(([i, v]) => v));
 
@@ -419,12 +456,15 @@ async function loadDashboardData() {
   // Aktualny tydzień z WIGI!E1
   const { wigs: wigDefs, currentWeek } = parseWigs(sheets['WIGI'] || []);
 
-  const wigs = WIG_STATIC.map((stat, i) => ({
-    key: stat.key, color: stat.color, owner: stat.owner, deadline: stat.deadline,
-    name:        wigDefs[i]?.name        || stat.key,
-    id:          wigDefs[i]?.id          || `WIG#${i + 1}`,
-    description: wigDefs[i]?.description || '',
-  }));
+  const wigs = WIG_STATIC.map((stat, i) => {
+    const wigDescription = wigDefs[i]?.description || '';
+    return {
+      key: stat.key, color: stat.color, owner: stat.owner, deadline: stat.deadline,
+      name:        wigDefs[i]?.name || stat.key,
+      id:          wigDefs[i]?.id   || `WIG#${i + 1}`,
+      description: wigDescription,  // fallback uzupełniamy po parsowaniu LAG-ów poniżej
+    };
+  });
 
   const wig_data = {};
   for (const { key, lagKey, leadKey } of WIG_PAIRS) {
@@ -441,6 +481,18 @@ async function loadDashboardData() {
   // WIG-i bez arkuszy
   for (const ws of WIG_STATIC) {
     if (!wig_data[ws.key]) wig_data[ws.key] = { has_data: false };
+  }
+
+  // Fallback opisu WIG-a: jeśli WIGI kol. D zwróciło null → bierz z *_LAG wig_description
+  for (let i = 0; i < wigs.length; i++) {
+    if (!wigs[i].description) {
+      const lagData = wig_data[wigs[i].key]?.lag;
+      const fallback = lagData?.wig_description || '';
+      if (fallback) {
+        console.log(`[loadDashboardData] opis WIG "${wigs[i].key}" z WIGI kol.D = null → fallback z *_LAG: "${fallback}"`);
+        wigs[i] = { ...wigs[i], description: fallback };
+      }
+    }
   }
 
   return { wigs, wig_data, currentWeek };
