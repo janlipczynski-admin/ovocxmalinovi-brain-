@@ -136,13 +136,23 @@ def calibrate_lag(df):
     cal = {}
     cal['wig_status_row'] = find_row(df, 0, 'WIG Status')
 
-    # Header procesów — szukaj wiersza z "Proces" w kol 0 ORAZ "Target" w kol 1
-    # (sam tekst "Proces" może pojawić się w nazwie sekcji LAG-01)
+    # Header procesów — szukaj wiersza z "Proces" w kol 0
+    # WAŻNE: NIE wymagaj "target" w kol 1 — OS_LAG ma inne label niż HARVEST_LAG
+    # (np. OS_LAG kol B może mieć "DoD criteria" zamiast "Target (DoD)")
     for i in range(len(df)):
-        if ss(df.iloc[i, 0]) == 'Proces' and 'target' in ss(df.iloc[i, 1]).lower():
+        c0 = ss(df.iloc[i, 0]).lower().strip()
+        if c0 == 'proces':
             cal['process_header_row'] = i
             cal['process_week_cols'] = find_week_columns(df, i)
             break
+    # Fallback: broader match jeśli exact 'proces' nie znaleziony
+    if 'process_header_row' not in cal:
+        for i in range(len(df)):
+            c0 = ss(df.iloc[i, 0]).lower().strip()
+            if 'proces' in c0 and 'lag' not in c0 and 'post' not in c0:
+                cal['process_header_row'] = i
+                cal['process_week_cols'] = find_week_columns(df, i)
+                break
 
     # Koniec listy procesów
     cal['lag01_progress_row'] = find_row(df, 0, 'LAG-01 Postęp')
@@ -247,10 +257,12 @@ def calibrate_lead(df):
 
     # Znajdź markery LEAD-ów (format 2026: "Lead X") lub stary "SUB-WIG X"
     # Wiersze Postęp/On track są WYKLUCZONE
+    # WAŻNE: regex /^(SUB-WIG|Lead)\s*\d/i — obie formy w jednym, \s* (zero+ spacji)
+    # OS_LEAD: "Lead 1 - Procesy i role (DoD)" | HARVEST_LEAD: "SUB-WIG 0"
     sub_wig_rows = []
     for i in range(len(df)):
-        val = ss(df.iloc[i, 0])
-        is_marker = bool(re.match(r'^Lead\s+\d+', val, re.IGNORECASE)) or bool(re.match(r'^SUB-WIG\s+\d+', val))
+        val = ss(df.iloc[i, 0]).strip()
+        is_marker = bool(re.match(r'^(SUB-WIG|Lead)\s*\d', val, re.IGNORECASE))
         if is_marker and 'Postęp' not in val and 'on track' not in val.lower():
             sub_wig_rows.append((i, val))
 
@@ -440,8 +452,7 @@ def parse_4dx_dashboard(path):
 | Procesy DoD | header `Proces` → koniec `LAG-01 Postęp` | kol 0 |
 | LAG-i dodatkowe | regex `LAG-0[2-9]\|LAG-[1-9][0-9]` | kol 0 |
 | **Postęp LAG-a** | `LAG-XX Postęp (średnia %)` | kol 0, czytaj dla aktualnego tygodnia |
-| **LEAD-y (nowy format)** | regex `^Lead\s+\d+` (bez Postęp/on track) | kol 0 |
-| SUB-WIG-i (stary format) | regex `^SUB-WIG\s+\d+` (bez Postęp/On track) | kol 0 (fallback) |
+| **LEAD-y (nowy+stary)** | regex `^(SUB-WIG\|Lead)\s*\d` — obie formy, `\s*`, `^` anchor | kol 0, `.trim()` |
 | Zadania LEAD | `T10`–`T18` w kol 0 po headerze LEAD | kol 0 |
 | Mapa procesów | header `# + TYP + PROCES` | kol 0–4 |
 | OCENA procesy | `Średnia [nazwa]` | kol 0 |
@@ -459,7 +470,10 @@ def parse_4dx_dashboard(path):
 - GID-y: WIGI=1699564336, OS_LAG=322339268, OS_LEAD=2102307131
 - Uwaga na literówkę w arkuszu: "Leas 1" zamiast "Lead 1" w wierszu Postęp
 - LAG kolumny: C-H (indeksy 2-7) → fallback lagWeekColsFallback
+- **BUG3 LESSON**: Dodatkowe LAG-i (LAG-02+) mogą mieć postęp w kol B (indeks 1) jako scalar,
+  nie w kol C+ (tygodniowe). Jeśli getWeekValues → all 0, sprawdź `rows[progressRow][1]` jako fallback.
 - LEAD kolumny: D-I (indeksy 3-8) → fallback leadWeekColsFallback (osobny!)
+- **BUG1 LESSON**: Header procesów w LAG szukaj tylko po kol A === "Proces". NIE wymagaj "target" w kol B — różne arkusze mają różne nagłówki kol B.
 - on_track dla LEAD: wiersz "Lead X - [nazwa] On track", wartość tekstowa "TAK"/"NIE"
 - Wartość .v = 1.0 z gviz = 100% ukończone (checkbox zaznaczony)
 - Nigdy nie używaj .f (sformatowanej wartości) — zawsze .v (surowa)

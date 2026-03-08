@@ -262,16 +262,23 @@ function parseLag(rows) {
     const lagNum      = lagNumMatch ? lagNumMatch[1].padStart(2, '0') : null;
     const progressRow = lagNum ? findRow(rows, 0, `LAG-${lagNum} Post`) : null;
     const lagWc       = lagWeekColsFallback(findWeekColumns(rows, headerRow));
-    const values      = progressRow !== null ? getWeekValues(rows, progressRow, lagWc) : WEEKS.map(() => 0);
+    let   values      = progressRow !== null ? getWeekValues(rows, progressRow, lagWc) : WEEKS.map(() => 0);
 
-    // BUG3 DIAG: jeśli postęp T10 = 0 a progressRow znaleziony, pokaż raw wartości wiersza (kol C-H)
-    if (progressRow !== null && values[0] === 0) {
-      console.warn(`[parseLag BUG3 DIAG] ${lagName} progressRow=${progressRow} wartość T10=0 — raw row[C-H]:`,
-        rows[progressRow]?.slice(2, 9).map((v, i) => `col${i + 2}=${v === null ? 'null' : v}`));
-      console.warn(`[parseLag BUG3 DIAG] lagWc:`, lagWc, `| row col0="${ss(rows[progressRow]?.[0])}"`);
+    // BUG3 FIX: jeśli getWeekValues daje same 0, sprawdź kol B (indeks 1) jako scalar progress
+    // OS_LAG może mieć wartość bezpośrednio w kol B (nie tygodniową kol C+)
+    if (progressRow !== null) {
+      console.log(`[parseLag BUG3 DIAG] ${lagName} progressRow=${progressRow} — raw row:`,
+        rows[progressRow]?.map((v, i) => `[${i}]=${v === null ? 'null' : v}`).join(' '));
+      if (values.every(v => v === 0)) {
+        const colBVal = sf(rows[progressRow]?.[1]);
+        if (colBVal > 0) {
+          console.warn(`[parseLag BUG3 FIX] ${lagName} kol C-H = 0, używam kol B (indeks 1): ${colBVal}`);
+          values = WEEKS.map(() => colBVal);
+        }
+      }
     }
 
-    console.log(lagName, '→ headerRow:', headerRow, 'progressRow:', progressRow, 'is_tbd:', is_tbd,
+    console.log(lagName, '\u2192 headerRow:', headerRow, 'progressRow:', progressRow, 'is_tbd:', is_tbd,
       'postęp T10:', values[0]);
     return { name: lagName, is_tbd, criteria, values };
   });
