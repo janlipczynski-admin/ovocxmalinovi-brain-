@@ -241,6 +241,78 @@ def parse_lag(df):
 
 **Dotyczy:** każdego arkusza kończącego się na `_LEAD MEASURES`.
 
+### Dokładna struktura OS_LEAD MEASURES (gid=2102307131)
+
+```
+Wiersz 0:  "LEAD Measures"                    ← tytuł
+Wiersz 1:  instrukcja
+Wiersz 2:  "WIG — OvocxMalinovi 4DX"
+Wiersz 3:  ["Deadline (nr Tyg)", "Opis", "Target", 10, 11, 12, 13, 14, 15]  ← GŁÓWNY NAGŁÓWEK
+Wiersz 4:  [15, "LEAD score: realizacja...", 1, 0.03125, 0, ...]             ← LEAD score
+Wiersz 5:  (pusty)
+Wiersz 6:  "Lead 1 - Procesy i role (DoD)"    ← MARKER Lead 1
+Wiersz 7:  ["Deadline", "Opis", "Target", 10, 11, ...]                       ← nagłówek Lead 1
+Wiersz 8-15: zadania Lead 1
+Wiersz 16: "Leas 1 - OS Procesy i role Postęp"   ← POSTĘP (literówka "Leas"!)
+Wiersz 17: "Lead 1 - OS Procesy i role On track"  ← ON TRACK
+Wiersz 22: "Lead 2 - Obsługa zamówień"            ← MARKER Lead 2
+Wiersz 23: nagłówek
+Wiersz 24-29: 6 zadań
+Wiersz 33: "Lead 2 -  Obsługa zamówień Postęp"   ← POSTĘP (podwójna spacja!)
+Wiersz 34: "Lead 2 - Obsługa zamówień On track"
+Wiersz 38: "Lead 3 - Rozliczenia tygodniowe"      ← MARKER Lead 3
+...
+Wiersz 51: "Lead 4 -  Obsługa reklamacji"         ← MARKER Lead 4 (podwójna spacja!)
+...
+Wiersz 62: "Lead 5 - wdrożenie - 4dex w spółce"  ← MARKER Lead 5 (dwa myślniki w nazwie!)
+...
+Wiersz 85: "LEAD 5 - Wdrożenie i przeglądy 4dx w spółce Postęp"  ← POSTĘP (wielkie "LEAD"!)
+```
+
+### Kolumny tygodniowe
+
+W wierszu nagłówkowym (3, 7, 23, 39, 52, 63):
+- col A (0) = Deadline | col B (1) = Opis | col C (2) = Target
+- col D (3) = T10 | col E (4) = T11 | col F (5) = T12 | col G (6) = T13 | col H (7) = T14 | col I (8) = T15
+
+Gviz zwraca numery tygodni jako liczby całkowite (v=10, v=11 itd.), nie jako stringi.
+
+### Jak znajdować markery Lead-ów (JS)
+
+```js
+// Regex: wymaga myślnika po numerze. \s* = 0 lub więcej spacji (obsługuje podwójną spację)
+const leadMatch = a.match(/^Lead\s*(\d+)\s*[-–—]/i);
+
+// Wykluczenia — sprawdź PRZED regex (szybsze):
+if (aLow.includes('post') || aLow.includes('on track')) continue;
+
+// NIE sprawdzaj 'leas ' — "Leas 1" zawiera "Leas" nie "Lead", więc i tak nie matchuje regex
+```
+
+### Jak znajdować wiersz Postęp
+
+Szukaj w zakresie [marker.row, nextMarker.row):
+- col A zawiera "post" (od "Postęp") ORAZ ("lead" LUB "leas" LUB "sub-wig")
+- Wartość w kolumnie tygodniowej = ułamek (0.125 = 12.5%)
+
+### Jak znajdować On track
+
+Szukaj w tym samym zakresie:
+- col A zawiera "on track" ORAZ ("lead" LUB "sub-wig")
+- Wartość = string "TAK" lub "NIE"
+
+### Pułapki
+
+| Problem | Opis | Rozwiązanie |
+|---------|------|-------------|
+| Literówka "Leas" | Wiersz 16: "Leas 1 - OS..." zamiast "Lead 1 - OS..." | Szukaj "leas" w warunku Postęp |
+| Podwójna spacja | "Lead 4 -  Obsługa" | Regex `\s*[-–—]` obsługuje poprawnie |
+| Wielkie LEAD | "LEAD 5 - Wdrożenie Postęp" | Sprawdzaj `includes('post')` zanim sprawdzisz regex |
+| Dwa myślniki | "Lead 5 - wdrożenie - 4dex" | Regex `/^Lead\s*(\d+)\s*[-–—]/i` matchuje pierwszy myślnik |
+| Nagłówek w col B | Jeśli "Deadline" jest w col B a nie col A | Sprawdzaj oba: `a.startsWith('deadline') || b.startsWith('deadline')` |
+
+
+
 ### Kalibracja
 
 ```python
