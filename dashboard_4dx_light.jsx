@@ -174,16 +174,21 @@ function parseLag(rows) {
   const wig_status   = wigStatusRow !== null ? sf(rows[wigStatusRow][1]) : 0;
   console.log('wigStatus row:', wigStatusRow, '→', wig_status);
 
-  // FIX: exact '=== proces' (po toLowerCase), nie includes
+  // BUG1 DIAG: pokaż kolumnę A dla wierszy 5-8 (1-indexed = indeksy 4-7)
+  console.log('[parseLag BUG1 DIAG] wiersze 5-8 kolumna A:',
+    [4, 5, 6, 7].map(i => `row${i + 1}[A]="${ss(rows[i]?.[0])}" [B]="${ss(rows[i]?.[1])}"`));
+
+  // FIX BUG1: includes('proces') + trim() zamiast === 'proces' (gviz może dodawać białe znaki)
   let processHeaderRow = null;
   let processWeekCols  = {};
   for (let i = 0; i < rows.length; i++) {
     if (!rows[i]) continue;
-    const c0 = ss(rows[i][0]).toLowerCase();
+    const c0 = ss(rows[i][0]).toLowerCase().trim();
     const c1 = ss(rows[i][1]).toLowerCase();
-    if (c0 === 'proces' && c1.includes('target')) {
+    if (c0.includes('proces') && c1.includes('target')) {
       processHeaderRow = i;
       processWeekCols  = lagWeekColsFallback(findWeekColumns(rows, i));
+      console.log(`[parseLag BUG1 FIX] processHeaderRow=${i} — col A: "${ss(rows[i][0])}", col B: "${ss(rows[i][1])}"`);
       break;
     }
   }
@@ -259,6 +264,13 @@ function parseLag(rows) {
     const lagWc       = lagWeekColsFallback(findWeekColumns(rows, headerRow));
     const values      = progressRow !== null ? getWeekValues(rows, progressRow, lagWc) : WEEKS.map(() => 0);
 
+    // BUG3 DIAG: jeśli postęp T10 = 0 a progressRow znaleziony, pokaż raw wartości wiersza (kol C-H)
+    if (progressRow !== null && values[0] === 0) {
+      console.warn(`[parseLag BUG3 DIAG] ${lagName} progressRow=${progressRow} wartość T10=0 — raw row[C-H]:`,
+        rows[progressRow]?.slice(2, 9).map((v, i) => `col${i + 2}=${v === null ? 'null' : v}`));
+      console.warn(`[parseLag BUG3 DIAG] lagWc:`, lagWc, `| row col0="${ss(rows[progressRow]?.[0])}"`);
+    }
+
     console.log(lagName, '→ headerRow:', headerRow, 'progressRow:', progressRow, 'is_tbd:', is_tbd,
       'postęp T10:', values[0]);
     return { name: lagName, is_tbd, criteria, values };
@@ -313,13 +325,19 @@ function parseLead(rows) {
   };
 
   // Markery Lead-ów: "Lead \d+" lub stary "SUB-WIG \d+" — bez Postęp/On track
+  // FIX BUG2: usunięto anchor ^ — "Lead 1 - Procesy i role (DoD)" matchuje /Lead\s+\d+/i
   const subWigRows = [];
   for (let i = 0; i < rows.length; i++) {
-    const val = ss(rows[i]?.[0]);
-    const isMarker = /^Lead\s+\d+/i.test(val) || /^SUB-WIG\s+\d+/i.test(val);
+    const val = ss(rows[i]?.[0]).trim();
+    const isMarker = /Lead\s+\d+/i.test(val) || /SUB-WIG\s+\d+/i.test(val);
     if (isMarker && !val.includes('Post') && !val.toLowerCase().includes('on track')) {
+      console.log(`[parseLead BUG2 FIX] marker row ${i}: "${val}"`);
       subWigRows.push([i, val]);
     }
+  }
+  if (subWigRows.length === 0) {
+    console.warn('[parseLead BUG2 DIAG] brak markerów Lead — pierwsze 10 wartości col A:',
+      rows.slice(0, 10).map((r, i) => `row${i}="${ss(r?.[0])}"`));
   }
   console.log('Lead markers:', subWigRows.map(([i, v]) => v));
 
