@@ -102,6 +102,16 @@ function lagWeekColsFallback(wc) {
   return fb;
 }
 
+// Fallback dla arkuszy LEAD gdy gviz nie zwraca labeli tygodniowych.
+// Kolumny D–I (indeksy 3–8) to T10–T15 w arkuszach *_LEAD MEASURES.
+function leadWeekColsFallback(wc) {
+  if (Object.keys(wc).length >= 2) return wc;
+  const fb = {};
+  ['T10','T11','T12','T13','T14','T15'].forEach((w, i) => { fb[w] = i + 3; });
+  console.warn('[4DX parseLead] brak labeli tygodniowych — fallback D-I (3-8)');
+  return fb;
+}
+
 function getWeekValues(rows, row, weekCols) {
   if (row === null || row === undefined || !rows[row]) return WEEKS.map(() => 0);
   return WEEKS.map(w => weekCols[w] !== undefined ? sf(rows[row][weekCols[w]]) : 0);
@@ -136,13 +146,16 @@ async function fetchGvizSheet(param) {
 function parseWigs(rows) {
   // Aktualny tydzień: wiersz 0, kolumna E (indeks 4)
   let currentWeek = null;
-  if (rows[0]?.[4] !== null && rows[0]?.[4] !== undefined) {
-    const n = parseInt(rows[0][4]);
+  const rawWeek = rows[0]?.[4];
+  if (rawWeek !== null && rawWeek !== undefined) {
+    const n = parseInt(rawWeek);
     if (!isNaN(n) && WEEKS.includes('T' + n)) currentWeek = 'T' + n;
   }
+  console.log('[parseWigs] WIGI!E1 raw:', rawWeek, '→ currentWeek:', currentWeek);
   const wigs = rows
     .filter(row => row && ss(row[2]).startsWith('WIG#'))
     .map(row => ({ id: ss(row[2]), name: ss(row[1]), description: ss(row[3]) }));
+  console.log('[parseWigs] wigi:', wigs.map(w => `${w.id} = "${w.name}" (D: "${w.description}")`));
   return { wigs, currentWeek };
 }
 
@@ -191,7 +204,9 @@ function parseLag(rows) {
       plan:     lag01PlanRow    ? getWeekValues(rows, lag01PlanRow, processWeekCols)    : WEEKS.map(() => 0),
       on_track: lag01OntrackRow ? getWeekValues(rows, lag01OntrackRow, processWeekCols) : WEEKS.map(() => 0),
     };
-    console.log('lag01 processes:', processes.length);
+    console.log(`lag01: ${processes.length} procesów (szukano między wierszem ${processHeaderRow + 1} a ${lag01ProgressRow}):`);
+    processes.forEach(p => console.log(`  - "${p.name}" | T10: ${p.values[0]} (1.0=ukończone)`));
+    console.log('lag01 postęp T10:', lag01.progress[0], '| on_track T10:', lag01.on_track[0]);
   } else {
     console.warn('lag01: brak processHeaderRow lub lag01ProgressRow');
   }
@@ -241,10 +256,13 @@ function parseLag(rows) {
     const values      = progressRow !== null ? getWeekValues(rows, progressRow, lagWc) : WEEKS.map(() => 0);
 
     console.log(lagName, '→ headerRow:', headerRow, 'progressRow:', progressRow, 'is_tbd:', is_tbd,
-      'val[0]:', values[0]);
+      'postęp T10:', values[0]);
     return { name: lagName, is_tbd, criteria, values };
   });
 
+  console.log('[parseLag] PODSUMOWANIE:');
+  console.log('  WIG Status:', wig_status, `(${Math.round(wig_status * 100)}%)`);
+  additional_lags.forEach(l => console.log(`  ${l.name} | postęp T10: ${l.values[0]} | is_tbd: ${l.is_tbd}`));
   console.groupEnd();
   return { wig_status, lag01, additional_lags };
 }
@@ -262,7 +280,7 @@ function parseLead(rows) {
     if (!rows[i]) continue;
     if (ss(rows[i][0]).toLowerCase() === 'deadline' && ss(rows[i][1]).toLowerCase() === 'opis') {
       mainHeaderRow = i;
-      weekCols = findWeekColumns(rows, i);
+      weekCols = leadWeekColsFallback(findWeekColumns(rows, i));
       console.log('mainHeaderRow:', i, 'weekCols:', weekCols);
       break;
     }
@@ -296,7 +314,7 @@ function parseLead(rows) {
       if (!rows[r]) continue;
       if (ss(rows[r][0]).toLowerCase() === 'deadline') {
         swHeaderRow = r;
-        taskWc = findWeekColumns(rows, r);
+        taskWc = leadWeekColsFallback(findWeekColumns(rows, r));
         if (Object.keys(taskWc).length < 2) taskWc = weekCols;
         break;
       }
@@ -307,27 +325,39 @@ function parseLead(rows) {
     const nextBoundary = idx + 1 < subWigRows.length ? subWigRows[idx + 1][0] : rows.length;
     const startRow     = swHeaderRow !== null ? swHeaderRow + 1 : markerRow + 1;
     let progressRow    = null;
+    let onTrackRow     = null;
     const taskRowIdxs  = [];
 
     for (let r = startRow; r < nextBoundary; r++) {
-      const full = ss(rows[r]?.[0]);
-      const desc = ss(rows[r]?.[1]);
-      if (full.includes('Post'))                           { progressRow = r; }
-      else if (!full.toLowerCase().includes('on track') && desc) { taskRowIdxs.push(r); }
+      const full     = ss(rows[r]?.[0]);
+      const fullLow  = full.toLowerCase();
+      const desc     = ss(rows[r]?.[1]);
+      // Uwaga: w arkuszu może być literówka "Leas" zamiast "Lead" — includes('Post') łapie obydwa
+      if (full.includes('Post') || full.includes('post'))  { progressRow = r; }
+      else if (fullLow.includes('on track'))               { onTrackRow = r; }
+      else if (desc)                                       { taskRowIdxs.push(r); }
     }
 
-    sw.progress = progressRow !== null ? getWeekValues(rows, progressRow, taskWc) : WEEKS.map(() => 0);
+    sw.progress    = progressRow !== null ? getWeekValues(rows, progressRow, taskWc)                                          : WEEKS.map(() => 0);
+    // on_track_raw: wartość tekstowa "TAK"/"NIE" z arkusza, osobno dla każdego tygodnia
+    sw.on_track_raw = onTrackRow !== null
+      ? WEEKS.map(w => taskWc[w] !== undefined ? ss(rows[onTrackRow][taskWc[w]]) : '')
+      : WEEKS.map(() => '');
     sw.tasks = taskRowIdxs.map(r => ({
       deadline:    ss(rows[r][0]),
       description: ss(rows[r][1]),
       target:      sf(rows[r][2]),
       values:      getWeekValues(rows, r, taskWc),
     }));
-    console.log(markerText, '→ swHeader:', swHeaderRow, 'tasks:', sw.tasks.length,
-      'progress[0]:', sw.progress[0]);
+    console.log(markerText, '→ swHeader:', swHeaderRow, 'progressRow:', progressRow,
+      'onTrackRow:', onTrackRow, 'tasks:', sw.tasks.length,
+      '| postęp T10:', sw.progress[0], '| on_track T10:', sw.on_track_raw[0] || 'brak');
     return sw;
   });
 
+  console.log('[parseLead] PODSUMOWANIE:');
+  console.log('  Lead markers znalezione:', subWigRows.map(([i, v]) => v));
+  sub_wigs.forEach(sw => console.log(`  ${sw.name} | postęp T10: ${sw.progress[0]} | on_track T10: ${sw.on_track_raw[0] || 'brak'} | zadań: ${sw.tasks.length}`));
   console.groupEnd();
   return { lead_score, sub_wigs };
 }

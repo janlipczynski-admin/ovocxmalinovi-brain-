@@ -447,3 +447,19 @@ def parse_4dx_dashboard(path):
 | OCENA procesy | `Średnia [nazwa]` | kol 0 |
 | BACKLOG | header `KATEGORIA + STATUS` | cały wiersz |
 | Pary arkuszy | sufiks `_LAG MEASURES` / `_LEAD MEASURES` | nazwy sheetów |
+
+---
+
+## ZASADY DLA CLAUDE CODE
+
+- Nie wymyślaj własnych statusów ani kategorii
+- Nie dodawaj elementów których nie ma w arkuszu
+- Pokazuj tylko dane z Google Sheets
+- Jeśli dane puste = pokaż 0%, nigdy wymyślone etykiety
+- GID-y: WIGI=1699564336, OS_LAG=322339268, OS_LEAD=2102307131
+- Uwaga na literówkę w arkuszu: "Leas 1" zamiast "Lead 1" w wierszu Postęp
+- LAG kolumny: C-H (indeksy 2-7) → fallback lagWeekColsFallback
+- LEAD kolumny: D-I (indeksy 3-8) → fallback leadWeekColsFallback (osobny!)
+- on_track dla LEAD: wiersz "Lead X - [nazwa] On track", wartość tekstowa "TAK"/"NIE"
+- Wartość .v = 1.0 z gviz = 100% ukończone (checkbox zaznaczony)
+- Nigdy nie używaj .f (sformatowanej wartości) — zawsze .v (surowa)
