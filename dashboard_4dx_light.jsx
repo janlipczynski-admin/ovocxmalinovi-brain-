@@ -51,6 +51,31 @@ function sf(val) {
   return isNaN(n) ? 0 : n;
 }
 
+// Normalizuje literówki w kluczowych słowach 4DX.
+// Stosuj na cellStr() przed porównaniem w parserach.
+const KEY_ALIASES = [
+  { canonical: 'lead',    variants: ['leas', 'laed', 'leed', 'lea', 'ead'] },
+  { canonical: 'lag',     variants: ['lad', 'alg', 'lga'] },
+  { canonical: 'wig',     variants: ['wgi', 'iwg', 'wgig'] },
+  { canonical: 'sub-wig', variants: ['subwig', 'sub wig', 'sub_wig'] },
+  { canonical: 'postęp',  variants: ['postep', 'postp', 'potsęp', 'postępl', 'postępu'] },
+  { canonical: 'proces',  variants: ['procse', 'proce', 'prces', 'prcoess'] },
+  { canonical: 'target',  variants: ['taget', 'targer', 'traget'] },
+  { canonical: 'deadline', variants: ['deadlne', 'deadine', 'deadlin'] },
+];
+function normalizeKey(str) {
+  if (!str) return '';
+  let out = String(str).toLowerCase();
+  for (const { canonical, variants } of KEY_ALIASES) {
+    for (const v of variants) {
+      // Zastępuj tylko całe słowa (granica \b nie działa z polskimi znakami, użyj spacji/^/$)
+      const re = new RegExp('(?<![a-z])' + v.replace('-', '[-]?') + '(?![a-z])', 'gi');
+      out = out.replace(re, canonical);
+    }
+  }
+  return out;
+}
+
 function findRow(rows, col, pattern, regex = false) {
   for (let i = 0; i < rows.length; i++) {
     const val = ss(rows[i]?.[col]);
@@ -418,10 +443,12 @@ function parseLead(rows, currentWeek) {
     const aLow = a.toLowerCase();
     if (aLow.includes('post') || aLow.includes('on track')) continue;
 
-    const leadMatch  = a.match(/^Lead\s*(\d+)\s*[-–—]/i);
-    const subWigMatch = a.match(/^SUB-WIG\s*(\d+)/i);
+    const aNorm = normalizeKey(a);
+    const leadMatch   = aNorm.match(/^lead\s*(\d+)\s*[-–—]/i);
+    const subWigMatch = aNorm.match(/^sub-?wig\s*(\d+)/i);
 
     if (leadMatch || subWigMatch) {
+      if (a !== aNorm) console.warn(`[parseLead] literówka naprawiona: "${a}" → marker "lead/sub-wig"`);
       leadMarkers.push({ row: i, name: a, num: leadMatch ? leadMatch[1] : subWigMatch[1] });
       console.log(`[parseLead] marker: row ${i}: "${a}"`);
     }
@@ -479,9 +506,8 @@ function parseLead(rows, currentWeek) {
     let progressSeries = WEEKS.map(() => 0);
     let onTrackVal = 'brak';
     for (let j = marker.row; j < nextMarkerRow; j++) {
-      const a = cellStr(rows[j], 0).toLowerCase();
-      // Postęp: "Lead X ... post..." lub "Leas X ... post..." (literówka)
-      if (a.includes('post') && (a.includes('lead') || a.includes('leas') || a.includes('sub-wig'))) {
+      const aNorm = normalizeKey(cellStr(rows[j], 0));
+      if (aNorm.includes('postęp') && (aNorm.includes('lead') || aNorm.includes('sub-wig'))) {
         progressVal = leadWeekColIdx !== undefined ? cellNum(rows[j], leadWeekColIdx) : 0;
         progressSeries = WEEKS.map(w => {
           const ci = leadWeekCols[w];
@@ -489,7 +515,7 @@ function parseLead(rows, currentWeek) {
         });
         console.log(`[parseLead] ${marker.name} Postęp row ${j}: ${progressVal} | seria: ${progressSeries.join(',')}`);
       }
-      if (a.includes('on track') && (a.includes('lead') || a.includes('sub-wig'))) {
+      if (aNorm.includes('on track') && (aNorm.includes('lead') || aNorm.includes('sub-wig'))) {
         onTrackVal = leadWeekColIdx !== undefined ? (cellStr(rows[j], leadWeekColIdx) || 'brak') : 'brak';
       }
     }
@@ -901,9 +927,10 @@ export default function Dashboard4DX() {
       if (l.is_tbd) return false;
       return (l.progress ?? 0) > 0;
     }).length;
-    const avgLag = lag.wig_status || 0;
+    const avgLag    = lag.wig_status || 0;
+    const leadScore = lead.lead_score || 0;
 
-    return { allLags: lags, allLeads: leads, kpi: { activeLags, activeLeads, onTrackCnt, avgLag } };
+    return { allLags: lags, allLeads: leads, kpi: { activeLags, activeLeads, onTrackCnt, avgLag, leadScore } };
   }, [wd, wi]);
 
   const pairCount = Math.max(allLags.length, allLeads.length);
@@ -1131,6 +1158,68 @@ export default function Dashboard4DX() {
                 </div>
               ))}
             </div>
+
+            {/* LEAD SCORE — GŁÓWNY MIERNIK WIG */}
+            {kpi.leadScore > 0 && (() => {
+              const pct = Math.round(kpi.leadScore * 100);
+              const good = pct >= 70;
+              const mid  = pct >= 40;
+              const scoreColor = good ? '#22c55e' : mid ? '#f59e0b' : '#ef4444';
+              const r = 38, circ = 2 * Math.PI * r;
+              const dash = (pct / 100) * circ;
+              return (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20,
+                  background: `linear-gradient(135deg, ${scoreColor}18 0%, #fff 100%)`,
+                  border: `2px solid ${scoreColor}`, borderRadius: 18,
+                  padding: '18px 24px', marginBottom: 16,
+                  boxShadow: `0 4px 20px ${scoreColor}30` }}>
+                  {/* Ring */}
+                  <svg width={90} height={90} style={{ flexShrink: 0 }}>
+                    <circle cx={45} cy={45} r={r} fill="none" stroke="#e8edf2" strokeWidth={8} />
+                    <circle cx={45} cy={45} r={r} fill="none" stroke={scoreColor} strokeWidth={8}
+                      strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+                      transform="rotate(-90 45 45)"
+                      style={{ transition: 'stroke-dasharray 0.8s ease' }} />
+                    <text x={45} y={42} textAnchor="middle" dominantBaseline="middle"
+                      style={{ fontSize: 18, fontWeight: 900, fill: scoreColor, fontFamily: 'DM Sans' }}>
+                      {pct}%
+                    </text>
+                    <text x={45} y={60} textAnchor="middle"
+                      style={{ fontSize: 9, fontWeight: 700, fill: '#64748b', fontFamily: 'DM Sans', textTransform: 'uppercase' }}>
+                      LEAD
+                    </text>
+                  </svg>
+                  {/* Text */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase',
+                        letterSpacing: 1.2, color: '#64748b' }}>LEAD Score</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, background: scoreColor,
+                        color: '#fff', borderRadius: 6, padding: '2px 8px', letterSpacing: 0.5 }}>
+                        {good ? 'ON TRACK' : mid ? 'W TOKU' : 'RYZYKO'}
+                      </span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8',
+                        background: '#f1f5f9', borderRadius: 6, padding: '2px 8px' }}>
+                        WIG MIERNIK
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 34, fontWeight: 900, color: scoreColor, lineHeight: 1, marginBottom: 4,
+                      fontFamily: 'DM Serif Display, Georgia, serif', letterSpacing: -1 }}>
+                      {pct}<span style={{ fontSize: 18, fontWeight: 400 }}>%</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
+                      Agregowany wynik wszystkich Lead Measures tego WIG-a.
+                      <strong> 1.0 = zrobione, 0.5 = w toku, 0 = nie.</strong>
+                    </div>
+                    {/* Mini bar */}
+                    <div style={{ height: 6, background: '#e8edf2', borderRadius: 999, marginTop: 10, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: scoreColor,
+                        borderRadius: 999, transition: 'width 0.8s ease' }} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* SCOREBOARD TABLE */}
             <div style={{ background: '#fff', borderRadius: 18, border: '1px solid #e8edf2',
