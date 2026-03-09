@@ -341,10 +341,33 @@ function classifyError(err) {
   return { type: 'unknown', msg: 'Błąd: ' + m, detail: null };
 }
 
+// ── LEAD debug dump ───────────────────────────────────────────────────────────
+
+// Tymczasowa funkcja diagnostyczna — wypisuje col A ze wszystkich wierszy OS_LEAD
+// żeby zobaczyć co gviz naprawdę zwraca (scalone komórki, null-e, formaty itp.)
+async function debugLeadDump() {
+  try {
+    console.log('[LEAD dump] Pobieranie OS_LEAD (gid=' + SHEETS_CONFIG.leadMeasuresGid + ')...');
+    const table = await fetchGviz(SHEETS_CONFIG.leadMeasuresGid);
+    const rows = table && table.rows ? table.rows : [];
+    console.log('[LEAD dump] Łączna liczba wierszy:', rows.length);
+    for (let i = 0; i < rows.length; i++) {
+      const c0 = rows[i]?.c?.[0];
+      console.log(`[LEAD dump] row[${i}] col A: v=${JSON.stringify(c0?.v)} f=${JSON.stringify(c0?.f)}`);
+    }
+    console.log('[LEAD dump] === KONIEC DUMPA ===');
+  } catch (err) {
+    console.warn('[LEAD dump] Błąd fetchGviz dla OS_LEAD:', err.message);
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 async function initDashboard() {
   var lastError = null;
+
+  // DEBUG: dump struktury OS_LEAD — do usunięcia po wyjaśnieniu parsowania
+  debugLeadDump();
 
   // 1. Próba: Apps Script (preferowana) — overall pochodzi z B1 arkusza OS_LAG MEASURES
   try {
