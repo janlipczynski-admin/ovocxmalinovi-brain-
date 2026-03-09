@@ -3,74 +3,509 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>4DX Scoreboard — OvocxMalinovi</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <title>4DX Dashboard — OS MALINOWI</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f5f7fa; color: #1a1a2e; }
+    .dashboard { max-width: 1280px; margin: 0 auto; padding: 24px; }
+
+    /* WIG HEADER */
+    .wig-header {
+      background: white; border-radius: 12px; padding: 24px;
+      margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-left: 4px solid #1a237e;
+    }
+    .wig-top { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+    .wig-top h1 { font-size: 1.4rem; font-weight: 700; color: #1a237e; }
+    .week-badge { background: #1a237e; color: white; padding: 3px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 700; }
+    .wig-desc { color: #555; margin-bottom: 12px; font-size: 0.88rem; line-height: 1.5; }
+    .wig-bottom { display: flex; align-items: center; gap: 16px; }
+    .wig-score { font-size: 1.8rem; font-weight: 800; color: #1a237e; min-width: 80px; }
+    .progress-wrap { flex: 1; }
+    .progress-label { font-size: 0.75rem; color: #888; margin-bottom: 4px; }
+    .progress-bar { background: #e8eaf6; border-radius: 6px; height: 12px; overflow: hidden; }
+    .progress-bar.sm { height: 7px; }
+    .progress-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; }
+    .wig-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .deadline { font-size: 0.82rem; color: #666; }
+    .refresh-btn { background: none; border: 1px solid #ccc; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.78rem; color: #666; }
+    .refresh-btn:hover { background: #f0f0f0; }
+
+    /* GRID */
+    .measures-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 900px) { .measures-grid { grid-template-columns: 1fr; } }
+
+    .section-title {
+      font-size: 0.78rem; font-weight: 700; color: #666;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    /* CARDS */
+    .card {
+      background: white; border-radius: 10px; padding: 14px 16px;
+      margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border-left: 3px solid #e0e0e0;
+    }
+    .card.green { border-left-color: #4caf50; }
+    .card.orange { border-left-color: #ff9800; }
+    .card.red { border-left-color: #ef5350; }
+    .card.blue { border-left-color: #2196f3; }
+
+    .card-top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+    .card-id { font-size: 0.78rem; font-weight: 700; color: #1a237e; min-width: 52px; }
+    .card-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
+    .card-pct { font-weight: 800; font-size: 1rem; min-width: 46px; text-align: right; }
+
+    .card-sub { display: flex; align-items: center; gap: 10px; margin: 4px 0 6px; }
+    .card-detail { font-size: 0.76rem; color: #888; }
+
+    .ontrack-badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+    .ontrack-badge.yes { background: #e8f5e9; color: #388e3c; }
+    .ontrack-badge.no { background: #ffebee; color: #c62828; }
+    .ontrack-badge.unknown { background: #f5f5f5; color: #999; }
+
+    .tasks-list { margin-top: 8px; padding: 0; list-style: none; }
+    .tasks-list li {
+      font-size: 0.8rem; color: #555; padding: 4px 0 4px 8px;
+      border-bottom: 1px solid #f5f5f5;
+      display: flex; align-items: flex-start; gap: 6px;
+    }
+    .tasks-list li:last-child { border-bottom: none; }
+    .task-week { min-width: 28px; font-size: 0.7rem; font-weight: 700; color: #9e9e9e; padding-top: 1px; }
+    .task-week.current { color: #1a237e; }
+    .task-week.past { color: #bbb; }
+    .task-name { flex: 1; }
+    .task-done .task-name { color: #4caf50; text-decoration: line-through; text-decoration-color: #aaa; }
+
+    .sparkline { display: block; margin-top: 8px; }
+
+    .loading { text-align: center; padding: 60px; font-size: 1.1rem; color: #666; }
+    .error-box { background: #ffebee; border: 1px solid #ef9a9a; border-radius: 8px; padding: 16px; margin: 20px; color: #c62828; }
+
+    /* DEBUG */
+    .debug-box { background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 0.78rem; color: #555; }
+    .debug-box pre { overflow-x: auto; font-size: 0.72rem; margin-top: 8px; }
+  </style>
 </head>
-<body style="margin:0;background:#f8fafc">
-  <div style="padding:10px 24px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
-    <a href="index.html" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#64748b;text-decoration:none;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap">← Strona główna</a>
-    <span style="color:#e2e8f0">|</span>
-    <a href="planowanie-i-sprzedaz.html" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#94a3b8;text-decoration:none;letter-spacing:.05em;white-space:nowrap">Sprzedaż i Handel →</a>
-    <a href="https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#94a3b8;text-decoration:none;letter-spacing:.05em;white-space:nowrap">Obsługa zamówień ↗</a>
-    <a href="rozliczenia-rt.html" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#94a3b8;text-decoration:none;letter-spacing:.05em;white-space:nowrap">Rozliczenia RT →</a>
-    <a href="zakupy-planowanie.html" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#94a3b8;text-decoration:none;letter-spacing:.05em;white-space:nowrap">Gospodarka magazynowa →</a>
-  </div>
-  <div id="root" style="font-family:sans-serif;padding:48px;color:#64748b;text-align:center">
-    Ładowanie 4DX Dashboard…
-  </div>
+<body>
+<div id="root"></div>
+<script type="text/babel">
 
-  <!-- React 18 + ReactDOM (UMD — dostępne globalnie jako window.React / window.ReactDOM) -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <!-- Babel standalone — kompiluje JSX w przeglądarce -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+const SPREADSHEET_ID = '1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ';
+const GIDS = { WIGI: 1699564336, OS_LAG: 322339268, OS_LEAD: 2102307131 };
 
-  <!--
-    Pobiera dashboard_4dx_light.jsx, kompiluje JSX → JS przez Babel,
-    wyodrębnia eksport default i renderuje komponent.
-    Wymaga serwera HTTP (nie działa przez file://).
-  -->
-  <script>
-  (function () {
-    fetch('./dashboard_4dx_light.jsx')
-      .then(function (r) {
-        if (!r.ok) throw new Error('Błąd pobierania pliku JSX: HTTP ' + r.status);
-        return r.text();
-      })
-      .then(function (code) {
-        // Kompilacja JSX → JS (CommonJS, żeby wyodrębnić export default)
-        var compiled = Babel.transform(code, {
-          presets: ['react'],
-          plugins: ['transform-modules-commonjs']
-        }).code;
+// ─── HELPERS ───────────────────────────────────────────────────────────────
 
-        // Uruchom skompilowany moduł z własnym obiektem exports
-        var exports_ = {};
-        // eslint-disable-next-line no-new-func
-        var fn = new Function('React', 'exports', 'require', compiled);
-        fn(
-          window.React,
-          exports_,
-          function (id) { console.warn('[4DX] nieobsługiwany require:', id); return {}; }
-        );
+function cv(row, idx) {
+  // getCellValue — bezpiecznie pobiera wartość komórki z gviz row
+  if (!row || !row.c || row.c.length <= idx) return null;
+  const cell = row.c[idx];
+  if (!cell) return null;
+  if (cell.v !== null && cell.v !== undefined) return cell.v;
+  return null;
+}
 
-        var Dashboard4DX = exports_['default'] || exports_.default;
-        if (!Dashboard4DX) throw new Error('Nie znaleziono export default w dashboard_4dx_light.jsx');
+function cvStr(row, idx) {
+  const v = cv(row, idx);
+  return v !== null ? String(v).trim() : '';
+}
 
-        ReactDOM.createRoot(document.getElementById('root'))
-          .render(React.createElement(Dashboard4DX));
-      })
-      .catch(function (err) {
-        document.getElementById('root').innerHTML =
-          '<div style="max-width:560px;margin:48px auto;background:#fff3cd;border:1px solid #ffc107;' +
-          'border-radius:12px;padding:24px 28px;color:#856404;font-family:sans-serif">' +
-          '<strong style="font-size:16px">⚠ Błąd ładowania 4DX Dashboard</strong><br><br>' +
-          '<span style="font-size:13px">' + err.message + '</span><br><br>' +
-          '<span style="font-size:12px;color:#92400e">Upewnij się, że strona jest serwowana przez HTTP ' +
-          '(nie file://), np. przez <code>python3 -m http.server</code> lub GitHub Pages.</span>' +
-          '</div>';
+function cvNum(row, idx) {
+  const v = cv(row, idx);
+  if (v === null || v === undefined || v === '') return null;
+  const n = parseFloat(v);
+  return isNaN(n) ? null : n;
+}
+
+async function fetchGviz(gid, range) {
+  const rangeParam = range ? '&range=' + range : '';
+  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&gid=${gid}` + rangeParam;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} dla gid=${gid}`);
+  const text = await res.text();
+  const json = text
+    .replace(/^\/\*[\s\S]*?\*\/\s*\n?/, '')
+    .replace(/^google\.visualization\.Query\.setResponse\(/, '')
+    .replace(/\);\s*$/, '');
+  return JSON.parse(json);
+}
+
+// ─── PARSER: WIGI ──────────────────────────────────────────────────────────
+// Row 0, col E (idx 4) = aktualny tydzień
+
+function parseWIGI(rows) {
+  const week = cvNum(rows[0], 4);
+  return { currentWeek: week ? Math.round(week) : 11 };
+}
+
+// ─── PARSER: OS_LAG ────────────────────────────────────────────────────────
+// rows[0]: col A="WIG Status", col B=wigScore
+// rows[2]: col A=wigDesc
+// rows[4]: col A=wigDeadline
+// Marker LAG: col A = "LAG-01 — nazwa"
+// Nagłówki tygodni: C=T10(idx2), D=T11(idx3), E=T12(idx4), F=T13(idx5), G=T14(idx6), H=T15(idx7)
+// Wiersz sumy: col A = "LAG-XX Postep (srednia %)"
+
+function parseOsLag(rows, currentWeek) {
+  const wigScore    = cvNum(rows[0], 1) || 0;
+  const wigDesc     = cvStr(rows[2], 0) || 'WIG - OvocxMalinovi 4DX';
+  const wigDeadline = cvStr(rows[4], 0) || '';
+
+  // T10=idx2, T11=idx3, T12=idx4, ...
+  const weekColIdx = 2 + (currentWeek - 10);
+
+  const lags = [];
+  let cur = null;
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const a = cvStr(row, 0);
+
+    if (/^LAG-\d+\s*[\u2014\-]/i.test(a)) {
+      if (cur) lags.push(cur);
+      const idMatch = a.match(/^(LAG-\d+)/i);
+      const id = idMatch ? idMatch[1] : a;
+      const name = a.replace(/^LAG-\d+\s*[\u2014\-]\s*/i, '').trim();
+      cur = { id: id, name: name, postep: null, tasks: [], weeklyData: [] };
+      continue;
+    }
+
+    if (!cur) continue;
+
+    if (/^LAG-\d+\s+Post/i.test(a)) {
+      cur.postep = cvNum(row, weekColIdx);
+      cur.weeklyData = [2,3,4,5,6,7].map(function(j) { return cvNum(row, j); });
+      continue;
+    }
+
+    if (a === 'Proces' || a === 'Measure') continue;
+
+    if (a) {
+      const val = cvNum(row, weekColIdx);
+      cur.tasks.push({ name: a, done: val !== null && val >= 1 });
+    }
+  }
+  if (cur) lags.push(cur);
+
+  return { wigDesc: wigDesc, wigScore: wigScore, wigDeadline: wigDeadline, lags: lags };
+}
+
+// ─── PARSER: OS_LEAD ───────────────────────────────────────────────────────
+//
+// Struktura w JSON (z range=A1:P...):
+// Row i:   col A = "Lead 1"         ← marker bloku
+// Row i+1: col A = "Działania 4dx"  ← NAZWA Leada, col B = deadline, col C = opis, col D-P = wyniki
+// Row i+2: col A = "Lead 2"         ← następny marker (lub zadania między nimi)
+//
+// Zadania: wiersze gdzie col A = null, col B = deadline, col C = nazwa zadania
+// Postęp:  wiersz gdzie col A = null, col B = null, col C = null (wiersz sumy)
+//          LUB ostatni wiersz bloku przed następnym "Lead X"
+//
+// T10=idx3(D), T11=idx4(E), T12=idx5(F) ... weekColIdx = 3 + (currentWeek - 10)
+
+function parseOsLead(data, currentWeek) {
+  const rows = data.table.rows;
+  const weekColIdx = 3 + (currentWeek - 10);
+
+  const leads = [];
+  let i = 0;
+
+  while (i < rows.length) {
+    const row = rows[i];
+    const colA = cvStr(row, 0);
+
+    // Marker bloku: col A = "Lead 1", "Lead 2" itd.
+    if (/^Lead\s+\d+$/i.test(colA)) {
+
+      // Następny wiersz = nazwa Leada + dane
+      const nameRow = rows[i + 1];
+      if (!nameRow) { i++; continue; }
+
+      const leadName = cvStr(nameRow, 0);  // col A = nazwa
+      const deadline = cvNum(nameRow, 1);  // col B = deadline
+      const idNum    = colA.match(/\d+/)[0];
+      const id       = 'Lead ' + idNum;
+
+      // Postęp i weeklyData — bierzemy z wiersza sumy (col A=null, col B=null, col C=null)
+      // który jest ostatnim wierszem bloku przed następnym "Lead X"
+      // Na razie inicjalizujemy jako null, uzupełnimy po zebraniu zadań
+      const lead = {
+        id: id,
+        name: leadName,
+        deadline: deadline,
+        postep: null,
+        weeklyData: [],
+        tasks: []
+      };
+
+      // Wiersz nazwy (i+1) może też zawierać pierwsze zadanie w col C
+      if (cvStr(nameRow, 2) && cvStr(nameRow, 2) !== 'Opis') {
+        const tVal = cvNum(nameRow, weekColIdx);
+        lead.tasks.push({
+          name: cvStr(nameRow, 2),
+          week: cvNum(nameRow, 1) ? Math.round(cvNum(nameRow, 1)) : null,
+          done: tVal !== null && tVal >= 1
+        });
+      }
+
+      // Zadania: od i+2 aż do następnego "Lead X"
+      let j = i + 2;
+      while (j < rows.length) {
+        const tRow = rows[j];
+        const tA   = cvStr(tRow, 0);
+        const tB   = cv(tRow, 1);
+        const tC   = cvStr(tRow, 2);
+
+        // Następny marker Lead — stop
+        if (/^Lead\s+\d+$/i.test(tA)) break;
+
+        // Wiersz postępu: col A=null, col B=null, col C=null lub "Postęp"
+        if (!tA && (tB === null || tB === undefined) && !tC) {
+          lead.postep = cvNum(tRow, weekColIdx);
+          lead.weeklyData = [3,4,5,6,7,8,9,10,11,12,13,14,15].map(function(k) { return cvNum(tRow, k); });
+          j++;
+          continue;
+        }
+
+        // Zadanie: col C = nazwa zadania
+        if (tC && tC !== 'Opis') {
+          const tWeek = tB !== null ? Math.round(Number(tB)) : null;
+          const tVal  = cvNum(tRow, weekColIdx);
+          lead.tasks.push({
+            name: tC,
+            week: tWeek,
+            done: tVal !== null && tVal >= 1
+          });
+        }
+        j++;
+      }
+
+      // Jeśli nie znaleziono wiersza postępu, wylicz ze średniej zadań
+      if (lead.postep === null && lead.tasks.length > 0) {
+        const done = lead.tasks.filter(function(t) { return t.done; }).length;
+        lead.postep = done / lead.tasks.length;
+        // Dla Lead 1 z jednym zadaniem bierzemy wartość bezpośrednio z komórki
+        if (lead.tasks.length === 1) {
+          const directVal = cvNum(nameRow, weekColIdx);
+          if (directVal !== null) lead.postep = directVal;
+        }
+      }
+
+      leads.push(lead);
+      i = j;
+    } else {
+      i++;
+    }
+  }
+
+  return leads;
+}
+
+// ─── UI COMPONENTS ─────────────────────────────────────────────────────────
+
+function pct(val) { return Math.round((val || 0) * 100); }
+
+function cardColor(val) {
+  const p = val || 0;
+  if (p === 0) return '';
+  if (p < 0.2) return 'red';
+  if (p < 0.6) return 'orange';
+  return 'green';
+}
+
+function ProgressBar({ value, sm }) {
+  const p = Math.min(Math.max((value || 0) * 100, 0), 100);
+  const color = p === 0 ? '#e0e0e0' : p < 20 ? '#ef5350' : p < 60 ? '#ff9800' : '#4caf50';
+  return (
+    <div className={`progress-bar${sm ? ' sm' : ''}`}>
+      <div className="progress-fill" style={{ width: `${p}%`, background: color }} />
+    </div>
+  );
+}
+
+function Sparkline({ data }) {
+  const clean = data.map(v => v !== null ? v : undefined).filter(v => v !== undefined);
+  if (clean.length < 2) return null;
+  const max = Math.max(...clean, 0.01);
+  const W = 110, H = 28, P = 3;
+  const pts = data
+    .map((v, i) => v !== null ? [P + (i / (data.length - 1)) * (W - P*2), H - P - (v/max)*(H-P*2)] : null)
+    .filter(Boolean);
+  const d = pts.map((p, i) => `${i===0?'M':'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+  return (
+    <svg width={W} height={H} className="sparkline">
+      <path d={d} stroke="#3f51b5" strokeWidth="1.5" fill="none" opacity="0.7"/>
+      {pts.map((p,i) => <circle key={i} cx={p[0]} cy={p[1]} r="2.5" fill="#3f51b5"/>)}
+    </svg>
+  );
+}
+
+function LAGCard({ lag }) {
+  const p = lag.postep || 0;
+  return (
+    <div className={`card ${cardColor(p)}`}>
+      <div className="card-top">
+        <span className="card-id">{lag.id}</span>
+        <span className="card-name">{lag.name}</span>
+        <span className="card-pct">{pct(p)}%</span>
+      </div>
+      <ProgressBar value={p} sm />
+      <div className="card-sub">
+        <span className="card-detail">Postęp: {pct(p)}%</span>
+      </div>
+      {lag.tasks.length > 0 && (
+        <ul className="tasks-list">
+          {lag.tasks.map((t, i) => (
+            <li key={i} className={t.done ? 'task-done' : ''}>
+              <span className="task-name">{typeof t === 'string' ? t : t.name}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {lag.weeklyData && lag.weeklyData.some(v => v !== null) && <Sparkline data={lag.weeklyData} />}
+    </div>
+  );
+}
+
+function LEADCard({ lead, currentWeek }) {
+  const p = lead.postep || 0;
+  const onTrackEl = lead.onTrack === null
+    ? <span className="ontrack-badge unknown">— brak danych</span>
+    : lead.onTrack
+      ? <span className="ontrack-badge yes">✅ On track</span>
+      : <span className="ontrack-badge no">❌ Off track</span>;
+
+  return (
+    <div className={`card ${cardColor(p)}`}>
+      <div className="card-top">
+        <span className="card-id">{lead.id}</span>
+        <span className="card-name">{lead.name}</span>
+        <span className="card-pct">{pct(p)}%</span>
+      </div>
+      <ProgressBar value={p} sm />
+      <div className="card-sub">
+        {onTrackEl}
+        {lead.tasks.length > 0 && (
+          <span className="card-detail">{lead.tasks.filter(t=>t.done).length}/{lead.tasks.length} zadań</span>
+        )}
+      </div>
+      {lead.tasks.length > 0 && (
+        <ul className="tasks-list">
+          {lead.tasks.map((t, i) => {
+            const weekClass = !t.week ? '' : t.week < currentWeek ? 'past' : t.week === currentWeek ? 'current' : '';
+            return (
+              <li key={i} className={t.done ? 'task-done' : ''}>
+                {t.week && <span className={`task-week ${weekClass}`}>T{t.week}</span>}
+                <span className="task-name">{t.name}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {lead.weeklyData && lead.weeklyData.some(v => v !== null) && <Sparkline data={lead.weeklyData} />}
+    </div>
+  );
+}
+
+function WIGHeader({ wig, week, onRefresh, lastUpdate, loading }) {
+  return (
+    <div className="wig-header">
+      <div className="wig-top">
+        <h1>WIG #1 — OS MALINOWI 1.0</h1>
+        <span className="week-badge">T{week}</span>
+      </div>
+      <p className="wig-desc">{wig.wigDesc || 'Do 30.06.2026 wdrożyć OS Malinovi 1.0'}</p>
+      <div className="wig-bottom">
+        <span className="wig-score">{((wig.wigScore||0)*100).toFixed(1)}%</span>
+        <div className="progress-wrap">
+          <div className="progress-label">WIG score</div>
+          <ProgressBar value={wig.wigScore} />
+        </div>
+        <div className="wig-meta">
+          <span className="deadline">📅 Deadline: {wig.wigDeadline || '2026-05-30'}</span>
+          <button className="refresh-btn" onClick={onRefresh} disabled={loading}>
+            {loading ? '⏳ Ładowanie...' : `↻ Odśwież ${lastUpdate ? `(${lastUpdate})` : ''}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN ──────────────────────────────────────────────────────────────────
+
+function Dashboard() {
+  const [state, setState] = React.useState({ loading: true, error: null, data: null, lastUpdate: null });
+
+  const load = React.useCallback(async () => {
+    setState(s => ({ ...s, loading: true, error: null }));
+    try {
+      const [wigiRes, lagRes, leadRes] = await Promise.all([
+        fetchGviz(GIDS.WIGI),
+        fetchGviz(GIDS.OS_LAG),
+        fetchGviz(GIDS.OS_LEAD, 'A1:P200'),
+      ]);
+
+      const { currentWeek } = parseWIGI(wigiRes.table.rows);
+      const lagData = parseOsLag(lagRes.table.rows, currentWeek);
+      const leads = parseOsLead(leadRes, currentWeek);
+
+      setState({
+        loading: false,
+        error: null,
+        data: { currentWeek, wig: lagData, lags: lagData.lags, leads },
+        lastUpdate: new Date().toLocaleTimeString('pl-PL'),
       });
-  })();
-  </script>
+    } catch (e) {
+      setState(s => ({ ...s, loading: false, error: String(e) }));
+    }
+  }, []);
+
+  React.useEffect(() => {
+    load();
+    const id = setInterval(load, 5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [load]);
+
+  const { loading, error, data, lastUpdate } = state;
+
+  if (loading && !data) return <div className="loading">⏳ Ładowanie danych z Google Sheets...</div>;
+  if (error && !data) return <div className="error-box"><h3>❌ Błąd</h3><p>{error}</p><br/><button onClick={load}>↻ Spróbuj ponownie</button></div>;
+  if (!data) return null;
+
+  return (
+    <div className="dashboard">
+      <WIGHeader wig={data.wig} week={data.currentWeek} onRefresh={load} lastUpdate={lastUpdate} loading={loading} />
+      {error && <div className="error-box" style={{marginBottom:16}}>⚠️ Błąd odświeżania: {error}</div>}
+      <div className="measures-grid">
+        <div>
+          <div className="section-title">📊 LAG Measures — wyniki</div>
+          {data.lags.length === 0
+            ? <p style={{color:'#aaa',fontSize:'0.85rem'}}>Brak danych LAG</p>
+            : data.lags.map(l => <LAGCard key={l.id} lag={l} />)
+          }
+        </div>
+        <div>
+          <div className="section-title">🎯 Lead Measures — działania</div>
+          {data.leads.length === 0
+            ? <p style={{color:'#aaa',fontSize:'0.85rem'}}>Brak danych LEAD</p>
+            : data.leads.map(l => <LEADCard key={l.id} lead={l} currentWeek={data.currentWeek} />)
+          }
+        </div>
+      </div>
+      <div style={{textAlign:'center',marginTop:24,fontSize:'0.72rem',color:'#bbb'}}>
+        OvocxMalinowi · OS Malinowi 1.0 · odświeża się co 5 min
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Dashboard />);
+</script>
 </body>
 </html>
