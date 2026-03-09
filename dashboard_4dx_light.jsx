@@ -536,17 +536,18 @@ function countBacklog(rows) {
 // ─── LOADER ────────────────────────────────────────────────────────────────────
 
 async function loadDashboardData() {
+  // Fetch równoległy — wynik niesie key+gid z domknięcia, NIE zależy od kolejności resolve
   const results = await Promise.allSettled(
-    SHEET_DEFS.map(def => fetchGvizSheet(def.param).then(rows => ({ key: def.key, rows })))
+    SHEET_DEFS.map(def => fetchGvizSheet(def.param).then(rows => ({ key: def.key, gid: def.param, rows })))
   );
 
   const sheets = {};
   const fetchErrors = [];
   for (const r of results) {
     if (r.status === 'fulfilled') {
-      const { key, rows } = r.value;
-      const def = SHEET_DEFS.find(d => d.key === key);
-      console.log(`[loadDashboardData] ${key} gid=${def?.param ?? '?'}, wierszy: ${rows.length}`);
+      const { key, gid, rows } = r.value;
+      // klucz pochodzi z zamknięcia (def.key), nie z pozycji w tablicy wyników
+      console.log(`[loadDashboardData] ${key} (${gid}), wierszy: ${rows.length}`);
       sheets[key] = rows;
     } else {
       fetchErrors.push(r.reason?.message || 'unknown');
@@ -554,8 +555,9 @@ async function loadDashboardData() {
   }
   // Weryfikacja kluczowych arkuszy
   if (sheets['OS_LEAD']) {
-    const firstCells = sheets['OS_LEAD'].slice(0, 8).map((r, i) => `[${i}]="${r?.[0] ?? r?.c?.[0]?.v ?? '∅'}"`).join(' | ');
-    console.log('[loadDashboardData] OS_LEAD gid=2102307131, pierwsze kol.A:', firstCells);
+    console.log(`[loadDashboardData] OS_LEAD gid=2102307131, wierszy: ${sheets['OS_LEAD'].length}`);
+    const firstCells = sheets['OS_LEAD'].slice(0, 8).map((r, i) => `[${i}]="${r?.c?.[0]?.v ?? '∅'}"`).join(' | ');
+    console.log('[loadDashboardData] OS_LEAD pierwsze kol.A:', firstCells);
   } else {
     console.warn('[loadDashboardData] OS_LEAD brak danych — fetch nie powiódł się');
   }
