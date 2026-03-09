@@ -927,9 +927,10 @@ export default function Dashboard4DX() {
       if (l.is_tbd) return false;
       return (l.progress ?? 0) > 0;
     }).length;
-    const avgLag = lag.wig_status || 0;
+    const avgLag    = lag.wig_status || 0;
+    const leadScore = lead.lead_score || 0;
 
-    return { allLags: lags, allLeads: leads, kpi: { activeLags, activeLeads, onTrackCnt, avgLag } };
+    return { allLags: lags, allLeads: leads, kpi: { activeLags, activeLeads, onTrackCnt, avgLag, leadScore } };
   }, [wd, wi]);
 
   const pairCount = Math.max(allLags.length, allLeads.length);
@@ -1157,6 +1158,68 @@ export default function Dashboard4DX() {
                 </div>
               ))}
             </div>
+
+            {/* LEAD SCORE — GŁÓWNY MIERNIK WIG */}
+            {kpi.leadScore > 0 && (() => {
+              const pct = Math.round(kpi.leadScore * 100);
+              const good = pct >= 70;
+              const mid  = pct >= 40;
+              const scoreColor = good ? '#22c55e' : mid ? '#f59e0b' : '#ef4444';
+              const r = 38, circ = 2 * Math.PI * r;
+              const dash = (pct / 100) * circ;
+              return (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20,
+                  background: `linear-gradient(135deg, ${scoreColor}18 0%, #fff 100%)`,
+                  border: `2px solid ${scoreColor}`, borderRadius: 18,
+                  padding: '18px 24px', marginBottom: 16,
+                  boxShadow: `0 4px 20px ${scoreColor}30` }}>
+                  {/* Ring */}
+                  <svg width={90} height={90} style={{ flexShrink: 0 }}>
+                    <circle cx={45} cy={45} r={r} fill="none" stroke="#e8edf2" strokeWidth={8} />
+                    <circle cx={45} cy={45} r={r} fill="none" stroke={scoreColor} strokeWidth={8}
+                      strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+                      transform="rotate(-90 45 45)"
+                      style={{ transition: 'stroke-dasharray 0.8s ease' }} />
+                    <text x={45} y={42} textAnchor="middle" dominantBaseline="middle"
+                      style={{ fontSize: 18, fontWeight: 900, fill: scoreColor, fontFamily: 'DM Sans' }}>
+                      {pct}%
+                    </text>
+                    <text x={45} y={60} textAnchor="middle"
+                      style={{ fontSize: 9, fontWeight: 700, fill: '#64748b', fontFamily: 'DM Sans', textTransform: 'uppercase' }}>
+                      LEAD
+                    </text>
+                  </svg>
+                  {/* Text */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase',
+                        letterSpacing: 1.2, color: '#64748b' }}>LEAD Score</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, background: scoreColor,
+                        color: '#fff', borderRadius: 6, padding: '2px 8px', letterSpacing: 0.5 }}>
+                        {good ? 'ON TRACK' : mid ? 'W TOKU' : 'RYZYKO'}
+                      </span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8',
+                        background: '#f1f5f9', borderRadius: 6, padding: '2px 8px' }}>
+                        WIG MIERNIK
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 34, fontWeight: 900, color: scoreColor, lineHeight: 1, marginBottom: 4,
+                      fontFamily: 'DM Serif Display, Georgia, serif', letterSpacing: -1 }}>
+                      {pct}<span style={{ fontSize: 18, fontWeight: 400 }}>%</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
+                      Agregowany wynik wszystkich Lead Measures tego WIG-a.
+                      <strong> 1.0 = zrobione, 0.5 = w toku, 0 = nie.</strong>
+                    </div>
+                    {/* Mini bar */}
+                    <div style={{ height: 6, background: '#e8edf2', borderRadius: 999, marginTop: 10, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: scoreColor,
+                        borderRadius: 999, transition: 'width 0.8s ease' }} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* SCOREBOARD TABLE */}
             <div style={{ background: '#fff', borderRadius: 18, border: '1px solid #e8edf2',
