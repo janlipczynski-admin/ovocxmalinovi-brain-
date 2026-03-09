@@ -122,7 +122,7 @@ function getWeekValues(rows, row, weekCols) {
 // headers=0: wszystkie wiersze zwracane jako dane (gviz nie "zjada" pierwszego wiersza jako nagłówka).
 // cell.v: czytamy wartość surową, nie sformatowaną (.f może być niepoprawna dla liczb 10-18).
 async function fetchGvizSheet(param) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&${param}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&${param}&_t=${Date.now()}`;
   console.log('[4DX fetch]', param);
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} dla parametru: ${param}`);
@@ -543,8 +543,21 @@ async function loadDashboardData() {
   const sheets = {};
   const fetchErrors = [];
   for (const r of results) {
-    if (r.status === 'fulfilled') sheets[r.value.key] = r.value.rows;
-    else fetchErrors.push(r.reason?.message || 'unknown');
+    if (r.status === 'fulfilled') {
+      const { key, rows } = r.value;
+      const def = SHEET_DEFS.find(d => d.key === key);
+      console.log(`[loadDashboardData] ${key} gid=${def?.param ?? '?'}, wierszy: ${rows.length}`);
+      sheets[key] = rows;
+    } else {
+      fetchErrors.push(r.reason?.message || 'unknown');
+    }
+  }
+  // Weryfikacja kluczowych arkuszy
+  if (sheets['OS_LEAD']) {
+    const firstCells = sheets['OS_LEAD'].slice(0, 8).map((r, i) => `[${i}]="${r?.[0] ?? r?.c?.[0]?.v ?? '∅'}"`).join(' | ');
+    console.log('[loadDashboardData] OS_LEAD gid=2102307131, pierwsze kol.A:', firstCells);
+  } else {
+    console.warn('[loadDashboardData] OS_LEAD brak danych — fetch nie powiódł się');
   }
   if (!Object.keys(sheets).length) {
     throw new Error('Nie udało się pobrać żadnego arkusza. '
