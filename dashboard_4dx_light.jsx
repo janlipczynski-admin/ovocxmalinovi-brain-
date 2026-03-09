@@ -429,9 +429,9 @@ function parseLead(rows, currentWeek) {
     const marker = leadMarkers[idx];
     const nextMarkerRow = idx + 1 < leadMarkers.length ? leadMarkers[idx + 1].row : rows.length;
 
-    // Znajdź nagłówek tego LEAD-a (wiersz z "Deadline" po markerze, max 4 wiersze dalej)
+    // Znajdź nagłówek tego LEAD-a (wiersz z "Deadline" po markerze, max 6 wierszy dalej)
     let headerRow = -1;
-    for (let j = marker.row + 1; j < Math.min(marker.row + 4, rows.length); j++) {
+    for (let j = marker.row + 1; j < Math.min(marker.row + 6, rows.length); j++) {
       const a = cellStr(rows[j], 0).toLowerCase();
       const b = cellStr(rows[j], 1).toLowerCase();
       if (a.startsWith('deadline') || b.startsWith('deadline')) {
@@ -449,21 +449,21 @@ function parseLead(rows, currentWeek) {
     const leadWeekColIdx = leadWeekCols[weekKey];
 
     // Znajdź zadania (col A = numer tygodnia, col B = opis)
+    // Jeśli brak lokalnego headera Deadline — skanuj od razu od wiersza za markerem
+    const taskStartRow = headerRow >= 0 ? headerRow + 1 : marker.row + 1;
     const tasks = [];
-    if (headerRow >= 0) {
-      for (let j = headerRow + 1; j < nextMarkerRow; j++) {
-        const a = cellStr(rows[j], 0);
-        const b = cellStr(rows[j], 1);
-        const aLow = a.toLowerCase();
-        if (aLow.includes('post') || aLow.includes('on track')) continue;
-        if (a.match(/^\d+$/) && b) {
-          const values = {};
-          for (const [wk, ci] of Object.entries(leadWeekCols)) {
-            values[wk] = cellNum(rows[j], ci);
-          }
-          tasks.push({ deadline: `T${parseInt(a)}`, desc: b, values,
-            done: (values[weekKey] ?? 0) >= 0.99 });
+    for (let j = taskStartRow; j < nextMarkerRow; j++) {
+      const a = cellStr(rows[j], 0);
+      const b = cellStr(rows[j], 1);
+      const aLow = a.toLowerCase();
+      if (aLow.includes('post') || aLow.includes('on track')) continue;
+      if (a.match(/^\d+$/) && b) {
+        const values = {};
+        for (const [wk, ci] of Object.entries(leadWeekCols)) {
+          values[wk] = cellNum(rows[j], ci);
         }
+        tasks.push({ deadline: `T${parseInt(a)}`, desc: b, values,
+          done: (values[weekKey] ?? 0) >= 0.99 });
       }
     }
 
