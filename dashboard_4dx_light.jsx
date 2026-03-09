@@ -51,6 +51,31 @@ function sf(val) {
   return isNaN(n) ? 0 : n;
 }
 
+// Normalizuje literówki w kluczowych słowach 4DX.
+// Stosuj na cellStr() przed porównaniem w parserach.
+const KEY_ALIASES = [
+  { canonical: 'lead',    variants: ['leas', 'laed', 'leed', 'lea', 'ead'] },
+  { canonical: 'lag',     variants: ['lad', 'alg', 'lga'] },
+  { canonical: 'wig',     variants: ['wgi', 'iwg', 'wgig'] },
+  { canonical: 'sub-wig', variants: ['subwig', 'sub wig', 'sub_wig'] },
+  { canonical: 'postęp',  variants: ['postep', 'postp', 'potsęp', 'postępl', 'postępu'] },
+  { canonical: 'proces',  variants: ['procse', 'proce', 'prces', 'prcoess'] },
+  { canonical: 'target',  variants: ['taget', 'targer', 'traget'] },
+  { canonical: 'deadline', variants: ['deadlne', 'deadine', 'deadlin'] },
+];
+function normalizeKey(str) {
+  if (!str) return '';
+  let out = String(str).toLowerCase();
+  for (const { canonical, variants } of KEY_ALIASES) {
+    for (const v of variants) {
+      // Zastępuj tylko całe słowa (granica \b nie działa z polskimi znakami, użyj spacji/^/$)
+      const re = new RegExp('(?<![a-z])' + v.replace('-', '[-]?') + '(?![a-z])', 'gi');
+      out = out.replace(re, canonical);
+    }
+  }
+  return out;
+}
+
 function findRow(rows, col, pattern, regex = false) {
   for (let i = 0; i < rows.length; i++) {
     const val = ss(rows[i]?.[col]);
@@ -418,10 +443,12 @@ function parseLead(rows, currentWeek) {
     const aLow = a.toLowerCase();
     if (aLow.includes('post') || aLow.includes('on track')) continue;
 
-    const leadMatch  = a.match(/^Lead\s*(\d+)\s*[-–—]/i);
-    const subWigMatch = a.match(/^SUB-WIG\s*(\d+)/i);
+    const aNorm = normalizeKey(a);
+    const leadMatch   = aNorm.match(/^lead\s*(\d+)\s*[-–—]/i);
+    const subWigMatch = aNorm.match(/^sub-?wig\s*(\d+)/i);
 
     if (leadMatch || subWigMatch) {
+      if (a !== aNorm) console.warn(`[parseLead] literówka naprawiona: "${a}" → marker "lead/sub-wig"`);
       leadMarkers.push({ row: i, name: a, num: leadMatch ? leadMatch[1] : subWigMatch[1] });
       console.log(`[parseLead] marker: row ${i}: "${a}"`);
     }
@@ -479,9 +506,8 @@ function parseLead(rows, currentWeek) {
     let progressSeries = WEEKS.map(() => 0);
     let onTrackVal = 'brak';
     for (let j = marker.row; j < nextMarkerRow; j++) {
-      const a = cellStr(rows[j], 0).toLowerCase();
-      // Postęp: "Lead X ... post..." lub "Leas X ... post..." (literówka)
-      if (a.includes('post') && (a.includes('lead') || a.includes('leas') || a.includes('sub-wig'))) {
+      const aNorm = normalizeKey(cellStr(rows[j], 0));
+      if (aNorm.includes('postęp') && (aNorm.includes('lead') || aNorm.includes('sub-wig'))) {
         progressVal = leadWeekColIdx !== undefined ? cellNum(rows[j], leadWeekColIdx) : 0;
         progressSeries = WEEKS.map(w => {
           const ci = leadWeekCols[w];
@@ -489,7 +515,7 @@ function parseLead(rows, currentWeek) {
         });
         console.log(`[parseLead] ${marker.name} Postęp row ${j}: ${progressVal} | seria: ${progressSeries.join(',')}`);
       }
-      if (a.includes('on track') && (a.includes('lead') || a.includes('sub-wig'))) {
+      if (aNorm.includes('on track') && (aNorm.includes('lead') || aNorm.includes('sub-wig'))) {
         onTrackVal = leadWeekColIdx !== undefined ? (cellStr(rows[j], leadWeekColIdx) || 'brak') : 'brak';
       }
     }
