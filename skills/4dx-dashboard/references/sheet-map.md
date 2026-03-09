@@ -2,6 +2,129 @@
 
 ---
 
+## 🗺️ ZWERYFIKOWANA STRUKTURA ARKUSZY — 2026-03-09
+
+> Dane z Excela zweryfikowane 09.03.2026. Używaj jako referencji przy debugowaniu parsera.
+
+### GID-y arkuszy (weryfikacja 2026-03-09)
+
+| Klucz | GID / param |
+|-------|-------------|
+| `WIGI` | `gid=1699564336` |
+| `OS_LAG` | `gid=322339268` |
+| `OS_LEAD` | `gid=2102307131` |
+
+### Arkusz WIGI (gid=1699564336) — 5 wierszy
+
+| Wiersz | Kol B | Kol D | Kol E |
+|--------|-------|-------|-------|
+| Row 0 | "data/aktualny tydzień" | "2026-03-09" | **11** ← aktualny tydzień = T11 |
+| Row 1 | "OS MALINOVI" | "WIG#1" | opis |
+
+**Czytanie aktualnego tygodnia:** `rows[0][4]` (kol E, idx 4) = 11 → T11.
+
+---
+
+### Arkusz OS_LEAD MEASURES (gid=2102307131) — 89 wierszy × 17 kolumn
+
+#### Kolumny (identyczne w każdym nagłówku lead-a)
+
+| Kol | Idx | Zawartość |
+|-----|-----|-----------|
+| A | 0 | Deadline |
+| B | 1 | Opis |
+| C | 2 | Target |
+| D | 3 | **T10** |
+| E | 4 | **T11** |
+| F | 5 | **T12** |
+| G | 6 | **T13** |
+| H | 7 | **T14** |
+| I | 8 | **T15** |
+| J | 9 | **T16** |
+| K | 10 | **T17** |
+| L | 11 | **T18** |
+| M | 12 | **T19** |
+| N | 13 | **T20** |
+| O | 14 | **T21** |
+| P | 15 | **T22** |
+
+**Fallback:** gdy gviz nie zwraca labeli tygodniowych → D=T10(3) … P=T22(15)
+
+#### Markery Lead-ów w kol A
+
+| Wiersz | Tekst markera |
+|--------|---------------|
+| Row 4 | "Lead 1 - Dzialania 4dx" |
+| Row 8 | "Lead 2 - Procesy i role (DoD)" |
+| Row 24 | "Lead 3 - Obsługa zamówień" |
+| Row 40 | "Lead 4 - Rozliczenia tygodniowe" |
+| Row 53 | "Lead 5 -  Obsługa reklamacji" ← podwójna spacja |
+| Row 64 | "Lead 6 - wdrożenie - 4dex w spółce" ← dwa myślniki |
+
+**Regex markera:** `/^Lead\s*\d+\s*[-–—]/i` — matchuje wszystkie powyższe.
+
+#### Wiersze Postęp
+
+| Wiersz | Tekst | T10 (idx 3) |
+|--------|-------|-------------|
+| Row 18 | "Lead 2 - OS Procesy i role Postęp" | 0.125 |
+| Row 35 | "Lead 3 -  Obsługa zamówień Postęp" | 0 |
+| Row 48 | "Lead 4 - Rozliczenia tygodniowe Postęp" | 0 |
+| Row 60 | "Lead 5 - Obsługa reklamacji Postęp" | 0 |
+| Row 87 | "LEAD 6 - Wdrożenie i przeglądy 4dx w spółce Postęp" | 0 |
+
+**Lead 1 NIE MA wiersza Postęp** — jedyne zadanie = LEAD score w Row 6.
+
+**Regex Postęp:** tekst zawiera `lead` LUB `LEAD` ORAZ `post` (case insensitive, permissive).
+
+#### Wiersze On track
+
+| Wiersz | Tekst |
+|--------|-------|
+| Row 19 | "Lead 2- OS Procesy i role On track" ← BRAK spacji przed myślnikiem |
+| Row 36 | "Lead 3 - Obsługa zamówień On track" |
+| Row 49 | "Lead 4 -  Rozliczenia tygodniowe On track" ← podwójna spacja |
+| Row 61 | "Lead 5 - Obsługa reklamacji On track" |
+| Row 88 | "LEAD 6 - Wdrożenie (setup) 4dx w spółce, on track?" ← WIELKIE LEAD, mały on track |
+
+**Regex On track:** tekst zawiera `lead` LUB `LEAD` ORAZ `on track` (case insensitive).
+
+#### Lead 1 — specjalny (1 zadanie, brak Postęp/On track)
+
+```
+Row 4:  marker "Lead 1 - Dzialania 4dx"
+Row 5:  header (Deadline | Opis | Target | T10 | T11 | ...)
+Row 6:  ["15", "LEAD score: realizacja działań 4DX...", "1", 0.03125, 0, ...]
+         → col A = "15" (deadline T15), col B = opis, col D (idx 3) = 0.03125 (T10)
+```
+
+`result.lead_score` = wartość z col D (T10) tego wiersza = 0.03125 = 3.1%.
+
+---
+
+### Arkusz OS_LAG MEASURES (gid=322339268) — 61 wierszy × 9 kolumn
+
+| Kol | Idx | Zawartość |
+|-----|-----|-----------|
+| A | 0 | Nazwa / marker |
+| B | 1 | Target / Opis |
+| C | 2 | **T10** |
+| D | 3 | **T11** |
+| E | 4 | **T12** |
+| F | 5 | **T13** |
+| G | 6 | **T14** |
+| H | 7 | **T15** |
+
+**Kluczowe wiersze:**
+- Row 0: `WIG Status` w kol A, `0.02857` (2.86%) w kol B
+- Row 4: deadline `2026-05-30` w kol A, opis WIG w kol B
+- Row 8-15: 8 procesów LAG-01 (Gospodarka magazynowa = 1 w T10)
+- Row 17: `LAG-01 Postęp` = 0.1428 (14.29%) w T10
+
+**Fallback kolumn LAG:** C=T10(2) … H=T15(7) — zawsze stały (gviz nie zwraca labeli).
+
+---
+
 ## ⭐ REFERENCYJNA IMPLEMENTACJA JS — przetestowana na danych gviz (2026-03-08)
 
 > Implementacja poniżej jest **PRZETESTOWANA na prawdziwych danych z gviz API**.

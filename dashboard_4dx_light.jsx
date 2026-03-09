@@ -30,7 +30,7 @@ const WIG_PAIRS = [
   { key: 'HARVEST', lagKey: 'HARVEST_LAG', leadKey: 'HARVEST_LEAD' },
 ];
 
-const WEEKS = ['T10','T11','T12','T13','T14','T15','T16','T17','T18'];
+const WEEKS = ['T10','T11','T12','T13','T14','T15','T16','T17','T18','T19','T20','T21','T22'];
 
 const FONT_SERIF = "'Instrument Serif', Georgia, serif";
 const FONT_SANS  = "'Plus Jakarta Sans', system-ui, sans-serif";
@@ -128,12 +128,12 @@ function lagWeekColsFallback(wc) {
 }
 
 // Fallback dla arkuszy LEAD gdy gviz nie zwraca labeli tygodniowych.
-// Kolumny D–I (indeksy 3–8) to T10–T15 w arkuszach *_LEAD MEASURES.
+// Kolumny D–P (indeksy 3–15) to T10–T22 w arkuszach *_LEAD MEASURES.
 function leadWeekColsFallback(wc) {
   if (Object.keys(wc).length >= 2) return wc;
   const fb = {};
-  ['T10','T11','T12','T13','T14','T15'].forEach((w, i) => { fb[w] = i + 3; });
-  console.warn('[4DX parseLead] brak labeli tygodniowych — fallback D-I (3-8)');
+  for (let w = 10; w <= 22; w++) fb[`T${w}`] = w - 7; // D=3, E=4, ..., P=15
+  console.warn('[4DX parseLead] brak labeli tygodniowych — fallback D-P (3-15)');
   return fb;
 }
 
@@ -417,8 +417,8 @@ function parseLead(rows, currentWeek) {
 
   // Fallback jeśli nie znaleziono
   if (Object.keys(weekCols).length === 0) {
-    console.warn('[parseLead] fallback kolumn: D=T10, E=T11, ..., I=T15');
-    for (let w = 10; w <= 15; w++) weekCols[`T${w}`] = w - 7; // D=3, E=4, ..., I=8
+    console.warn('[parseLead] fallback kolumn: D=T10, E=T11, ..., P=T22');
+    for (let w = 10; w <= 22; w++) weekCols[`T${w}`] = w - 7; // D=3, E=4, ..., P=15
   }
   console.log('[parseLead] weekCols:', weekCols, '| mainHeaderRow:', mainHeaderRow);
 
@@ -511,7 +511,7 @@ function parseLead(rows, currentWeek) {
     let onTrackVal = 'brak';
     for (let j = marker.row; j < nextMarkerRow; j++) {
       const aNorm = normalizeKey(cellStr(rows[j], 0));
-      if (aNorm.includes('postęp') && (aNorm.includes('lead') || aNorm.includes('sub-wig'))) {
+      if (aNorm.includes('post') && (aNorm.includes('lead') || aNorm.includes('sub-wig'))) {
         progressVal = leadWeekColIdx !== undefined ? cellNum(rows[j], leadWeekColIdx) : 0;
         progressSeries = WEEKS.map(w => {
           const ci = leadWeekCols[w];
