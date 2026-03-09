@@ -476,13 +476,18 @@ function parseLead(rows, currentWeek) {
 
     // Znajdź wiersz Postęp i On track
     let progressVal = 0;
+    let progressSeries = WEEKS.map(() => 0);
     let onTrackVal = 'brak';
     for (let j = marker.row; j < nextMarkerRow; j++) {
       const a = cellStr(rows[j], 0).toLowerCase();
       // Postęp: "Lead X ... post..." lub "Leas X ... post..." (literówka)
       if (a.includes('post') && (a.includes('lead') || a.includes('leas') || a.includes('sub-wig'))) {
         progressVal = leadWeekColIdx !== undefined ? cellNum(rows[j], leadWeekColIdx) : 0;
-        console.log(`[parseLead] ${marker.name} Postęp row ${j}: ${progressVal}`);
+        progressSeries = WEEKS.map(w => {
+          const ci = leadWeekCols[w];
+          return ci !== undefined ? cellNum(rows[j], ci) : 0;
+        });
+        console.log(`[parseLead] ${marker.name} Postęp row ${j}: ${progressVal} | seria: ${progressSeries.join(',')}`);
       }
       if (a.includes('on track') && (a.includes('lead') || a.includes('sub-wig'))) {
         onTrackVal = leadWeekColIdx !== undefined ? (cellStr(rows[j], leadWeekColIdx) || 'brak') : 'brak';
@@ -494,6 +499,7 @@ function parseLead(rows, currentWeek) {
       id: `Lead ${marker.num}`,
       name: marker.name,
       progress: progressVal,
+      progressSeries,
       onTrack: onTrackVal,
       tasks,
       done: doneCount,
@@ -676,14 +682,16 @@ const ScoreboardRow = ({ lead, lag, wi, wigColor }) => {
   const [open, setOpen] = useState(false);
 
   const lagProg  = lag  ? (lag.progress ?? 0) : 0;
-  const leadProg = lead ? (lead.progress ?? 0) : 0;
+  const leadProg = lead
+    ? (lead.progressSeries ? (lead.progressSeries[wi] ?? lead.progress ?? 0) : (lead.progress ?? 0))
+    : 0;
 
   const lagLabel  = lag  ? ss(lag.name).match(/^LAG-\d+/i)?.[0]  || lag.name  : '—';
   const lagDesc   = lag  ? ss(lag.name).split(/—(.+)/)[1]?.trim() || ''        : '';
   const leadLabel = lead ? ss(lead.name).match(/^(Lead|SUB-WIG)\s+\d+/i)?.[0] || lead.name : '—';
   const leadDesc  = lead ? ss(lead.name).split(/[-—](.+)/)[1]?.trim() || ''    : '';
 
-  const leadSparkValues = WEEKS.map(() => lead?.progress || 0);
+  const leadSparkValues = lead?.progressSeries || WEEKS.map(() => lead?.progress || 0);
   const lagSparkValues  = WEEKS.map(() => lag?.progress  || 0);
 
   return (
