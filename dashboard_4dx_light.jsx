@@ -179,17 +179,21 @@ function parseWigs(rows) {
   }
   console.log('[parseWigs] currentWeek:', currentWeek);
 
-  // WIG-i — wiersze z "WIG#X" w col C (indeks 2)
+  // WIG-i — szukaj "WIG#X" w dowolnej kolumnie
+  // (gviz pomija pustą kol. A i przesuwa indeksy — nie hardkodujemy indeksu 2)
   for (let i = 0; i < rows.length; i++) {
     const c = rows[i].c;
     if (!c) continue;
-    const colC = c[2] ? String(c[2].v || '') : '';
-    if (colC.startsWith('WIG#')) {
-      const name = c[1] ? String(c[1].v || '') : '';
-      const desc = c[3] ? String(c[3].v || '') : '';
-      wigs.push({ id: colC, name, description: desc });
-      console.log(`[parseWigs] ${colC}: ${name} — ${desc.substring(0, 50)}...`);
+    let wigIdx = -1;
+    for (let ci = 0; ci < c.length; ci++) {
+      if (c[ci] && String(c[ci].v || '').startsWith('WIG#')) { wigIdx = ci; break; }
     }
+    if (wigIdx === -1) continue;
+    const id   = String(c[wigIdx].v || '');
+    const name = wigIdx > 0 && c[wigIdx - 1] ? String(c[wigIdx - 1].v || '') : '';
+    const desc = wigIdx + 1 < c.length && c[wigIdx + 1] ? String(c[wigIdx + 1].v || '') : '';
+    wigs.push({ id, name, description: desc });
+    console.log(`[parseWigs] ${id}: ${name} — ${desc.substring(0, 50)}...`);
   }
 
   return { currentWeek, wigs };
