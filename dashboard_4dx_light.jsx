@@ -331,6 +331,13 @@ function parseLag(rows, currentWeek) {
 }
 
 function parseLead(rows, currentWeek) {
+  console.log('[parseLead] DUMP - ilość wierszy:', rows.length);
+  for (let i = 0; i < Math.min(rows.length, 70); i++) {
+    const v = rows[i]?.c?.[0]?.v;
+    if (v !== null && v !== undefined && typeof v === 'string' && v.length > 3) {
+      console.log('[parseLead] row ' + i + ': "' + v + '"');
+    }
+  }
   const result = { lead_score: 0, leads: [] };
 
   function cellVal(row, colIdx) {
