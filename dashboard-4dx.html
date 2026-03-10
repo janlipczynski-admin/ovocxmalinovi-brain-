@@ -208,10 +208,22 @@ function parseWIGI(data) {
 // Col D (idx 3) = T10, Col E (idx 4) = T11, wzór: weekColIdx = 3 + (currentWeek - 10)
 
 function parseGenericLag(data, currentWeek) {
+  var cols = data.table.cols || [];
   var rows = data.table.rows;
   var weekColIdx = 3 + (currentWeek - 10);
   var lags = [];
   var cur = null;
+  // gviz może skonsumować wiersz #LAG-01 jako nagłówek (parsedNumHeaders > 1)
+  // W takim razie inicjalizuj pierwszego LAG-a z label kolumny A
+  var colALabel = cols.length > 0 ? (cols[0].label || '') : '';
+  var headerLagMatch = colALabel.match(/#(LAG-\d+)/i);
+  if (headerLagMatch) {
+    var firstLagId = headerLagMatch[1].toUpperCase();
+    var firstLagName = cols.length > 1 ? (cols[1].label || '').replace(/\s+Proces\s*\/\s*Kryterium.*$/i, '').trim() : '';
+    var firstLagDlText = cols.length > 2 ? (cols[2].label || '') : '';
+    var firstLagDl = firstLagDlText.match(/T(\d+)/i);
+    cur = { id: firstLagId, name: firstLagName, deadline: firstLagDl ? parseInt(firstLagDl[1]) : 22, postep: null, weeklyData: [], tasks: [] };
+  }
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
     var colA = cvStr(row, 0);
@@ -252,10 +264,21 @@ function parseGenericLag(data, currentWeek) {
 // Col D (idx 3) = T10, wzór: weekColIdx = 3 + (currentWeek - 10)
 
 function parseGenericLead(data, currentWeek) {
+  var cols = data.table.cols || [];
   var rows = data.table.rows;
   var weekColIdx = 3 + (currentWeek - 10);
   var leads = [];
   var cur = null;
+  // gviz może skonsumować wiersz #LEAD-01 jako nagłówek (parsedNumHeaders > 1)
+  var colALabel = cols.length > 0 ? (cols[0].label || '') : '';
+  var headerLeadMatch = colALabel.match(/#(LEAD-\d+)/i);
+  if (headerLeadMatch) {
+    var firstLeadId = headerLeadMatch[1].toUpperCase();
+    var firstLeadName = cols.length > 1 ? (cols[1].label || '').replace(/\s+Tydzień\s*\/\s*.*$/i, '').replace(/\s+Proces\s*\/\s*.*$/i, '').trim() : '';
+    var firstLeadDlText = cols.length > 2 ? (cols[2].label || '') : '';
+    var firstLeadDl = firstLeadDlText.match(/T(\d+)/i);
+    cur = { id: firstLeadId, name: firstLeadName, deadline: firstLeadDl ? parseInt(firstLeadDl[1]) : 22, postep: null, weeklyData: [], tasks: [] };
+  }
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
     var colA = cvStr(row, 0);
