@@ -635,10 +635,10 @@ function Dashboard() {
     try {
       const [wigiRes, osLagRes, osLeadRes, harvestLagRes, harvestLeadRes] = await Promise.all([
         fetchGviz(GIDS.WIGI),
-        fetchGviz(GIDS.OS_LAG),
-        fetchGviz(GIDS.OS_LEAD),
-        fetchGviz(GIDS.HARVEST_LAG),
-        fetchGviz(GIDS.HARVEST_LEAD),
+        fetchGviz(GIDS.OS_LAG,       'A1:P200'),
+        fetchGviz(GIDS.OS_LEAD,      'A1:P200'),
+        fetchGviz(GIDS.HARVEST_LAG,  'A1:P200'),
+        fetchGviz(GIDS.HARVEST_LEAD, 'A1:P200'),
       ]);
 
       const wigiParsed = parseWIGI(wigiRes.table.rows);
