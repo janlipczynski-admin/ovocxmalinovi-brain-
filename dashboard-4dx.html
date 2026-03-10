@@ -129,8 +129,8 @@
 const SPREADSHEET_ID = '1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ';
 const GIDS = {
   WIGI:         1699564336,
-  OS_LAG:       967622858,
-  OS_LEAD:      1727707031,
+  OS_LAG:       322339268,
+  OS_LEAD:      2102307131,
   HARVEST_LAG:  200348167,
   HARVEST_LEAD: 259840012,
 };
@@ -201,10 +201,12 @@ function parseWIGI(rows) {
       const v = cvStr(rows[i], 1);
       if (v) areaName = v;
     }
-    const wm = a.match(/^WIG\s*[#\-]?\s*(\d+)/i);
+    // WIG# marker jest w kol C (indeks 2), opis w kol D (indeks 3) — wg sheet-map.md
+    const c2 = cvStr(rows[i], 2);
+    const wm = c2.match(/^WIG\s*#?\s*(\d+)/i);
     if (wm) {
       const num = parseInt(wm[1]);
-      const desc = cvStr(rows[i], 1) || cvStr(rows[i], 2) || '';
+      const desc = cvStr(rows[i], 3) || cvStr(rows[i], 1) || '';
       if (desc && !wigDescs[num]) wigDescs[num] = desc;
     }
   }
