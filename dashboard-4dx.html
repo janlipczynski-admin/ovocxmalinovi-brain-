@@ -550,10 +550,9 @@ function LEADCard({ lead, currentWeek }) {
   );
 }
 
-function WIGHeader({ wigNum, areaName, wigDesc, week, score, isHarvest, onRefresh, lastUpdate, loading }) {
+function WIGHeader({ wigNum, areaName, wigDesc, week, isHarvest, onRefresh, lastUpdate, loading }) {
   const weekDates = getWeekDates(week, 2026);
   const areaClass = isHarvest ? 'wig-area-name harvest' : 'wig-area-name';
-  const scoreClass = isHarvest ? 'wig-score harvest' : 'wig-score';
   const headerClass = isHarvest ? 'wig-header harvest' : 'wig-header';
   const strongClass = isHarvest ? 'harvest' : '';
   return (
@@ -563,28 +562,19 @@ function WIGHeader({ wigNum, areaName, wigDesc, week, score, isHarvest, onRefres
           <span className="wig-area-label">
             OBSZAR: <span className={areaClass}>{areaName}</span>
           </span>
-          <span className="wig-week-label">
-            Aktualny tydzień: <span className="week-badge">T{week}</span>{' '}
-            <span className="wig-week-dates">({weekDates})</span>
-          </span>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <span className="wig-week-label">
+              Aktualny tydzień: <span className="week-badge">T{week}</span>{' '}
+              <span className="wig-week-dates">({weekDates})</span>
+            </span>
+            <button className="refresh-btn" onClick={onRefresh} disabled={loading}>
+              {loading ? '⏳' : '↻'}
+            </button>
+          </div>
         </div>
         <div className="wig-desc-row">
           <strong className={strongClass}>WIG #{wigNum}:</strong>{' '}
           {wigDesc || '\u2014'}
-        </div>
-      </div>
-      <div className="wig-bottom">
-        <span className={scoreClass}>{pct(score)}%</span>
-        <div className="progress-wrap">
-          <div className="progress-label">Średni postęp LAG-ów</div>
-          <ProgressBar value={score} />
-        </div>
-        <div className="wig-meta">
-          {!isHarvest && (
-            <button className="refresh-btn" onClick={onRefresh} disabled={loading}>
-              {loading ? '⏳ Ładowanie...' : `↻ Odśwież ${lastUpdate ? `(${lastUpdate})` : ''}`}
-            </button>
-          )}
         </div>
       </div>
     </div>
@@ -592,7 +582,6 @@ function WIGHeader({ wigNum, areaName, wigDesc, week, score, isHarvest, onRefres
 }
 
 function WIGSection({ wigNum, areaName, wigDesc, lags, leads, currentWeek, sheetLagGid, isHarvest, week, onRefresh, lastUpdate, loading }) {
-  const score = calcScore(lags);
   return (
     <div className="wig-section">
       <WIGHeader
@@ -600,7 +589,6 @@ function WIGSection({ wigNum, areaName, wigDesc, lags, leads, currentWeek, sheet
         areaName={areaName}
         wigDesc={wigDesc}
         week={week}
-        score={score}
         isHarvest={isHarvest}
         onRefresh={onRefresh}
         lastUpdate={lastUpdate}
@@ -636,10 +624,10 @@ function Dashboard() {
     try {
       const [wigiRes, osLagRes, osLeadRes, harvestLagRes, harvestLeadRes] = await Promise.all([
         fetchGviz(GIDS.WIGI),
-        fetchGviz(GIDS.OS_LAG,       'A1:P200', 0),
-        fetchGviz(GIDS.OS_LEAD,      'A1:P200', 0),
-        fetchGviz(GIDS.HARVEST_LAG,  'A1:P200', 0),
-        fetchGviz(GIDS.HARVEST_LEAD, 'A1:P200', 0),
+        fetchGviz(GIDS.OS_LAG,       'A1:P200'),
+        fetchGviz(GIDS.OS_LEAD,      'A1:P200'),
+        fetchGviz(GIDS.HARVEST_LAG,  'A1:P200'),
+        fetchGviz(GIDS.HARVEST_LEAD, 'A1:P200'),
       ]);
 
       const wigiParsed = parseWIGI(wigiRes.table.rows);
