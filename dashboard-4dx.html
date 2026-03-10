@@ -157,9 +157,10 @@ function cvNum(row, idx) {
   return isNaN(n) ? null : n;
 }
 
-async function fetchGviz(gid, range) {
+async function fetchGviz(gid, range, headers) {
   const rangeParam = range ? '&range=' + range : '';
-  const url = 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID + '/gviz/tq?tqx=out:json&gid=' + gid + rangeParam;
+  const headersParam = (headers !== undefined) ? '&headers=' + headers : '';
+  const url = 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID + '/gviz/tq?tqx=out:json&gid=' + gid + rangeParam + headersParam;
   const res = await fetch(url);
   if (!res.ok) throw new Error('HTTP ' + res.status + ' dla gid=' + gid);
   const text = await res.text();
@@ -635,10 +636,10 @@ function Dashboard() {
     try {
       const [wigiRes, osLagRes, osLeadRes, harvestLagRes, harvestLeadRes] = await Promise.all([
         fetchGviz(GIDS.WIGI),
-        fetchGviz(GIDS.OS_LAG,       'A1:P200'),
-        fetchGviz(GIDS.OS_LEAD,      'A1:P200'),
-        fetchGviz(GIDS.HARVEST_LAG,  'A1:P200'),
-        fetchGviz(GIDS.HARVEST_LEAD, 'A1:P200'),
+        fetchGviz(GIDS.OS_LAG,       'A1:P200', 0),
+        fetchGviz(GIDS.OS_LEAD,      'A1:P200', 0),
+        fetchGviz(GIDS.HARVEST_LAG,  'A1:P200', 0),
+        fetchGviz(GIDS.HARVEST_LEAD, 'A1:P200', 0),
       ]);
 
       const wigiParsed = parseWIGI(wigiRes.table.rows);
