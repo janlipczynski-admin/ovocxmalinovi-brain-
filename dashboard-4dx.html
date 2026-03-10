@@ -189,10 +189,18 @@ function getWeekDates(weekNum, year) {
 // Szukamy: wierszy "WIG#1", "WIG#2" → col B = pełna treść WIG
 
 function parseWIGI(data) {
+  var cols = data.table.cols || [];
   var rows = data.table.rows;
-  var currentWeek = cvNum(rows[0], 4) ? Math.round(cvNum(rows[0], 4)) : 11;
+  // currentWeek: jeśli gviz skonsumował row 1 jako header → wartość jest w cols[4].label
+  // Fallback: rows[0] col E (gdy gviz NIE skonsumował row 1)
+  var weekFromRows = cvNum(rows[0], 4) ? Math.round(cvNum(rows[0], 4)) : 0;
+  var colELabel = cols[4] ? (cols[4].label || '') : '';
+  var weekFromCols = colELabel.match(/\d+/) ? parseInt(colELabel.match(/\d+/)[0]) : 0;
+  var currentWeek = weekFromRows || weekFromCols || 11;
   var areas = {};
-  for (var i = 1; i < rows.length; i++) {
+  // Dane WIG zaczynają się od row 2 arkusza → gdy gviz skonsumował row 1,
+  // rows[0] = row 2 (pierwszy WIG). Pętla od i=0 żeby nie pominąć.
+  for (var i = 0; i < rows.length; i++) {
     if (cvStr(rows[i], 0) === 'Obszar') {
       var wigId = cvStr(rows[i], 2);
       areas[wigId] = { name: cvStr(rows[i], 1), text: cvStr(rows[i], 3) };
