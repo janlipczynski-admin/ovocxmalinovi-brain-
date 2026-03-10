@@ -197,7 +197,7 @@ function parseWIGI(rows) {
 
   for (let i = 0; i < rows.length; i++) {
     const a = cvStr(rows[i], 0);
-    if (/obszar/i.test(a)) {
+    if (!areaName && /obszar/i.test(a)) {
       const v = cvStr(rows[i], 1);
       if (v) areaName = v;
     }
