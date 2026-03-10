@@ -157,14 +157,12 @@ function cvNum(row, idx) {
   return isNaN(n) ? null : n;
 }
 
-async function fetchGviz(gid, range, headers) {
-  const rangeParam = range ? '&range=' + range : '';
-  const headersParam = (headers !== undefined) ? '&headers=' + headers : '';
-  const url = 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID + '/gviz/tq?tqx=out:json&gid=' + gid + rangeParam + headersParam;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('HTTP ' + res.status + ' dla gid=' + gid);
-  const text = await res.text();
-  const json = text
+async function fetchGviz(gid, range) {
+  var rangeParam = range ? '&range=' + range : '';
+  var url = 'https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/gviz/tq?tqx=out:json&gid=' + gid + rangeParam;
+  var res = await fetch(url);
+  var text = await res.text();
+  var json = text
     .replace(/^\/\*[\s\S]*?\*\/\s*\n?/, '')
     .replace(/^google\.visualization\.Query\.setResponse\(/, '')
     .replace(/\);\s*$/, '');
