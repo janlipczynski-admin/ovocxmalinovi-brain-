@@ -550,9 +550,10 @@ function LEADCard({ lead, currentWeek }) {
   );
 }
 
-function WIGHeader({ wigNum, areaName, wigDesc, week, isHarvest, onRefresh, lastUpdate, loading }) {
+function WIGHeader({ wigNum, areaName, wigDesc, week, score, isHarvest, onRefresh, lastUpdate, loading }) {
   const weekDates = getWeekDates(week, 2026);
   const areaClass = isHarvest ? 'wig-area-name harvest' : 'wig-area-name';
+  const scoreClass = isHarvest ? 'wig-score harvest' : 'wig-score';
   const headerClass = isHarvest ? 'wig-header harvest' : 'wig-header';
   const strongClass = isHarvest ? 'harvest' : '';
   return (
@@ -577,11 +578,19 @@ function WIGHeader({ wigNum, areaName, wigDesc, week, isHarvest, onRefresh, last
           {wigDesc || '\u2014'}
         </div>
       </div>
+      <div className="wig-bottom">
+        <span className={scoreClass}>{pct(score)}%</span>
+        <div className="progress-wrap">
+          <div className="progress-label">Średni postęp LAG-ów</div>
+          <ProgressBar value={score} />
+        </div>
+      </div>
     </div>
   );
 }
 
 function WIGSection({ wigNum, areaName, wigDesc, lags, leads, currentWeek, sheetLagGid, isHarvest, week, onRefresh, lastUpdate, loading }) {
+  const score = calcScore(lags);
   return (
     <div className="wig-section">
       <WIGHeader
@@ -589,6 +598,7 @@ function WIGSection({ wigNum, areaName, wigDesc, lags, leads, currentWeek, sheet
         areaName={areaName}
         wigDesc={wigDesc}
         week={week}
+        score={score}
         isHarvest={isHarvest}
         onRefresh={onRefresh}
         lastUpdate={lastUpdate}
