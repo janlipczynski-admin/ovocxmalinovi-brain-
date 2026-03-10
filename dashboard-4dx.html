@@ -18,8 +18,20 @@
       margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       border-left: 4px solid #1a237e;
     }
-    .wig-top { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
-    .wig-top h1 { font-size: 1.4rem; font-weight: 700; color: #1a237e; }
+    .wig-area-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 6px;
+    }
+    .wig-area-label { font-size: 0.82rem; color: #666; font-weight: 700; letter-spacing: 0.05em; }
+    .wig-area-name { color: #1a237e; font-weight: 800; }
+    .wig-week-label { font-size: 0.82rem; color: #666; }
+    .wig-week-dates { color: #555; font-size: 0.82rem; }
+    .wig-desc-row { font-size: 0.85rem; color: #444; font-style: italic; margin-top: 2px; }
+    .wig-desc-row strong { color: #1a237e; font-style: normal; }
+    .wig-top-box {
+      background: #f8f9fd; border-radius: 8px; padding: 12px 16px;
+      margin-bottom: 14px; border-bottom: 1px solid #e8eaf6;
+    }
     .week-badge { background: #1a237e; color: white; padding: 3px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 700; }
     .wig-desc { color: #555; margin-bottom: 12px; font-size: 0.88rem; line-height: 1.5; }
     .wig-bottom { display: flex; align-items: center; gap: 16px; }
@@ -87,6 +99,18 @@
     .loading { text-align: center; padding: 60px; font-size: 1.1rem; color: #666; }
     .error-box { background: #ffebee; border: 1px solid #ef9a9a; border-radius: 8px; padding: 16px; margin: 20px; color: #c62828; }
 
+    /* LAG CHART */
+    .lag-chart-wrap { margin: 10px 0 4px; }
+    .lag-chart-legend {
+      display: flex; gap: 16px; margin-bottom: 8px;
+      font-size: 11px; color: #888; flex-wrap: wrap;
+    }
+    .lag-id-link {
+      font-size: 0.85rem; font-weight: 800; color: #1a237e;
+      text-decoration: none; border-bottom: 2px solid #c5cae9;
+    }
+    .lag-id-link:hover { border-color: #1a237e; }
+
     /* DEBUG */
     .debug-box { background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 0.78rem; color: #555; }
     .debug-box pre { overflow-x: auto; font-size: 0.72rem; margin-top: 8px; }
@@ -102,7 +126,6 @@ const GIDS = { WIGI: 1699564336, OS_LAG: 322339268, OS_LEAD: 2102307131 };
 // ─── HELPERS ───────────────────────────────────────────────────────────────
 
 function cv(row, idx) {
-  // getCellValue — bezpiecznie pobiera wartość komórki z gviz row
   if (!row || !row.c || row.c.length <= idx) return null;
   const cell = row.c[idx];
   if (!cell) return null;
@@ -135,12 +158,35 @@ async function fetchGviz(gid, range) {
   return JSON.parse(json);
 }
 
+// ─── WEEK DATES ────────────────────────────────────────────────────────────
+
+function getWeekDates(weekNum, year) {
+  const jan4 = new Date(year, 0, 4);
+  const startOfWeek1 = new Date(jan4);
+  startOfWeek1.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
+  const weekStart = new Date(startOfWeek1);
+  weekStart.setDate(startOfWeek1.getDate() + (weekNum - 1) * 7);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  const fmt = function(d) { return d.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' }); };
+  return fmt(weekStart) + ' \u2013 ' + fmt(weekEnd) + '.' + year;
+}
+
 // ─── PARSER: WIGI ──────────────────────────────────────────────────────────
 // Row 0, col E (idx 4) = aktualny tydzień
+// Szukamy wiersza gdzie col A zawiera "obszar" → col B = nazwa obszaru
 
 function parseWIGI(rows) {
   const week = cvNum(rows[0], 4);
-  return { currentWeek: week ? Math.round(week) : 11 };
+  let areaName = '';
+  for (let i = 0; i < rows.length; i++) {
+    const a = cvStr(rows[i], 0);
+    if (/obszar/i.test(a)) {
+      areaName = cvStr(rows[i], 1) || '';
+      break;
+    }
+  }
+  return { currentWeek: week ? Math.round(week) : 11, areaName: areaName };
 }
 
 // ─── PARSER: OS_LAG ────────────────────────────────────────────────────────
@@ -150,6 +196,9 @@ function parseWIGI(rows) {
 // Marker LAG: col A = "LAG-01 — nazwa"
 // Nagłówki tygodni: C=T10(idx2), D=T11(idx3), E=T12(idx4), F=T13(idx5), G=T14(idx6), H=T15(idx7)
 // Wiersz sumy: col A = "LAG-XX Postep (srednia %)"
+//
+// ZMIANA 1: Warunek postępu używa WYŁĄCZNIE regex /^LAG-\d+\s+Post/i.
+// Puste wiersze między zadaniami są pomijane (continue) — NIE przerywają pętli.
 
 function parseOsLag(rows, currentWeek) {
   const wigScore    = cvNum(rows[0], 1) || 0;
@@ -166,29 +215,36 @@ function parseOsLag(rows, currentWeek) {
     const row = rows[i];
     const a = cvStr(row, 0);
 
+    // Marker LAG: "LAG-01 — Nazwa" lub "LAG-01 - Nazwa"
     if (/^LAG-\d+\s*[\u2014\-]/i.test(a)) {
       if (cur) lags.push(cur);
       const idMatch = a.match(/^(LAG-\d+)/i);
       const id = idMatch ? idMatch[1] : a;
       const name = a.replace(/^LAG-\d+\s*[\u2014\-]\s*/i, '').trim();
-      cur = { id: id, name: name, postep: null, tasks: [], weeklyData: [] };
+      // col B może zawierać deadline tygodnia dla tego LAG-a
+      const deadline = cvNum(row, 1);
+      cur = { id: id, name: name, deadline: deadline, postep: null, tasks: [], weeklyData: [] };
       continue;
     }
 
     if (!cur) continue;
 
+    // Wiersz postępu: WYŁĄCZNIE po regex /^LAG-\d+\s+Post/i
+    // Puste wiersze (a === '') są pomijane — nie trafiają tu
     if (/^LAG-\d+\s+Post/i.test(a)) {
       cur.postep = cvNum(row, weekColIdx);
-      cur.weeklyData = [2,3,4,5,6,7].map(function(j) { return cvNum(row, j); });
+      // weeklyData: T10(idx2) … T22(idx14) → 13 tygodni
+      cur.weeklyData = [2,3,4,5,6,7,8,9,10,11,12,13,14].map(function(j) { return cvNum(row, j); });
       continue;
     }
 
     if (a === 'Proces' || a === 'Measure') continue;
 
-    if (a) {
-      const val = cvNum(row, weekColIdx);
-      cur.tasks.push({ name: a, done: val !== null && val >= 1 });
-    }
+    // Puste wiersze między zadaniami: pomiń (nie przerywaj)
+    if (!a) continue;
+
+    const val = cvNum(row, weekColIdx);
+    cur.tasks.push({ name: a, done: val !== null && val >= 1 });
   }
   if (cur) lags.push(cur);
 
@@ -196,17 +252,6 @@ function parseOsLag(rows, currentWeek) {
 }
 
 // ─── PARSER: OS_LEAD ───────────────────────────────────────────────────────
-//
-// Struktura w JSON (z range=A1:P...):
-// Row i:   col A = "Lead 1"         ← marker bloku
-// Row i+1: col A = "Działania 4dx"  ← NAZWA Leada, col B = deadline, col C = opis, col D-P = wyniki
-// Row i+2: col A = "Lead 2"         ← następny marker (lub zadania między nimi)
-//
-// Zadania: wiersze gdzie col A = null, col B = deadline, col C = nazwa zadania
-// Postęp:  wiersz gdzie col A = null, col B = null, col C = null (wiersz sumy)
-//          LUB ostatni wiersz bloku przed następnym "Lead X"
-//
-// T10=idx3(D), T11=idx4(E), T12=idx5(F) ... weekColIdx = 3 + (currentWeek - 10)
 
 function parseOsLead(data, currentWeek) {
   const rows = data.table.rows;
@@ -219,21 +264,15 @@ function parseOsLead(data, currentWeek) {
     const row = rows[i];
     const colA = cvStr(row, 0);
 
-    // Marker bloku: col A = "Lead 1", "Lead 2" itd.
     if (/^Lead\s+\d+$/i.test(colA)) {
-
-      // Następny wiersz = nazwa Leada + dane
       const nameRow = rows[i + 1];
       if (!nameRow) { i++; continue; }
 
-      const leadName = cvStr(nameRow, 0);  // col A = nazwa
-      const deadline = cvNum(nameRow, 1);  // col B = deadline
+      const leadName = cvStr(nameRow, 0);
+      const deadline = cvNum(nameRow, 1);
       const idNum    = colA.match(/\d+/)[0];
       const id       = 'Lead ' + idNum;
 
-      // Postęp i weeklyData — bierzemy z wiersza sumy (col A=null, col B=null, col C=null)
-      // który jest ostatnim wierszem bloku przed następnym "Lead X"
-      // Na razie inicjalizujemy jako null, uzupełnimy po zebraniu zadań
       const lead = {
         id: id,
         name: leadName,
@@ -243,7 +282,6 @@ function parseOsLead(data, currentWeek) {
         tasks: []
       };
 
-      // Wiersz nazwy (i+1) może też zawierać pierwsze zadanie w col C
       if (cvStr(nameRow, 2) && cvStr(nameRow, 2) !== 'Opis') {
         const tVal = cvNum(nameRow, weekColIdx);
         lead.tasks.push({
@@ -253,7 +291,6 @@ function parseOsLead(data, currentWeek) {
         });
       }
 
-      // Zadania: od i+2 aż do następnego "Lead X"
       let j = i + 2;
       while (j < rows.length) {
         const tRow = rows[j];
@@ -261,10 +298,8 @@ function parseOsLead(data, currentWeek) {
         const tB   = cv(tRow, 1);
         const tC   = cvStr(tRow, 2);
 
-        // Następny marker Lead — stop
         if (/^Lead\s+\d+$/i.test(tA)) break;
 
-        // Wiersz postępu: col A=null, col B=null, col C=null lub "Postęp"
         if (!tA && (tB === null || tB === undefined) && !tC) {
           lead.postep = cvNum(tRow, weekColIdx);
           lead.weeklyData = [3,4,5,6,7,8,9,10,11,12,13,14,15].map(function(k) { return cvNum(tRow, k); });
@@ -272,7 +307,6 @@ function parseOsLead(data, currentWeek) {
           continue;
         }
 
-        // Zadanie: col C = nazwa zadania
         if (tC && tC !== 'Opis') {
           const tWeek = tB !== null ? Math.round(Number(tB)) : null;
           const tVal  = cvNum(tRow, weekColIdx);
@@ -285,11 +319,9 @@ function parseOsLead(data, currentWeek) {
         j++;
       }
 
-      // Jeśli nie znaleziono wiersza postępu, wylicz ze średniej zadań
       if (lead.postep === null && lead.tasks.length > 0) {
         const done = lead.tasks.filter(function(t) { return t.done; }).length;
         lead.postep = done / lead.tasks.length;
-        // Dla Lead 1 z jednym zadaniem bierzemy wartość bezpośrednio z komórki
         if (lead.tasks.length === 1) {
           const directVal = cvNum(nameRow, weekColIdx);
           if (directVal !== null) lead.postep = directVal;
@@ -304,6 +336,104 @@ function parseOsLead(data, currentWeek) {
   }
 
   return leads;
+}
+
+// ─── LAG CHART ─────────────────────────────────────────────────────────────
+// Renderuje SVG wykresu trendu dla LAG-a. Zwraca string HTML.
+
+function renderLagChart(lag, currentWeek) {
+  const deadline = lag.deadline || 22;
+  const weeks = [];
+  for (let w = 10; w <= deadline; w++) weeks.push(w);
+
+  const W = 520;
+  const H = 120;
+  const padL = 36; const padB = 24; const padT = 16; const padR = 10;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+
+  const xOf = function(weekNum) { return padL + ((weekNum - 10) / (deadline - 10)) * chartW; };
+  const yOf = function(val) { return padT + chartH - (val * chartH); };
+
+  // Zbierz rzeczywiste punkty (tylko tygodnie <= currentWeek z niezerową wartością)
+  const realPoints = [];
+  weeks.forEach(function(w) {
+    const idx = w - 10;
+    const rawVal = (lag.weeklyData && lag.weeklyData[idx] !== undefined && lag.weeklyData[idx] !== null)
+      ? lag.weeklyData[idx] : null;
+    if (rawVal !== null && w <= currentWeek) {
+      realPoints.push({ x: xOf(w), y: yOf(rawVal), val: rawVal, week: w });
+    }
+  });
+
+  const lastReal = realPoints.length > 0 ? realPoints[realPoints.length - 1] : null;
+  const targetPoint = { x: xOf(deadline), y: yOf(1) };
+
+  const gradId = 'lg' + lag.id.replace(/[\s\-]/g, '');
+
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;overflow:visible">';
+
+  // Siatka pozioma
+  [0, 0.25, 0.5, 0.75, 1].forEach(function(v) {
+    const y = yOf(v);
+    svg += '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '" stroke="#f0f0f0" stroke-width="1"/>';
+    svg += '<text x="' + (padL - 4) + '" y="' + (y + 4) + '" text-anchor="end" font-size="9" fill="#bbb">' + Math.round(v * 100) + '%</text>';
+  });
+
+  // Linia celu 100%
+  svg += '<line x1="' + padL + '" y1="' + yOf(1) + '" x2="' + (W - padR) + '" y2="' + yOf(1) + '" stroke="#ef5350" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.8"/>';
+  svg += '<text x="' + (W - padR) + '" y="' + (yOf(1) - 4) + '" text-anchor="end" font-size="8" fill="#ef5350" font-weight="700">CEL 100%</text>';
+
+  // Gradient fill pod linią rzeczywistą
+  if (realPoints.length > 1) {
+    const areaPath = 'M' + realPoints[0].x + ',' + yOf(0) + ' ' +
+      realPoints.map(function(p) { return 'L' + p.x + ',' + p.y; }).join(' ') +
+      ' L' + lastReal.x + ',' + yOf(0) + ' Z';
+    svg += '<defs><linearGradient id="' + gradId + '" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#4caf50" stop-opacity="0.2"/>' +
+      '<stop offset="100%" stop-color="#4caf50" stop-opacity="0"/>' +
+      '</linearGradient></defs>';
+    svg += '<path d="' + areaPath + '" fill="url(#' + gradId + ')"/>';
+  }
+
+  // Planowana trajektoria (od ostatniego real do deadline@100%)
+  if (lastReal) {
+    svg += '<line x1="' + lastReal.x + '" y1="' + lastReal.y + '" x2="' + targetPoint.x + '" y2="' + targetPoint.y + '" stroke="#9e9e9e" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.7"/>';
+    svg += '<circle cx="' + targetPoint.x + '" cy="' + targetPoint.y + '" r="4" fill="white" stroke="#ef5350" stroke-width="2"/>';
+  }
+
+  // Linia rzeczywista
+  if (realPoints.length > 1) {
+    const points = realPoints.map(function(p) { return p.x + ',' + p.y; }).join(' ');
+    svg += '<polyline points="' + points + '" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  }
+
+  // Punkty na linii
+  realPoints.forEach(function(p) {
+    const isCurrent = p.week === currentWeek;
+    const r = isCurrent ? 7 : 4;
+    const fill = isCurrent ? '#4caf50' : 'white';
+    svg += '<circle cx="' + p.x + '" cy="' + p.y + '" r="' + r + '" fill="' + fill + '" stroke="#4caf50" stroke-width="2"/>';
+    if (isCurrent) {
+      svg += '<text x="' + p.x + '" y="' + (p.y - 12) + '" text-anchor="middle" font-size="10" fill="#2e7d32" font-weight="700">' + Math.round(p.val * 100) + '%</text>';
+    }
+  });
+
+  // Etykiety osi X
+  weeks.forEach(function(w) {
+    const x = xOf(w);
+    const isCurrent = w === currentWeek;
+    const isDeadline = w === deadline;
+    const color = isCurrent ? '#1a237e' : isDeadline ? '#ef5350' : '#ccc';
+    const weight = (isCurrent || isDeadline) ? '700' : '400';
+    svg += '<text x="' + x + '" y="' + (H - 2) + '" text-anchor="middle" font-size="9" fill="' + color + '" font-weight="' + weight + '">T' + w + '</text>';
+  });
+
+  // Pionowa linia "jesteśmy tu"
+  svg += '<line x1="' + xOf(currentWeek) + '" y1="' + padT + '" x2="' + xOf(currentWeek) + '" y2="' + (padT + chartH) + '" stroke="#1a237e" stroke-width="1" stroke-dasharray="3,3" opacity="0.25"/>';
+
+  svg += '</svg>';
+  return svg;
 }
 
 // ─── UI COMPONENTS ─────────────────────────────────────────────────────────
@@ -345,18 +475,46 @@ function Sparkline({ data }) {
   );
 }
 
-function LAGCard({ lag }) {
+function LAGCard({ lag, currentWeek }) {
   const p = lag.postep || 0;
+  const chartHtml = renderLagChart(lag, currentWeek);
   return (
     <div className={`card ${cardColor(p)}`}>
       <div className="card-top">
-        <span className="card-id">{lag.id}</span>
+        <a
+          href="https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit#gid=322339268"
+          target="_blank"
+          className="lag-id-link"
+        >{lag.id}</a>
         <span className="card-name">{lag.name}</span>
         <span className="card-pct">{pct(p)}%</span>
       </div>
       <ProgressBar value={p} sm />
       <div className="card-sub">
         <span className="card-detail">Postęp: {pct(p)}%</span>
+      </div>
+      <div className="lag-chart-wrap">
+        <div className="lag-chart-legend">
+          <span>
+            <svg width="20" height="2" style={{verticalAlign:'middle'}}>
+              <line x1="0" y1="1" x2="20" y2="1" stroke="#4caf50" strokeWidth="2"/>
+            </svg>
+            {' '}rzeczywisty postęp
+          </span>
+          <span>
+            <svg width="20" height="2" style={{verticalAlign:'middle'}}>
+              <line x1="0" y1="1" x2="20" y2="1" stroke="#9e9e9e" strokeWidth="1.5" strokeDasharray="5,4"/>
+            </svg>
+            {' '}planowana trajektoria
+          </span>
+          <span>
+            <svg width="20" height="2" style={{verticalAlign:'middle'}}>
+              <line x1="0" y1="1" x2="20" y2="1" stroke="#ef5350" strokeWidth="1.5" strokeDasharray="5,4"/>
+            </svg>
+            {' '}cel 100%
+          </span>
+        </div>
+        <div dangerouslySetInnerHTML={{__html: chartHtml}} />
       </div>
       {lag.tasks.length > 0 && (
         <ul className="tasks-list">
@@ -367,7 +525,6 @@ function LAGCard({ lag }) {
           ))}
         </ul>
       )}
-      {lag.weeklyData && lag.weeklyData.some(v => v !== null) && <Sparkline data={lag.weeklyData} />}
     </div>
   );
 }
@@ -412,14 +569,25 @@ function LEADCard({ lead, currentWeek }) {
   );
 }
 
-function WIGHeader({ wig, week, onRefresh, lastUpdate, loading }) {
+function WIGHeader({ wig, week, areaName, onRefresh, lastUpdate, loading }) {
+  const weekDates = getWeekDates(week, 2026);
+  const area = areaName || 'OS Malinovi 1.0';
   return (
     <div className="wig-header">
-      <div className="wig-top">
-        <h1>WIG #1 — OS MALINOWI 1.0</h1>
-        <span className="week-badge">T{week}</span>
+      <div className="wig-top-box">
+        <div className="wig-area-row">
+          <span className="wig-area-label">
+            OBSZAR: <span className="wig-area-name">{area}</span>
+          </span>
+          <span className="wig-week-label">
+            Aktualny tydzień: <span className="week-badge">T{week}</span>{' '}
+            <span className="wig-week-dates">({weekDates})</span>
+          </span>
+        </div>
+        <div className="wig-desc-row">
+          <strong>WIG #1:</strong> {wig.wigDesc || 'Do 30.06.2026 wdrożyć OS Malinovi 1.0'}
+        </div>
       </div>
-      <p className="wig-desc">{wig.wigDesc || 'Do 30.06.2026 wdrożyć OS Malinovi 1.0'}</p>
       <div className="wig-bottom">
         <span className="wig-score">{((wig.wigScore||0)*100).toFixed(1)}%</span>
         <div className="progress-wrap">
@@ -451,14 +619,16 @@ function Dashboard() {
         fetchGviz(GIDS.OS_LEAD, 'A1:P200'),
       ]);
 
-      const { currentWeek } = parseWIGI(wigiRes.table.rows);
+      const wigiParsed = parseWIGI(wigiRes.table.rows);
+      const currentWeek = wigiParsed.currentWeek;
+      const areaName = wigiParsed.areaName;
       const lagData = parseOsLag(lagRes.table.rows, currentWeek);
       const leads = parseOsLead(leadRes, currentWeek);
 
       setState({
         loading: false,
         error: null,
-        data: { currentWeek, wig: lagData, lags: lagData.lags, leads },
+        data: { currentWeek, areaName, wig: lagData, lags: lagData.lags, leads },
         lastUpdate: new Date().toLocaleTimeString('pl-PL'),
       });
     } catch (e) {
@@ -480,14 +650,14 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
-      <WIGHeader wig={data.wig} week={data.currentWeek} onRefresh={load} lastUpdate={lastUpdate} loading={loading} />
+      <WIGHeader wig={data.wig} week={data.currentWeek} areaName={data.areaName} onRefresh={load} lastUpdate={lastUpdate} loading={loading} />
       {error && <div className="error-box" style={{marginBottom:16}}>⚠️ Błąd odświeżania: {error}</div>}
       <div className="measures-grid">
         <div>
           <div className="section-title">📊 LAG Measures — wyniki</div>
           {data.lags.length === 0
             ? <p style={{color:'#aaa',fontSize:'0.85rem'}}>Brak danych LAG</p>
-            : data.lags.map(l => <LAGCard key={l.id} lag={l} />)
+            : data.lags.map(l => <LAGCard key={l.id} lag={l} currentWeek={data.currentWeek} />)
           }
         </div>
         <div>
