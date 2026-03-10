@@ -216,6 +216,7 @@ function parseGenericLag(data, currentWeek) {
     var row = rows[i];
     var colA = cvStr(row, 0);
     if (colA === '#KONIEC') break;
+    if (colA === '#START') continue;
     if (/^#LAG-\d+$/i.test(colA)) {
       if (cur) lags.push(cur);
       var lagId = colA.replace('#', '');
@@ -259,6 +260,7 @@ function parseGenericLead(data, currentWeek) {
     var row = rows[i];
     var colA = cvStr(row, 0);
     if (colA === '#KONIEC') break;
+    if (colA === '#START') continue;
     if (/^#LEAD-\d+$/i.test(colA)) {
       if (cur) leads.push(cur);
       var leadId = colA.replace('#', '');
