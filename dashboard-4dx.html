@@ -188,28 +188,17 @@ function getWeekDates(weekNum, year) {
 // Szukamy: wiersza "obszar" → col B = nazwa obszaru OS
 // Szukamy: wierszy "WIG#1", "WIG#2" → col B = pełna treść WIG
 
-function parseWIGI(rows) {
-  const week = cvNum(rows[0], 4);
-  let areaName = '';
-  const wigDescs = {};
-
-  for (let i = 0; i < rows.length; i++) {
-    const a = cvStr(rows[i], 0);
-    if (!areaName && /obszar/i.test(a)) {
-      const v = cvStr(rows[i], 1);
-      if (v) areaName = v;
-    }
-    // WIG# marker jest w kol C (indeks 2), opis w kol D (indeks 3) — wg sheet-map.md
-    const c2 = cvStr(rows[i], 2);
-    const wm = c2.match(/^WIG\s*#?\s*(\d+)/i);
-    if (wm) {
-      const num = parseInt(wm[1]);
-      const desc = cvStr(rows[i], 3) || cvStr(rows[i], 1) || '';
-      if (desc && !wigDescs[num]) wigDescs[num] = desc;
+function parseWIGI(data) {
+  var rows = data.table.rows;
+  var currentWeek = cvNum(rows[0], 4) ? Math.round(cvNum(rows[0], 4)) : 11;
+  var areas = {};
+  for (var i = 1; i < rows.length; i++) {
+    if (cvStr(rows[i], 0) === 'Obszar') {
+      var wigId = cvStr(rows[i], 2);
+      areas[wigId] = { name: cvStr(rows[i], 1), text: cvStr(rows[i], 3) };
     }
   }
-
-  return { currentWeek: week ? Math.round(week) : 11, areaName: areaName, wigDescs: wigDescs };
+  return { currentWeek: currentWeek, areas: areas };
 }
 
 // ─── PARSER GENERYCZNY: LAG (#-markery) ────────────────────────────────────
@@ -219,30 +208,25 @@ function parseWIGI(rows) {
 // Col D (idx 3) = T10, Col E (idx 4) = T11, wzór: weekColIdx = 3 + (currentWeek - 10)
 
 function parseGenericLag(data, currentWeek) {
-  const rows = data.table.rows;
-  const weekColIdx = 3 + (currentWeek - 10);
-  const lags = [];
-  let cur = null;
-
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    const colA = cvStr(row, 0);
-
+  var rows = data.table.rows;
+  var weekColIdx = 3 + (currentWeek - 10);
+  var lags = [];
+  var cur = null;
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var colA = cvStr(row, 0);
     if (colA === '#KONIEC') break;
-
     if (/^#LAG-\d+$/i.test(colA)) {
       if (cur) lags.push(cur);
-      const id = colA.replace('#', '');
-      const name = cvStr(row, 1);
-      const deadlineText = cvStr(row, 2);
-      const dm = deadlineText.match(/T(\d+)/i);
-      const deadline = dm ? parseInt(dm[1]) : null;
-      cur = { id: id, name: name, deadline: deadline, postep: null, weeklyData: [], tasks: [] };
+      var lagId = colA.replace('#', '');
+      var lagName = cvStr(row, 1);
+      var dlText = cvStr(row, 2);
+      var dlMatch = dlText.match(/T(\d+)/i);
+      var lagDeadline = dlMatch ? parseInt(dlMatch[1]) : 22;
+      cur = { id: lagId, name: lagName, deadline: lagDeadline, postep: null, weeklyData: [], tasks: [] };
       continue;
     }
-
     if (colA === '#HEADER') continue;
-
     if (colA === '#POSTEP') {
       if (cur) {
         cur.postep = cvNum(row, weekColIdx);
@@ -250,21 +234,13 @@ function parseGenericLag(data, currentWeek) {
       }
       continue;
     }
-
-    // Puste wiersze separatora — pomijamy
     if (!colA && !cvStr(row, 1)) continue;
-
-    // Wiersz danych procesu: col B = nazwa
     if (cur && cvStr(row, 1)) {
-      const val = cvNum(row, weekColIdx);
-      cur.tasks.push({
-        name: cvStr(row, 1),
-        done: val !== null && val >= 1
-      });
+      var lagVal = cvNum(row, weekColIdx);
+      cur.tasks.push({ name: cvStr(row, 1), done: lagVal !== null && lagVal >= 1 });
     }
   }
   if (cur) lags.push(cur);
-
   return lags;
 }
 
@@ -275,30 +251,25 @@ function parseGenericLag(data, currentWeek) {
 // Col D (idx 3) = T10, wzór: weekColIdx = 3 + (currentWeek - 10)
 
 function parseGenericLead(data, currentWeek) {
-  const rows = data.table.rows;
-  const weekColIdx = 3 + (currentWeek - 10);
-  const leads = [];
-  let cur = null;
-
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    const colA = cvStr(row, 0);
-
+  var rows = data.table.rows;
+  var weekColIdx = 3 + (currentWeek - 10);
+  var leads = [];
+  var cur = null;
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var colA = cvStr(row, 0);
     if (colA === '#KONIEC') break;
-
     if (/^#LEAD-\d+$/i.test(colA)) {
       if (cur) leads.push(cur);
-      const id = colA.replace('#', '');
-      const name = cvStr(row, 1);
-      const deadlineText = cvStr(row, 2);
-      const dm = deadlineText.match(/T(\d+)/i);
-      const deadline = dm ? parseInt(dm[1]) : null;
-      cur = { id: id, name: name, deadline: deadline, postep: null, weeklyData: [], tasks: [] };
+      var leadId = colA.replace('#', '');
+      var leadName = cvStr(row, 1);
+      var dlText = cvStr(row, 2);
+      var dlMatch = dlText.match(/T(\d+)/i);
+      var leadDeadline = dlMatch ? parseInt(dlMatch[1]) : 22;
+      cur = { id: leadId, name: leadName, deadline: leadDeadline, postep: null, weeklyData: [], tasks: [] };
       continue;
     }
-
     if (colA === '#HEADER') continue;
-
     if (colA === '#POSTEP') {
       if (cur) {
         cur.postep = cvNum(row, weekColIdx);
@@ -306,22 +277,14 @@ function parseGenericLead(data, currentWeek) {
       }
       continue;
     }
-
     if (!colA && !cvStr(row, 1)) continue;
-
-    // Wiersz zadania: col B = nazwa, col C = deadline zadania (liczba)
     if (cur && cvStr(row, 1)) {
-      const taskDeadline = cvNum(row, 2);
-      const val = cvNum(row, weekColIdx);
-      cur.tasks.push({
-        name: cvStr(row, 1),
-        week: taskDeadline ? Math.round(taskDeadline) : null,
-        done: val !== null && val >= 1
-      });
+      var taskDl = cvNum(row, 2);
+      var leadVal = cvNum(row, weekColIdx);
+      cur.tasks.push({ name: cvStr(row, 1), week: taskDl ? Math.round(taskDl) : null, done: leadVal !== null && leadVal >= 1 });
     }
   }
   if (cur) leads.push(cur);
-
   return leads;
 }
 
@@ -632,31 +595,33 @@ function Dashboard() {
   const load = React.useCallback(async () => {
     setState(function(s) { return Object.assign({}, s, { loading: true, error: null }); });
     try {
-      const [wigiRes, osLagRes, osLeadRes, harvestLagRes, harvestLeadRes] = await Promise.all([
-        fetchGviz(GIDS.WIGI),
-        fetchGviz(GIDS.OS_LAG,       'A1:P200'),
-        fetchGviz(GIDS.OS_LEAD,      'A1:P200'),
-        fetchGviz(GIDS.HARVEST_LAG,  'A1:P200'),
-        fetchGviz(GIDS.HARVEST_LEAD, 'A1:P200'),
+      var results = await Promise.all([
+        fetchGviz(1699564336),
+        fetchGviz(967622858,  'A1:P200'),
+        fetchGviz(1727707031, 'A1:P200'),
+        fetchGviz(200348167,  'A1:P200'),
+        fetchGviz(259840012,  'A1:P200')
       ]);
+      var wigiRes       = results[0];
+      var osLagRes      = results[1];
+      var osLeadRes     = results[2];
+      var harvestLagRes = results[3];
+      var harvestLeadRes= results[4];
 
-      const wigiParsed = parseWIGI(wigiRes.table.rows);
-      const currentWeek = wigiParsed.currentWeek;
-      const areaName = wigiParsed.areaName;
-      const wigDescs = wigiParsed.wigDescs;
-
-      const osLags = parseGenericLag(osLagRes, currentWeek);
-      const osLeads = parseGenericLead(osLeadRes, currentWeek);
-      const harvestLags = parseGenericLag(harvestLagRes, currentWeek);
-      const harvestLeads = parseGenericLead(harvestLeadRes, currentWeek);
+      var wigi = parseWIGI(wigiRes);
+      var currentWeek = wigi.currentWeek;
+      var areas = wigi.areas;
+      var osLags       = parseGenericLag(osLagRes,       currentWeek);
+      var osLeads      = parseGenericLead(osLeadRes,      currentWeek);
+      var harvestLags  = parseGenericLag(harvestLagRes,   currentWeek);
+      var harvestLeads = parseGenericLead(harvestLeadRes,  currentWeek);
 
       setState({
         loading: false,
         error: null,
         data: {
           currentWeek: currentWeek,
-          areaName: areaName,
-          wigDescs: wigDescs,
+          areas: areas,
           os: { lags: osLags, leads: osLeads },
           harvest: { lags: harvestLags, leads: harvestLeads },
         },
@@ -684,16 +649,14 @@ function Dashboard() {
   );
   if (!data) return null;
 
-  const wigDescs = data.wigDescs || {};
-
   return (
     <div className="dashboard">
       {error && <div className="error-box" style={{marginBottom:16}}>⚠️ Błąd odświeżania: {error}</div>}
 
       <WIGSection
         wigNum={1}
-        areaName={data.areaName || 'OS Malinovi 1.0'}
-        wigDesc={wigDescs[1] || ''}
+        areaName={(data.areas && data.areas['WIG#1'] && data.areas['WIG#1'].name) || 'OS MALINOVI'}
+        wigDesc={(data.areas && data.areas['WIG#1'] && data.areas['WIG#1'].text) || ''}
         lags={data.os.lags}
         leads={data.os.leads}
         currentWeek={data.currentWeek}
@@ -708,7 +671,7 @@ function Dashboard() {
       <WIGSection
         wigNum={2}
         areaName="HARVEST"
-        wigDesc={wigDescs[2] || ''}
+        wigDesc={(data.areas && data.areas['WIG#2'] && data.areas['WIG#2'].text) || ''}
         lags={data.harvest.lags}
         leads={data.harvest.leads}
         currentWeek={data.currentWeek}
