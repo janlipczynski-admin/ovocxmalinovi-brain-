@@ -277,7 +277,7 @@ main{padding:32px 48px}
       <div>
         <div class="wig-label">WIG #1 · Jan (CEO)</div>
         <div class="wig-name">OS MALINOVI 1.0</div>
-        <div class="wig-owner">Z chaosu i wiedzy w głowach → firma działa jak system</div>
+        <div class="wig-owner">System operacyjny firmy · Owner: Jan (CEO)</div>
       </div>
       <div id="raag-os" class="raag red"><div class="raag-dot"></div>Wymaga akcji</div>
     </div>
@@ -291,12 +291,15 @@ main{padding:32px 48px}
         <circle id="ring-os-main" cx="80" cy="80" r="52" fill="none" stroke="#444" stroke-width="7"
           stroke-dasharray="0 326.7" stroke-linecap="butt"
           style="transform:rotate(-90deg);transform-origin:80px 80px"/>
-        <!-- gear polygon 8 zębów — scaled 1.5× z r_out=26 r_inner=18 w centrum (80,80) -->
-        <polygon id="gear-os-main" fill="#333"
-          points="74.6,41.5 85.4,41.5 83.8,53.3 96.2,58.4 103.4,48.8 111.2,56.6 101.6,63.8 106.7,76.3 118.6,74.6 118.6,85.4 106.7,83.8 101.6,96.2 111.2,103.4 103.4,111.2 96.2,101.6 83.8,106.7 85.4,118.6 74.6,118.6 76.3,106.7 63.8,101.6 56.6,111.2 48.8,103.4 58.4,96.2 53.3,83.8 41.5,85.4 41.5,74.6 53.3,76.3 58.4,63.8 48.8,56.6 56.6,48.8 63.8,58.4 76.3,53.3"/>
-        <!-- hub -->
-        <circle cx="80" cy="80" r="22" fill="var(--black)" stroke="#1a1a18" stroke-width="2"/>
-        <circle id="hub-os-main" cx="80" cy="80" r="7" fill="#333"/>
+        <!-- node network — 3 węzły połączone liniami, symbol systemu procesów -->
+        <line x1="80" y1="55" x2="55" y2="100" stroke="#444" stroke-width="2.5"/>
+        <line x1="80" y1="55" x2="105" y2="100" stroke="#444" stroke-width="2.5"/>
+        <line x1="55" y1="100" x2="105" y2="100" stroke="#444" stroke-width="2.5"/>
+        <circle id="gear-os-main" cx="80" cy="55" r="9" fill="#444" stroke="#333" stroke-width="2"/>
+        <circle cx="55" cy="100" r="9" fill="#444" stroke="#333" stroke-width="2"/>
+        <circle cx="105" cy="100" r="9" fill="#444" stroke="#333" stroke-width="2"/>
+        <!-- dummy dla sheets.js (hub-os-main) -->
+        <circle id="hub-os-main" cx="80" cy="77" r="0" fill="#444"/>
         <!-- ogólny % WIG -->
         <text id="text-os-overall" x="80" y="153" text-anchor="middle" font-family="Bebas Neue" font-size="30" fill="#444">0%</text>
         <text x="80" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--muted)">OS MALINOVI</text>
