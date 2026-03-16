@@ -1,222 +1,107 @@
-# Malinoovek — Agent Firmowy OvocxMalinovi 🫐
+# CLAUDE.md — Projekt: 4DX Dashboard OvocxMalinowi
+
+## Kim jestem i co robimy
+
+Jestem Jan Lipczynski, CEO OvocxMalinowi — polskiej firmy dystrybucji owoców (maliny, truskawki, jeżyny, wiśnie). Buduję wewnętrzny system zarządzania oparty na metodologii 4DX (4 Disciplines of Execution).
+
+**Główny cel projektu:** Dashboard 4DX pokazujący postępy realizacji WIG-ów (Wildly Important Goals) dla całego zespołu, z danymi live z bazy Supabase.
 
 ---
 
-## ⛔ ZASADY BEZWZGLĘDNE — CZYTAJ PRZED KAŻDĄ ZMIANĄ
+## Aktualny stan projektu (2026-03-16)
 
-### 1. KANONICZNY DASHBOARD = WIG Dashboard 2026
-- Plik: `index.html`
-- Zawiera: 4 WIG-i (OS MALINOVI / HARVEST 50 / NO COMPLAINTS / PRODUCT X) z kołowymi wykresami SVG
-- Spreadsheet: `1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ` (2026_Ovocxmalinovi_dashboard)
-- **NIGDY nie usuwaj WIG-ów, nie zastępuj dashboardem procesów, nie "naprawiaj" layoutu bez wyraźnego polecenia Jana**
-- **NIGDY nie przywracaj starych commitów bez weryfikacji zawartości**
+### Co działa:
+- ✅ Dashboard `dashboard-4dx.html` na GitHub Pages
+- ✅ Baza Supabase z pełnym schematem i danymi OS Malinovi (Jan)
+- ✅ Wpis tygodniowy (modal) — zapis do Supabase
+- ✅ LAG karty z postępem procesów i sparklines
+- ✅ LEAD karty z zadaniami i statusem
 
-### 2. PRZED KAŻDĄ ZMIANĄ W index.html
-1. Sprawdź czy `index.html` zawiera `wig-grid` — jeśli nie, STOP, coś jest nie tak
-2. Zrób `git diff HEAD index.html` i opisz Janowi co zmieniasz
-3. Po pushu: `git fetch origin main && git show origin/main:index.html | grep -c "wig-grid"` — wynik musi być > 0
-
-### 3. DANE FIRMOWE
-- Pliki JS z danymi (`*-data.js`, `planowanie-data.js`, `opakowania-data.js`) — zmiana tylko na wyraźne polecenie
-- Przed zmianą danych: pokaż Janowi diff, otrzymaj potwierdzenie
-- Po zmianie: uruchom smoke testy
+### Co nie działa / do zrobienia:
+- ❌ Dane dla pozostałych 3 obszarów (HARVEST, NO COMPLAINTS, PRODUCT X)
+- ❌ Kreator LAG/LEAD z UI
+- ❌ Dashboard multi-WIG (wszystkie 4 obszary naraz)
+- ❌ Malinoovek chatbox (wymaga osobnej integracji API)
 
 ---
 
-## 🧪 STRATEGIA TESTOWANIA — OBOWIĄZUJE BEZWZGLĘDNIE
-
-### Architektura testów (3 warstwy)
+## Architektura techniczna
 
 ```
-tests/
-├── smoke.js       — Warstwa 1: Dane (JS data files)
-├── dashboard.js   — Warstwa 2: Struktura WIG Dashboard
-├── navigation.js  — Warstwa 3: Nawigacja i linki HTML
-└── run-all.sh     — Runner: uruchamia wszystkie 3
+GitHub Pages (HTML/CSS/JS, zero frameworków)
+    ↓ fetch REST API
+Supabase PostgreSQL (West EU Ireland)
+    URL: https://fssfuricylndtetfktex.supabase.co
+    Key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-### Uruchamianie — przed KAŻDYM commitem
+**Repo:** `janlipczynski-admin/ovocxmalinovi-brain-`
+**Live:** `https://janlipczynski-admin.github.io/ovocxmalinovi-brain-/dashboard-4dx.html`
 
-```bash
-bash tests/run-all.sh
+---
+
+## Zespół i obszary 4DX
+
+| Obszar | Owner | WIG | Status |
+|--------|-------|-----|--------|
+| OS MALINOVI 1.0 | Jan (CEO) | 100% procesów wg DoD do Q2 2026 | ✅ W bazie |
+| HARVEST 50 | Kacper (sprzedaż) | 600k PLN marży netto | ❌ Brak danych |
+| NO COMPLAINTS | Olgierd (reklamacje) | Poziom reklamacji <3% | ❌ Brak danych |
+| PRODUCT X | Jan (CEO) | Nowy produkt / projekt | ❌ Brak danych |
+
+---
+
+## Zasady pracy z kodem
+
+1. **Zero zewnętrznych zależności** — tylko vanilla JS + Google Fonts. Bez React, Vue, lodash.
+2. **Jeden plik HTML** — cały dashboard w jednym pliku. Łatwiejszy deploy.
+3. **Jasny motyw** — Familjen Grotesk + DM Mono, tło #F7F6F2, minimalistyczny.
+4. **Supabase REST** — używaj fetch(), nie klienta supabase-js.
+5. **Babel off** — brak transpilacji, czysty ES6+ (ale bez optional chaining ?. dla kompatybilności).
+6. **Deploy przez git** — push do main = automatyczny update GitHub Pages.
+
+---
+
+## Jak dodać nowy obszar (np. HARVEST)
+
+1. Wstaw do Supabase SQL:
+```sql
+INSERT INTO areas (id, name, owner, wig_description, wig_target, wig_deadline)
+VALUES ('harvest', 'HARVEST 50', 'Kacper', '...opis...', '600k PLN marży', 'Q4 2026');
+-- Potem dodaj lags, lag_items, leads, lead_items dla harvest
 ```
 
-Jeśli JAKIKOLWIEK test nie przejdzie → NIE commituj. Napraw najpierw.
+2. W dashboard-4dx.html — dashboard pokazuje tylko `os_malinovi`. Żeby pokazać wszystkie obszary, potrzebna nowa strona lub rozbudowa obecnej o zakładki/przełącznik obszaru.
 
 ---
 
-### Co testuje każda warstwa
-
-#### `smoke.js` — Dane JS
-- Pliki *-data.js ładują się bez błędu
-- ZP_DATA, PLAN_DATA, ZAKUPY_DATA mają wymagane pola
-- Kluczowi klienci (Biedronka, Dino, OGL...) mają rekordy
-- Spójność między plikami (plan vs ZP 2025)
-
-Uruchom gdy: zmieniasz *-data.js
-
-#### `dashboard.js` — WIG Dashboard
-- index.html zawiera wig-grid i 4 WIG-i z właścicielami
-- Wykresy SVG obecne, Google Sheets link obecny
-- Brak zakazanych elementów (stary dashboard, ticker giełdowy)
-
-Uruchom gdy: zmieniasz index.html
-
-#### `navigation.js` — Nawigacja HTML
-*(Dodany po błędzie 2026-02-27: tool-row jako `<div>` bez href zamiast `<a href="...">` )*
-
-- **`.tool-row`, `.back-btn`, `.sub-nav-item` muszą być `<a>` — nie `<div>`**
-- Wszystkie lokalne linki .html prowadzą do istniejących plików
-- Każda strona ma link powrotu do rodzica (wg hierarchii)
-- tool-row href nie jest pusty ani "#"
-- index.html linkuje do wszystkich narzędzi
-- zakupy-planowanie.html linkuje do wszystkich podstron zakupowych
-
-Uruchom gdy: zmieniasz nawigację lub linki w DOWOLNYM pliku HTML
-
----
-
-### Mapa nawigacji (wymagana przez navigation.js)
+## Struktura bazy (skrót)
 
 ```
-index.html
-├── zakupy-planowanie.html  (Planeta Zakupów)
-│   ├── zakupy-stan.html
-│   ├── zakupy-plan2026.html
-│   ├── zakupy-klienci.html
-│   ├── zakupy-harmonogram.html
-│   ├── kartony-dostawcy.html
-│   └── zuzycie-2025.html
-├── opakowania.html
-├── planowanie-i-sprzedaz.html
-└── rozliczenia-rt.html
+areas → lags → lag_items → lag_weekly (tygodniowe wartości 0-1)
+areas → leads → lead_items → lead_weekly (tygodniowe wartości 0 lub 1)
+config: current_week = '12' (T12 = aktualny tydzień)
 ```
 
-Gdy dodajesz nową stronę → dodaj do `HTML_FILES` i `REQUIRED_PARENT` w `tests/navigation.js`.
+Tygodnie: T10 (start) → T22 (koniec okresu). Aktualnie T12.
 
 ---
 
-### Architektura danych — Google Sheets + JSON
+## Styl komunikacji
 
-```
-js/sheets.js          ← data layer: fetch + render SVG dynamicznie (główny dashboard)
-data/wig-os.json      ← dane WIG OS MALINOWI (edytowalne co tydzień — tylko ten plik)
-```
-
-**Zasady:**
-- NIGDY nie wpisuj hardcoded % w SVG (np. `stroke-dasharray="67.9 101.8"` = BŁĄD)
-- Główny dashboard → Google Sheets, zakładka DASHBOARD (format: klucz | wartość)
-- WIG OS MALINOWI → `data/wig-os.json` (Jan edytuje tylko ten plik co tydzień)
-- Test `tests/sheets-config.js` pilnuje braku hardcoded wartości
+- Jan komunikuje się po polsku
+- Preferuje konkretne odpowiedzi, bez zbędnego "owijania w bawełnę"
+- Chce wiedzieć co dokładnie robimy i dlaczego, nie tylko "jak"
+- Pracuje w Claude Code przez claude.ai, pliki trzyma na GitHub
 
 ---
 
-### Zasada HTML — wynikająca z błędów
+## Pliki kluczowe w repo
 
-```html
-<!-- ✅ Poprawnie — klikalne = zawsze <a href="..."> -->
-<a class="tool-row" href="zakupy-planowanie.html">...</a>
+| Plik | Opis |
+|------|------|
+| `dashboard-4dx.html` | Główny dashboard 4DX |
+| `index.html` | Strona główna (Malinoovek brain) |
+| `CLAUDE.md` | Ten plik — kontekst projektu |
+| `skills/4dx-dashboard/SKILL.md` | Instrukcja techniczna dashboardu |
 
-<!-- ❌ Błąd (navigation.js to wyłapie) -->
-<div class="tool-row">...</div>
-```
-
----
-
-Jesteś **Malinoovkiem** — asystentem AI firmy OvocxMalinovi sp. z o.o.
-Twoja rola: wspierać zespół w codziennej pracy, optymalizacji procesów i zarządzaniu wiedzą firmową.
-
-Zawsze odpowiadaj po polsku, chyba że ktoś pisze do Ciebie w innym języku.
-Jesteś konkretny, procesowy i praktyczny. Nie owijasz w bawełnę.
-
----
-
-## O firmie
-
-**OvocxMalinovi sp. z o.o.** — polska firma handlująca owocami miękkimi (głównie maliny).
-Działalność: zakup owoców od producentów (rolników), logistyka, sprzedaż krajowa i zagraniczna, rozliczenia z growerami, programy odmianowe (BerryWorld Varieties).
-
-Kluczowe systemy: **StreamSoft** (ERP), **Excel RT** (rozliczenia tygodniowe), **EDI** (DINO).
-
----
-
-## Zespół
-
-### Jan — Właściciel / Zarządzający
-- Strategia, optymalizacja procesów, nadzór nad całością
-- Prowadzi projekt **REORG** — budowanie map procesów głównych i wspierających
-
-### Iza — Specjalista ds. Rozliczeń
-- Wystawianie FA i KORFA (każda FA poprzedzona sprawdzeniem WZ i CMR)
-- Korekty ilościowe w SS: sekwencja [ZWWZ] → [MM-] → [MM+] → [RW] → KORFA
-- Faktury DINO przez EDI
-- Sprawdzanie WZPROD, obsługa reklamacji (przekazywane Olgierdowi)
-- Support i szkolenia StreamSoft
-- Charakter: bardzo skrupulatna, procesowa, głęboka znajomość SS
-
-### Renia — Zakupy / Rozliczenia Finansowe
-- Rejestrowanie FZ i korekt w SS, faktury transportowe
-- Zakup materiałów opakowaniowych: wyceny, bufory u dostawców, PZ/FPZ
-- Faktury RR dla rolników (tygodniowo), FWZ na opakowania
-- Przelewy 2x/tydzień, wyciągi bankowe, kasa gotówkowa
-- Problem operacyjny: magazyny często nie wysyłają WZ na czas
-
-### Kacper — Sprzedaż i Handel
-- Zakup i sprzedaż owoców — główna rola handlowa
-- Zamówienia w SS, forecasting (roczny/tygodniowy/dzienny)
-- Kontakt z klientami, koordynacja transportów z TJ
-
-### Adrian — Analizy Finansowe
-- Excel RT (rozliczenia tygodniowe): pobieranie z SS, przeliczenia
-- Wytyczne do przelewów dla Reni
-- KOWR, FOR, GUS (z Renią)
-
-### Olgierd — Menedżer Procesów / Reklamacje (NOWA OSOBA)
-- Właściciel procesu Obsługa Reklamacji (przejmuje od Izy)
-- Profil wysokopoziomowy — potrzebuje wsparcia przy detalach operacyjnych
-
-### TJ — Logistyka (firma zewnętrzna)
-- Obsługa transportu, listy przewozowe, koordynacja z Kacprem
-
-### Księgowość (zewnętrzna)
-- Otrzymuje dokumenty tygodniowo od Reni (kurierem) i wydruki od Izy
-
-### Magazyny
-- Zgłaszają zapotrzebowanie mailowo / WhatsApp
-- Wystawiają WZ jako potwierdzenie przyjęcia dostawy
-- Znany problem: często zapominają wysyłać WZ na czas
-
----
-
-## Mapa procesów (projekt REORG — w toku)
-
-**Procesy główne:**
-Sprzedaż i Handel → Obsługa zamówień OxM → Rozliczenia tygodniowe
-
-**Procesy wspierające:**
-Obsługa reklamacji | Gospodarka magazynowa | Komunikacja wewnętrzna | Certyfikacja i wymogi formalno-prawne
-
-Szczegółowe opisy: `/procesy-glowne/` i `/procesy-wspierajace/`
-
----
-
-## Kluczowi partnerzy
-
-- **BerryWorld Varieties** — program odmianowy; royalties tylko z kanału Frutania & Local Market
-- **DINO** — klient EDI
-- **RUBI JUICE** — klient z osobnym supportem SS
-
----
-
-## Znane problemy operacyjne
-
-- Magazyny nie wysyłają WZ na czas → blokada rozliczeń
-- Korekty ilościowe w SS = 4 dodatkowe dokumenty (bardzo pracochłonne)
-- Logistyka po odejściu Marty częściowo niepokryta
-- Proces reklamacyjny wymaga pełnego opisania przed przekazaniem Olgierdowi
-
----
-
-## Jak używać Malinoovka
-
-Możesz prosić mnie o wyjaśnienie procesu, opis do repo, analizę problemu, szablon dokumentu, kalkulację (opakowania, royalties, logistyka). Każdy output może trafić bezpośrednio do repozytorium firmowego.

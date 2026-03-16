@@ -3,719 +3,372 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>4DX Scoreboard — OvocxMalinowi</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<title>4DX — OvocxMalinowi</title>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0a0a0f;
-  --surface: #111118;
-  --surface2: #1a1a24;
-  --border: #2a2a3a;
-  --border2: #3a3a50;
-  --text: #e8e8f0;
-  --text2: #8888aa;
-  --text3: #5555770;
-  --accent: #ff6b35;
-  --accent2: #ff9500;
-  --green: #00d68f;
-  --red: #ff4466;
-  --blue: #4488ff;
-  --purple: #8866ff;
-  --lag-color: #ff6b35;
-  --lead-color: #4488ff;
-  --font-head: 'Syne', sans-serif;
-  --font-mono: 'DM Mono', monospace;
-  --font-serif: 'Instrument Serif', serif;
+  --bg: #F7F6F2;
+  --white: #FFFFFF;
+  --s1: #F0EFE9;
+  --s2: #E8E6DE;
+  --t1: #1C1B18;
+  --t2: #6B6A65;
+  --t3: #AEACA4;
+  --acc: #D64E12;
+  --acc2: #E8941A;
+  --gr: #217A52;
+  --gr2: #E8F4EE;
+  --re: #C0392B;
+  --re2: #FCECEA;
+  --bl: #1A5EA8;
+  --bl2: #E8F0FA;
+  --lag: #D64E12;
+  --lag2: #FDF0EB;
+  --lead: #1A5EA8;
+  --lead2: #E8F0FA;
+  --f: 'Familjen Grotesk', sans-serif;
+  --fm: 'DM Mono', monospace;
+  --r: 8px;
+  --sh: 0 1px 2px rgba(0,0,0,.05), 0 3px 12px rgba(0,0,0,.04);
 }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { background: var(--bg); color: var(--t1); font-family: var(--f); line-height: 1.5; min-height: 100vh; }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-head);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* NOISE TEXTURE */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.4;
-}
-
-/* TOP BAR */
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(10,10,15,0.92);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 32px;
+/* TOPBAR */
+nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--s2);
   height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
-
-.topbar-logo {
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--accent);
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand-icon {
+  width: 32px; height: 32px;
+  background: var(--t1);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 10px; font-weight: 700; letter-spacing: .02em;
 }
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.week-badge {
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--accent2);
-  letter-spacing: 0.05em;
-}
-
-.btn-add {
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 7px 16px;
-  border-radius: 4px;
-  font-family: var(--font-head);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.btn-add:hover { background: var(--accent2); transform: translateY(-1px); }
-
-.btn-entry {
-  background: var(--blue);
-  color: white;
-  border: none;
-  padding: 7px 16px;
-  border-radius: 4px;
-  font-family: var(--font-head);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.btn-entry:hover { opacity: 0.85; transform: translateY(-1px); }
-
-/* MAIN */
-.main {
-  position: relative;
-  z-index: 1;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 40px 32px;
-}
-
-/* WIG HEADER */
-.wig-header {
-  background: linear-gradient(135deg, #1a1a24 0%, #111118 100%);
-  border: 1px solid var(--border2);
-  border-left: 3px solid var(--accent);
-  border-radius: 8px;
-  padding: 28px 32px;
-  margin-bottom: 32px;
-  position: relative;
-  overflow: hidden;
-}
-
-.wig-header::after {
-  content: 'WIG';
-  position: absolute;
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 96px;
-  font-weight: 800;
-  color: rgba(255,107,53,0.04);
-  pointer-events: none;
-  line-height: 1;
-}
-
-.wig-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  color: var(--accent);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.wig-title {
-  font-family: var(--font-serif);
-  font-size: 32px;
-  font-style: italic;
-  color: var(--text);
-  margin-bottom: 8px;
-  line-height: 1.2;
-}
-
-.wig-desc {
-  font-size: 13px;
-  color: var(--text2);
-  margin-bottom: 20px;
-  max-width: 700px;
-  line-height: 1.6;
-}
-
-.wig-meta {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.wig-pct {
-  font-family: var(--font-mono);
-  font-size: 36px;
+.brand-name { font-size: 14px; font-weight: 600; color: var(--t1); letter-spacing: -.01em; }
+.brand-sub { font-size: 13px; color: var(--t3); margin-left: 2px; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.week-tag {
+  background: var(--s1);
+  border: 1px solid var(--s2);
+  border-radius: 6px;
+  padding: 5px 11px;
+  font-family: var(--fm);
+  font-size: 11px;
   font-weight: 500;
-  color: var(--accent);
-  line-height: 1;
+  color: var(--t2);
+  letter-spacing: .03em;
 }
-
-.wig-progress-wrap {
-  flex: 1;
-  max-width: 400px;
+.nav-btn {
+  background: var(--t1);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-family: var(--f);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  letter-spacing: -.01em;
 }
+.nav-btn:hover { background: #2e2d28; }
 
-.wig-progress-label {
+/* LAYOUT */
+.page { max-width: 1280px; margin: 0 auto; padding: 32px 24px; }
+
+/* WIG */
+.wig-block {
+  background: var(--white);
+  border: 1px solid var(--s2);
+  border-radius: var(--r);
+  padding: 28px 32px;
+  margin-bottom: 28px;
+  box-shadow: var(--sh);
   display: flex;
   justify-content: space-between;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text2);
-  margin-bottom: 6px;
-}
-
-.progress-track {
-  background: rgba(255,255,255,0.05);
-  border-radius: 2px;
-  height: 6px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-}
-
-.wig-deadline {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text2);
-  background: var(--surface2);
-  padding: 4px 10px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-}
-
-/* GRID LAG/LEAD */
-.scoreboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  align-items: flex-start;
   gap: 24px;
 }
-
-@media (max-width: 900px) {
-  .scoreboard-grid { grid-template-columns: 1fr; }
-}
-
-/* SECTION HEADER */
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.section-pill {
-  font-family: var(--font-mono);
+.wig-label {
+  font-family: var(--fm);
   font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.15em;
+  color: var(--acc);
+  letter-spacing: .15em;
   text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 3px;
+  margin-bottom: 8px;
 }
-
-.section-pill.lag {
-  background: rgba(255,107,53,0.15);
-  color: var(--lag-color);
-  border: 1px solid rgba(255,107,53,0.3);
+.wig-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--t1);
+  margin-bottom: 6px;
+  line-height: 1.15;
 }
-
-.section-pill.lead {
-  background: rgba(68,136,255,0.15);
-  color: var(--lead-color);
-  border: 1px solid rgba(68,136,255,0.3);
-}
-
-.section-title {
+.wig-desc {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--text2);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  color: var(--t2);
+  line-height: 1.6;
+  max-width: 580px;
+  margin-bottom: 18px;
 }
+.wig-bar-row { display: flex; align-items: center; gap: 14px; }
+.wig-bar-label { font-family: var(--fm); font-size: 10px; color: var(--t3); white-space: nowrap; }
+.bar-track { flex: 1; max-width: 300px; height: 5px; background: var(--s2); border-radius: 99px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 99px; transition: width .8s ease; }
+.tag { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px; font-family: var(--fm); font-size: 10px; font-weight: 500; letter-spacing: .02em; }
+.tag-neutral { background: var(--s1); color: var(--t2); border: 1px solid var(--s2); }
 
-/* MEASURE CARD */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 12px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  position: relative;
-}
-
-.card:hover {
-  border-color: var(--border2);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-}
-
-.card-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.card-number {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text2);
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  padding: 3px 7px;
-  border-radius: 3px;
-  white-space: nowrap;
+.wig-score {
+  text-align: right;
   flex-shrink: 0;
-  margin-top: 2px;
 }
-
-.card-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.4;
-  flex: 1;
-}
-
-.card-pct {
-  font-family: var(--font-mono);
-  font-size: 22px;
+.score-num {
+  font-family: var(--fm);
+  font-size: 52px;
   font-weight: 500;
-  color: var(--text);
-  flex-shrink: 0;
+  line-height: 1;
+  letter-spacing: -.03em;
+  margin-bottom: 8px;
+}
+.score-num.c-g { color: var(--gr); }
+.score-num.c-m { color: var(--acc2); }
+.score-num.c-b { color: var(--re); }
+
+/* GRID */
+.measures { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 800px) {
+  .measures { grid-template-columns: 1fr; }
+  .wig-block { flex-direction: column; }
+  .wig-score { text-align: left; }
 }
 
-.card-pct.good { color: var(--green); }
-.card-pct.mid { color: var(--accent2); }
-.card-pct.bad { color: var(--red); }
-
-.card-deadline {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text2);
-  margin-bottom: 10px;
-}
-
-.card-progress {
-  margin-bottom: 12px;
-}
-
-.card-progress .progress-track {
-  height: 3px;
-  background: var(--surface2);
-}
-
-/* ITEMS LIST */
-.items-list {
-  border-top: 1px solid var(--border);
-  padding-top: 10px;
-  margin-top: 4px;
-}
-
-.item-row {
+.col-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(42,42,58,0.5);
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--s2);
 }
-
-.item-row:last-child { border-bottom: none; }
-
-.item-name {
-  font-size: 12px;
-  color: var(--text2);
-  flex: 1;
-  line-height: 1.4;
-}
-
-.item-val {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text2);
-  min-width: 36px;
-  text-align: right;
-}
-
-.item-bar {
-  width: 60px;
-  height: 3px;
-  background: var(--surface2);
-  border-radius: 2px;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.item-bar-fill {
-  height: 100%;
-  border-radius: 2px;
-}
-
-/* SPARKLINE */
-.sparkline-wrap {
-  margin-top: 10px;
-  border-top: 1px solid var(--border);
-  padding-top: 10px;
-}
-
-.sparkline-label {
-  font-family: var(--font-mono);
+.col-tag {
+  font-family: var(--fm);
   font-size: 9px;
-  color: var(--text2);
-  letter-spacing: 0.1em;
-  margin-bottom: 6px;
+  font-weight: 500;
+  letter-spacing: .14em;
   text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
 }
+.col-tag.lag { background: var(--lag2); color: var(--lag); }
+.col-tag.lead { background: var(--lead2); color: var(--lead); }
+.col-title { font-size: 11px; font-weight: 600; color: var(--t2); text-transform: uppercase; letter-spacing: .08em; }
 
-.sparkline-svg {
-  width: 100%;
-  height: 32px;
-  overflow: visible;
+/* CARD */
+.card {
+  background: var(--white);
+  border: 1px solid var(--s2);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  margin-bottom: 10px;
+  box-shadow: var(--sh);
+  transition: box-shadow .2s, border-color .2s, transform .15s;
 }
+.card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); border-color: var(--t3); transform: translateY(-1px); }
+.card-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+.card-id {
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 500;
+  padding: 3px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+  letter-spacing: .04em;
+}
+.card-id.lag { background: var(--lag2); color: var(--lag); }
+.card-id.lead { background: var(--lead2); color: var(--lead); }
+.card-name { font-size: 13px; font-weight: 600; flex: 1; line-height: 1.4; letter-spacing: -.01em; }
+.card-pct { font-family: var(--fm); font-size: 20px; font-weight: 500; flex-shrink: 0; letter-spacing: -.02em; }
+.card-pct.g { color: var(--gr); }
+.card-pct.m { color: var(--acc2); }
+.card-pct.b { color: var(--re); }
+.card-dl { font-family: var(--fm); font-size: 10px; color: var(--t3); margin-bottom: 10px; }
+.card-bar { height: 2px; background: var(--s1); border-radius: 99px; overflow: hidden; margin-bottom: 14px; }
+.card-bar-fill { height: 100%; border-radius: 99px; }
 
-/* LOADING */
-.loading-state {
+/* ITEMS */
+.items-list { border-top: 1px solid var(--s1); padding-top: 10px; }
+.item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  height: 200px;
-  flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  padding: 4px 0;
 }
+.item + .item { border-top: 1px solid var(--bg); }
+.item-name { font-size: 12px; color: var(--t2); flex: 1; line-height: 1.4; }
+.mini-bar { width: 40px; height: 2px; background: var(--s2); border-radius: 99px; overflow: hidden; flex-shrink: 0; }
+.mini-fill { height: 100%; border-radius: 99px; }
+.item-val { font-family: var(--fm); font-size: 10px; min-width: 30px; text-align: right; flex-shrink: 0; }
+.chk { width: 15px; height: 15px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 8px; flex-shrink: 0; font-weight: 700; }
+.chk.y { background: var(--gr2); color: var(--gr); }
+.chk.n { background: var(--re2); color: var(--re); }
 
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 2px solid var(--border2);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
+/* SPARK */
+.spark { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--s1); }
+.spark-lbl { font-family: var(--fm); font-size: 9px; color: var(--t3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+.spark-svg { width: 100%; height: 26px; overflow: visible; }
 
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.loading-text {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text2);
-  letter-spacing: 0.1em;
-}
-
-/* ERROR */
-.error-state {
-  background: rgba(255,68,102,0.08);
-  border: 1px solid rgba(255,68,102,0.3);
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
-  color: var(--red);
-  font-size: 13px;
-}
+/* STATES */
+.state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 72px 20px; gap: 12px; }
+.spinner { width: 24px; height: 24px; border: 2px solid var(--s2); border-top-color: var(--t1); border-radius: 50%; animation: rot .7s linear infinite; }
+@keyframes rot { to { transform: rotate(360deg); } }
+.state-txt { font-family: var(--fm); font-size: 11px; color: var(--t3); }
+.err-box { background: var(--re2); border: 1px solid rgba(192,57,43,.15); border-radius: var(--r); padding: 20px; color: var(--re); font-size: 13px; }
+.empty-box { border: 1px dashed var(--s2); border-radius: var(--r); padding: 28px; text-align: center; font-size: 12px; color: var(--t3); }
 
 /* MODAL */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.8);
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(28,27,24,.45);
   backdrop-filter: blur(8px);
   z-index: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   padding: 20px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
 }
-
-.modal-overlay.open {
-  opacity: 1;
-  pointer-events: all;
-}
-
+.overlay.on { opacity: 1; pointer-events: all; }
 .modal {
-  background: var(--surface);
-  border: 1px solid var(--border2);
+  background: var(--white);
+  border: 1px solid var(--s2);
   border-radius: 12px;
-  padding: 32px;
+  padding: 28px;
   width: 100%;
-  max-width: 560px;
-  max-height: 90vh;
+  max-width: 520px;
+  max-height: 86vh;
   overflow-y: auto;
-  transform: translateY(20px);
-  transition: transform 0.2s;
+  box-shadow: 0 24px 64px rgba(0,0,0,.12);
+  transform: translateY(14px);
+  transition: transform .2s;
 }
-
-.modal-overlay.open .modal {
-  transform: translateY(0);
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.modal-subtitle {
-  font-size: 12px;
-  color: var(--text2);
-  margin-bottom: 24px;
-  font-family: var(--font-mono);
-}
-
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text2);
-  display: block;
-  margin-bottom: 6px;
-}
-
-.form-input {
+.overlay.on .modal { transform: translateY(0); }
+.modal-title { font-size: 16px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 2px; }
+.modal-sub { font-family: var(--fm); font-size: 10px; color: var(--t3); letter-spacing: .03em; margin-bottom: 20px; }
+.field { margin-bottom: 14px; }
+.field-label { display: block; font-family: var(--fm); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--t2); margin-bottom: 5px; }
+.field-input {
   width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
+  background: var(--s1);
+  border: 1px solid var(--s2);
   border-radius: 6px;
-  padding: 10px 14px;
-  color: var(--text);
-  font-family: var(--font-head);
+  padding: 9px 12px;
+  font-family: var(--f);
   font-size: 14px;
+  color: var(--t1);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color .15s;
 }
-
-.form-input:focus {
-  border-color: var(--accent);
+.field-input:focus { border-color: var(--t2); background: var(--white); }
+.divider { height: 1px; background: var(--s2); margin: 16px 0; }
+.section-tag { font-family: var(--fm); font-size: 10px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 10px; }
+.entry-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--bg);
 }
-
-.form-input[type="range"] {
-  padding: 0;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.range-val {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--accent2);
-  font-weight: 500;
-  text-align: center;
-  margin-top: 4px;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 24px;
-  justify-content: flex-end;
-}
-
-.btn-cancel {
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--text2);
-  padding: 9px 20px;
-  border-radius: 6px;
-  font-family: var(--font-head);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.btn-cancel:hover { border-color: var(--text2); color: var(--text); }
-
-.btn-save {
-  background: var(--blue);
-  border: none;
-  color: white;
-  padding: 9px 24px;
-  border-radius: 6px;
-  font-family: var(--font-head);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.btn-save:hover { opacity: 0.85; }
-.btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.divider { height: 1px; background: var(--border); margin: 20px 0; }
-
-.item-entry-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-}
-.item-entry-row:last-child { border-bottom: none; }
-
-.item-entry-name {
+.entry-row:last-child { border-bottom: none; }
+.entry-badge { font-family: var(--fm); font-size: 9px; padding: 2px 6px; border-radius: 3px; min-width: 46px; text-align: center; flex-shrink: 0; }
+.entry-badge.lag { background: var(--lag2); color: var(--lag); }
+.entry-badge.lead { background: var(--lead2); color: var(--lead); }
+.entry-name { font-size: 12px; flex: 1; line-height: 1.4; color: var(--t1); }
+.entry-input {
+  width: 60px;
+  background: var(--s1);
+  border: 1px solid var(--s2);
+  border-radius: 5px;
+  padding: 5px 7px;
+  font-family: var(--fm);
   font-size: 12px;
-  color: var(--text);
-  flex: 1;
-  line-height: 1.4;
-}
-
-.item-entry-input {
-  width: 70px;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  padding: 5px 8px;
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: 13px;
   text-align: center;
   outline: none;
-}
-.item-entry-input:focus { border-color: var(--blue); }
-
-.toast {
-  position: fixed;
-  bottom: 32px;
-  right: 32px;
-  background: var(--surface2);
-  border: 1px solid var(--green);
-  border-radius: 8px;
-  padding: 14px 20px;
-  font-size: 13px;
-  color: var(--green);
-  font-family: var(--font-mono);
-  z-index: 300;
-  transform: translateY(20px);
-  opacity: 0;
-  transition: all 0.3s;
-}
-.toast.show { transform: translateY(0); opacity: 1; }
-
-/* Empty state */
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text2);
-  font-size: 13px;
-  border: 1px dashed var(--border2);
-  border-radius: 8px;
-}
-
-.tag-on-track {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  padding: 2px 7px;
-  border-radius: 3px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
   flex-shrink: 0;
+  color: var(--t1);
 }
-.tag-on-track.yes { background: rgba(0,214,143,0.1); color: var(--green); border: 1px solid rgba(0,214,143,0.3); }
-.tag-on-track.no { background: rgba(255,68,102,0.1); color: var(--red); border: 1px solid rgba(255,68,102,0.3); }
+.entry-input:focus { border-color: var(--bl); background: var(--white); }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+.btn-ghost { background: transparent; border: 1px solid var(--s2); color: var(--t2); padding: 8px 16px; border-radius: 6px; font-family: var(--f); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
+.btn-ghost:hover { border-color: var(--t2); color: var(--t1); }
+.btn-solid { background: var(--bl); border: none; color: white; padding: 8px 20px; border-radius: 6px; font-family: var(--f); font-size: 13px; font-weight: 700; cursor: pointer; transition: background .15s; }
+.btn-solid:hover { background: #144d8a; }
+.btn-solid:disabled { opacity: .35; cursor: not-allowed; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--t1); color: white;
+  border-radius: 7px;
+  padding: 11px 16px;
+  font-size: 13px; font-weight: 500;
+  z-index: 400;
+  opacity: 0; transform: translateY(8px);
+  transition: all .22s;
+  pointer-events: none;
+}
+.toast.on { opacity: 1; transform: translateY(0); }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-logo">OvocxMalinowi · 4DX</div>
-  <div class="topbar-right">
-    <div class="week-badge" id="week-badge">T—</div>
-    <button class="btn-entry" onclick="openEntryModal()">+ Wpis tygodniowy</button>
+<nav>
+  <div class="brand">
+    <div class="brand-icon">OxM</div>
+    <span class="brand-name">OvocxMalinowi</span>
+    <span class="brand-sub">4DX</span>
+  </div>
+  <div class="nav-right">
+    <div class="week-tag" id="wtag">T—</div>
+    <button class="nav-btn" onclick="openModal()">+ Wpis tygodniowy</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div id="root">
+    <div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie danych…</div></div>
   </div>
 </div>
 
-<div class="main">
-  <div id="app-content">
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <div class="loading-text">Ładowanie danych...</div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Wpis tygodniowy -->
-<div class="modal-overlay" id="entry-modal">
+<div class="overlay" id="overlay">
   <div class="modal">
     <div class="modal-title">Wpis tygodniowy</div>
-    <div class="modal-subtitle" id="entry-modal-subtitle">T— · OS Malinovi</div>
-
-    <div class="form-group">
-      <label class="form-label">Tydzień</label>
-      <input type="number" class="form-input" id="entry-week" min="10" max="22" value="12">
+    <div class="modal-sub" id="modal-sub">T12 · OS Malinovi</div>
+    <div class="field">
+      <label class="field-label">Tydzień</label>
+      <input type="number" class="field-input" id="inp-week" min="10" max="22" style="max-width:100px">
     </div>
-
     <div class="divider"></div>
-
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--lag-color);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:12px;">
-      LAG — Postęp procesów (0–1)
-    </div>
-    <div id="lag-entry-items"></div>
-
+    <div class="section-tag" style="color:var(--lag)">LAG — postęp procesów (0–1)</div>
+    <div id="modal-lags"></div>
     <div class="divider"></div>
-
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--lead-color);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:12px;">
-      LEAD — Realizacja zadań (0 lub 1)
-    </div>
-    <div id="lead-entry-items"></div>
-
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('entry-modal')">Anuluj</button>
-      <button class="btn-save" onclick="saveWeeklyEntry()" id="save-btn">Zapisz</button>
+    <div class="section-tag" style="color:var(--lead)">LEAD — realizacja zadań (0 nie / 1 tak)</div>
+    <div id="modal-leads"></div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal()">Anuluj</button>
+      <button class="btn-solid" id="btn-save" onclick="saveEntry()">Zapisz</button>
     </div>
   </div>
 </div>
@@ -723,369 +376,218 @@ body::before {
 <div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL = 'https://fssfuricylndtetfktex.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
+const BASE = 'https://fssfuricylndtetfktex.supabase.co';
+const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
+const HD   = { 'Content-Type':'application/json', apikey:KEY, Authorization:'Bearer '+KEY };
 
-const H = { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=representation' };
+const D = { week:12, area:{}, lags:[], leads:[], li:{}, lei:{}, lw:{}, lew:{} };
 
-async function sb(path, opts = {}) {
-  const r = await fetch(SUPABASE_URL + '/rest/v1/' + path, { headers: H, ...opts });
-  if (!r.ok) { const e = await r.text(); throw new Error(e); }
+async function q(path, opts={}) {
+  const r = await fetch(BASE+'/rest/v1/'+path, { headers:HD, ...opts });
+  if (!r.ok) throw new Error(await r.text());
   return r.status === 204 ? null : r.json();
 }
 
-// STATE
-let state = { week: 12, area: null, lags: [], leads: [], lagItems: {}, leadItems: {}, lagWeekly: {}, leadWeekly: {} };
-
-async function loadData() {
+async function init() {
   try {
-    // Config
-    const cfg = await sb('config?key=eq.current_week&select=value');
-    state.week = cfg.length ? parseInt(cfg[0].value) : 12;
-    document.getElementById('week-badge').textContent = 'T' + state.week;
-    document.getElementById('entry-week').value = state.week;
+    const cfg = await q('config?key=eq.current_week');
+    D.week = cfg.length ? +cfg[0].value : 12;
+    document.getElementById('wtag').textContent = 'T'+D.week;
+    document.getElementById('inp-week').value = D.week;
 
-    // Area
-    const areas = await sb('areas?id=eq.os_malinovi&select=*');
-    state.area = areas[0];
+    const ar = await q('areas?id=eq.os_malinovi');
+    D.area = ar[0] || {};
 
-    // LAGs
-    state.lags = await sb('lags?area_id=eq.os_malinovi&select=*&order=lag_number');
+    D.lags  = await q('lags?area_id=eq.os_malinovi&order=lag_number');
+    D.leads = await q('leads?area_id=eq.os_malinovi&order=lead_number');
 
-    // LAG items
-    for (const lag of state.lags) {
-      state.lagItems[lag.id] = await sb(`lag_items?lag_id=eq.${lag.id}&select=*&order=sort_order`);
+    for (const l of D.lags)  D.li[l.id]  = await q('lag_items?lag_id=eq.'+l.id+'&order=sort_order');
+    for (const l of D.leads) D.lei[l.id] = await q('lead_items?lead_id=eq.'+l.id+'&order=sort_order');
+
+    const lids = Object.values(D.li).flat().map(i=>i.id);
+    const eids = Object.values(D.lei).flat().map(i=>i.id);
+
+    if (lids.length) {
+      const rows = await q('lag_weekly?lag_item_id=in.('+lids+')&select=*');
+      rows.forEach(r => { if(!D.lw[r.lag_item_id]) D.lw[r.lag_item_id]={}; D.lw[r.lag_item_id][r.week]=r.value; });
+    }
+    if (eids.length) {
+      const rows = await q('lead_weekly?lead_item_id=in.('+eids+')&select=*');
+      rows.forEach(r => { if(!D.lew[r.lead_item_id]) D.lew[r.lead_item_id]={}; D.lew[r.lead_item_id][r.week]=r.value; });
     }
 
-    // LEAD
-    state.leads = await sb('leads?area_id=eq.os_malinowi&select=*&order=lead_number');
-    if (!state.leads.length) {
-      state.leads = await sb('leads?area_id=eq.os_malinovi&select=*&order=lead_number');
-    }
-
-    // LEAD items
-    for (const lead of state.leads) {
-      state.leadItems[lead.id] = await sb(`lead_items?lead_id=eq.${lead.id}&select=*&order=sort_order`);
-    }
-
-    // Weekly data — LAG
-    const allLagItemIds = Object.values(state.lagItems).flat().map(i => i.id);
-    if (allLagItemIds.length) {
-      const lagW = await sb(`lag_weekly?lag_item_id=in.(${allLagItemIds.join(',')})&select=*`);
-      for (const w of lagW) {
-        if (!state.lagWeekly[w.lag_item_id]) state.lagWeekly[w.lag_item_id] = {};
-        state.lagWeekly[w.lag_item_id][w.week] = w.value;
-      }
-    }
-
-    // Weekly data — LEAD
-    const allLeadItemIds = Object.values(state.leadItems).flat().map(i => i.id);
-    if (allLeadItemIds.length) {
-      const leadW = await sb(`lead_weekly?lead_item_id=in.(${allLeadItemIds.join(',')})&select=*`);
-      for (const w of leadW) {
-        if (!state.leadWeekly[w.lead_item_id]) state.leadWeekly[w.lead_item_id] = {};
-        state.leadWeekly[w.lead_item_id][w.week] = w.value;
-      }
-    }
-
-    render();
-  } catch (e) {
-    document.getElementById('app-content').innerHTML = `<div class="error-state">Błąd połączenia z bazą danych:<br><code style="font-size:11px;opacity:0.7">${e.message}</code></div>`;
+    paint();
+  } catch(e) {
+    document.getElementById('root').innerHTML = '<div class="err-box">Błąd połączenia z bazą danych:<br><small>'+e.message+'</small></div>';
   }
 }
 
-function getLagProgress(lag) {
-  const items = state.lagItems[lag.id] || [];
-  if (!items.length) return 0;
-  const vals = items.map(item => {
-    const w = state.lagWeekly[item.id] || {};
-    return w[state.week] !== undefined ? w[state.week] : 0;
-  });
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
+const pct = v => Math.round(v * 100);
+const cls = v => v>=.7 ? 'g' : v>=.3 ? 'm' : 'b';
+const col = v => v>=.7 ? 'var(--gr)' : v>=.3 ? 'var(--acc2)' : 'var(--re)';
+
+const lagProg  = l => { const it=D.li[l.id]||[]; if(!it.length) return 0; const vs=it.map(i=>(D.lw[i.id]||{})[D.week]||0); return vs.reduce((a,b)=>a+b,0)/vs.length; };
+const leadProg = l => { const it=D.lei[l.id]||[]; if(!it.length) return 0; const vs=it.map(i=>(D.lew[i.id]||{})[D.week]||0); return vs.reduce((a,b)=>a+b,0)/vs.length; };
+const wigProg  = () => !D.lags.length ? 0 : D.lags.map(lagProg).reduce((a,b)=>a+b,0)/D.lags.length;
+
+function sparkSVG(id, type, color) {
+  const data = type==='lag' ? D.lw[id]||{} : D.lew[id]||{};
+  const WKS = [10,11,12,13,14,15,16,17,18,19,20,21,22];
+  const vals = WKS.map(w => data[w]!==undefined ? data[w] : null);
+  const nn = vals.filter(v=>v!==null);
+  if (nn.length < 2) return '';
+  const W=200, H=26, P=2, mx=Math.max(...nn,.01), pts=[];
+  WKS.forEach((_,i)=>{ if(vals[i]!==null) pts.push([(P+(i/(WKS.length-1))*(W-P*2)).toFixed(1), (H-P-(vals[i]/mx)*(H-P*2)).toFixed(1)]); });
+  const d = pts.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');
+  const dots = pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${i===pts.length-1?2.8:1.8}" fill="${color}" opacity="${i===pts.length-1?1:.45}"/>`).join('');
+  return `<div class="spark"><div class="spark-lbl">Trend T10 → T22</div><svg class="spark-svg" viewBox="0 0 ${W} ${H}"><path d="${d}" stroke="${color}" stroke-width="1.4" fill="none" opacity=".65"/>${dots}</svg></div>`;
 }
 
-function getLeadProgress(lead) {
-  const items = state.leadItems[lead.id] || [];
-  if (!items.length) return 0;
-  const vals = items.map(item => {
-    const w = state.leadWeekly[item.id] || {};
-    return w[state.week] !== undefined ? w[state.week] : 0;
-  });
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
-}
-
-function getWigProgress() {
-  if (!state.lags.length) return 0;
-  const progs = state.lags.map(l => getLagProgress(l));
-  return progs.reduce((a, b) => a + b, 0) / progs.length;
-}
-
-function pct(v) { return Math.round(v * 100); }
-
-function pctColor(v) {
-  if (v >= 0.7) return 'good';
-  if (v >= 0.3) return 'mid';
-  return 'bad';
-}
-
-function barColor(v) {
-  if (v >= 0.7) return 'var(--green)';
-  if (v >= 0.3) return 'var(--accent2)';
-  return 'var(--red)';
-}
-
-function sparkline(itemId, type, color) {
-  const weekly = type === 'lag' ? state.lagWeekly : state.leadWeekly;
-  const data = weekly[itemId] || {};
-  const weeks = [10,11,12,13,14,15,16,17,18,19,20,21,22];
-  const vals = weeks.map(w => data[w] !== undefined ? data[w] : null);
-  const nonNull = vals.filter(v => v !== null);
-  if (nonNull.length < 2) return '';
-
-  const w = 200, h = 32, pad = 4;
-  const maxV = Math.max(...nonNull, 0.01);
-  const points = [];
-
-  weeks.forEach((wk, i) => {
-    if (vals[i] !== null) {
-      const x = pad + (i / (weeks.length - 1)) * (w - pad * 2);
-      const y = h - pad - (vals[i] / maxV) * (h - pad * 2);
-      points.push([x, y]);
-    }
-  });
-
-  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
-  const lastPt = points[points.length - 1];
-
-  return `<div class="sparkline-wrap">
-    <div class="sparkline-label">T10 → T22</div>
-    <svg class="sparkline-svg" viewBox="0 0 ${w} ${h}">
-      <path d="${pathD}" stroke="${color}" stroke-width="1.5" fill="none" opacity="0.8"/>
-      ${points.map((p, i) => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${i === points.length - 1 ? 3 : 2}" fill="${color}" opacity="${i === points.length - 1 ? 1 : 0.5}"/>`).join('')}
-      ${lastPt ? `<line x1="${lastPt[0].toFixed(1)}" y1="0" x2="${lastPt[0].toFixed(1)}" y2="${h}" stroke="${color}" stroke-width="1" stroke-dasharray="2,2" opacity="0.3"/>` : ''}
-    </svg>
-  </div>`;
-}
-
-function renderLagCard(lag) {
-  const prog = getLagProgress(lag);
-  const items = state.lagItems[lag.id] || [];
-
-  const itemsHtml = items.map(item => {
-    const w = state.lagWeekly[item.id] || {};
-    const v = w[state.week] !== undefined ? w[state.week] : 0;
-    return `<div class="item-row">
-      <div class="item-name">${item.name}</div>
-      <div class="item-bar"><div class="item-bar-fill" style="width:${pct(v)}%;background:${barColor(v)}"></div></div>
-      <div class="item-val" style="color:${barColor(v)}">${pct(v)}%</div>
+function cardLag(lag) {
+  const pg = lagProg(lag), its = D.li[lag.id]||[];
+  const rows = its.map(i=>{
+    const v = (D.lw[i.id]||{})[D.week]||0;
+    return `<div class="item">
+      <div class="item-name">${i.name}</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:${pct(v)}%;background:${col(v)}"></div></div>
+      <div class="item-val" style="color:${col(v)}">${pct(v)}%</div>
     </div>`;
   }).join('');
-
-  // aggregate sparkline — use first item as representative
-  const sparkHtml = items.length ? sparkline(items[0].id, 'lag', 'var(--lag-color)') : '';
-
+  const sp = its.length ? sparkSVG(its[0].id,'lag','var(--lag)') : '';
   return `<div class="card">
-    <div class="card-top">
-      <div class="card-number">LAG-0${lag.lag_number}</div>
+    <div class="card-head">
+      <span class="card-id lag">LAG-0${lag.lag_number}</span>
       <div class="card-name">${lag.name}</div>
-      <div class="card-pct ${pctColor(prog)}">${pct(prog)}%</div>
+      <div class="card-pct ${cls(pg)}">${pct(pg)}%</div>
     </div>
-    <div class="card-deadline">Deadline: T${lag.deadline_week || '—'}</div>
-    <div class="card-progress">
-      <div class="progress-track"><div class="progress-fill" style="width:${pct(prog)}%;background:${barColor(prog)}"></div></div>
-    </div>
-    <div class="items-list">${itemsHtml}</div>
-    ${sparkHtml}
+    <div class="card-dl">Deadline — T${lag.deadline_week||'?'}</div>
+    <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
+    <div class="items-list">${rows}</div>
+    ${sp}
   </div>`;
 }
 
-function renderLeadCard(lead) {
-  const prog = getLeadProgress(lead);
-  const items = state.leadItems[lead.id] || [];
-
-  const itemsHtml = items.map(item => {
-    const w = state.leadWeekly[item.id] || {};
-    const v = w[state.week] !== undefined ? w[state.week] : 0;
-    const onTrack = v >= 0.5;
-    return `<div class="item-row">
-      <span class="tag-on-track ${onTrack ? 'yes' : 'no'}">${onTrack ? '✓' : '✗'}</span>
-      <div class="item-name">${item.name}</div>
-      <div class="item-val" style="color:${v ? 'var(--green)' : 'var(--text2)'}">${pct(v)}%</div>
+function cardLead(lead) {
+  const pg = leadProg(lead), its = D.lei[lead.id]||[];
+  const rows = its.map(i=>{
+    const v = (D.lew[i.id]||{})[D.week]||0, ok = v>=.5;
+    return `<div class="item">
+      <div class="chk ${ok?'y':'n'}">${ok?'✓':'✗'}</div>
+      <div class="item-name">${i.name}</div>
+      <div class="item-val" style="color:${ok?'var(--gr)':'var(--t3)'}">${pct(v)}%</div>
     </div>`;
   }).join('');
-
-  const sparkHtml = items.length ? sparkline(items[0].id, 'lead', 'var(--lead-color)') : '';
-
+  const sp = its.length ? sparkSVG(its[0].id,'lead','var(--lead)') : '';
   return `<div class="card">
-    <div class="card-top">
-      <div class="card-number">LEAD-0${lead.lead_number}</div>
+    <div class="card-head">
+      <span class="card-id lead">LEAD-0${lead.lead_number}</span>
       <div class="card-name">${lead.name}</div>
-      <div class="card-pct ${pctColor(prog)}">${pct(prog)}%</div>
+      <div class="card-pct ${cls(pg)}">${pct(pg)}%</div>
     </div>
-    <div class="card-deadline">Deadline: T${lead.deadline_week || '—'}</div>
-    <div class="card-progress">
-      <div class="progress-track"><div class="progress-fill" style="width:${pct(prog)}%;background:${barColor(prog)}"></div></div>
-    </div>
-    <div class="items-list">${itemsHtml}</div>
-    ${sparkHtml}
+    <div class="card-dl">Deadline — T${lead.deadline_week||'?'}</div>
+    <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
+    <div class="items-list">${rows}</div>
+    ${sp}
   </div>`;
 }
 
-function render() {
-  const wigProg = getWigProgress();
-  const area = state.area || {};
+function paint() {
+  const wp = wigProg(), a = D.area;
+  const lags  = D.lags.map(cardLag).join('')  || '<div class="empty-box">Brak LAG-ów</div>';
+  const leads = D.leads.map(cardLead).join('') || '<div class="empty-box">Brak LEAD-ów</div>';
 
-  const lagCards = state.lags.map(l => renderLagCard(l)).join('') || '<div class="empty-state">Brak LAG-ów</div>';
-  const leadCards = state.leads.map(l => renderLeadCard(l)).join('') || '<div class="empty-state">Brak LEAD-ów</div>';
-
-  document.getElementById('app-content').innerHTML = `
-    <div class="wig-header">
-      <div class="wig-label">WIG #1 · ${area.owner || 'Jan (CEO)'}</div>
-      <div class="wig-title">${area.name || 'OS MALINOVI 1.0'}</div>
-      <div class="wig-desc">${area.wig_description || ''}</div>
-      <div class="wig-meta">
-        <div class="wig-pct">${pct(wigProg)}%</div>
-        <div class="wig-progress-wrap">
-          <div class="wig-progress-label"><span>Postęp ogólny</span><span>Cel: ${area.wig_target || '100%'}</span></div>
-          <div class="progress-track"><div class="progress-fill" style="width:${pct(wigProg)}%"></div></div>
+  document.getElementById('root').innerHTML = `
+    <div class="wig-block">
+      <div>
+        <div class="wig-label">WIG #1 · ${a.owner||'Jan (CEO)'}</div>
+        <div class="wig-title">${a.name||'OS MALINOWI 1.0'}</div>
+        <div class="wig-desc">${a.wig_description||''}</div>
+        <div class="wig-bar-row">
+          <div class="wig-bar-label">Postęp ogólny</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct(wp)}%;background:${col(wp)}"></div></div>
+          <span class="tag tag-neutral">${a.wig_deadline||'Q2 2026'}</span>
         </div>
-        <div class="wig-deadline">Deadline: ${area.wig_deadline || 'Q2 2026'}</div>
+      </div>
+      <div class="wig-score">
+        <div class="score-num c-${cls(wp)}">${pct(wp)}%</div>
+        <span class="tag tag-neutral">Cel: ${a.wig_target||'100% + RYTM'}</span>
       </div>
     </div>
 
-    <div class="scoreboard-grid">
+    <div class="measures">
       <div>
-        <div class="section-header">
-          <span class="section-pill lag">LAG</span>
-          <span class="section-title">Miary opóźnione</span>
-        </div>
-        ${lagCards}
+        <div class="col-head"><span class="col-tag lag">LAG</span><span class="col-title">Miary opóźnione</span></div>
+        ${lags}
       </div>
       <div>
-        <div class="section-header">
-          <span class="section-pill lead">LEAD</span>
-          <span class="section-title">Miary wyprzedzające</span>
-        </div>
-        ${leadCards}
+        <div class="col-head"><span class="col-tag lead">LEAD</span><span class="col-title">Miary wyprzedzające</span></div>
+        ${leads}
       </div>
-    </div>
-  `;
-}
-
-// ============================================================
-// MODAL: wpis tygodniowy
-// ============================================================
-function openEntryModal() {
-  const week = state.week;
-  document.getElementById('entry-week').value = week;
-  document.getElementById('entry-modal-subtitle').textContent = `T${week} · OS Malinovi`;
-
-  // LAG items
-  const lagEl = document.getElementById('lag-entry-items');
-  const allLagItems = state.lags.flatMap(lag =>
-    (state.lagItems[lag.id] || []).map(item => ({ ...item, lagName: `LAG-0${lag.lag_number}` }))
-  );
-
-  lagEl.innerHTML = allLagItems.map(item => {
-    const cur = (state.lagWeekly[item.id] || {})[week] || 0;
-    return `<div class="item-entry-row">
-      <div style="font-family:var(--font-mono);font-size:9px;color:var(--lag-color);min-width:50px">${item.lagName}</div>
-      <div class="item-entry-name">${item.name}</div>
-      <input type="number" class="item-entry-input" data-type="lag" data-id="${item.id}"
-        min="0" max="1" step="0.05" value="${cur}">
     </div>`;
-  }).join('');
-
-  // LEAD items
-  const leadEl = document.getElementById('lead-entry-items');
-  const allLeadItems = state.leads.flatMap(lead =>
-    (state.leadItems[lead.id] || []).map(item => ({ ...item, leadName: `LEAD-0${lead.lead_number}` }))
-  );
-
-  leadEl.innerHTML = allLeadItems.map(item => {
-    const cur = (state.leadWeekly[item.id] || {})[week] || 0;
-    return `<div class="item-entry-row">
-      <div style="font-family:var(--font-mono);font-size:9px;color:var(--lead-color);min-width:50px">${item.leadName}</div>
-      <div class="item-entry-name">${item.name}</div>
-      <input type="number" class="item-entry-input" data-type="lead" data-id="${item.id}"
-        min="0" max="1" step="1" value="${cur}">
-    </div>`;
-  }).join('');
-
-  document.getElementById('entry-modal').classList.add('open');
 }
 
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
+function openModal() {
+  const w = D.week;
+  document.getElementById('inp-week').value = w;
+  document.getElementById('modal-sub').textContent = 'T'+w+' · OS Malinovi';
+
+  const li = D.lags.flatMap(l=>(D.li[l.id]||[]).map(i=>({...i,ln:l.lag_number})));
+  document.getElementById('modal-lags').innerHTML = li.map(i=>`
+    <div class="entry-row">
+      <span class="entry-badge lag">LAG-0${i.ln}</span>
+      <div class="entry-name">${i.name}</div>
+      <input type="number" class="entry-input" data-t="lag" data-id="${i.id}" min="0" max="1" step="0.05" value="${(D.lw[i.id]||{})[w]||0}">
+    </div>`).join('');
+
+  const ei = D.leads.flatMap(l=>(D.lei[l.id]||[]).map(i=>({...i,ln:l.lead_number})));
+  document.getElementById('modal-leads').innerHTML = ei.map(i=>`
+    <div class="entry-row">
+      <span class="entry-badge lead">LEAD-0${i.ln}</span>
+      <div class="entry-name">${i.name}</div>
+      <input type="number" class="entry-input" data-t="lead" data-id="${i.id}" min="0" max="1" step="1" value="${(D.lew[i.id]||{})[w]||0}">
+    </div>`).join('');
+
+  document.getElementById('overlay').classList.add('on');
 }
 
-async function saveWeeklyEntry() {
-  const btn = document.getElementById('save-btn');
-  btn.disabled = true;
-  btn.textContent = 'Zapisuję...';
+function closeModal() { document.getElementById('overlay').classList.remove('on'); }
 
-  const week = parseInt(document.getElementById('entry-week').value);
+async function saveEntry() {
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.textContent = 'Zapisuję…';
+  const week = +document.getElementById('inp-week').value;
+  const MH = {...HD, Prefer:'resolution=merge-duplicates,return=representation'};
 
   try {
-    const lagInputs = document.querySelectorAll('#lag-entry-items input[data-type="lag"]');
-    for (const inp of lagInputs) {
-      const id = parseInt(inp.dataset.id);
-      const val = parseFloat(inp.value) || 0;
-      await sb('lag_weekly', {
-        method: 'POST',
-        body: JSON.stringify({ lag_item_id: id, week, value: val }),
-        headers: { ...H, 'Prefer': 'resolution=merge-duplicates,return=representation' }
-      });
-      if (!state.lagWeekly[id]) state.lagWeekly[id] = {};
-      state.lagWeekly[id][week] = val;
+    for (const inp of document.querySelectorAll('#modal-lags input')) {
+      const id=+inp.dataset.id, val=+inp.value||0;
+      await fetch(BASE+'/rest/v1/lag_weekly', {method:'POST',headers:MH,body:JSON.stringify({lag_item_id:id,week,value:val})});
+      if(!D.lw[id]) D.lw[id]={}; D.lw[id][week]=val;
     }
-
-    const leadInputs = document.querySelectorAll('#lead-entry-items input[data-type="lead"]');
-    for (const inp of leadInputs) {
-      const id = parseInt(inp.dataset.id);
-      const val = parseFloat(inp.value) || 0;
-      await sb('lead_weekly', {
-        method: 'POST',
-        body: JSON.stringify({ lead_item_id: id, week, value: val }),
-        headers: { ...H, 'Prefer': 'resolution=merge-duplicates,return=representation' }
-      });
-      if (!state.leadWeekly[id]) state.leadWeekly[id] = {};
-      state.leadWeekly[id][week] = val;
+    for (const inp of document.querySelectorAll('#modal-leads input')) {
+      const id=+inp.dataset.id, val=+inp.value||0;
+      await fetch(BASE+'/rest/v1/lead_weekly', {method:'POST',headers:MH,body:JSON.stringify({lead_item_id:id,week,value:val})});
+      if(!D.lew[id]) D.lew[id]={}; D.lew[id][week]=val;
     }
+    await fetch(BASE+'/rest/v1/config?key=eq.current_week', {method:'PATCH',headers:HD,body:JSON.stringify({value:String(week)})});
+    D.week = week;
+    document.getElementById('wtag').textContent = 'T'+week;
+    closeModal(); paint();
+    notify('Zapisano dane dla T'+week+' ✓');
+  } catch(e) { notify('Błąd: '+e.message.slice(0,60)); }
 
-    // Update current week in config
-    await sb('config?key=eq.current_week', {
-      method: 'PATCH',
-      body: JSON.stringify({ value: String(week) })
-    });
-    state.week = week;
-    document.getElementById('week-badge').textContent = 'T' + week;
-
-    closeModal('entry-modal');
-    render();
-    showToast('Zapisano dane dla T' + week);
-  } catch (e) {
-    showToast('Błąd: ' + e.message.substring(0, 60));
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Zapisz';
+  btn.disabled=false; btn.textContent='Zapisz';
 }
 
-function showToast(msg) {
+function notify(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+  t.textContent = msg; t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'), 3000);
 }
 
-// Close modal on overlay click
-document.querySelectorAll('.modal-overlay').forEach(el => {
-  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
-});
+document.getElementById('overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
 
-// INIT
-loadData();
+init();
 </script>
 </body>
 </html>
