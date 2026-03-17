@@ -233,6 +233,50 @@ nav {
 .spark-lbl { font-family: var(--fm); font-size: 9px; color: var(--t3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
 .spark-svg { width: 100%; height: 26px; overflow: visible; }
 
+/* TABS */
+.tabs { display:flex; gap:2px; margin-bottom:24px; border-bottom:1px solid var(--s2); }
+.tab { padding:8px 20px; font-family:var(--f); font-size:13px; font-weight:600; color:var(--t2); background:transparent; border:none; border-bottom:2px solid transparent; cursor:pointer; margin-bottom:-1px; transition:all .15s; letter-spacing:-.01em; }
+.tab.active { color:var(--t1); border-bottom-color:var(--t1); }
+.tab:hover:not(.active) { color:var(--t1); }
+
+/* LINK TAGS */
+.link-tags { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:10px; padding:6px 0; border-bottom:1px solid var(--s1); }
+.link-label { font-family:var(--fm); font-size:9px; color:var(--t3); text-transform:uppercase; letter-spacing:.1em; margin-right:2px; white-space:nowrap; }
+.link-tag { font-family:var(--fm); font-size:10px; padding:2px 8px; border-radius:99px; cursor:pointer; transition:all .15s; border:1px solid transparent; }
+.link-tag.lag-tag { background:var(--lag2); color:var(--lag); border-color:rgba(214,78,18,.2); }
+.link-tag.lead-tag { background:var(--lead2); color:var(--lead); border-color:rgba(26,94,168,.2); }
+.link-tag:hover { opacity:.75; transform:translateY(-1px); }
+.card.highlighted { outline:2px solid var(--lead); outline-offset:3px; border-radius:var(--r); animation:pulse-hl 1.5s ease-out forwards; }
+@keyframes pulse-hl { 0%{outline-color:var(--lead)} 100%{outline-color:transparent} }
+.link-add { font-family:var(--fm); font-size:9px; color:var(--t3); background:transparent; border:1px dashed var(--s2); border-radius:99px; padding:2px 8px; cursor:pointer; }
+.link-add:hover { color:var(--t2); border-color:var(--t2); }
+
+/* IMPACT VIEW */
+.impact-block { background:var(--white); border:1px solid var(--s2); border-radius:var(--r); padding:20px 24px; margin-bottom:16px; box-shadow:var(--sh); }
+.impact-lag-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--s2); }
+.impact-lag-name { font-size:14px; font-weight:600; flex:1; letter-spacing:-.01em; }
+.impact-lag-pct { font-family:var(--fm); font-size:18px; font-weight:500; }
+.impact-leads { margin-bottom:16px; }
+.impact-lead-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--bg); flex-wrap:wrap; }
+.impact-lead-row:last-child { border-bottom:none; }
+.impact-lead-info { display:flex; align-items:center; gap:8px; min-width:260px; flex:1; }
+.impact-lead-name { font-size:12px; flex:1; color:var(--t2); }
+.impact-lead-pct { font-family:var(--fm); font-size:13px; font-weight:500; }
+.impact-arrow-row { display:flex; align-items:center; gap:16px; padding-top:12px; border-top:1px solid var(--s2); }
+.impact-arrow { font-family:var(--fm); font-size:10px; color:var(--t3); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; }
+.impact-lag-result { display:flex; align-items:center; gap:12px; flex:1; }
+.impact-progress-bar { flex:1; height:4px; background:var(--s2); border-radius:99px; overflow:hidden; }
+.impact-progress-fill { height:100%; border-radius:99px; background:var(--lag); }
+.impact-chart { flex-shrink:0; }
+.unlink-btn { background:transparent; border:none; color:var(--t3); font-size:12px; cursor:pointer; padding:4px 6px; border-radius:3px; line-height:1; }
+.unlink-btn:hover { color:var(--re); background:var(--re2); }
+.impact-empty { padding:32px; text-align:center; font-size:13px; color:var(--t3); }
+
+/* LINK DROPDOWN */
+.link-dropdown { background:var(--white); border:1px solid var(--s2); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.12); min-width:220px; overflow:hidden; }
+.link-option { padding:9px 14px; font-size:12px; cursor:pointer; color:var(--t1); }
+.link-option:hover { background:var(--s1); }
+
 /* STATES */
 .state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 72px 20px; gap: 12px; }
 .spinner { width: 24px; height: 24px; border: 2px solid var(--s2); border-top-color: var(--t1); border-radius: 50%; animation: rot .7s linear infinite; }
@@ -347,9 +391,16 @@ nav {
 </nav>
 
 <div class="page">
-  <div id="root">
-    <div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie danych…</div></div>
+  <div class="tabs">
+    <button class="tab active" data-tab="scoreboard">Scoreboard</button>
+    <button class="tab" data-tab="impact">Powiązania</button>
   </div>
+  <div id="scoreboard-view">
+    <div id="root">
+      <div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie danych…</div></div>
+    </div>
+  </div>
+  <div id="impact-view" style="display:none"></div>
 </div>
 
 <div class="overlay" id="overlay">
@@ -380,7 +431,14 @@ const BASE = 'https://fssfuricylndtetfktex.supabase.co';
 const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
 const HD   = { 'Content-Type':'application/json', apikey:KEY, Authorization:'Bearer '+KEY };
 
-const D = { week:12, area:{}, lags:[], leads:[], li:{}, lei:{}, lw:{}, lew:{} };
+const D = { week:12, area:{}, lags:[], leads:[], li:{}, lei:{}, lw:{}, lew:{}, links:[] };
+
+function getLeadsForLag(lagId) {
+  return D.links.filter(l=>l.lag_id===lagId).map(l=>D.leads.find(e=>e.id===l.lead_id)).filter(Boolean);
+}
+function getLagsForLead(leadId) {
+  return D.links.filter(l=>l.lead_id===leadId).map(l=>D.lags.find(g=>g.id===l.lag_id)).filter(Boolean);
+}
 
 async function q(path, opts={}) {
   const r = await fetch(BASE+'/rest/v1/'+path, { headers:HD, ...opts });
@@ -400,6 +458,7 @@ async function init() {
 
     D.lags  = await q('lags?area_id=eq.os_malinovi&order=lag_number');
     D.leads = await q('leads?area_id=eq.os_malinovi&order=lead_number');
+    D.links = await q('lag_lead_links?area_id=eq.os_malinovi&select=*').catch(()=>[]);
 
     for (const l of D.lags)  D.li[l.id]  = await q('lag_items?lag_id=eq.'+l.id+'&order=sort_order');
     for (const l of D.leads) D.lei[l.id] = await q('lead_items?lead_id=eq.'+l.id+'&order=sort_order');
@@ -454,13 +513,20 @@ function cardLag(lag) {
     </div>`;
   }).join('');
   const sp = its.length ? sparkSVG(its[0].id,'lag','var(--lag)') : '';
-  return `<div class="card">
+  const linkedLeads = getLeadsForLag(lag.id);
+  const linkTags = `<div class="link-tags">
+    <span class="link-label">Napędzane przez:</span>
+    ${linkedLeads.map(e=>`<span class="link-tag lead-tag" data-highlight="lead-${e.id}">← LEAD-0${e.lead_number}</span>`).join('')}
+    <button class="link-add" data-lag-id="${lag.id}">+ powiąż</button>
+  </div>`;
+  return `<div class="card" data-section-id="lag-${lag.id}">
     <div class="card-head">
       <span class="card-id lag">LAG-0${lag.lag_number}</span>
       <div class="card-name">${lag.name}</div>
       <div class="card-pct ${cls(pg)}">${pct(pg)}%</div>
     </div>
     <div class="card-dl">Deadline — T${lag.deadline_week||'?'}</div>
+    ${linkTags}
     <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
     <div class="items-list">${rows}</div>
     ${sp}
@@ -478,13 +544,19 @@ function cardLead(lead) {
     </div>`;
   }).join('');
   const sp = its.length ? sparkSVG(its[0].id,'lead','var(--lead)') : '';
-  return `<div class="card">
+  const linkedLags = getLagsForLead(lead.id);
+  const linkTags = linkedLags.length ? `<div class="link-tags">
+    <span class="link-label">Napędza:</span>
+    ${linkedLags.map(l=>`<span class="link-tag lag-tag" data-highlight="lag-${l.id}">→ LAG-0${l.lag_number}</span>`).join('')}
+  </div>` : '';
+  return `<div class="card" data-section-id="lead-${lead.id}">
     <div class="card-head">
       <span class="card-id lead">LEAD-0${lead.lead_number}</span>
       <div class="card-name">${lead.name}</div>
       <div class="card-pct ${cls(pg)}">${pct(pg)}%</div>
     </div>
     <div class="card-dl">Deadline — T${lead.deadline_week||'?'}</div>
+    ${linkTags}
     <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
     <div class="items-list">${rows}</div>
     ${sp}
@@ -524,6 +596,102 @@ function paint() {
         ${leads}
       </div>
     </div>`;
+}
+
+function renderCorrelationChart(lagId, leadId, containerEl) {
+  const WEEKS = [10,11,12,13,14,15,16,17,18,19,20,21,22];
+  const W = 200, H = 48, PAD = 4;
+  function weekAvg(items, weekly, w) {
+    if (!items || !items.length) return null;
+    const vals = items.map(i => { const v=(weekly[i.id]||{})[w]; return v!==undefined?v:null; });
+    const valid = vals.filter(v=>v!==null);
+    return valid.length ? valid.reduce((a,b)=>a+b,0)/valid.length : null;
+  }
+  const lagItems=D.li[lagId]||[], leadItems=D.lei[leadId]||[];
+  const lagData=WEEKS.map(w=>weekAvg(lagItems,D.lw,w));
+  const leadData=WEEKS.map(w=>weekAvg(leadItems,D.lew,w));
+  function makePath(data, color) {
+    const pts=[];
+    data.forEach((v,i)=>{ if(v!==null){ pts.push([(PAD+(i/(WEEKS.length-1))*(W-PAD*2)).toFixed(1),(H-PAD-v*(H-PAD*2)).toFixed(1)]); } });
+    if(pts.length<2) return '';
+    const d=pts.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');
+    const dots=pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${i===pts.length-1?3:2}" fill="${color}" opacity="${i===pts.length-1?1:.5}"/>`).join('');
+    return `<path d="${d}" stroke="${color}" stroke-width="1.5" fill="none" opacity=".8"/>${dots}`;
+  }
+  const cwIdx=WEEKS.indexOf(D.week);
+  const cx=cwIdx>=0?(PAD+(cwIdx/(WEEKS.length-1))*(W-PAD*2)).toFixed(1):null;
+  const curLine=cx?`<line x1="${cx}" y1="0" x2="${cx}" y2="${H}" stroke="#aaa" stroke-width="1" stroke-dasharray="2,2" opacity=".5"/>`:'';
+  containerEl.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible;display:block">${curLine}${makePath(lagData,'#D64E12')}${makePath(leadData,'#1A5EA8')}</svg>`
+    +`<div style="display:flex;gap:10px;margin-top:3px"><span style="font-family:var(--fm);font-size:9px;color:#D64E12">— LAG</span><span style="font-family:var(--fm);font-size:9px;color:#1A5EA8">— LEAD</span></div>`;
+}
+
+function renderImpactView() {
+  const el=document.getElementById('impact-view');
+  const blocks=D.lags.map(lag=>{
+    const linkedLeads=getLeadsForLag(lag.id);
+    if(!linkedLeads.length) return '';
+    const pg=lagProg(lag);
+    const leadRows=linkedLeads.map(lead=>{
+      const lp=leadProg(lead);
+      return `<div class="impact-lead-row">
+        <div class="impact-lead-info">
+          <span class="card-id lead">LEAD-0${lead.lead_number}</span>
+          <span class="impact-lead-name">${lead.name}</span>
+          <span class="impact-lead-pct" style="color:${col(lp)}">${pct(lp)}%</span>
+        </div>
+        <div class="impact-chart" data-chart-lag="${lag.id}" data-chart-lead="${lead.id}"></div>
+        <button class="unlink-btn" data-lag-id="${lag.id}" data-lead-id="${lead.id}" title="Usuń powiązanie">✕</button>
+      </div>`;
+    }).join('');
+    return `<div class="impact-block">
+      <div class="impact-lag-header">
+        <span class="card-id lag">LAG-0${lag.lag_number}</span>
+        <span class="impact-lag-name">${lag.name}</span>
+        <span class="impact-lag-pct" style="color:${col(pg)}">${pct(pg)}%</span>
+      </div>
+      <div class="impact-leads">${leadRows}</div>
+      <div class="impact-arrow-row">
+        <div class="impact-arrow">↓ przekłada się na</div>
+        <div class="impact-lag-result">
+          <div class="impact-progress-bar"><div class="impact-progress-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
+          <span style="font-family:var(--fm);font-size:11px;color:${col(pg)}">LAG-0${lag.lag_number}: ${pct(pg)}%</span>
+        </div>
+      </div>
+    </div>`;
+  }).filter(Boolean).join('');
+  el.innerHTML=blocks||'<div class="impact-empty">Brak powiązań. Kliknij „+ powiąż" na kartach LAG, aby dodać.</div>';
+  el.querySelectorAll('.impact-chart').forEach(c=>renderCorrelationChart(+c.dataset.chartLag,+c.dataset.chartLead,c));
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.getElementById('scoreboard-view').style.display=tab==='scoreboard'?'':'none';
+  document.getElementById('impact-view').style.display=tab==='impact'?'':'none';
+  if(tab==='impact') renderImpactView();
+}
+
+function showLinkDropdown(lagId, anchor) {
+  document.querySelectorAll('.link-dropdown').forEach(d=>d.remove());
+  const existing=D.links.filter(l=>l.lag_id===lagId).map(l=>l.lead_id);
+  const avail=D.leads.filter(l=>!existing.includes(l.id));
+  if(!avail.length){ notify('Wszystkie LEAD-y już powiązane z tym LAG'); return; }
+  const dd=document.createElement('div');
+  dd.className='link-dropdown';
+  const rect=anchor.getBoundingClientRect();
+  dd.style.cssText=`position:fixed;top:${rect.bottom+4}px;left:${rect.left}px;z-index:300`;
+  dd.innerHTML=avail.map(l=>`<div class="link-option" data-lag="${lagId}" data-lead="${l.id}">LEAD-0${l.lead_number}: ${l.name}</div>`).join('');
+  document.body.appendChild(dd);
+  dd.addEventListener('click',e=>{ if(e.target.matches('.link-option')){ addLink(+e.target.dataset.lag,+e.target.dataset.lead).then(()=>dd.remove()); e.stopPropagation(); } });
+  setTimeout(()=>document.addEventListener('click',()=>dd.remove(),{once:true}),100);
+}
+
+async function addLink(lagId, leadId) {
+  try {
+    const row=await q('lag_lead_links',{method:'POST',headers:{...HD,Prefer:'return=representation'},body:JSON.stringify({area_id:'os_malinovi',lag_id:lagId,lead_id:leadId})});
+    if(row&&row[0]) D.links.push(row[0]);
+    paint();
+    notify('Dodano powiązanie ✓');
+  } catch(e){ notify('Błąd: '+e.message.slice(0,60)); }
 }
 
 function openModal() {
@@ -586,6 +754,28 @@ function notify(msg) {
 }
 
 document.getElementById('overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
+
+document.addEventListener('click', e => {
+  if(e.target.matches('.tab')){ switchTab(e.target.dataset.tab); return; }
+  if(e.target.matches('.link-tag')){
+    const targetEl=document.querySelector('[data-section-id="'+e.target.dataset.highlight+'"]');
+    if(targetEl){
+      if(document.getElementById('scoreboard-view').style.display==='none') switchTab('scoreboard');
+      setTimeout(()=>{ targetEl.scrollIntoView({behavior:'smooth',block:'center'}); targetEl.classList.add('highlighted'); setTimeout(()=>targetEl.classList.remove('highlighted'),1500); },50);
+    }
+    return;
+  }
+  if(e.target.matches('.link-add')){ showLinkDropdown(+e.target.dataset.lagId,e.target); e.stopPropagation(); return; }
+  if(e.target.matches('.unlink-btn')){
+    const lagId=+e.target.dataset.lagId, leadId=+e.target.dataset.leadId;
+    if(confirm('Usunąć powiązanie LEAD→LAG?')){
+      q('lag_lead_links?lag_id=eq.'+lagId+'&lead_id=eq.'+leadId,{method:'DELETE'})
+        .then(()=>{ D.links=D.links.filter(l=>!(l.lag_id===lagId&&l.lead_id===leadId)); paint(); renderImpactView(); notify('Usunięto powiązanie'); })
+        .catch(e2=>notify('Błąd: '+e2.message.slice(0,60)));
+    }
+    return;
+  }
+});
 
 init();
 </script>
