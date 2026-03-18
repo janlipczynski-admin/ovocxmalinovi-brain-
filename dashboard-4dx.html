@@ -380,7 +380,7 @@ const BASE = 'https://fssfuricylndtetfktex.supabase.co';
 const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
 const HD   = { 'Content-Type':'application/json', apikey:KEY, Authorization:'Bearer '+KEY };
 
-const D = { week:12, area:{}, lags:[], leads:[], li:{}, lei:{}, lw:{}, lew:{} };
+const D = { week:12, area:{}, lags:[], leads:[], li:{}, lei:{}, lw:{}, lew:{}, lagLeadLinks:[] };
 
 async function q(path, opts={}) {
   const r = await fetch(BASE+'/rest/v1/'+path, { headers:HD, ...opts });
@@ -400,6 +400,7 @@ async function init() {
 
     D.lags  = await q('lags?area_id=eq.os_malinovi&order=lag_number');
     D.leads = await q('leads?area_id=eq.os_malinovi&order=lead_number');
+    D.lagLeadLinks = await q('lag_lead_links?select=*') || [];
 
     for (const l of D.lags)  D.li[l.id]  = await q('lag_items?lag_id=eq.'+l.id+'&order=sort_order');
     for (const l of D.leads) D.lei[l.id] = await q('lead_items?lead_id=eq.'+l.id+'&order=sort_order');
@@ -454,11 +455,17 @@ function cardLag(lag) {
     </div>`;
   }).join('');
   const sp = its.length ? sparkSVG(its[0].id,'lag','var(--lag)') : '';
-  return `<div class="card">
+  const linkedLeadIds = getLeadsForLag(lag.id);
+  const leadTags = linkedLeadIds.map(function(leadId){
+    var lead = D.leads.find(function(l){ return l.id === leadId; });
+    return lead ? '<span style="font-size:11px;background:#EAF0FD;color:#2D6AC4;border-radius:4px;padding:1px 6px;font-family:DM Mono,monospace;">← LEAD-'+String(lead.lead_number).padStart(2,'0')+'</span>' : '';
+  }).join(' ');
+  return `<div class="card" id="lag-card-${lag.id}">
     <div class="card-head">
       <span class="card-id lag">LAG-0${lag.lag_number}</span>
       <div class="card-name">${lag.name}</div>
       <div class="card-pct ${cls(pg)}">${pct(pg)}%</div>
+      ${leadTags ? `<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">${leadTags}</div>` : ''}
     </div>
     <div class="card-dl">Deadline — T${lag.deadline_week||'?'}</div>
     <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
@@ -478,11 +485,19 @@ function cardLead(lead) {
     </div>`;
   }).join('');
   const sp = its.length ? sparkSVG(its[0].id,'lead','var(--lead)') : '';
-  return `<div class="card">
+  const assignedLagId = getLagForLead(lead.id);
+  const lagOptions = '<option value="">— brak —</option>'
+    + D.lags.map(function(lag){
+        var sel = assignedLagId === lag.id ? ' selected' : '';
+        return '<option value="'+lag.id+'"'+sel+'>LAG-'+String(lag.lag_number).padStart(2,'0')+': '+esc(lag.name)+'</option>';
+      }).join('');
+  const assignHtml = '<select data-assign-lead="'+lead.id+'" style="font-size:11px;border:1px solid var(--s2);border-radius:4px;padding:2px 6px;cursor:pointer;background:var(--s1);color:var(--t2);font-family:var(--fm);">'+lagOptions+'</select>';
+  return `<div class="card" id="lead-card-${lead.id}">
     <div class="card-head">
       <span class="card-id lead">LEAD-0${lead.lead_number}</span>
       <div class="card-name">${lead.name}</div>
       <div class="card-pct ${cls(pg)}">${pct(pg)}%</div>
+      ${assignHtml}
     </div>
     <div class="card-dl">Deadline — T${lead.deadline_week||'?'}</div>
     <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
@@ -585,7 +600,61 @@ function notify(msg) {
   setTimeout(()=>t.classList.remove('on'), 3000);
 }
 
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function getLagForLead(leadId) {
+  var link = D.lagLeadLinks.find(function(l){ return l.lead_id === leadId; });
+  return link ? link.lag_id : null;
+}
+
+function getLeadsForLag(lagId) {
+  return D.lagLeadLinks.filter(function(l){ return l.lag_id === lagId; }).map(function(l){ return l.lead_id; });
+}
+
+function reRenderLead(leadId) {
+  var el = document.getElementById('lead-card-'+leadId);
+  if (!el) return;
+  var lead = D.leads.find(function(l){ return l.id === leadId; });
+  if (!lead) return;
+  el.outerHTML = cardLead(lead);
+}
+
+function reRenderLag(lagId) {
+  var el = document.getElementById('lag-card-'+lagId);
+  if (!el) return;
+  var lag = D.lags.find(function(l){ return l.id === lagId; });
+  if (!lag) return;
+  el.outerHTML = cardLag(lag);
+}
+
+function assignLeadToLag(leadId, lagId) {
+  q('lag_lead_links?lead_id=eq.'+leadId, {method:'DELETE'}).then(function(){
+    D.lagLeadLinks = D.lagLeadLinks.filter(function(l){ return l.lead_id !== leadId; });
+    if (!lagId) {
+      var lead = D.leads.find(function(l){ return l.id === leadId; });
+      reRenderLead(leadId);
+      D.lags.filter(function(l){ return lead && l.area_id === lead.area_id; }).forEach(function(l){ reRenderLag(l.id); });
+      notify('Powiązanie usunięte ✓');
+      return;
+    }
+    q('lag_lead_links', {method:'POST', headers:{...HD, Prefer:'return=representation'}, body:JSON.stringify({lead_id:leadId, lag_id:lagId})}).then(function(ins){
+      var newLink = Array.isArray(ins) ? ins[0] : ins;
+      if (newLink) D.lagLeadLinks.push(newLink);
+      var lead = D.leads.find(function(l){ return l.id === leadId; });
+      reRenderLead(leadId);
+      D.lags.filter(function(l){ return lead && l.area_id === lead.area_id; }).forEach(function(l){ reRenderLag(l.id); });
+      notify('Powiązanie zapisane ✓');
+    }).catch(function(e){ notify('Błąd: '+e.message); });
+  }).catch(function(e){ notify('Błąd: '+e.message); });
+}
+
 document.getElementById('overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
+
+document.getElementById('root').addEventListener('change', function(e) {
+  if (e.target.dataset.assignLead) {
+    assignLeadToLag(parseInt(e.target.dataset.assignLead, 10), e.target.value ? parseInt(e.target.value, 10) : null);
+  }
+});
 
 init();
 </script>
