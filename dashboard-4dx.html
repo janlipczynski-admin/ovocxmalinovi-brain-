@@ -565,26 +565,39 @@ function cardLag(lag) {
       <div class="item-val" style="color:${col(v)}">${pct(v)}%</div>
     </div>`;
   }).join('');
-  const sp = its.length ? sparkSVG(its[0].id,'lag','var(--lag)') : '';
   const linkedLeadIds = getLeadsForLag(lag.id);
   const leadTags = linkedLeadIds.map(function(leadId){
     var lead = D.leads.find(function(l){ return l.id === leadId; });
     return lead ? '<a href="lead-detail.html?id='+lead.id+'" onclick="event.stopPropagation()" style="font-size:11px;background:#EAF0FD;color:#2D6AC4;border-radius:4px;padding:1px 6px;font-family:DM Mono,monospace;text-decoration:none;cursor:pointer;">← LEAD-'+String(lead.lead_number).padStart(2,'0')+'</a>' : '';
   }).join(' ');
   const cumul = cumulativeValueLag(lag);
-  const badge = statusBadgeHtml(cumul);
+  const ip    = idealPace();
+  const onTrack  = cumul >= ip;
+  const barColor = onTrack ? '#2D6A4F' : '#C0392B';
+  const badge    = statusBadgeHtml(cumul);
+  const dlText   = lag.deadline ? fmtDate(lag.deadline) : 'Brak deadline';
   return `<div class="card" id="lag-card-${lag.id}">
     <div class="card-head">
       <a class="card-id lag" href="lag-detail.html?id=${lag.id}" onclick="event.stopPropagation()">LAG-0${lag.lag_number}</a>
       <div class="card-name">${lag.name}</div>
-      <div class="card-pct ${cls(pg)}">${pct(pg)}%</div>
       ${badge}
       ${leadTags ? `<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">${leadTags}</div>` : ''}
     </div>
-    <div class="card-dl">Deadline — ${fmtDate(lag.deadline)}</div>
-    <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
+    <div class="card-dl" data-edit-lag-deadline="${lag.id}" style="cursor:pointer;user-select:none;" title="Kliknij aby edytować deadline">📅 ${dlText}</div>
     <div class="items-list">${rows}</div>
-    ${sp}
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--s1);">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;">Postęp LAG</div>
+        <div style="font-size:32px;font-weight:700;color:${barColor};font-family:var(--fm);line-height:1;">${pct(cumul)}%</div>
+      </div>
+      <div style="background:#E5E4E0;border-radius:10px;height:20px;overflow:hidden;">
+        <div style="width:${pct(cumul)}%;background:${barColor};height:100%;border-radius:10px;transition:width .3s;"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+        <div style="font-size:11px;color:var(--t3);">Idealne tempo T${D.week}: ${pct(ip)}%</div>
+        ${badge}
+      </div>
+    </div>
   </div>`;
 }
 
@@ -969,6 +982,33 @@ document.getElementById('root').addEventListener('change', function(e) {
 });
 
 document.getElementById('root').addEventListener('click', function(e) {
+  // Deadline edit inline dla kart LAG
+  var dlEl = e.target.closest('[data-edit-lag-deadline]');
+  if (dlEl && !e.target.closest('input')) {
+    e.stopPropagation();
+    var lagId = parseInt(dlEl.dataset.editLagDeadline, 10);
+    var lag = D.lags.find(function(l){ return l.id === lagId; });
+    if (!lag) return;
+    var inp = document.createElement('input');
+    inp.type = 'date';
+    inp.value = lag.deadline || '';
+    inp.style.cssText = 'font-size:12px;border:1px solid var(--s2);border-radius:4px;padding:2px 8px;font-family:var(--fm);background:var(--s1);';
+    dlEl.textContent = '';
+    dlEl.appendChild(inp);
+    inp.focus();
+    var saved = false;
+    function saveDl() {
+      if (saved) return; saved = true;
+      var val = inp.value || null;
+      q('lags?id=eq.'+lagId, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({deadline:val})})
+        .then(function(){ lag.deadline = val; reRenderLag(lagId); toast('Zapisano'); })
+        .catch(function(err){ saved = false; toast('Błąd: '+err.message,'error'); reRenderLag(lagId); });
+    }
+    inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();saveDl();} if(ev.key==='Escape') reRenderLag(lagId); });
+    inp.addEventListener('blur', saveDl);
+    return;
+  }
+
   if (e.target.closest('select') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
   var card = e.target.closest('[id^="lead-card-"]');
   if (card) {
