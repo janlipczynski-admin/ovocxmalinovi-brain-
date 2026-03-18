@@ -520,6 +520,35 @@ function sparkSVG(id, type, color) {
   return `<div class="spark"><div class="spark-lbl">Trend T10 → T22</div><svg class="spark-svg" viewBox="0 0 ${W} ${H}"><path d="${d}" stroke="${color}" stroke-width="1.4" fill="none" opacity=".65"/>${dots}</svg></div>`;
 }
 
+function sparkSVGLead(lead) {
+  var WKS = [10,11,12,13,14,15,16,17,18,19,20,21,22];
+  var items = D.lei[lead.id] || [];
+  if (!items.length) return '';
+  var W=200, H=26, PX=2, PY=2, n=WKS.length-1;
+  function wx(i){ return PX + (i/n)*(W-PX*2); }
+  function wy(v){ return PY + (1-v)*(H-PY*2); }
+  // Wynik LEAD per tydzień (agregat wszystkich lead_items)
+  var scorePts = [];
+  WKS.forEach(function(w, i){
+    if (w > D.week) return;
+    var done = items.filter(function(item){ return (D.lew[item.id]||{})[w] === 1; }).length;
+    scorePts.push({ x: wx(i).toFixed(1), y: wy(done/items.length).toFixed(1) });
+  });
+  if (!scorePts.length) return '';
+  // Idealne tempo — linia szara przerywana (wszystkie tygodnie)
+  var paceD = WKS.map(function(w,i){ return (i?'L':'M')+wx(i).toFixed(1)+','+wy((w-10)/12).toFixed(1); }).join(' ');
+  var scoreD = scorePts.map(function(p,i){ return (i?'L':'M')+p.x+','+p.y; }).join(' ');
+  var dots = scorePts.map(function(p){
+    return '<circle cx="'+p.x+'" cy="'+p.y+'" r="2.5" fill="#2563EB" stroke="white" stroke-width="1"/>';
+  }).join('');
+  return '<div class="spark"><div class="spark-lbl">Trend T10 → T22</div>'
+    +'<svg class="spark-svg" viewBox="0 0 '+W+' '+H+'">'
+    +'<path d="'+paceD+'" stroke="#CCCCCC" stroke-width="1.2" fill="none" stroke-dasharray="3,3"/>'
+    +(scorePts.length>=2 ? '<path d="'+scoreD+'" stroke="#2563EB" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' : '')
+    +dots
+    +'</svg></div>';
+}
+
 function cardLag(lag) {
   const pg = lagProg(lag), its = D.li[lag.id]||[];
   const rows = its.map(i=>{
@@ -563,7 +592,7 @@ function cardLead(lead) {
       <div class="item-val" style="color:${ok?'var(--gr)':'var(--t3)'}">${pct(v)}%</div>
     </div>`;
   }).join('');
-  const sp = its.length ? sparkSVG(its[0].id,'lead','var(--lead)') : '';
+  const sp = sparkSVGLead(lead);
   const assignedLagId = getLagForLead(lead.id);
   const lagOptions = '<option value="">— brak —</option>'
     + D.lags.map(function(lag){
