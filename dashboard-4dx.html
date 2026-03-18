@@ -199,7 +199,11 @@ nav {
   flex-shrink: 0;
   margin-top: 2px;
   letter-spacing: .04em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity .12s;
 }
+.card-id:hover { opacity: .75; }
 .card-id.lag { background: var(--lag2); color: var(--lag); }
 .card-id.lead { background: var(--lead2); color: var(--lead); }
 .card-name { font-size: 13px; font-weight: 600; flex: 1; line-height: 1.4; letter-spacing: -.01em; }
@@ -530,13 +534,13 @@ function cardLag(lag) {
   const linkedLeadIds = getLeadsForLag(lag.id);
   const leadTags = linkedLeadIds.map(function(leadId){
     var lead = D.leads.find(function(l){ return l.id === leadId; });
-    return lead ? '<span style="font-size:11px;background:#EAF0FD;color:#2D6AC4;border-radius:4px;padding:1px 6px;font-family:DM Mono,monospace;">← LEAD-'+String(lead.lead_number).padStart(2,'0')+'</span>' : '';
+    return lead ? '<a href="lead-detail.html?id='+lead.id+'" onclick="event.stopPropagation()" style="font-size:11px;background:#EAF0FD;color:#2D6AC4;border-radius:4px;padding:1px 6px;font-family:DM Mono,monospace;text-decoration:none;cursor:pointer;">← LEAD-'+String(lead.lead_number).padStart(2,'0')+'</a>' : '';
   }).join(' ');
   const cumul = cumulativeValueLag(lag);
   const badge = statusBadgeHtml(cumul);
   return `<div class="card" id="lag-card-${lag.id}">
     <div class="card-head">
-      <span class="card-id lag">LAG-0${lag.lag_number}</span>
+      <a class="card-id lag" href="lag-detail.html?id=${lag.id}" onclick="event.stopPropagation()">LAG-0${lag.lag_number}</a>
       <div class="card-name">${lag.name}</div>
       <div class="card-pct ${cls(pg)}">${pct(pg)}%</div>
       ${badge}
@@ -571,7 +575,7 @@ function cardLead(lead) {
   const badge = statusBadgeHtml(cumul);
   return `<div class="card" id="lead-card-${lead.id}" style="cursor:pointer;">
     <div class="card-head">
-      <span class="card-id lead">LEAD-0${lead.lead_number}</span>
+      <a class="card-id lead" href="lead-detail.html?id=${lead.id}" onclick="event.stopPropagation()">LEAD-0${lead.lead_number}</a>
       <div class="card-name">${lead.name}</div>
       <div class="card-pct ${cls(pg)}">${pct(pg)}%</div>
       ${badge}
@@ -930,11 +934,11 @@ document.getElementById('root').addEventListener('change', function(e) {
 });
 
 document.getElementById('root').addEventListener('click', function(e) {
-  if (e.target.closest('select') || e.target.closest('button') || e.target.closest('input')) return;
+  if (e.target.closest('select') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
   var card = e.target.closest('[id^="lead-card-"]');
   if (card) {
     var leadId = parseInt(card.id.replace('lead-card-', ''), 10);
-    window.location.href = 'lead-detail.html?lead=' + leadId;
+    window.location.href = 'lead-detail.html?id=' + leadId;
   }
 });
 
