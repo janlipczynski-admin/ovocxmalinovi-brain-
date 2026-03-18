@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>LAG Detail — OvocxMalinowi</title>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F6F2; --white: #FFFFFF;
+  --text: #1A1A1A; --muted: #6B6B6B; --border: #E5E4E0;
+  --green: #2D6A4F; --orange: #E07A2F; --red: #C0392B;
+  --lag-line: #E07A2F; --pace-line: #CCCCCC;
+  --f: 'Familjen Grotesk', sans-serif; --fm: 'DM Mono', monospace;
+  --r: 8px; --sh: 0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.06);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--f); line-height: 1.5; min-height: 100vh; }
+
+/* NAV */
+nav {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  height: 56px; display: flex; align-items: center; gap: 12px;
+  padding: 0 24px; position: sticky; top: 0; z-index: 50;
+}
+.back-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  text-decoration: none; padding: 6px 10px; border-radius: 6px;
+  transition: background .12s;
+}
+.back-btn:hover { background: #F0EFE9; color: var(--text); }
+.nav-sep { color: var(--border); }
+.nav-code { font-family: var(--fm); font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+
+/* LAYOUT */
+main { max-width: 960px; margin: 0 auto; padding: 28px 24px 60px; }
+
+/* HEADER CARD */
+.header-card {
+  background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+  padding: 24px 28px; box-shadow: var(--sh); margin-bottom: 20px;
+}
+.header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.header-left { flex: 1; min-width: 0; }
+.lag-badge {
+  display: inline-block; font-family: var(--fm); font-size: 10px; font-weight: 500;
+  background: #FEF0E4; color: var(--orange); border: 1px solid #FDDCBC;
+  border-radius: 5px; padding: 2px 8px; letter-spacing: .06em; margin-bottom: 8px;
+}
+.lag-name { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 10px; }
+.meta-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.meta-label { font-size: 11px; color: var(--muted); }
+.editable-val {
+  font-family: var(--fm); font-size: 12px; color: var(--text); font-weight: 500;
+  border-bottom: 1px dashed var(--border); cursor: pointer; padding: 1px 2px;
+  border-radius: 3px; transition: background .12s;
+}
+.editable-val:hover { background: #F0EFE9; }
+.editable-input {
+  font-family: var(--fm); font-size: 12px; color: var(--text); font-weight: 500;
+  border: 1px solid var(--orange); border-radius: 4px; padding: 2px 6px;
+  outline: none; background: var(--white);
+}
+.header-scores { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+.score-block { text-align: center; }
+.score-num { font-family: var(--fm); font-size: 32px; font-weight: 500; line-height: 1; }
+.score-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.status-badge {
+  font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 100px;
+  background: #E8F4EE; color: var(--green);
+}
+.status-badge.orange { background: #FEF0E4; color: var(--orange); }
+.status-badge.red { background: #FCECEA; color: var(--red); }
+
+/* SECTION */
+.section { margin-bottom: 20px; }
+.section-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--muted); margin-bottom: 10px;
+}
+
+/* TABLE */
+.table-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--sh); overflow: hidden; }
+.tbl-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 600px; }
+thead th {
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  padding: 8px 10px; border-bottom: 1px solid var(--border);
+  text-align: center; background: #FAFAF8; white-space: nowrap;
+}
+thead th.name-col { text-align: left; min-width: 180px; padding-left: 16px; }
+tbody tr { border-bottom: 1px solid var(--border); }
+tbody tr:last-child { border-bottom: none; }
+tbody td { padding: 0; vertical-align: middle; }
+td.name-cell {
+  padding: 10px 16px; font-size: 13px; font-weight: 500; min-width: 180px;
+}
+.name-edit {
+  cursor: pointer; border-radius: 4px; padding: 2px 4px;
+  transition: background .12s; display: inline-block;
+}
+.name-edit:hover { background: #F0EFE9; }
+.name-input {
+  font-size: 13px; font-weight: 500; font-family: var(--f); width: 100%;
+  border: 1px solid var(--orange); border-radius: 4px; padding: 2px 6px; outline: none;
+}
+td.week-cell { text-align: center; padding: 0; }
+.toggle-btn {
+  width: 100%; min-width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none; background: none; font-size: 15px;
+  transition: background .1s; position: relative;
+}
+.toggle-btn:hover { background: #F0EFE9; }
+.toggle-btn.done { background: #E8F4EE; }
+.toggle-btn.done:hover { background: #D6EDE3; }
+.check-icon { color: var(--green); font-size: 16px; font-weight: 700; }
+.progress-row-cell { padding: 8px 10px; text-align: center; }
+.progress-row-cell.name-col { text-align: left; padding-left: 16px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+td.del-cell { width: 32px; padding: 0 8px 0 4px; }
+.del-btn {
+  width: 22px; height: 22px; border-radius: 50%; border: none; background: none;
+  color: var(--muted); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .1s, color .1s;
+}
+.del-btn:hover { background: #FCECEA; color: var(--red); }
+tfoot td { border-top: 2px solid var(--border); }
+.tfoot-pct {
+  font-family: var(--fm); font-size: 12px; font-weight: 500; text-align: center; padding: 9px 10px;
+}
+.tfoot-label { font-size: 11px; font-weight: 700; color: var(--muted); padding: 9px 16px; text-transform: uppercase; letter-spacing: .06em; }
+.add-row-btn {
+  display: flex; align-items: center; gap: 6px; padding: 12px 16px;
+  font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer;
+  border: none; background: none; width: 100%; text-align: left;
+  border-top: 1px solid var(--border); transition: background .12s;
+}
+.add-row-btn:hover { background: #F0EFE9; color: var(--text); }
+
+/* LEADS */
+.leads-card {
+  background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: var(--sh); overflow: hidden;
+}
+.lead-link-row {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+  border-bottom: 1px solid var(--border); text-decoration: none; color: var(--text);
+  transition: background .12s;
+}
+.lead-link-row:last-child { border-bottom: none; }
+.lead-link-row:hover { background: #F0EFE9; }
+.lead-code { font-family: var(--fm); font-size: 10px; background: #E8F0FA; color: #1A5EA8; border: 1px solid #C0D4F0; border-radius: 5px; padding: 2px 7px; }
+.lead-name { font-size: 13px; font-weight: 500; flex: 1; }
+.lead-arrow { color: var(--muted); font-size: 13px; }
+.empty-leads { padding: 16px; font-size: 13px; color: var(--muted); }
+
+/* SVG CHART */
+.chart-card {
+  background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: var(--sh); padding: 20px 20px 16px;
+}
+.chart-svg { width: 100%; display: block; overflow: visible; }
+.chart-legend { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+.legend-line { width: 24px; height: 2px; border-radius: 1px; }
+.legend-line.dashed { background: repeating-linear-gradient(90deg, var(--pace-line) 0, var(--pace-line) 5px, transparent 5px, transparent 9px); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px);
+  background: var(--text); color: white; padding: 10px 20px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; opacity: 0; transition: opacity .2s, transform .2s;
+  pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="back-btn" href="dashboard-4dx.html">← Powrót</a>
+  <span class="nav-sep">|</span>
+  <span class="nav-code" id="nav-code">LAG-—</span>
+</nav>
+
+<main>
+  <!-- HEADER -->
+  <div class="header-card" id="header-card">
+    <div style="color:var(--muted);font-size:13px">Ładowanie…</div>
+  </div>
+
+  <!-- TABELA KRYTERIÓW -->
+  <div class="section">
+    <div class="section-title">Kryteria</div>
+    <div class="table-wrap" id="table-wrap">
+      <div style="padding:20px;color:var(--muted);font-size:13px">Ładowanie…</div>
+    </div>
+  </div>
+
+  <!-- POWIĄZANE LEAD-y -->
+  <div class="section">
+    <div class="section-title">Powiązane LEAD-y</div>
+    <div class="leads-card" id="leads-card">
+      <div style="padding:16px;color:var(--muted);font-size:13px">Ładowanie…</div>
+    </div>
+  </div>
+
+  <!-- WYKRES -->
+  <div class="section">
+    <div class="section-title">Postęp w czasie</div>
+    <div class="chart-card" id="chart-card">
+      <div style="color:var(--muted);font-size:13px">Ładowanie…</div>
+    </div>
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const SB  = 'https://fssfuricylndtetfktex.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
+const H   = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' };
+
+const WEEKS_ALL = [10,11,12,13,14,15,16,17,18,19,20,21,22];
+const W_START = 10, W_END = 22;
+
+const params = new URLSearchParams(location.search);
+const LAG_ID = parseInt(params.get('id'), 10);
+
+// ── State ────────────────────────────────────────────────────────
+const D = { lag: {}, items: [], weekly: [], links: [], leads: [], week: 12 };
+
+// ── Supabase helpers ─────────────────────────────────────────────
+async function sbGet(path) {
+  const r = await fetch(`${SB}/rest/v1/${path}`, { headers: H });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbUpsert(table, data, onConflict) {
+  const url = `${SB}/rest/v1/${table}${onConflict ? '?on_conflict=' + onConflict : ''}`;
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { ...H, 'Prefer': 'resolution=merge-duplicates,return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbPatch(table, id, data) {
+  const r = await fetch(`${SB}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'PATCH', headers: { ...H, 'Prefer': 'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbDelete(table, id) {
+  const r = await fetch(`${SB}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: H });
+  if (!r.ok) throw new Error(await r.text());
+}
+async function sbInsert(table, data) {
+  const r = await fetch(`${SB}/rest/v1/${table}`, {
+    method: 'POST', headers: { ...H, 'Prefer': 'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast toast-${type} show`;
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── Obliczenia ───────────────────────────────────────────────────
+function lagScoreAtWeek(upToWeek) {
+  if (!D.items.length) return 0;
+  const done = D.items.filter(item =>
+    D.weekly.some(r => r.lag_item_id === item.id && r.week <= upToWeek && r.value === 1)
+  ).length;
+  return done / D.items.length;
+}
+function lagScoreWeek(w) {
+  if (!D.items.length) return 0;
+  const done = D.items.filter(item =>
+    D.weekly.some(r => r.lag_item_id === item.id && r.week === w && r.value === 1)
+  ).length;
+  return done / D.items.length;
+}
+function idealPace(w) { return Math.max(0, Math.min(1, (w - W_START) / (W_END - W_START))); }
+function statusInfo(score, pace) {
+  const d = score - pace;
+  if (d >= 0)    return { label: 'Na dobrej drodze', cls: '',       color: '#2D6A4F' };
+  if (d >= -0.1) return { label: 'Do nadrobienia',   cls: 'orange', color: '#E07A2F' };
+  return               { label: 'Zagrożone',          cls: 'red',    color: '#C0392B' };
+}
+function pct(v) { return Math.round(v * 100); }
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+// ── Render header ────────────────────────────────────────────────
+function renderHeader() {
+  const lag = D.lag;
+  const score = lagScoreAtWeek(D.week);
+  const pace  = idealPace(D.week);
+  const st    = statusInfo(score, pace);
+
+  document.getElementById('nav-code').textContent = lag.code || `LAG-${LAG_ID}`;
+  document.getElementById('header-card').innerHTML = `
+    <div class="header-top">
+      <div class="header-left">
+        <div class="lag-badge">${lag.code || 'LAG'}</div>
+        <div class="lag-name">${lag.name || '—'}</div>
+        <div class="meta-row">
+          <div class="meta-item">
+            <span class="meta-label">Deadline:</span>
+            <span class="editable-val" id="val-deadline" data-field="deadline">${lag.deadline ? fmtDate(lag.deadline) : '—'}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Waga:</span>
+            <span class="editable-val" id="val-weight" data-field="weight">${lag.weight != null ? lag.weight : 100} pkt</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-scores">
+        <div class="score-block">
+          <div class="score-num" style="color:${st.color}">${pct(score)}%</div>
+          <div class="score-lbl">Score T${D.week}</div>
+        </div>
+        <span class="status-badge ${st.cls}">${st.label}</span>
+      </div>
+    </div>`;
+
+  // Editable deadline
+  document.getElementById('val-deadline').addEventListener('click', function() {
+    const span = this;
+    const inp = document.createElement('input');
+    inp.type = 'date';
+    inp.className = 'editable-input';
+    inp.value = lag.deadline || '';
+    span.replaceWith(inp);
+    inp.focus();
+    async function save() {
+      try {
+        await sbPatch('lags', lag.id, { deadline: inp.value || null });
+        D.lag.deadline = inp.value || null;
+        renderHeader();
+        toast('Deadline zaktualizowany');
+      } catch(e) { toast('Błąd: ' + e.message, 'error'); renderHeader(); }
+    }
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') renderHeader(); });
+    inp.addEventListener('blur', save);
+  });
+
+  // Editable weight
+  document.getElementById('val-weight').addEventListener('click', function() {
+    const span = this;
+    const inp = document.createElement('input');
+    inp.type = 'number'; inp.min = 0; inp.max = 999;
+    inp.className = 'editable-input'; inp.style.width = '64px';
+    inp.value = lag.weight != null ? lag.weight : 100;
+    span.replaceWith(inp);
+    inp.focus(); inp.select();
+    async function save() {
+      try {
+        const v = parseInt(inp.value, 10);
+        await sbPatch('lags', lag.id, { weight: isNaN(v) ? 100 : v });
+        D.lag.weight = isNaN(v) ? 100 : v;
+        renderHeader();
+        toast('Waga zaktualizowana');
+      } catch(e) { toast('Błąd: ' + e.message, 'error'); renderHeader(); }
+    }
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') renderHeader(); });
+    inp.addEventListener('blur', save);
+  });
+}
+
+// ── Render tabela ────────────────────────────────────────────────
+function getVal(itemId, week) {
+  const r = D.weekly.find(w => w.lag_item_id === itemId && w.week === week);
+  return r ? r.value : 0;
+}
+
+function renderTable() {
+  const weeks = WEEKS_ALL;
+  const cw = D.week;
+
+  const headerCols = weeks.map(w =>
+    `<th class="${w === cw ? 'col-current' : ''}" style="${w === cw ? 'background:#FEF0E4;color:var(--orange)' : ''}">T${w}</th>`
+  ).join('');
+
+  const rows = D.items.map(item => {
+    const cells = weeks.map(w => {
+      const v = getVal(item.id, w);
+      const future = w > cw;
+      return `<td class="week-cell">
+        <button class="toggle-btn ${v ? 'done' : ''} ${future ? 'future' : ''}"
+          data-item="${item.id}" data-week="${w}"
+          style="${future ? 'opacity:.4;cursor:default' : ''}"
+          ${future ? 'disabled' : ''}>
+          ${v ? '<span class="check-icon">✓</span>' : '<span style="color:#CCC">·</span>'}
+        </button>
+      </td>`;
+    }).join('');
+
+    return `<tr data-item-row="${item.id}">
+      <td class="name-cell">
+        <span class="name-edit" data-edit-name="${item.id}">${item.name}</span>
+      </td>
+      ${cells}
+      <td class="del-cell">
+        <button class="del-btn" data-del-item="${item.id}" title="Usuń">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Wiersz postępu — per tydzień skumulowany
+  const progressCells = weeks.map(w => {
+    const s = lagScoreAtWeek(w);
+    const color = w <= cw ? `color:${s >= 0.7 ? 'var(--green)' : s >= 0.4 ? 'var(--orange)' : 'var(--red)'}` : 'color:var(--border)';
+    return `<td class="progress-row-cell tfoot-pct" style="${color}">${w <= cw ? pct(s)+'%' : ''}</td>`;
+  }).join('');
+
+  document.getElementById('table-wrap').innerHTML = `
+    <div class="tbl-scroll">
+      <table id="criteria-table">
+        <thead>
+          <tr>
+            <th class="name-col">Kryterium</th>
+            ${headerCols}
+            <th style="width:32px"></th>
+          </tr>
+        </thead>
+        <tbody id="criteria-body">${rows}</tbody>
+        <tfoot>
+          <tr>
+            <td class="tfoot-label">POSTĘP (skum.)</td>
+            ${progressCells}
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <button class="add-row-btn" id="add-item-btn">+ Dodaj kryterium</button>`;
+
+  bindTableEvents();
+}
+
+function bindTableEvents() {
+  // Toggle ✓/✗
+  document.querySelectorAll('.toggle-btn:not([disabled])').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const itemId = parseInt(this.dataset.item, 10);
+      const week   = parseInt(this.dataset.week, 10);
+      const cur    = getVal(itemId, week);
+      const newVal = cur ? 0 : 1;
+      try {
+        await sbUpsert('lag_weekly', { lag_item_id: itemId, week, value: newVal }, 'lag_item_id,week');
+        const existing = D.weekly.find(r => r.lag_item_id === itemId && r.week === week);
+        if (existing) existing.value = newVal;
+        else D.weekly.push({ lag_item_id: itemId, week, value: newVal });
+        renderTable();
+        renderHeader();
+        renderChart();
+      } catch(e) { toast('Błąd zapisu: ' + e.message, 'error'); }
+    });
+  });
+
+  // Edit name
+  document.querySelectorAll('[data-edit-name]').forEach(span => {
+    span.addEventListener('click', function() {
+      const id = parseInt(this.dataset.editName, 10);
+      const item = D.items.find(i => i.id === id);
+      const inp = document.createElement('input');
+      inp.className = 'name-input';
+      inp.value = item.name;
+      this.replaceWith(inp);
+      inp.focus(); inp.select();
+      async function save() {
+        const name = inp.value.trim() || item.name;
+        try {
+          await sbPatch('lag_items', id, { name });
+          item.name = name;
+        } catch(e) { toast('Błąd: ' + e.message, 'error'); }
+        renderTable();
+      }
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') renderTable(); });
+      inp.addEventListener('blur', save);
+    });
+  });
+
+  // Delete item
+  document.querySelectorAll('[data-del-item]').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const id = parseInt(this.dataset.delItem, 10);
+      if (!confirm('Usuń to kryterium?')) return;
+      try {
+        await sbDelete('lag_items', id);
+        D.items = D.items.filter(i => i.id !== id);
+        D.weekly = D.weekly.filter(w => w.lag_item_id !== id);
+        renderTable(); renderHeader(); renderChart();
+        toast('Kryterium usunięte');
+      } catch(e) { toast('Błąd: ' + e.message, 'error'); }
+    });
+  });
+
+  // Add item
+  document.getElementById('add-item-btn').addEventListener('click', async function() {
+    const name = prompt('Nazwa nowego kryterium:');
+    if (!name || !name.trim()) return;
+    try {
+      const [created] = await sbInsert('lag_items', {
+        lag_id: LAG_ID, name: name.trim(), sort_order: D.items.length + 1
+      });
+      D.items.push({ ...created, lag_weekly: [] });
+      renderTable(); renderHeader(); renderChart();
+      toast('Kryterium dodane');
+    } catch(e) { toast('Błąd: ' + e.message, 'error'); }
+  });
+}
+
+// ── Render LEAD-y ────────────────────────────────────────────────
+function renderLeads() {
+  const linkedLeads = D.links.map(l => D.leads.find(ld => ld.id === l.lead_id)).filter(Boolean);
+  const el = document.getElementById('leads-card');
+  if (!linkedLeads.length) {
+    el.innerHTML = '<div class="empty-leads">Brak powiązanych LEAD-ów</div>';
+    return;
+  }
+  el.innerHTML = linkedLeads.map(ld =>
+    `<a class="lead-link-row" href="lead-detail.html?id=${ld.id}">
+      <span class="lead-code">${ld.code || 'LEAD'}</span>
+      <span class="lead-name">${ld.name}</span>
+      <span class="lead-arrow">→</span>
+    </a>`
+  ).join('');
+}
+
+// ── SVG chart ────────────────────────────────────────────────────
+function renderChart() {
+  const W = 560, H = 150, PL = 38, PT = 10, PR = 12, PB = 24;
+  const chartW = W - PL - PR, chartH = H - PT - PB;
+  const weeks = WEEKS_ALL;
+  const n = weeks.length - 1;
+  const cw = D.week;
+
+  function wx(i) { return PL + (i / n) * chartW; }
+  function wy(v) { return PT + chartH - v * chartH; }
+
+  // LAG cumulative score per week (only up to current week)
+  const lagPoints = weeks
+    .filter(w => w <= cw)
+    .map((w, idx) => ({ x: wx(weeks.indexOf(w)), y: wy(lagScoreAtWeek(w)), v: lagScoreAtWeek(w) }));
+
+  // Ideal pace (all weeks)
+  const pacePoints = weeks.map((w, i) => ({ x: wx(i), y: wy(idealPace(w)) }));
+
+  // Build polyline points
+  const lagPath  = lagPoints.map(p => `${p.x},${p.y}`).join(' ');
+  const pacePath = pacePoints.map(p => `${p.x},${p.y}`).join(' ');
+
+  // Y axis labels
+  const yLabels = [0, 25, 50, 75, 100].map(v =>
+    `<text x="${PL - 6}" y="${wy(v/100) + 4}" font-size="9" fill="#AEACA4" text-anchor="end" font-family="DM Mono, monospace">${v}</text>
+     <line x1="${PL}" y1="${wy(v/100)}" x2="${PL + chartW}" y2="${wy(v/100)}" stroke="#F0EFE9" stroke-width="1"/>`
+  ).join('');
+
+  // X axis labels — show every 2 weeks
+  const xLabels = weeks.map((w, i) =>
+    i % 2 === 0
+      ? `<text x="${wx(i)}" y="${PT + chartH + 16}" font-size="9" fill="#AEACA4" text-anchor="middle" font-family="DM Mono, monospace">T${w}</text>`
+      : ''
+  ).join('');
+
+  // Dots on LAG line
+  const dots = lagPoints.map(p =>
+    `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#E07A2F" stroke="white" stroke-width="1.5"/>`
+  ).join('');
+
+  // Current week line
+  const cwX = wx(weeks.indexOf(cw));
+  const cwLine = `<line x1="${cwX}" y1="${PT}" x2="${cwX}" y2="${PT + chartH}" stroke="#E07A2F" stroke-width="1" stroke-dasharray="3,3" opacity=".5"/>`;
+
+  document.getElementById('chart-card').innerHTML = `
+    <svg class="chart-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+      ${yLabels}
+      ${xLabels}
+      ${cwLine}
+      <polyline points="${pacePath}" fill="none" stroke="#CCCCCC" stroke-width="1.5" stroke-dasharray="5,4"/>
+      ${lagPoints.length >= 2 ? `<polyline points="${lagPath}" fill="none" stroke="#E07A2F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+      ${dots}
+    </svg>
+    <div class="chart-legend">
+      <div class="legend-item">
+        <div class="legend-line" style="background:#E07A2F"></div>
+        <span>Postęp LAG (skumulowany)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line dashed"></div>
+        <span>Idealne tempo</span>
+      </div>
+    </div>`;
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+async function init() {
+  if (!LAG_ID) {
+    document.querySelector('main').innerHTML = '<div style="padding:40px;color:var(--muted)">Brak parametru ?id= w URL</div>';
+    return;
+  }
+  try {
+    const [lagArr, items, weekly, links, leads, cfg] = await Promise.all([
+      sbGet(`lags?id=eq.${LAG_ID}&select=*`),
+      sbGet(`lag_items?lag_id=eq.${LAG_ID}&select=*&order=sort_order`),
+      sbGet(`lag_weekly?lag_item_id=in.(${
+        // We'll fetch all weekly data after we have items — do nested
+        // Workaround: fetch with broad filter, filter client-side
+        'select=*'
+      })`),
+      sbGet(`lag_lead_links?lag_id=eq.${LAG_ID}&select=*`),
+      sbGet('leads?select=id,code,name'),
+      sbGet('config?key=eq.current_week&select=value')
+    ]);
+
+    // Re-fetch weekly with actual item IDs
+    const itemIds = (await sbGet(`lag_items?lag_id=eq.${LAG_ID}&select=id`)).map(i => i.id);
+    const weeklyData = itemIds.length
+      ? await sbGet(`lag_weekly?lag_item_id=in.(${itemIds.join(',')})&select=*`)
+      : [];
+
+    D.lag     = lagArr[0] || {};
+    D.items   = items;
+    D.weekly  = weeklyData;
+    D.links   = links;
+    D.leads   = leads;
+    D.week    = cfg.length ? parseInt(cfg[0].value, 10) : 12;
+
+    document.title = `${D.lag.code || 'LAG'} — ${D.lag.name || ''} · OvocxMalinowi`;
+
+    renderHeader();
+    renderTable();
+    renderLeads();
+    renderChart();
+
+  } catch(e) {
+    toast('Błąd ładowania: ' + e.message, 'error');
+    console.error(e);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
