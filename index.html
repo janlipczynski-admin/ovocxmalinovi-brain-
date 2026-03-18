@@ -2,754 +2,297 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OvocxMalinovi — WIG Dashboard 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>OvocxMalinowi — Przegląd WIG 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#f2f0eb;--white:#fff;--black:#0f0f0d;--border:#e0ddd6;
-  --text:#0f0f0d;--dim:#6b6860;--muted:#a8a49c;
-  --orange:#fa4211;--purple:#9013fe;--green:#16a34a;--yellow:#d97706;--red:#dc2626;--blue:#1d4ed8;
+  --bg: #F7F6F2; --white: #FFFFFF;
+  --text: #1A1A1A; --muted: #6B6B6B; --border: #E5E4E0;
+  --green: #2D6A4F; --orange: #E07A2F; --red: #C0392B;
+  --f: 'Familjen Grotesk', sans-serif; --fm: 'DM Mono', monospace;
+  --r: 8px; --sh: 0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.06);
 }
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;min-height:100vh}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--f); line-height: 1.5; min-height: 100vh; }
 
-header{background:var(--black);padding:0 48px;height:64px;display:flex;align-items:center;justify-content:space-between}
-.logo{display:flex;align-items:center;gap:14px}
-.logo img{height:38px;filter:brightness(10)}
-.logo-div{width:1px;height:28px;background:#333}
-.logo-txt{font-family:'JetBrains Mono',monospace;font-size:10px;color:#666;line-height:1.6;letter-spacing:.08em}
-.logo-txt strong{display:block;color:#aaa;font-size:11px}
-.header-r{display:flex;align-items:center;gap:16px}
-.season-badge{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.15em;color:var(--orange)}
-.date-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:#555}
-
-.hero{background:var(--black);padding:48px 48px 40px;border-bottom:3px solid var(--orange)}
-.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px}
-.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,8vw,96px);color:var(--white);letter-spacing:.04em;line-height:.95;margin-bottom:28px}
-.hero-title span{color:var(--orange)}
-.hero-meta{display:flex;gap:32px;align-items:center}
-.meta-item{display:flex;flex-direction:column;gap:3px}
-.meta-val{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--white);letter-spacing:.05em;line-height:1}
-.meta-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:#555;text-transform:uppercase;letter-spacing:.1em}
-.meta-div{width:1px;height:40px;background:#222}
-
-main{padding:32px 48px}
-
-.wig-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;margin-bottom:3px}
-
-.wig-card{
-  background:var(--white);padding:36px 40px;
-  position:relative;overflow:hidden;
-  min-height:420px;display:flex;flex-direction:column;
-  cursor:pointer;transition:transform .2s,box-shadow .2s;
+nav {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  height: 56px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; position: sticky; top: 0; z-index: 50;
 }
-.wig-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.12)}
-.wig-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:4px}
-.wc-1::before{background:var(--blue)}
-.wc-2::before{background:var(--orange)}
-.wc-3::before{background:var(--green)}
-.wc-4::before{background:var(--purple)}
-
-.click-hint{
-  position:absolute;bottom:12px;right:16px;
-  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
-  letter-spacing:.08em;text-transform:uppercase;
-  display:flex;align-items:center;gap:4px;
-  transition:color .15s;
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand svg { width: 28px; height: 28px; }
+.brand-name { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.nav-week {
+  font-family: var(--fm); font-size: 11px; font-weight: 500;
+  background: #F0EFE9; border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 10px; color: var(--muted); letter-spacing: .04em;
 }
-.wig-card:hover .click-hint{color:var(--orange)}
 
-.wig-bg-num{position:absolute;right:-10px;top:-20px;font-family:'Bebas Neue',sans-serif;font-size:200px;color:var(--bg);line-height:1;pointer-events:none;user-select:none}
-
-.wig-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;position:relative;z-index:1}
-.wig-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px}
-.wig-name{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:.04em;line-height:1}
-.wc-1 .wig-name{color:var(--blue)}
-.wc-2 .wig-name{color:var(--orange)}
-.wc-3 .wig-name{color:var(--green)}
-.wc-4 .wig-name{color:var(--purple)}
-.wig-owner{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;line-height:1.5}
-
-.raag{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;padding:5px 12px;white-space:nowrap}
-.raag-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.raag.green{background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2)}
-.raag.green .raag-dot{background:var(--green);box-shadow:0 0 6px var(--green);animation:pg 2s infinite}
-.raag.yellow{background:rgba(217,119,6,.1);color:var(--yellow);border:1px solid rgba(217,119,6,.2)}
-.raag.yellow .raag-dot{background:var(--yellow)}
-.raag.red{background:rgba(220,38,38,.1);color:var(--red);border:1px solid rgba(220,38,38,.2)}
-.raag.red .raag-dot{background:var(--red);animation:pr 1.5s infinite}
-.raag.blue{background:rgba(29,78,216,.1);color:var(--blue);border:1px solid rgba(29,78,216,.2)}
-.raag.blue .raag-dot{background:var(--blue)}
-@keyframes pg{0%,100%{box-shadow:0 0 4px var(--green)}50%{box-shadow:0 0 10px var(--green)}}
-@keyframes pr{0%,100%{box-shadow:0 0 4px var(--red)}50%{box-shadow:0 0 10px var(--red)}}
-
-.wig-viz{flex:1;display:flex;align-items:center;justify-content:center;margin:12px 0;position:relative;z-index:1}
-
-.lag-section{position:relative;z-index:1;margin-top:auto}
-.lag-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
-.lag-current-big{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.03em;line-height:1}
-.lag-target-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
-.lag-bar-track{height:6px;background:var(--bg);overflow:hidden;margin-bottom:6px}
-.lag-bar-fill{height:100%}
-.lag-footnote{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-.lag-mini-grid{margin-top:8px;display:flex;flex-direction:column;gap:5px}
-.lag-mini-row{display:flex;align-items:center;gap:6px}
-.lag-mini-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);width:62px;flex-shrink:0;text-transform:uppercase;letter-spacing:.04em}
-.lag-mini-track{flex:1;height:3px;background:var(--bg);border-radius:2px;overflow:hidden}
-.lag-mini-fill{height:100%;border-radius:2px;transition:width .6s ease}
-.lag-mini-val{font-family:'Bebas Neue',sans-serif;font-size:13px;width:30px;text-align:right;flex-shrink:0}
-
-/* Radar */
-@keyframes radar-in{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
-.radar-shape{transform-origin:center;animation:radar-in .8s .3s ease both}
-
-/* Radial fill animation */
-@keyframes dash-in{from{stroke-dashoffset:283}to{stroke-dashoffset:var(--dash-end)}}
-.radial-fill{animation:dash-in 1.4s .4s cubic-bezier(.4,0,.2,1) both}
-
-/* Radar */
-@keyframes radar-in{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
-.radar-shape{transform-origin:center;animation:radar-in .8s .3s ease both}
-
-/* Card entrance */
-@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.wig-card{animation:up .5s ease both}
-.wig-card:nth-child(1){animation-delay:.05s}
-.wig-card:nth-child(2){animation-delay:.1s}
-.wig-card:nth-child(3){animation-delay:.15s}
-.wig-card:nth-child(4){animation-delay:.2s}
-.strip-card{animation:up .5s .25s ease both}
-
-/* BOTTOM */
-.bottom-strip{display:grid;grid-template-columns:1fr 1fr 280px;gap:3px}
-.strip-card{background:var(--white);padding:28px 32px}
-.strip-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em;margin-bottom:0;border-bottom:2px solid var(--text);padding-bottom:8px}
-.proc-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
-.proc-row:last-child{border-bottom:none}
-.proc-n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-right:10px}
-.proc-name{flex:1;font-weight:500}
-.pill{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 7px;font-weight:500}
-.p-ns{background:var(--bg);color:var(--muted)}
-.p-ip{background:rgba(217,119,6,.1);color:var(--yellow)}
-.p-done{background:rgba(22,163,74,.1);color:var(--green)}
-
-.tool-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text)}
-.tool-row:last-child{border-bottom:none}
-.tool-row:hover{padding-left:4px}
-.tool-left{display:flex;align-items:center;gap:10px}
-.tool-ico{font-size:16px}
-.tool-nm{font-size:12px;font-weight:600}
-.tool-ds{font-size:10px;color:var(--muted)}
-.tool-arr{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--muted);transition:all .15s}
-.tool-row:hover .tool-arr{color:var(--orange)}
-
-.mal-card{background:var(--black);padding:24px 28px;display:flex;flex-direction:column;gap:14px}
-.mal-hdr{display:flex;align-items:center;gap:10px}
-.mal-av{width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,var(--orange),var(--purple));display:flex;align-items:center;justify-content:center;font-size:16px}
-.mal-name{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--white);letter-spacing:.08em}
-.mal-st{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--orange)}
-.mal-bubble{background:#1a1a18;border:1px solid #2a2a28;padding:10px 12px;font-size:12px;line-height:1.6;color:#aaa}
-.mal-sugs{display:flex;flex-direction:column;gap:4px}
-.mal-sug{padding:7px 10px;border:1px solid #2a2a28;background:#111;font-size:11px;color:#888;cursor:pointer;transition:all .15s;text-align:left;font-family:'Sora',sans-serif}
-.mal-sug:hover{border-color:var(--orange);color:var(--white)}
-.mal-input-row{display:flex;gap:6px}
-.mal-in{flex:1;background:#1a1a18;border:1px solid #2a2a28;padding:8px 11px;font-size:12px;color:var(--white);font-family:'Sora',sans-serif;outline:none;transition:border-color .15s}
-.mal-in:focus{border-color:var(--orange)}
-.mal-in::placeholder{color:#444}
-.mal-btn{width:34px;height:34px;background:var(--orange);border:none;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.team-row{display:flex;gap:8px;border-top:1px solid #1a1a18;padding-top:12px}
-.av{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
-.av-c{width:28px;height:28px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:1px solid #2a2a28;color:#666;transition:all .15s;font-family:'JetBrains Mono',monospace}
-.av:hover .av-c{border-color:var(--orange);color:var(--orange)}
-.av-l{font-size:9px;color:#444;font-family:'JetBrains Mono',monospace}
-
-/* MODAL */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(15,15,13,.85);
-  z-index:1000;display:flex;align-items:center;justify-content:center;
-  opacity:0;pointer-events:none;transition:opacity .25s;
-  backdrop-filter:blur(4px);
+main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+.page-title {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 20px;
 }
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal{
-  background:var(--white);width:90%;max-width:720px;
-  max-height:85vh;overflow-y:auto;
-  transform:translateY(20px);transition:transform .25s;
-  position:relative;
-}
-.modal-overlay.open .modal{transform:translateY(0)}
-.modal-header{
-  background:var(--black);padding:28px 36px 24px;
-  border-bottom:3px solid var(--orange);
-  display:flex;align-items:flex-start;justify-content:space-between;
-  position:sticky;top:0;z-index:1;
-}
-.modal-wig-name{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.04em;line-height:1;color:var(--white)}
-.modal-wig-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#666;margin-top:4px;letter-spacing:.1em}
-.modal-close{
-  background:none;border:1px solid #333;color:#888;
-  width:32px;height:32px;font-size:16px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;transition:all .15s;
-}
-.modal-close:hover{border-color:var(--orange);color:var(--orange)}
-.modal-body{padding:32px 36px}
+.wig-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+@media (max-width: 680px) { .wig-grid { grid-template-columns: 1fr; } }
 
-.modal-section{margin-bottom:28px}
-.modal-section-title{
-  font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.06em;
-  margin-bottom:12px;padding-bottom:8px;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;
+.wig-card {
+  background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+  padding: 24px; box-shadow: var(--sh); cursor: pointer;
+  text-decoration: none; color: var(--text); display: block;
+  transition: box-shadow .15s, transform .15s;
 }
-.modal-section-title span{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;font-weight:400;text-transform:uppercase}
+.wig-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,.1); transform: translateY(-1px); }
+.wig-card-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 3px; }
+.wig-name { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.wig-week-tag {
+  font-family: var(--fm); font-size: 10px; color: var(--muted);
+  background: #F0EFE9; border: 1px solid var(--border);
+  border-radius: 5px; padding: 3px 8px; letter-spacing: .04em; white-space: nowrap;
+}
+.wig-owner { font-size: 13px; color: var(--muted); margin-bottom: 2px; }
+.wig-desc { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+.wig-deadline { font-family: var(--fm); font-size: 11px; color: var(--muted); margin-bottom: 16px; }
+.wig-spacer { margin-bottom: 16px; }
 
-.measure-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px;border:1px solid var(--border);margin-bottom:4px;
-}
-.measure-name{font-size:13px;font-weight:500}
-.measure-sub{font-size:10px;color:var(--muted);margin-top:2px}
-.measure-val{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em}
-.measure-status{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px}
-.ms-ok{background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2)}
-.ms-warn{background:rgba(217,119,6,.1);color:var(--yellow);border:1px solid rgba(217,119,6,.2)}
-.ms-bad{background:rgba(220,38,38,.1);color:var(--red);border:1px solid rgba(220,38,38,.2)}
-.ms-tbd{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+.progress-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.progress-track { flex: 1; height: 6px; background: #E5E4E0; border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+.progress-pct { font-family: var(--fm); font-size: 13px; font-weight: 500; min-width: 36px; text-align: right; }
 
-.sheets-note{
-  background:rgba(29,78,216,.04);border:1px solid rgba(29,78,216,.15);
-  padding:14px 18px;margin-top:20px;
-  display:flex;align-items:flex-start;gap:12px;
+.status-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.pace-txt { font-size: 11px; color: var(--muted); }
+.status-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px;
+  background: #E8F4EE; color: var(--green);
 }
-.sheets-note-icon{font-size:18px;flex-shrink:0;margin-top:2px}
-.sheets-note-text{font-size:12px;line-height:1.6;color:var(--dim)}
-.sheets-note-text strong{display:block;font-size:13px;color:var(--text);margin-bottom:4px}
-.sheets-link{color:var(--blue);text-decoration:underline;cursor:pointer}
+.status-badge.orange { background: #FEF0E4; color: var(--orange); }
+.status-badge.red { background: #FCECEA; color: var(--red); }
 
-@media(max-width:1100px){
-  .wig-grid{grid-template-columns:1fr}
-  .bottom-strip{grid-template-columns:1fr}
-  main{padding:20px}
-  header,.hero{padding-left:20px;padding-right:20px}
+.lag-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; }
+.lag-mini { display: flex; align-items: center; gap: 6px; }
+.lag-mini-code { font-family: var(--fm); font-size: 10px; color: var(--muted); min-width: 44px; }
+.lag-mini-bar { flex: 1; height: 3px; background: #E5E4E0; border-radius: 2px; overflow: hidden; }
+.lag-mini-fill { height: 100%; background: var(--orange); border-radius: 2px; }
+.lag-mini-pct { font-family: var(--fm); font-size: 10px; color: var(--muted); min-width: 28px; text-align: right; }
+
+.empty-card {
+  background: var(--white); border: 1px dashed var(--border); border-radius: 12px;
+  padding: 28px 24px; text-align: center; color: var(--muted);
+  display: block; text-decoration: none;
 }
+.empty-card-name { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.empty-card-owner { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.empty-hint { font-size: 12px; margin-bottom: 12px; }
+.empty-btn {
+  display: inline-block; font-size: 12px; font-weight: 600;
+  background: #F0EFE9; border: 1px solid var(--border); border-radius: 6px;
+  padding: 6px 14px; color: var(--muted);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #F0EFE9 25%, #E8E6DE 50%, #F0EFE9 75%);
+  background-size: 200% 100%; animation: shimmer 1.5s infinite;
+  border-radius: 6px; height: 14px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px);
+  background: var(--text); color: white; padding: 10px 20px;
+  border-radius: 8px; font-size: 13px; font-weight: 500;
+  opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <img id="logoImg" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJTdmdqc1N2ZzUyNzciIHdpZHRoPSI0MDk2IiBoZWlnaHQ9IjMwNDIuNzU0NzI1MzY4NzgzNSIgdmVyc2lvbj0iMS4xIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeG1sbnM6c3ZnanM9Imh0dHA6Ly9zdmdqcy5jb20vc3ZnanMiPjxkZWZzIGlkPSJTdmdqc0RlZnM1Mjc4Ij48L2RlZnM+PGcgaWQ9IlN2Z2pzRzUyNzkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyOCwgMzI4KSBzY2FsZSgzNC40KSIgb3BhY2l0eT0iMSI+PGRlZnMgaWQ9IlN2Z2pzRGVmczIyMzMiPjxsaW5lYXJHcmFkaWVudCBpZD0iU3ZnanNMaW5lYXJHcmFkaWVudHZVV2JKREFPWiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIxNS4xOTk5OTk5OTk5OTk5OTYiIHkxPSI1MCIgeDI9Ijg0LjgwMDAwMDAwMDAwMDAxIiB5Mj0iNTAiPjxzdG9wIGlkPSJTdmdqc1N0b3AyMjM2IiBzdG9wLWNvbG9yPSIjZmE0MjExIiBvZmZzZXQ9IjAiPjwvc3RvcD48c3RvcCBpZD0iU3ZnanNTdG9wMjIzNyIgc3RvcC1jb2xvcj0iIzkwMTNmZSIgb2Zmc2V0PSIxIj48L3N0b3A+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PGcgaWQ9IlN2Z2pzRzIyMzQiIHRyYW5zZm9ybT0ic2NhbGUoMC4yNDM1MzI0ODQ0MDU4NjkwMykiIG9wYWNpdHk9IjEiPjxnIGlkPSJTdmdqc0cyMjM4IiBjbGFzcz0ieC16dHdPeXppIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg5My41NTIyMjIwNjMwMzM1MywgLTExLjE3NTkxOTcxNTg4NDkyMikgc2NhbGUoMi4yMzUxODM5NDMxNzY5ODQpIiBsaWdodC1jb250ZW50PSJmYWxzZSIgbm9uLXN0cm9rYWJsZT0iZmFsc2UiIGZpbGw9InVybCgjU3ZnanNMaW5lYXJHcmFkaWVudHZVV2JKREFPWikiPjxwYXRoIGQ9Ik01MS4zIDI5LjFWMjRjMC02LjEgMy40LTExLjYgOC45LTE0LjRMNTcuOSA1Yy03LjIgMy42LTExLjcgMTAuOS0xMS43IDE5djcuMWwxLjIgMS4yYzEuMy0uOCAyLjYtMiAzLjktMy4yem0xNi44IDVjLjcuNCAxLjQuOCAyIDEuNCA0LjQtMi4yIDguMS01LjYgOC40LTkuMy01LjEgMi44LTkuMyA0LjItMTIuMSA0LjlsMS43IDN6bS0zOS4zLS44VjMzYy0uNC0xLjItLjctMi40LS45LTMuNmwtOC4yLTIuN2MyIDIuMiA1LjIgNS4xIDkuMSA2LjZ6TTQzLjYgOTVjMi41IDAgNC43LTEuMyA2LTMuMi0uNS0xLS44LTIuMi0uOC0zLjQtMi4yLS44LTQtMi4zLTUuMS00LjMtMS41IDIuNi00LjEgNC40LTcuMSA0LjguNSAzLjUgMy41IDYuMSA3IDYuMXptMTQuOSAwYzMuNiAwIDYuNS0yLjYgNy4xLTYtMi40LS4zLTQuNS0xLjYtNi0zLjNhOS43OCA5Ljc4IDAgMCAxLTcuNCAzLjRoLS43Yy41IDMuMyAzLjUgNS45IDcgNS45em0xNS43LTE1LjdjMC0uMyAwLS42LS4xLS45aC0uOGMtMy42IDAtNi44LTItOC41LTQuOS0uOCAxLjQtMS45IDIuNi0zLjMgMy40LjIuOC4zIDEuNS4zIDIuNCAwIDEuNC0uMyAyLjgtLjkgNCAxLjMgMS45IDMuNSAzLjIgNiAzLjIgNC4xIDAgNy4zLTMuMiA3LjMtNy4yem0tMTQuOSAwYzAtLjQgMC0uOC0uMS0xLjMtLjkuMy0xLjkuNC0yLjguNC0zLjYgMC02LjgtMi04LjUtNC45LS42IDEtMS4zIDEuOS0yLjMgMi43LS40LjktLjcgMi0uNyAzLjEgMCA0IDMuMiA3LjIgNy4yIDcuMnM3LjItMy4yIDcuMi03LjJ6bS0yNC4yIDcuMmM0IDAgNy4yLTMuMiA3LjItNy4yIDAtLjQgMC0uOC0uMS0xLjMtLjkuMy0xLjkuNC0yLjguNC0yLjQgMC00LjctLjktNi40LTIuNC0xLjQgMS4yLTMuMSAyLTUgMi4zIDAgLjMtLjEuNi0uMS45IDAgNC4xIDMuMyA3LjMgNy4yIDcuM3pNMjAuNCA2NS4xYy0uNiAxLS45IDIuMy0uOSAzLjUgMCA0IDMuMiA3LjIgNy4yIDcuMiAxLjggMCAzLjQtLjYgNC43LTEuNy0xLjEtMS42LTEuNy0zLjUtMS43LTUuNSAwLTEuMi4yLTIuMy42LTMuNC0xLjMtLjEtMi41LS40LTMuNi0uOS0xLjMuNi0yLjcgMS00LjIgMS0uOCAwLTEuNSAwLTIuMS0uMnptMTcuNy0zYy0xLjMgMS40LTMgMi41LTUgMy0uNiAxLjEtMSAyLjMtMSAzLjYgMCA0IDMuMiA3LjIgNy4yIDcuMnM3LjItMy4yIDcuMi03LjJjMC0xLjItLjMtMi40LS44LTMuNGgtLjRjLTIuOCAwLTUuNC0xLjItNy4yLTMuMnptNDIuNSA2LjZjMC0xLjUtLjUtMi45LTEuMy00LjEtMS4yLjUtMi40LjgtMy44LjgtMi41IDAtNC43LS45LTYuNC0yLjQtMS44IDEuMy0yLjkgMy40LTIuOSA1LjggMCA0IDMuMiA3LjIgNy4yIDcuMiAzLjktLjEgNy4yLTMuMyA3LjItNy4zek01My41IDYyYy0yLjYgMS4xLTQuNCAzLjctNC40IDYuNiAwIDQgMy4yIDcuMiA3LjIgNy4yczcuMi0zLjIgNy4yLTcuMmMwLTEuMy0uMy0yLjUtLjktMy41LS42LjEtMS4yLjItMS44LjItMi45IDAtNS41LTEuMi03LjMtMy4zem0tMzEuMS44Yy42IDAgMS4xLS4xIDEuNy0uMi0xLjgtMS44LTMtNC4zLTMtNyAwLTEgLjItMi4xLjUtMy0xLjctLjEtMy4zLS43LTQuNy0xLjctMS4xIDEuMy0xLjcgMi45LTEuNyA0LjcgMCAzLjkgMy4yIDcuMiA3LjIgNy4yem0xLjMtNy4yYzAgNCAzLjIgNy4yIDcuMiA3LjIgMi4zIDAgNC40LTEuMSA1LjctMi45LS43LTEuMy0xLTIuOC0xLTQuMyAwLTEuMy4zLTIuNi44LTMuOC0xLjIuNS0yLjUuOC0zLjkuOC0xLjggMC0zLjYtLjUtNS0xLjQtLjkuNi0xLjkgMS0zIDEuMi0uNS45LS44IDItLjggMy4yem01OSAwYzAtMS40LS40LTIuNy0xLjEtMy44LTEuMi41LTIuNi45LTQgLjktMi42IDAtNC45LTEtNi43LTIuNi0uNS40LS45LjktMS4zIDEuNC42IDEuMyAxIDIuNyAxIDQuMnMtLjQgMi45LTEgNC4yYzEuMyAxLjggMy40IDMgNS44IDMgNC4xLS4xIDcuMy0zLjQgNy4zLTcuM3ptLTI4LjItMy41Yy40IDEuMS42IDIuMi42IDMuNHMtLjIgMi40LS42IDMuNGMxLjIgMi4yIDMuNiAzLjggNi4zIDMuOCA0IDAgNy4yLTMuMiA3LjItNy4yIDAtMS4zLS40LTIuNS0xLTMuNi0xLjEuNC0yLjIuNi0zLjQuNi0yLjcgMC01LjItMS4xLTctMi45LS44LjctMS42IDEuNS0yLjEgMi41em0tMTYuMyAzLjVjMCA0IDMuMiA3LjIgNy4yIDcuMnM3LjItMy4yIDcuMi03LjJjMC0xLjMtLjQtMi42LTEtMy43LTEuMS40LTIuMy43LTMuNi43LTIuNyAwLTUuMS0xLjEtNi45LTIuOC0xLjggMS4zLTIuOSAzLjQtMi45IDUuOHpNMjIuNCA1MGMxIDAgMi0uMiAyLjktLjYtMS42LTEuNy0yLjYtNC4xLTIuNi02LjZzMS00LjkgMi42LTYuNmMtLjktLjQtMS45LS42LTIuOS0uNi00IDAtNy4yIDMuMi03LjIgNy4yczMuMiA3LjIgNy4yIDcuMnoiPjwvcGF0aD48cGF0aCBkPSJNMzcuNyAzNy45Yy0yLjUtLjItNS0uOS03LjMtMi0zIC45LTUuMiAzLjYtNS4yIDYuOSAwIDQgMy4yIDcuMiA3LjIgNy4yIDIuNyAwIDUuMS0xLjUgNi4zLTMuOC0uNC0xLjEtLjYtMi4yLS42LTMuNHMuMi0yLjQuNi0zLjRjLS4yLS42LS41LTEtMS0xLjV6bTM0LjUuMmMuOCAxLjQgMS4yIDMgMS4yIDQuN3MtLjUgMy4zLTEuMiA0LjdjMS4zIDEuNSAzLjMgMi41IDUuNCAyLjUgNCAwIDcuMi0zLjIgNy4yLTcuMnMtMy4yLTcuMi03LjItNy4yYy0yLjEgMC00LjEgMS01LjQgMi41ek02My43IDUwYzQgMCA3LjItMy4yIDcuMi03LjIgMC0yLjktMS44LTUuNS00LjMtNi42LTIuNyAxLTUuNCAxLjUtOC4yIDEuNy0uNS41LS44IDEuMS0xLjEgMS43LjMgMSAuNSAyLjEuNSAzLjJzLS4yIDIuMi0uNSAzLjJjMS4xIDIuNCAzLjUgNCA2LjQgNHpNNDcgMzYuNWMtMS4zLjUtMi43LjktNC4xIDEuMi0xLjMgMS4zLTIuMiAzLjEtMi4yIDUuMSAwIDQgMy4yIDcuMiA3LjIgNy4yczcuMi0zLjIgNy4yLTcuMmMwLTEuOS0uOC0zLjctMi01LTItLjItNC4xLS42LTYuMS0xLjN6bTIuMS0yLjJ2LjJjNS4yIDEuNCAxMC44IDEuMyAxNi0uNWwtNi40LTExLjFjLTEuOSA0LjItNS43IDguNy05LjYgMTEuNHptLTMuNSAwTDMxLjMgMTkuOWMtMS43IDQuNC0xLjUgOS41LjUgMTMuOCA0LjMgMiA5LjQgMi4yIDEzLjguNnoiPjwvcGF0aD48L2c+PGcgaWQ9IlN2Z2pzRzIyMzkiIGNsYXNzPSJ0ZXh0IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyMDUuMzEsIDI4NC4zNzYwODYxMDU5MTIwNykgc2NhbGUoMSkiIGxpZ2h0LWNvbnRlbnQ9ImZhbHNlIiBmaWxsPSIjMTIxMjEyIj48cGF0aCBkPSJNLTIwMC43MSAtMTYuNjFDLTIwMC43MSAtMTguMjMgLTIwMC41MSAtMTkuODkgLTIwMC4xMiAtMjEuNThDLTE5OS43MyAtMjMuMjggLTE5OS4wNyAtMjQuNzggLTE5OC4xMyAtMjYuMDdDLTE5Ny4xOSAtMjcuMzYgLTE5Ni4wMiAtMjguMzkgLTE5NC42MyAtMjkuMTdDLTE5My4yMyAtMjkuOTUgLTE5MS41NCAtMzAuMzMgLTE4OS41MyAtMzAuMzNDLTE4Ny41MiAtMzAuMzMgLTE4NS44IC0yOS45NSAtMTg0LjM3IC0yOS4xN0MtMTgyLjk0IC0yOC4zOSAtMTgxLjc3IC0yNy4zNiAtMTgwLjg3IC0yNi4wN0MtMTc5Ljk3IC0yNC43OCAtMTc5LjMxIC0yMy4yOCAtMTc4Ljg4IC0yMS41OEMtMTc4LjQ1IC0xOS44OSAtMTc4LjIzIC0xOC4yMyAtMTc4LjIzIC0xNi42MUMtMTc4LjIzIC0xNC45OSAtMTc4LjQ1IC0xMy4zMyAtMTc4Ljg4IC0xMS42MUMtMTc5LjMxIC05Ljg5IC0xNzkuOTcgLTguMzggLTE4MC44NyAtNy4wOUMtMTgxLjc3IC01LjggLTE4Mi45NCAtNC43NyAtMTg0LjM3IC0zLjk5Qy0xODUuOCAtMy4yMSAtMTg3LjUyIC0yLjgyIC0xODkuNTMgLTIuODJDLTE5MS41NCAtMi44MiAtMTkzLjIzIC0zLjIxIC0xOTQuNjMgLTMuOTlDLTE5Ni4wMiAtNC43NyAtMTk3LjE5IC01LjggLTE5OC4xMyAtNy4wOUMtMTk5LjA3IC04LjM4IC0xOTkuNzMgLTkuODkgLTIwMC4xMiAtMTEuNjFDLTIwMC41MSAtMTMuMzMgLTIwMC43MSAtMTQuOTkgLTIwMC43MSAtMTYuNjFaTS0yMDUuMzEgLTE2LjdDLTIwNS4zMSAtMTQuMjkgLTIwNC45NiAtMTIgLTIwNC4yNyAtOS44NkMtMjAzLjU3IC03LjcxIC0yMDIuNTMgLTUuODUgLTIwMS4xNCAtNC4zQy0xOTguMzkgLTEuMTEgLTE5NC41NCAwLjQ5IC0xODkuNTkgMC40OUMtMTg0LjYgMC40OSAtMTgwLjY5IC0xLjExIC0xNzcuODYgLTQuM0MtMTc2LjUxIC01Ljc3IC0xNzUuNSAtNy42IC0xNzQuODIgLTkuNzlDLTE3NC4xNSAtMTEuOTggLTE3My44MSAtMTQuMjkgLTE3My44MSAtMTYuN0MtMTczLjgxIC0xOS4wOCAtMTc0LjE1IC0yMS4zMyAtMTc0LjgyIC0yMy40NkMtMTc1LjUgLTI1LjU5IC0xNzYuNTEgLTI3LjQxIC0xNzcuODYgLTI4LjkyQy0xODAuNjkgLTMyLjE2IC0xODQuNiAtMzMuNzcgLTE4OS41OSAtMzMuNzdDLTE5NC41IC0zMy43MyAtMTk4LjM1IC0zMi4xMiAtMjAxLjE0IC0yOC45MkMtMjAyLjUzIC0yNy40MSAtMjAzLjU3IC0yNS41OSAtMjA0LjI3IC0yMy40NkMtMjA0Ljk2IC0yMS4zMyAtMjA1LjMxIC0xOS4wOCAtMjA1LjMxIC0xNi43WiBNLTE1MC4wNSAtMi44MkwtMTQyLjggLTIwLjg4Qy0xNDIuNzIgLTIxLjEyIC0xNDIuNjYgLTIxLjM2IC0xNDIuNjIgLTIxLjU4Qy0xNDIuNTcgLTIxLjgxIC0xNDIuNjQgLTIyLjA0IC0xNDIuOCAtMjIuMjlDLTE0My4yMSAtMjIuOTkgLTE0My44MiAtMjMuMzMgLTE0NC42NCAtMjMuMzNDLTE0NS40MiAtMjMuMjUgLTE0NS45NSAtMjIuOCAtMTQ2LjI0IC0yMS45OEwtMTUzLjM2IC00LjNMLTE2MC43MyAtMjEuOThDLTE2MC45OCAtMjIuODggLTE2MS41NSAtMjMuMzMgLTE2Mi40NSAtMjMuMzNDLTE2Mi44NiAtMjMuMjUgLTE2My4yNyAtMjMuMDUgLTE2My42OCAtMjIuNzJDLTE2NC40MSAtMjIuMTkgLTE2NC42IC0yMS41NyAtMTY0LjIzIC0yMC44OEwtMTU2LjU1IC0yLjgyQy0xNTYuMjMgLTEuOCAtMTU1LjgzIC0xLjA3IC0xNTUuMzYgLTAuNjRDLTE1NC44OSAtMC4yMSAtMTU0LjIyIDAgLTE1My4zNiAwQy0xNTIuNSAwIC0xNTEuODQgLTAuMjMgLTE1MS4zNyAtMC42OEMtMTUwLjkgLTEuMTMgLTE1MC40NiAtMS44NCAtMTUwLjA1IC0yLjgyWiBNLTEzNC4xNCAtMTEuNjFDLTEzNC4xNCAtOC4zNyAtMTMzLjE4IC01LjYxIC0xMzEuMjYgLTMuMzJDLTEyOS4yMSAtMC43OCAtMTI2LjMgMC40OSAtMTIyLjU0IDAuNDlDLTExOC43NyAwLjQ5IC0xMTUuODYgLTAuNzggLTExMy44MiAtMy4zMkMtMTExLjg5IC01LjY1IC0xMTAuOTMgLTguNDMgLTExMC45MyAtMTEuNjdDLTExMC45MyAtMTQuODYgLTExMS44OSAtMTcuNjQgLTExMy44MiAtMjAuMDJDLTExNS44NiAtMjIuNTIgLTExOC43NyAtMjMuNzYgLTEyMi41NCAtMjMuNzZDLTEyNi4zIC0yMy43NiAtMTI5LjIxIC0yMi41MiAtMTMxLjI2IC0yMC4wMkMtMTMyLjI0IC0xOC44MyAtMTMyLjk2IC0xNy41IC0xMzMuNDQgLTE2LjAzQy0xMzMuOTEgLTE0LjU1IC0xMzQuMTQgLTEzLjA4IC0xMzQuMTQgLTExLjYxWk0tMTMwLjE1IC0xMS42MUMtMTMwLjE1IC0xNC4wNiAtMTI5LjU0IC0xNi4xMyAtMTI4LjMxIC0xNy44MUMtMTI2LjkyIC0xOS44NSAtMTI0Ljk5IC0yMC44OCAtMTIyLjU0IC0yMC44OEMtMTIwIC0yMC44OCAtMTE4LjA3IC0xOS44NSAtMTE2Ljc2IC0xNy44MUMtMTE1LjU4IC0xNi4wOSAtMTE0Ljk4IC0xNC4wNCAtMTE0Ljk4IC0xMS42N0MtMTE0Ljk4IC05LjM3IC0xMTUuNTggLTcuMjkgLTExNi43NiAtNS40Qy0xMTguMDMgLTMuNCAtMTE5Ljk2IC0yLjM5IC0xMjIuNTQgLTIuMzlDLTEyNC45OSAtMi4zOSAtMTI2LjkyIC0zLjQgLTEyOC4zMSAtNS40Qy0xMjkgLTYuMzUgLTEyOS40OSAtNy4zNyAtMTI5Ljc1IC04LjQ3Qy0xMzAuMDIgLTkuNTggLTEzMC4xNSAtMTAuNjIgLTEzMC4xNSAtMTEuNjFaIE0tMTAxLjYgLTExLjY3Qy0xMDEuNiAtOC4yMyAtMTAwLjY1IC01LjM4IC05OC43NyAtMy4xM0MtOTcuODcgLTEuOTQgLTk2Ljc1IC0xLjA0IC05NS4zOSAtMC40M0MtOTQuMDQgMC4xOCAtOTIuNTMgMC41IC05MC44NSAwLjUyQy04OS4xNyAwLjU0IC04Ny40MyAwLjI1IC04NS42MyAtMC4zN0MtODQuODkgLTAuNjEgLTg0LjI2IC0wLjk1IC04My43MyAtMS4zOEMtODMuMiAtMS44MSAtODIuOTMgLTIuMjQgLTgyLjkzIC0yLjY3Qy04Mi45MyAtMy4xIC04My4wNSAtMy40NCAtODMuMyAtMy42OEMtODMuNzEgLTQuMTggLTg0LjIgLTQuMjYgLTg0Ljc3IC0zLjkzQy04Ni45IC0yLjkxIC04OC43IC0yLjM5IC05MC4xNyAtMi4zOUMtOTIuODggLTIuMzkgLTk0Ljg0IC0zLjM4IC05Ni4wNyAtNS4zNEMtOTcuMDkgLTcuMDYgLTk3LjYxIC05LjE3IC05Ny42MSAtMTEuNjdDLTk3LjYxIC0xNC4zNyAtOTYuODkgLTE2LjU4IC05NS40NiAtMTguM0MtOTQuMTkgLTE5Ljk4IC05Mi40MyAtMjAuODIgLTkwLjE3IC0yMC44MkMtODguNDYgLTIwLjg2IC04Ni44MiAtMjAuNDMgLTg1LjI2IC0xOS41M0MtODUuMSAtMTkuNCAtODQuODUgLTE5LjM0IC04NC41MyAtMTkuMzRDLTg0LjIgLTE5LjM0IC04My45MSAtMTkuNDggLTgzLjY3IC0xOS43NEMtODMuNDIgLTIwLjAxIC04My4zIC0yMC4zNyAtODMuMyAtMjAuODJDLTgzLjMgLTIxLjI3IC04My41MiAtMjEuNjYgLTgzLjk3IC0yMS45OEMtODUuNDkgLTIzLjE3IC04Ny42OCAtMjMuNzYgLTkwLjU0IC0yMy43NkMtOTMuOSAtMjMuNzYgLTk2LjYyIC0yMi41NiAtOTguNzEgLTIwLjE0Qy0xMDAuNjMgLTE3Ljg5IC0xMDEuNiAtMTUuMDYgLTEwMS42IC0xMS42N1ogTS00OC4xNyAtMTEuOTdMLTU1LjYgLTIuNThDLTU1LjgxIC0yLjI1IC01NS45MSAtMS45IC01NS45MSAtMS41NEMtNTUuOTEgLTEuMTcgLTU1LjczIC0wLjgyIC01NS4zNiAtMC40OUMtNTQuOTkgLTAuMTYgLTU0LjUgMCAtNTMuODggMEMtNTMuNTIgMCAtNTMuMTkgLTAuMiAtNTIuOSAtMC42MUwtNDYuMDIgLTkuN0wtMzkuMjcgLTAuNzRDLTM4Ljc4IC0wLjI1IC0zOC4yOSAwIC0zNy44IDBDLTM3LjMgMCAtMzYuODEgLTAuMTggLTM2LjMyIC0wLjU1Qy0zNi4xMiAtMC42OCAtMzUuOTYgLTAuODYgLTM1Ljg2IC0xLjExQy0zNS43NiAtMS4zNSAtMzUuNzEgLTEuNjMgLTM1LjcxIC0xLjkzQy0zNS43MSAtMi4yNCAtMzUuODMgLTIuNTQgLTM2LjA4IC0yLjgyTC00My4zOCAtMTEuOTdMLTM2LjU3IC0yMC44MkMtMzYuMzIgLTIxLjA2IC0zNi4yIC0yMS4zNyAtMzYuMiAtMjEuNzRDLTM2LjIgLTIyLjExIC0zNi4zOCAtMjIuNDYgLTM2Ljc1IC0yMi44MUMtMzcuMTIgLTIzLjE2IC0zNy41NSAtMjMuMzMgLTM4LjA0IC0yMy4zM0MtMzguNTMgLTIzLjMzIC0zOC45NCAtMjMuMDkgLTM5LjI3IC0yMi42TC00NS41OSAtMTQuMjVMLTUxLjggLTIyLjQ3Qy01Mi4yOSAtMjMuMDUgLTUyLjc5IC0yMy4zMyAtNTMuMyAtMjMuMzNDLTUzLjgxIC0yMy4zMyAtNTQuMjkgLTIzLjEzIC01NC43NCAtMjIuNzJDLTU0LjkxIC0yMi41NiAtNTUuMDMgLTIyLjM3IC01NS4xMSAtMjIuMTdDLTU1LjE5IC0yMS45NiAtNTUuMjYgLTIxLjY4IC01NS4zIC0yMS4zMUMtNTUuMzQgLTIwLjk0IC01NS4yMyAtMjAuNjMgLTU0Ljk5IC0yMC4zOVogTTEyLjE5IC01LjRMMTIuMTMgLTUuNEwxLjIgLTI5Ljk3QzAuNDYgLTMxLjQ0IC0wLjE1IC0zMi4zOCAtMC42NCAtMzIuNzlDLTAuOTMgLTMzLjA0IC0xLjI3IC0zMy4yMiAtMS42NiAtMzMuMzRDLTIuMDUgLTMzLjQ3IC0yLjQ4IC0zMy41MSAtMi45NSAtMzMuNDdDLTMuNDIgLTMzLjQzIC0zLjg4IC0zMy4zNiAtNC4zMyAtMzMuMjhDLTUuNjQgLTMyLjc5IC02LjI5IC0zMS42NCAtNi4yOSAtMjkuODRMLTYuMjkgLTEuODRDLTYuMjkgLTEuMjMgLTYuMSAtMC43NyAtNS43MSAtMC40NkMtNS4zMiAtMC4xNSAtNC44OCAwIC00LjM5IDBDLTMuOSAwIC0zLjQ2IC0wLjE1IC0zLjA3IC0wLjQ2Qy0yLjY4IC0wLjc3IC0yLjQ5IC0xLjIzIC0yLjQ5IC0xLjg0TC0yLjQ5IC0yOS4yM0w5LjYxIC0yLjU4QzEwLjIyIC0xLjM1IDExLjA2IC0wLjc0IDEyLjEzIC0wLjc0QzEzLjM2IC0wLjc0IDE0LjIyIC0xLjM1IDE0LjcxIC0yLjU4TDI2Ljg3IC0yOS4zNUwyNi44NyAtMS44NEMyNi44NyAtMS4yMyAyNy4wNSAtMC43NyAyNy40MiAtMC40NkMyNy43OSAtMC4xNSAyOC4yMiAwIDI4LjcxIDBDMjkuMiAwIDI5LjY0IC0wLjE1IDMwLjAzIC0wLjQ2QzMwLjQyIC0wLjc3IDMwLjYxIC0xLjIzIDMwLjYxIC0xLjg0TDMwLjYxIC0yOS44NEMzMC42MSAtMzAuOTkgMzAuMjYgLTMxLjkxIDI5LjU3IC0zMi42MUMyOS4yOCAtMzIuODkgMjguOTQgLTMzLjEyIDI4LjU1IC0zMy4yOEMyOC4xNiAtMzMuNDUgMjcuNjEgLTMzLjUzIDI2LjkgLTMzLjUzQzI2LjE4IC0zMy41MyAyNS40NyAtMzMuMjIgMjQuNzggLTMyLjYxQzI0LjQ1IC0zMi4yNCAyMy45NiAtMzEuMzYgMjMuMyAtMjkuOTdaIE01NS4xNyAtMTQuMThDNDYuNDUgLTE0LjE4IDQyLjA5IC0xMS42MSA0Mi4wOSAtNi40NUM0Mi4wOSAtNC4yOCA0Mi44NSAtMi41NiA0NC4zNyAtMS4yOUM0NS4xIC0wLjY4IDQ1Ljk1IC0wLjIzIDQ2LjkxIDAuMDZDNDcuODggMC4zNSA0OC44NSAwLjQ5IDQ5LjgzIDAuNDlDNTAuODEgMC40OSA1MS42OSAwLjM5IDUyLjQ3IDAuMThDNTUuMDEgLTAuMzUgNTYuNzcgLTEuNjggNTcuNzUgLTMuODFMNTcuNzUgLTEuNkM1Ny43NSAtMS4wMiA1Ny45NCAtMC42MSA1OC4zMSAtMC4zN0M1OC42NyAtMC4xMiA1OS4wOCAwIDU5LjUzIDBDNTkuOTggMCA2MC4zOSAtMC4xNCA2MC43NiAtMC40M0M2MS4xMyAtMC43MiA2MS4zMSAtMS4xMyA2MS4zMSAtMS42Nkw2MS40NCAtMTUuODRDNjEuNDQgLTE3LjE5IDYxLjIzIC0xOC4zOCA2MC44MiAtMTkuNEM1OS41OSAtMjIuMzEgNTYuODEgLTIzLjc2IDUyLjQ3IC0yMy43NkM0OC43MSAtMjMuNzYgNDUuODYgLTIyLjg0IDQzLjk0IC0yMUM0My41NyAtMjAuNjcgNDMuMzggLTIwLjM1IDQzLjM4IC0yMC4wMkM0My4zOCAtMTkuNjEgNDMuNTMgLTE5LjI4IDQzLjgxIC0xOS4wNEM0NC4xIC0xOC43OSA0NC40MSAtMTguNjcgNDQuNzMgLTE4LjY3QzQ1LjA2IC0xOC42NyA0NS41MSAtMTguODQgNDYuMDkgLTE5LjE5QzQ2LjY2IC0xOS41NCA0Ny42IC0xOS45NiA0OC45MSAtMjAuNDVDNDkuNjUgLTIwLjczIDUwLjgxIC0yMC44OCA1Mi40MSAtMjAuODhDNTUuOTcgLTIwLjg4IDU3Ljc1IC0xOS4yOCA1Ny43NSAtMTYuMDlMNTcuNzUgLTE0LjEyQzU2Ljg5IC0xNC4xNiA1Ni4wMyAtMTQuMTggNTUuMTcgLTE0LjE4Wk01Ny43NSAtMTEuNDJMNTcuNzUgLTkuMzNDNTcuNjMgLTcuMDQgNTYuOTUgLTUuMzIgNTUuNzMgLTQuMThDNTQuMzggLTIuOTkgNTIuNzggLTIuMzkgNTAuOTQgLTIuMzlDNDkuNDIgLTIuNDQgNDguMjYgLTIuNzggNDcuNDQgLTMuNDRDNDYuMzcgLTQuMTggNDUuODQgLTUuMiA0NS44NCAtNi41MUM0NS45MiAtOC4xOSA0Ni42NiAtOS40IDQ4LjA1IC0xMC4xM0M0OC43MSAtMTAuNSA0OS40NCAtMTAuNzggNTAuMjYgLTEwLjk2QzUxLjA4IC0xMS4xNSA1MS45NCAtMTEuMjUgNTIuODQgLTExLjI3QzUzLjc0IC0xMS4yOSA1NC42MiAtMTEuMyA1NS40OCAtMTEuM0M1Ni4zNCAtMTEuMyA1Ny4xIC0xMS4zNCA1Ny43NSAtMTEuNDJaIE03My44NCAtMzEuNTZMNzMuODQgLTEuODRDNzMuODQgLTEuMjMgNzQuMDMgLTAuNzcgNzQuMzkgLTAuNDZDNzQuNzYgLTAuMTUgNzUuMTkgMCA3NS42OCAwQzc2LjE3IDAgNzYuNjIgLTAuMTUgNzcuMDMgLTAuNDZDNzcuNDQgLTAuNzcgNzcuNjUgLTEuMjMgNzcuNjUgLTEuODRMNzcuNjUgLTMxLjU2Qzc3LjY1IC0zMi4yMiA3Ny40MiAtMzIuNjkgNzYuOTcgLTMyLjk4Qzc2Ljc3IC0zMy4xOCA3Ni41NiAtMzMuMyA3Ni4zNiAtMzMuMzRDNzYuMTUgLTMzLjM4IDc1Ljg5IC0zMy40IDc1LjU2IC0zMy40Qzc1LjIzIC0zMy40IDc0Ljg2IC0zMy4yNiA3NC40NSAtMzIuOThDNzQuMDUgLTMyLjY5IDczLjg0IC0zMi4yMiA3My44NCAtMzEuNTZaIE05NC42NiAtMzEuNDRDOTQuNjYgLTMyLjAxIDk0LjQ0IC0zMi41IDk0LjAxIC0zMi45MUM5My41OCAtMzMuMzIgOTIuOTUgLTMzLjUzIDkyLjExIC0zMy41M0M5MS4yNyAtMzMuNTMgOTAuNjMgLTMzLjMyIDkwLjE3IC0zMi45MUM4OS43MiAtMzIuNSA4OS41IC0zMi4wMSA4OS41IC0zMS40NEM4OS41IC0zMC43OCA4OS43MiAtMzAuMjUgOTAuMTcgLTI5Ljg0QzkwLjYzIC0yOS40MyA5MS4yNiAtMjkuMjMgOTIuMDggLTI5LjIzQzkyLjkgLTI5LjIzIDkzLjUzIC0yOS40MyA5My45OCAtMjkuODRDOTQuNDMgLTMwLjI1IDk0LjY2IC0zMC43OCA5NC42NiAtMzEuNDRaTTkwLjI0IC0yMS4zN0w5MC4yNCAtMS44NEM5MC4yNCAtMS4yMyA5MC40MiAtMC43NyA5MC43OSAtMC40NkM5MS4xNiAtMC4xNSA5MS41OSAwIDkyLjA4IDBDOTIuNTcgMCA5My4wMiAtMC4xNSA5My40MyAtMC40NkM5My44NCAtMC43NyA5NC4wNCAtMS4yMyA5NC4wNCAtMS44NEw5NC4wNCAtMjEuMzdDOTQuMDQgLTIxLjk4IDkzLjgyIC0yMi40MyA5My4zNyAtMjIuNzJDOTMuMTYgLTIyLjkyIDkyLjk2IC0yMy4wOCA5Mi43NSAtMjMuMThDOTIuNTUgLTIzLjI4IDkyLjI4IC0yMy4zMyA5MS45NiAtMjMuMzNDOTEuNjMgLTIzLjMzIDkxLjI2IC0yMy4xNiA5MC44NSAtMjIuODFDOTAuNDQgLTIyLjQ2IDkwLjI0IC0yMS45OCA5MC4yNCAtMjEuMzdaIE0xMDYuNjMgLTIxLjU1TDEwNi42MyAtMS43MkMxMDYuNjMgLTEuMTkgMTA2LjggLTAuNzcgMTA3LjEyIC0wLjQ2QzEwNy40NSAtMC4xNSAxMDcuODYgMCAxMDguMzUgMEMxMDguODQgMCAxMDkuMjkgLTAuMTQgMTA5LjcgLTAuNDNDMTEwLjExIC0wLjcyIDExMC4zMiAtMS4xNSAxMTAuMzIgLTEuNzJMMTEwLjMyIC0xMy41MUMxMTAuMzIgLTE2LjA1IDExMS4wMSAtMTcuOTMgMTEyLjQgLTE5LjE2QzExMy44IC0yMC4zIDExNS40NyAtMjAuODggMTE3LjQ0IC0yMC44OEMxMTguOTEgLTIwLjg4IDEyMC4xNCAtMjAuMzkgMTIxLjEyIC0xOS40QzEyMi4xOSAtMTguMzggMTIyLjcyIC0xNi45MSAxMjIuNzIgLTE0Ljk4TDEyMi43MiAtMS43MkMxMjIuNzIgLTEuMTkgMTIyLjkgLTAuNzcgMTIzLjI3IC0wLjQ2QzEyMy42NCAtMC4xNSAxMjQuMDcgMCAxMjQuNTYgMEMxMjUuMDEgMCAxMjUuNDUgLTAuMTQgMTI1Ljg4IC0wLjQzQzEyNi4zMSAtMC43MiAxMjYuNTMgLTEuMTUgMTI2LjUzIC0xLjcyTDEyNi41MyAtMTQuNzRDMTI2LjUzIC0xNy43NyAxMjUuNzEgLTIwLjA2IDEyNC4wNyAtMjEuNjFDMTIzLjI1IC0yMi4zNSAxMjIuMzUgLTIyLjg5IDEyMS4zNyAtMjMuMjRDMTIwLjM5IC0yMy41OSAxMTkuMTkgLTIzLjc2IDExNy43OCAtMjMuNzZDMTE2LjM2IC0yMy43NiAxMTQuOTQgLTIzLjM4IDExMy41MSAtMjIuNkMxMTEuODcgLTIxLjcgMTEwLjgxIC0yMC42MyAxMTAuMzIgLTE5LjRDMTEwLjQ0IC0yMC43MSAxMTAuMzggLTIxLjcgMTEwLjEzIC0yMi4zNUMxMDkuODkgLTIzLjAxIDEwOS4zMyAtMjMuMzMgMTA4LjQ3IC0yMy4zM0MxMDguMDYgLTIzLjMzIDEwNy42NiAtMjMuMTcgMTA3LjI1IC0yMi44NEMxMDYuODQgLTIyLjUyIDEwNi42MyAtMjIuMDkgMTA2LjYzIC0yMS41NVogTTEzNy40IC0xMS42MUMxMzcuNCAtOC4zNyAxMzguMzYgLTUuNjEgMTQwLjI4IC0zLjMyQzE0Mi4zMyAtMC43OCAxNDUuMjQgMC40OSAxNDkgMC40OUMxNTIuNzcgMC40OSAxNTUuNjcgLTAuNzggMTU3LjcyIC0zLjMyQzE1OS42NSAtNS42NSAxNjAuNjEgLTguNDMgMTYwLjYxIC0xMS42N0MxNjAuNjEgLTE0Ljg2IDE1OS42NSAtMTcuNjQgMTU3LjcyIC0yMC4wMkMxNTUuNjcgLTIyLjUyIDE1Mi43NyAtMjMuNzYgMTQ5IC0yMy43NkMxNDUuMjQgLTIzLjc2IDE0Mi4zMyAtMjIuNTIgMTQwLjI4IC0yMC4wMkMxMzkuMyAtMTguODMgMTM4LjU3IC0xNy41IDEzOC4xIC0xNi4wM0MxMzcuNjMgLTE0LjU1IDEzNy40IC0xMy4wOCAxMzcuNCAtMTEuNjFaTTE0MS4zOSAtMTEuNjFDMTQxLjM5IC0xNC4wNiAxNDIgLTE2LjEzIDE0My4yMyAtMTcuODFDMTQ0LjYyIC0xOS44NSAxNDYuNTUgLTIwLjg4IDE0OSAtMjAuODhDMTUxLjU0IC0yMC44OCAxNTMuNDYgLTE5Ljg1IDE1NC43NyAtMTcuODFDMTU1Ljk2IC0xNi4wOSAxNTYuNTUgLTE0LjA0IDE1Ni41NSAtMTEuNjdDMTU2LjU1IC05LjM3IDE1NS45NiAtNy4yOSAxNTQuNzcgLTUuNEMxNTMuNTEgLTMuNCAxNTEuNTggLTIuMzkgMTQ5IC0yLjM5QzE0Ni41NSAtMi4zOSAxNDQuNjIgLTMuNCAxNDMuMjMgLTUuNEMxNDIuNTMgLTYuMzUgMTQyLjA1IC03LjM3IDE0MS43OSAtOC40N0MxNDEuNTIgLTkuNTggMTQxLjM5IC0xMC42MiAxNDEuMzkgLTExLjYxWiBNMTgzLjMzIC0yLjgyTDE5MC41NyAtMjAuODhDMTkwLjY2IC0yMS4xMiAxOTAuNzIgLTIxLjM2IDE5MC43NiAtMjEuNThDMTkwLjggLTIxLjgxIDE5MC43NCAtMjIuMDQgMTkwLjU3IC0yMi4yOUMxOTAuMTYgLTIyLjk5IDE4OS41NSAtMjMuMzMgMTg4LjczIC0yMy4zM0MxODcuOTUgLTIzLjI1IDE4Ny40MiAtMjIuOCAxODcuMTQgLTIxLjk4TDE4MC4wMSAtNC4zTDE3Mi42NCAtMjEuOThDMTcyLjQgLTIyLjg4IDE3MS44MiAtMjMuMzMgMTcwLjkyIC0yMy4zM0MxNzAuNTEgLTIzLjI1IDE3MC4xMSAtMjMuMDUgMTY5LjcgLTIyLjcyQzE2OC45NiAtMjIuMTkgMTY4Ljc3IC0yMS41NyAxNjkuMTQgLTIwLjg4TDE3Ni44MiAtMi44MkMxNzcuMTUgLTEuOCAxNzcuNTUgLTEuMDcgMTc4LjAyIC0wLjY0QzE3OC40OSAtMC4yMSAxNzkuMTUgMCAxODAuMDEgMEMxODAuODcgMCAxODEuNTQgLTAuMjMgMTgyLjAxIC0wLjY4QzE4Mi40OCAtMS4xMyAxODIuOTIgLTEuODQgMTgzLjMzIC0yLjgyWiBNMjA1LjMxIC0zMS40NEMyMDUuMzEgLTMyLjAxIDIwNS4xIC0zMi41IDIwNC42NyAtMzIuOTFDMjA0LjI0IC0zMy4zMiAyMDMuNiAtMzMuNTMgMjAyLjc2IC0zMy41M0MyMDEuOTIgLTMzLjUzIDIwMS4yOCAtMzMuMzIgMjAwLjgzIC0zMi45MUMyMDAuMzggLTMyLjUgMjAwLjE1IC0zMi4wMSAyMDAuMTUgLTMxLjQ0QzIwMC4xNSAtMzAuNzggMjAwLjM4IC0zMC4yNSAyMDAuODMgLTI5Ljg0QzIwMS4yOCAtMjkuNDMgMjAxLjkxIC0yOS4yMyAyMDIuNzMgLTI5LjIzQzIwMy41NSAtMjkuMjMgMjA0LjE5IC0yOS40MyAyMDQuNjQgLTI5Ljg0QzIwNS4wOSAtMzAuMjUgMjA1LjMxIC0zMC43OCAyMDUuMzEgLTMxLjQ0Wk0yMDAuODkgLTIxLjM3TDIwMC44OSAtMS44NEMyMDAuODkgLTEuMjMgMjAxLjA3IC0wLjc3IDIwMS40NCAtMC40NkMyMDEuODEgLTAuMTUgMjAyLjI0IDAgMjAyLjczIDBDMjAzLjIyIDAgMjAzLjY3IC0wLjE1IDIwNC4wOCAtMC40NkMyMDQuNDkgLTAuNzcgMjA0LjcgLTEuMjMgMjA0LjcgLTEuODRMMjA0LjcgLTIxLjM3QzIwNC43IC0yMS45OCAyMDQuNDcgLTIyLjQzIDIwNC4wMiAtMjIuNzJDMjAzLjgyIC0yMi45MiAyMDMuNjEgLTIzLjA4IDIwMy40MSAtMjMuMThDMjAzLjIgLTIzLjI4IDIwMi45NCAtMjMuMzMgMjAyLjYxIC0yMy4zM0MyMDIuMjggLTIzLjMzIDIwMS45MSAtMjMuMTYgMjAxLjUgLTIyLjgxQzIwMS4wOSAtMjIuNDYgMjAwLjg5IC0yMS45OCAyMDAuODkgLTIxLjM3WiI+PC9wYXRoPjwvZz48cmVjdCBpZD0iU3ZnanNSZWN0MjI0MCIgd2lkdGg9IjQxMC42MjI4Mzg0NDM3NjU1NCIgaGVpZ2h0PSIxLjkyMTE3NzMzMzAxMTMwODIiIGZpbGw9IiMxMjEyMTIiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIDIzMy44ODE5OTkyODI0MjEwOCkgc2NhbGUoMSkiIGxpZ2h0LWNvbnRlbnQ9ImZhbHNlIj48L3JlY3Q+PC9nPjwvZz48L3N2Zz4=" alt="OvocxMalinovi">
-    <div class="logo-div"></div>
-    <div class="logo-txt"><strong>CENTRUM OPERACYJNE</strong>4 Disciplines of Execution</div>
-  </div>
-  <div class="header-r">
-    <div class="season-badge">SEZON 2026</div>
-    <div class="date-lbl" id="dateLbl"></div>
-  </div>
-</header>
-
-<div class="hero">
-  <div class="hero-eyebrow">OvocxMalinovi · WIG Scoreboard · Q1–Q4 2026</div>
-  <div class="hero-title">4 CELE,<br>JEDEN <span>SEZON.</span></div>
-  <div class="hero-meta">
-    <div class="meta-item"><div class="meta-val">4</div><div class="meta-lbl">WIGi</div></div>
-    <div class="meta-div"></div>
-    <div class="meta-item"><div class="meta-val" style="color:var(--green)">1</div><div class="meta-lbl">On track</div></div>
-    <div class="meta-div"></div>
-    <div class="meta-item"><div class="meta-val" style="color:var(--yellow)">2</div><div class="meta-lbl">W toku</div></div>
-    <div class="meta-div"></div>
-    <div class="meta-item"><div class="meta-val" style="color:var(--red)">1</div><div class="meta-lbl">Wymaga akcji</div></div>
-    <div class="meta-div"></div>
-    <div class="meta-item"><div class="meta-val" style="color:#555" id="daysLeft">—</div><div class="meta-lbl">Dni do Product X</div></div>
-  </div>
-</div>
+<nav>
+  <a class="brand" href="index.html">
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="32" cy="28" r="8" fill="none" stroke="#C0392B" stroke-width="2.5"/>
+      <circle cx="21" cy="35" r="8" fill="none" stroke="#C0392B" stroke-width="2.5"/>
+      <circle cx="43" cy="35" r="8" fill="none" stroke="#C0392B" stroke-width="2.5"/>
+      <circle cx="26" cy="45" r="8" fill="none" stroke="#C0392B" stroke-width="2.5"/>
+      <circle cx="38" cy="45" r="8" fill="none" stroke="#C0392B" stroke-width="2.5"/>
+    </svg>
+    <span class="brand-name">OvocxMalinowi</span>
+  </a>
+  <span class="nav-week" id="nav-week">T—</span>
+</nav>
 
 <main>
-<div class="wig-grid">
-
-  <!-- WIG 1: OS MALINOVI — JEDNO DUŻE KOŁO ZĘBATE -->
-  <div class="wig-card wc-1" onclick="window.location='dashboard-4dx.html'">
-    <div class="wig-bg-num">1</div>
-    <div class="wig-top">
-      <div>
-        <div class="wig-label">WIG #1 · Jan (CEO)</div>
-        <div class="wig-name">OS MALINOVI 1.0</div>
-        <div class="wig-owner">System operacyjny firmy · Owner: Jan (CEO)</div>
-      </div>
-      <div id="raag-os" class="raag red"><div class="raag-dot"></div>Wymaga akcji</div>
+  <div class="page-title">Przegląd WIG 2026</div>
+  <div class="wig-grid" id="wig-grid">
+    <div class="wig-card">
+      <div class="skeleton" style="width:55%;margin-bottom:10px"></div>
+      <div class="skeleton" style="width:35%;margin-bottom:20px"></div>
+      <div class="skeleton" style="margin-bottom:8px"></div>
+      <div class="skeleton" style="width:70%"></div>
     </div>
-    <div class="wig-viz" style="display:flex;align-items:center;justify-content:center;padding:4px 0">
-      <svg width="190" height="195" viewBox="0 0 160 175" style="display:block">
-
-        <!-- === JEDNO DUŻE KOŁO — ogólny % WIG === -->
-        <!-- ring track -->
-        <circle cx="80" cy="80" r="52" fill="none" stroke="#222" stroke-width="7"/>
-        <!-- ring fill (dynamic via sheets.js — arcDash(52, overall)) -->
-        <circle id="ring-os-main" cx="80" cy="80" r="52" fill="none" stroke="#444" stroke-width="7"
-          stroke-dasharray="0 326.7" stroke-linecap="butt"
-          style="transform:rotate(-90deg);transform-origin:80px 80px"/>
-        <!-- node network — 3 węzły połączone liniami, symbol systemu procesów -->
-        <line x1="80" y1="55" x2="55" y2="100" stroke="#444" stroke-width="2.5"/>
-        <line x1="80" y1="55" x2="105" y2="100" stroke="#444" stroke-width="2.5"/>
-        <line x1="55" y1="100" x2="105" y2="100" stroke="#444" stroke-width="2.5"/>
-        <circle id="gear-os-main" cx="80" cy="55" r="9" fill="#444" stroke="#333" stroke-width="2"/>
-        <circle cx="55" cy="100" r="9" fill="#444" stroke="#333" stroke-width="2"/>
-        <circle cx="105" cy="100" r="9" fill="#444" stroke="#333" stroke-width="2"/>
-        <!-- dummy dla sheets.js (hub-os-main) -->
-        <circle id="hub-os-main" cx="80" cy="77" r="0" fill="#444"/>
-        <!-- ogólny % WIG -->
-        <text id="text-os-overall" x="80" y="153" text-anchor="middle" font-family="Bebas Neue" font-size="30" fill="#444">0%</text>
-        <text x="80" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--muted)">OS MALINOVI</text>
-
-        <!-- Ukryte ID sub-gear dla sheets.js -->
-        <text id="text-os-stanowiska" display="none">0%</text>
-        <text id="text-os-procesy"    display="none">0%</text>
-        <text id="text-os-rytm"       display="none">0%</text>
-        <circle id="ring-os-a" display="none"/>
-        <circle id="ring-os-b" display="none"/>
-        <circle id="ring-os-c" display="none"/>
-        <polygon id="gear-os-a" display="none"/>
-        <polygon id="gear-os-b" display="none"/>
-        <polygon id="gear-os-c" display="none"/>
-        <circle id="hub-os-a" display="none"/>
-        <circle id="hub-os-b" display="none"/>
-        <circle id="hub-os-c" display="none"/>
-
-      </svg>
+    <div class="wig-card">
+      <div class="skeleton" style="width:55%;margin-bottom:10px"></div>
+      <div class="skeleton" style="width:35%;margin-bottom:20px"></div>
+      <div class="skeleton" style="margin-bottom:8px"></div>
+      <div class="skeleton" style="width:70%"></div>
     </div>
-    <div class="lag-section">
-      <div class="lag-header">
-        <div><div id="lag-val-os" class="lag-current-big" style="color:var(--blue)">0%</div><div class="lag-footnote">ogólna realizacja OS Malinovi</div></div>
-        <div style="text-align:right"><div class="lag-target-lbl">CEL</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--blue)">100% + rytm</div></div>
-      </div>
-      <div class="lag-bar-track"><div id="lag-bar-os" class="lag-bar-fill" style="width:0%;background:var(--blue)"></div></div>
-      <div class="lag-mini-grid">
-        <div class="lag-mini-row">
-          <span class="lag-mini-lbl">Stanowiska</span>
-          <div class="lag-mini-track"><div id="lag-bar-os-01" class="lag-mini-fill" style="width:0%;background:var(--blue)"></div></div>
-          <span id="lag-val-os-01" class="lag-mini-val" style="color:var(--muted)">0%</span>
-        </div>
-        <div class="lag-mini-row">
-          <span class="lag-mini-lbl">Procesy</span>
-          <div class="lag-mini-track"><div id="lag-bar-os-02" class="lag-mini-fill" style="width:0%;background:var(--blue)"></div></div>
-          <span id="lag-val-os-02" class="lag-mini-val" style="color:var(--muted)">0%</span>
-        </div>
-        <div class="lag-mini-row">
-          <span class="lag-mini-lbl">Rytm</span>
-          <div class="lag-mini-track"><div id="lag-bar-os-03" class="lag-mini-fill" style="width:0%;background:var(--blue)"></div></div>
-          <span id="lag-val-os-03" class="lag-mini-val" style="color:var(--muted)">0%</span>
-        </div>
-        <div class="lag-mini-row">
-          <span class="lag-mini-lbl">LAG-04</span>
-          <div class="lag-mini-track"><div id="lag-bar-os-04" class="lag-mini-fill" style="width:0%;background:var(--blue)"></div></div>
-          <span id="lag-val-os-04" class="lag-mini-val" style="color:var(--muted)">0%</span>
-        </div>
-      </div>
-      <div class="lag-footnote" style="margin-top:6px">Deadline: Q2 2026</div>
+    <div class="wig-card">
+      <div class="skeleton" style="width:55%;margin-bottom:10px"></div>
+      <div class="skeleton" style="width:35%;margin-bottom:20px"></div>
+      <div class="skeleton" style="margin-bottom:8px"></div>
+      <div class="skeleton" style="width:70%"></div>
     </div>
-    <div class="click-hint">↗ szczegóły</div>
-  </div>
-
-
-
-  <!-- WIG 2: HARVEST 50 — RADIAL PROGRESS -->
-  <div class="wig-card wc-2" onclick="openModal('harvest')">
-    <div class="wig-bg-num">2</div>
-    <div class="wig-top">
-      <div>
-        <div class="wig-label">WIG #2 · Kacper</div>
-        <div class="wig-name">HARVEST 50</div>
-        <div class="wig-owner">600k PLN marży netto · 50 mln obrotu<br>Lead: realizacja planu sprzedaży</div>
-      </div>
-      <div id="raag-harvest" class="raag"><div class="raag-dot"></div>Brak danych</div>
-    </div>
-    <div class="wig-viz">
-      <svg width="240" height="150" viewBox="0 0 240 150">
-        <circle cx="120" cy="80" r="60" fill="none" stroke="#f2f0eb" stroke-width="16"/>
-        <circle cx="120" cy="80" r="60" fill="none" stroke="rgba(250,66,17,.15)" stroke-width="16"
-          stroke-dasharray="94.2 282.6" stroke-dashoffset="94.2" stroke-linecap="butt"/>
-        <circle cx="120" cy="80" r="60" fill="none" stroke="rgba(250,66,17,.4)" stroke-width="16"
-          stroke-dasharray="94.2 282.6" stroke-dashoffset="0" stroke-linecap="butt"/>
-        <circle id="circle-harvest-main" cx="120" cy="80" r="60" fill="none" stroke="var(--orange)" stroke-width="16"
-          stroke-dasharray="0 376.9" stroke-dashoffset="94.2" stroke-linecap="butt"/>
-        <text id="text-harvest-val" x="120" y="73" text-anchor="middle" font-family="Bebas Neue" font-size="32" fill="var(--orange)">0%</text>
-        <text id="text-harvest-sub" x="120" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--muted)">— / 600k PLN</text>
-        <text x="120" y="17" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--muted)">Q4 · 600k</text>
-        <circle cx="120" cy="20" r="5" fill="#e0ddd6"/>
-        <circle cx="180" cy="80" r="5" fill="#e0ddd6"/>
-        <circle cx="60" cy="80" r="5" fill="#e0ddd6"/>
-      </svg>
-    </div>
-    <div class="lag-section">
-      <div class="lag-header">
-        <div><div id="lag-val-harvest" class="lag-current-big" style="color:var(--orange)">— PLN</div><div class="lag-footnote">marży netto szacunkowo</div></div>
-        <div style="text-align:right"><div class="lag-target-lbl">CEL ROCZNY</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--orange)">600 000 PLN</div></div>
-      </div>
-      <div class="lag-bar-track"><div id="lag-bar-harvest" class="lag-bar-fill" style="width:0%;background:var(--orange)"></div></div>
-      <div class="lag-footnote">Deadline: Q4 2026</div>
-    </div>
-    <div class="click-hint">↗ szczegóły</div>
-  </div>
-
-  <!-- WIG 3: NO COMPLAINTS — GAUGE -->
-  <div class="wig-card wc-3" onclick="openModal('complaints')">
-    <div class="wig-bg-num">3</div>
-    <div class="wig-top">
-      <div>
-        <div class="wig-label">WIG #3 · Olgierd</div>
-        <div class="wig-name">NO COMPLAINTS</div>
-        <div class="wig-owner">Reklamacje ≤ 3% wartości sprzedaży<br>Lead: zamknięcie w ≤14 dni</div>
-      </div>
-      <div id="raag-complaints" class="raag"><div class="raag-dot"></div>Brak danych</div>
-    </div>
-    <div class="wig-viz">
-      <svg width="240" height="140" viewBox="0 0 230 130">
-        <path d="M 20 115 A 95 95 0 0 1 210 115" fill="none" stroke="#fee2e2" stroke-width="22"/>
-        <path d="M 20 115 A 95 95 0 0 1 210 115" fill="none" stroke="#fef3c7" stroke-width="22" stroke-dasharray="56.5 226" stroke-dashoffset="0"/>
-        <path d="M 20 115 A 95 95 0 0 1 210 115" fill="none" stroke="#dcfce7" stroke-width="22" stroke-dasharray="37.7 244.8"/>
-        <text x="22" y="105" font-family="JetBrains Mono" font-size="8" fill="var(--green)">0%</text>
-        <text x="200" y="105" text-anchor="end" font-family="JetBrains Mono" font-size="8" fill="var(--red)">10%</text>
-        <line x1="71" y1="34" x2="80" y2="46" stroke="var(--green)" stroke-width="2"/>
-        <text x="54" y="30" font-family="JetBrains Mono" font-size="9" fill="var(--green)" font-weight="500">CEL 3%</text>
-        <circle cx="115" cy="115" r="8" fill="var(--black)"/>
-        <circle cx="115" cy="115" r="3" fill="#f2f0eb"/>
-        <g id="gauge-needle" style="transform:rotate(-90deg);transform-origin:115px 115px">
-          <line x1="115" y1="115" x2="115" y2="28" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="115" cy="28" r="4" fill="var(--muted)"/>
-        </g>
-        <text id="text-complaints-val" x="115" y="100" text-anchor="middle" font-family="Bebas Neue" font-size="22" fill="var(--muted)">—%</text>
-        <text x="115" y="112" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--muted)">AKTUALNIE</text>
-      </svg>
-    </div>
-    <div class="lag-section">
-      <div class="lag-header">
-        <div><div id="lag-val-complaints" class="lag-current-big" style="color:var(--muted)">—%</div><div class="lag-footnote">reklamacji wartości sprzedaży</div></div>
-        <div style="text-align:right"><div class="lag-target-lbl">CEL ROCZNY</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--green)">≤ 3,0%</div></div>
-      </div>
-      <div class="lag-bar-track"><div id="lag-bar-complaints" class="lag-bar-fill" style="width:0%;background:var(--yellow)"></div></div>
-      <div class="lag-footnote">Lead measures — do ustalenia · cotygodniowy raport</div>
-    </div>
-    <div class="click-hint">↗ szczegóły</div>
-  </div>
-
-  <!-- WIG 4: PRODUCT X — COUNTDOWN RINGS -->
-  <div class="wig-card wc-4" onclick="openModal('productx')">
-    <div class="wig-bg-num">4</div>
-    <div class="wig-top">
-      <div>
-        <div class="wig-label">WIG #4 · Jan (CEO)</div>
-        <div class="wig-name">PRODUCT X</div>
-        <div class="wig-owner">🍓 Premium Truskawka · 💡 New Business Development</div>
-      </div>
-      <div class="raag blue"><div class="raag-dot"></div><span id="daysRaag">—</span> dni</div>
-    </div>
-    <div class="wig-viz">
-      <svg width="240" height="150" viewBox="0 0 240 150">
-        <circle cx="120" cy="75" r="65" fill="none" stroke="#f2f0eb" stroke-width="10"/>
-        <circle id="circle-productx-outer" cx="120" cy="75" r="65" fill="none" stroke="var(--purple)" stroke-width="10"
-          stroke-dasharray="0 408.4" stroke-dashoffset="0" stroke-linecap="butt"
-          style="transform:rotate(-90deg);transform-origin:120px 75px"/>
-        <circle cx="120" cy="75" r="44" fill="none" stroke="#f2f0eb" stroke-width="8"/>
-        <circle cx="120" cy="75" r="44" fill="none" stroke="rgba(144,19,254,.4)" stroke-width="8"
-          stroke-dasharray="48.5 228" stroke-linecap="butt"
-          style="transform:rotate(-90deg);transform-origin:120px 75px"/>
-        <text x="120" y="65" text-anchor="middle" font-family="Bebas Neue" font-size="38" fill="var(--purple)" id="daysCountdown">—</text>
-        <text x="120" y="80" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="var(--muted)">DNI DO LAUNCH</text>
-        <text x="120" y="92" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--purple)">30.04.2026</text>
-        <text x="120" y="14" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--muted)">New Business · Q4</text>
-        <text id="text-productx-pct" x="202" y="78" font-family="JetBrains Mono" font-size="8" fill="var(--purple)">0%</text>
-        <circle cx="185" cy="75" r="4" fill="var(--purple)"/>
-      </svg>
-    </div>
-    <div class="lag-section">
-      <div class="lag-header">
-        <div><div class="lag-current-big" style="color:var(--purple)" id="daysCountBig">— dni</div><div class="lag-footnote">do launchu Premium Truskawka</div></div>
-        <div style="text-align:right"><div class="lag-target-lbl">DEADLINE</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--purple)">30.04.2026</div></div>
-      </div>
-      <div class="lag-bar-track"><div id="lag-bar-productx" class="lag-bar-fill" style="width:0%;background:var(--purple)"></div></div>
-      <div class="lag-footnote">New Business: propozycje Q3–Q4 · właściciel: Jan CEO</div>
-    </div>
-    <div class="click-hint">↗ szczegóły</div>
-  </div>
-
-</div><!-- /wig-grid -->
-
-<div class="bottom-strip">
-  <div class="strip-card">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div class="strip-title">MAPA PROCESÓW</div>
-      <a href="https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=322339268#gid=322339268" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--orange);text-decoration:none;border:1px solid rgba(250,66,17,.3);padding:3px 8px;">↗ Google Sheets</a>
-    </div>
-    <div style="height:1px;background:var(--text);margin:8px 0 14px"></div>
-    <div class="proc-row"><span class="proc-n">01</span><span class="proc-name">Sprzedaż i Handel</span><span id="proc-pill-1" class="pill p-ns">Not started</span></div>
-    <div class="proc-row"><span class="proc-n">02</span><span class="proc-name">Obsługa zamówień OxM</span><span id="proc-pill-2" class="pill p-ns">Not started</span></div>
-    <div class="proc-row"><span class="proc-n">03</span><span class="proc-name">Rozliczenia tygodniowe</span><span id="proc-pill-3" class="pill p-ns">Not started</span></div>
-    <div class="proc-row"><span class="proc-n">04</span><span class="proc-name">Obsługa reklamacji</span><span id="proc-pill-4" class="pill p-ns">Not started</span></div>
-    <a class="proc-row" href="https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit" target="_blank" style="text-decoration:none;color:inherit"><span class="proc-n">05</span><span class="proc-name">Gospodarka magazynowa</span><span id="proc-pill-5" class="pill p-ip">In progress</span></a>
-    <div class="proc-row"><span class="proc-n">06</span><span class="proc-name">Komunikacja wewnętrzna</span><span id="proc-pill-6" class="pill p-ns">Not started</span></div>
-    <div class="proc-row"><span class="proc-n">07</span><span class="proc-name">Certyfikacja i wymogi prawne</span><span id="proc-pill-7" class="pill p-ns">Not started</span></div>
-  </div>
-
-  <div class="strip-card">
-    <div class="strip-title">NARZĘDZIA</div>
-    <div style="height:1px;background:var(--text);margin:8px 0 14px"></div>
-    <a class="tool-row" href="dashboard-4dx.html"><div class="tool-left"><span class="tool-ico">📈</span><div><div class="tool-nm">4DX Dashboard — WIG-i &amp; Procesy</div><div class="tool-ds">React scoreboard — live Google Sheets</div></div></div><span class="tool-arr">→</span></a>
-    <a class="tool-row" href="zakupy-planowanie.html"><div class="tool-left"><span class="tool-ico">🛒</span><div><div class="tool-nm">Planeta Zakupów</div><div class="tool-ds">Planowanie, harmonogram, stany</div></div></div><span class="tool-arr">→</span></a>
-    <a class="tool-row" href="opakowania.html"><div class="tool-left"><span class="tool-ico">📦</span><div><div class="tool-nm">Planer Opakowań 2026</div><div class="tool-ds">Szacowanie zapotrzebowania</div></div></div><span class="tool-arr">→</span></a>
-    <a class="tool-row" href="planowanie-i-sprzedaz.html"><div class="tool-left"><span class="tool-ico">📊</span><div><div class="tool-nm">Planowanie i Sprzedaż</div><div class="tool-ds">Dashboard planowania i marż</div></div></div><span class="tool-arr">→</span></a>
-    <a class="tool-row" href="rozliczenia-rt.html"><div class="tool-left"><span class="tool-ico">💶</span><div><div class="tool-nm">Rozliczenia RT</div><div class="tool-ds">Raporty rozliczeń tygodniowych</div></div></div><span class="tool-arr">→</span></a>
-    <a class="tool-row" href="https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ/edit?gid=322339268#gid=322339268" target="_blank"><div class="tool-left"><span class="tool-ico">🗺️</span><div><div class="tool-nm">Mapa Procesów</div><div class="tool-ds">Google Sheets — REORG 2026</div></div></div><span class="tool-arr">↗</span></a>
-  </div>
-
-  <div class="mal-card">
-    <div class="mal-hdr">
-      <div class="mal-av">🫐</div>
-      <div><div class="mal-name">MALINOOVEK</div><div class="mal-st">● AGENT AKTYWNY</div></div>
-    </div>
-    <div class="mal-bubble">Znam WIGi i procesy OvocxMalinovi. Czym mogę pomóc?</div>
-    <div class="mal-sugs">
-      <button class="mal-sug">⚙️ Status OS Malinowi 1.0?</button>
-      <button class="mal-sug">💰 HARVEST 50 — gdzie jesteśmy?</button>
-      <button class="mal-sug">⏱ Ile dni do Product X?</button>
-    </div>
-    <div class="mal-input-row">
-      <input class="mal-in" type="text" placeholder="Napisz do Malinoovka...">
-      <button class="mal-btn">↑</button>
-    </div>
-    <div class="team-row">
-      <div class="av"><div class="av-c">JL</div><div class="av-l">Jan</div></div>
-      <div class="av"><div class="av-c">IZ</div><div class="av-l">Iza</div></div>
-      <div class="av"><div class="av-c">RE</div><div class="av-l">Renia</div></div>
-      <div class="av"><div class="av-c">KA</div><div class="av-l">Kacper</div></div>
-      <div class="av"><div class="av-c">AD</div><div class="av-l">Adrian</div></div>
-      <div class="av"><div class="av-c">OL</div><div class="av-l">Olgierd</div></div>
+    <div class="wig-card">
+      <div class="skeleton" style="width:55%;margin-bottom:10px"></div>
+      <div class="skeleton" style="width:35%;margin-bottom:20px"></div>
+      <div class="skeleton" style="margin-bottom:8px"></div>
+      <div class="skeleton" style="width:70%"></div>
     </div>
   </div>
-</div>
 </main>
 
-<!-- MODALS -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal" id="modalBox">
-    <div class="modal-header">
-      <div>
-        <div class="modal-wig-name" id="modalTitle">—</div>
-        <div class="modal-wig-sub" id="modalSub">—</div>
-      </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+<div id="toast" class="toast"></div>
+
+<script>
+const SB  = 'https://fssfuricylndtetfktex.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
+const H   = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' };
+
+async function sbGet(path) {
+  const r = await fetch(`${SB}/rest/v1/${path}`, { headers: H });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+// ── Logika wyników ──────────────────────────────────────────────
+
+function calcLagScore(items) {
+  if (!items || !items.length) return 0;
+  const done = items.filter(item =>
+    item.lag_weekly && item.lag_weekly.some(w => w.value === 1)
+  ).length;
+  return done / items.length;
+}
+
+function calcWigScore(lags) {
+  if (!lags || !lags.length) return 0;
+  const totalW = lags.reduce((s, l) => s + (l.weight || 100), 0);
+  if (!totalW) return 0;
+  return lags.reduce((s, l) => s + calcLagScore(l.lag_items) * (l.weight || 100), 0) / totalW;
+}
+
+function idealPace(week) { return Math.max(0, Math.min(1, (week - 10) / 12)); }
+
+function statusInfo(score, pace) {
+  const d = score - pace;
+  if (d >= 0)    return { label: 'Na dobrej drodze', cls: '',       color: '#2D6A4F' };
+  if (d >= -0.1) return { label: 'Do nadrobienia',   cls: 'orange', color: '#E07A2F' };
+  return               { label: 'Zagrożone',          cls: 'red',    color: '#C0392B' };
+}
+
+function pct(v) { return Math.round(v * 100); }
+
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+// ── Render kart ─────────────────────────────────────────────────
+
+function renderCard(area, lags, week) {
+  const wigScore = calcWigScore(lags);
+  const pace     = idealPace(week);
+  const st       = statusInfo(wigScore, pace);
+
+  const lagMini = lags.length
+    ? `<div class="lag-mini-grid">${lags.slice(0, 4).map(l => {
+        const s = calcLagScore(l.lag_items);
+        return `<div class="lag-mini">
+          <span class="lag-mini-code">${l.code || 'LAG'}</span>
+          <div class="lag-mini-bar"><div class="lag-mini-fill" style="width:${pct(s)}%"></div></div>
+          <span class="lag-mini-pct">${pct(s)}%</span>
+        </div>`;
+      }).join('')}</div>`
+    : `<div style="font-size:12px;color:var(--muted)">Brak LAG-ów</div>`;
+
+  return `<a class="wig-card" href="dashboard-4dx.html?area=${encodeURIComponent(area.slug || area.id)}">
+    <div class="wig-card-head">
+      <div class="wig-name">${area.name || 'Obszar'}</div>
+      <span class="wig-week-tag">T${week}</span>
     </div>
-    <div class="modal-body" id="modalBody"></div>
-  </div>
-</div>
-
-<script src="js/sheets.js"></script>
-<script>
-const d=new Date();
-const days=['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
-const months=['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
-document.getElementById('dateLbl').textContent=days[d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear();
-
-
-const modals={
-  os:{
-    title:'OS MALINOVI 1.0',
-    sub:'WIG #1 · Jan (CEO) · RAAG: Wymaga akcji',
-    body:`
-      <div class="modal-section">
-        <div class="modal-section-title">LAG MEASURES <span>wyniki — mierzone tygodniowo</span></div>
-        <div class="measure-row"><div><div class="measure-name">Stanowiska obsadzone</div><div class="measure-sub">% kluczowych ról z opisami i właścicielami</div></div><div><div id="modal-os-stanowiska" class="measure-val" style="color:var(--blue)">0%</div><div class="measure-status ms-warn">Q2 w toku</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Procesy udokumentowane</div><div class="measure-sub">% z 7 procesów — status: in progress</div></div><div><div id="modal-os-procesy" class="measure-val" style="color:var(--blue)">0%</div><div class="measure-status ms-warn">Q3 cel</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Rytm spotkań wdrożony</div><div class="measure-sub">cotygodniowe, miesięczne, kwartalne</div></div><div><div id="modal-os-rytm" class="measure-val" style="color:var(--red)">0%</div><div class="measure-status ms-bad">Brak</div></div></div>
+    <div class="wig-owner">${area.owner || '—'}</div>
+    ${area.wig_description ? `<div class="wig-desc">${area.wig_description}</div>` : ''}
+    ${area.wig_deadline
+      ? `<div class="wig-deadline">Deadline: ${fmtDate(area.wig_deadline)}</div>`
+      : `<div class="wig-spacer"></div>`}
+    <div class="progress-row">
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${pct(wigScore)}%;background:${st.color}"></div>
       </div>
-      <div class="modal-section">
-        <div class="modal-section-title">LEAD MEASURES <span>działania — mierzone cotygodniowo</span></div>
-        <div class="measure-row"><div><div class="measure-name">Spotkanie tygodniowe zespołu</div><div class="measure-sub">czy odbyło się w tym tygodniu?</div></div><div><div class="measure-status ms-tbd">TBD</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Newsletter wewnętrzny</div><div class="measure-sub">wysłany do zespołu co tydzień</div></div><div><div class="measure-status ms-tbd">TBD</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Aktualizacja dashboard</div><div class="measure-sub">dane odświeżone przed poniedziałkiem</div></div><div><div class="measure-status ms-warn">W toku</div></div></div>
-      </div>
-      <div class="sheets-note">
-        <div class="sheets-note-icon">📊</div>
-        <div class="sheets-note-text">
-          <strong>Konfiguracja danych — Google Sheets</strong>
-          Liczby na tym dashboardzie możesz aktualizować bezpośrednio w arkuszu WIG Scoreboard w Google Sheets. Stwórzmy zakładkę <strong>DANE_DASHBOARD</strong> gdzie będziesz wpisywał aktualne wartości co tydzień — dashboard pobierze je automatycznie przez Google Sheets API.
-          <br><br>Następny krok: <span class="sheets-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ')">otwórz arkusz →</span>
-        </div>
-      </div>`
-  },
-  harvest:{
-    title:'HARVEST 50',
-    sub:'WIG #2 · Kacper · RAAG: Brak danych',
-    body:`
-      <div class="modal-section">
-        <div class="modal-section-title">LAG MEASURES <span>wyniki finansowe</span></div>
-        <div class="measure-row"><div><div class="measure-name">Marża netto — Q2</div><div class="measure-sub">cel: ≥ 150 000 PLN</div></div><div><div class="measure-val" style="color:var(--muted)">—</div><div class="measure-status ms-tbd">TBD</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Marża netto — Q3</div><div class="measure-sub">cel: ≥ 350 000 PLN narastająco</div></div><div><div class="measure-val" style="color:var(--muted)">—</div><div class="measure-status ms-tbd">TBD</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Marża netto — Q4 / roczna</div><div class="measure-sub">cel: 600 000 PLN · 50% kosztów spółki</div></div><div><div class="measure-val" style="color:var(--muted)">—</div><div class="measure-status ms-tbd">Q4</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Obrót roczny</div><div class="measure-sub">cel: 50 mln PLN</div></div><div><div class="measure-val" style="color:var(--muted)">—</div><div class="measure-status ms-tbd">TBD</div></div></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-section-title">LEAD MEASURES <span>działania tygodniowe</span></div>
-        <div class="measure-row"><div><div class="measure-name">Realizacja planu sprzedaży</div><div class="measure-sub">% wykonania tygodniowego planu</div></div><div><div class="measure-status ms-tbd">TBD — do zdefiniowania</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Nowe kontakty handlowe</div><div class="measure-sub">liczba nowych klientów / tygodniowo</div></div><div><div class="measure-status ms-tbd">TBD</div></div></div>
-      </div>
-      <div class="sheets-note">
-        <div class="sheets-note-icon">📊</div>
-        <div class="sheets-note-text"><strong>Dane z Google Sheets</strong>Wpisuj aktualne wartości marży co tydzień w arkuszu. Dashboard pobierze je automatycznie. <span class="sheets-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ')">Otwórz arkusz →</span></div>
-      </div>`
-  },
-  complaints:{
-    title:'NO COMPLAINTS',
-    sub:'WIG #3 · Olgierd · RAAG: Brak danych',
-    body:`
-      <div class="modal-section">
-        <div class="modal-section-title">LAG MEASURES <span>wyniki</span></div>
-        <div class="measure-row"><div><div class="measure-name">% reklamacji wartości sprzedaży</div><div class="measure-sub">aktualny poziom</div></div><div><div class="measure-val" style="color:var(--muted)">—%</div><div class="measure-status ms-tbd">Brak danych</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Cel roczny</div><div class="measure-sub">docelowy poziom reklamacji</div></div><div><div class="measure-val" style="color:var(--green)">≤ 3,0%</div><div class="measure-status ms-ok">Cel</div></div></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-section-title">LEAD MEASURES <span>działania cotygodniowe</span></div>
-        <div class="measure-row"><div><div class="measure-name">Zamknięcie reklamacji w ≤14 dni</div><div class="measure-sub">% reklamacji zamkniętych na czas</div></div><div><div class="measure-status ms-tbd">TBD — do zdefiniowania</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Cotygodniowy raport reklamacji</div><div class="measure-sub">Olgierd → Jan, każdy poniedziałek</div></div><div><div class="measure-status ms-tbd">TBD</div></div></div>
-      </div>
-      <div class="sheets-note">
-        <div class="sheets-note-icon">📊</div>
-        <div class="sheets-note-text"><strong>Dane z Google Sheets</strong>Olgierd wpisuje dane reklamacji co tydzień. Dashboard czyta aktualny % automatycznie. <span class="sheets-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ')">Otwórz arkusz →</span></div>
-      </div>`
-  },
-  productx:{
-    title:'PRODUCT X',
-    sub:'WIG #4 · Jan (CEO) · 🍓 Truskawka + 💡 New Business',
-    body:`
-      <div class="modal-section">
-        <div class="modal-section-title">LAG MEASURES — 🍓 PREMIUM TRUSKAWKA</div>
-        <div class="measure-row"><div><div class="measure-name">Launch Premium Truskawka</div><div class="measure-sub">deadline: 30 kwietnia 2026</div></div><div><div class="measure-val" style="color:var(--purple)" id="modalDays">— dni</div><div class="measure-status ms-warn">W trakcie</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Gotowość produktu</div><div class="measure-sub">% przygotowania do launchu</div></div><div><div class="measure-val" style="color:var(--muted)">—</div><div class="measure-status ms-tbd">TBD</div></div></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-section-title">LAG MEASURES — 💡 NEW BUSINESS</div>
-        <div class="measure-row"><div><div class="measure-name">Propozycje nowych kierunków</div><div class="measure-sub">liczba opracowanych propozycji biznesowych</div></div><div><div class="measure-val" style="color:var(--muted)">—</div><div class="measure-status ms-tbd">Q3–Q4</div></div></div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-section-title">LEAD MEASURES <span>działania tygodniowe</span></div>
-        <div class="measure-row"><div><div class="measure-name">Postęp przygotowania launchu</div><div class="measure-sub">tygodniowy update statusu</div></div><div><div class="measure-status ms-tbd">TBD — do zdefiniowania</div></div></div>
-        <div class="measure-row"><div><div class="measure-name">Research nowych kierunków</div><div class="measure-sub">godziny poświęcone na analizę / tydzień</div></div><div><div class="measure-status ms-tbd">TBD</div></div></div>
-      </div>
-      <div class="sheets-note">
-        <div class="sheets-note-icon">📊</div>
-        <div class="sheets-note-text"><strong>Dane z Google Sheets</strong>Lead measures dla Product X ustalamy na kolejnym spotkaniu. <span class="sheets-link" onclick="window.open('https://docs.google.com/spreadsheets/d/1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ')">Otwórz arkusz →</span></div>
-      </div>`
-  }
-};
-
-const launch=new Date('2026-04-30');
-const diff=Math.ceil((launch-d)/(1000*60*60*24));
-if(diff>0){
-  document.getElementById('daysLeft').textContent=diff;
-  document.getElementById('daysCountdown').textContent=diff;
-  document.getElementById('daysCountBig').textContent=diff+' dni';
-  document.getElementById('daysRaag').textContent=diff;
+      <span class="progress-pct" style="color:${st.color}">${pct(wigScore)}%</span>
+    </div>
+    <div class="status-row">
+      <span class="pace-txt">Idealne tempo: ${pct(pace)}%</span>
+      <span class="status-badge ${st.cls}">${st.label}</span>
+    </div>
+    ${lagMini}
+  </a>`;
 }
 
-function openModal(key){
-  const m=modals[key];
-  document.getElementById('modalTitle').textContent=m.title;
-  document.getElementById('modalSub').textContent=m.sub;
-  document.getElementById('modalBody').innerHTML=m.body;
-  if(key==='productx'&&diff>0) document.getElementById('modalDays').textContent=diff+' dni';
-  document.getElementById('modalOverlay').classList.add('open');
-  document.body.style.overflow='hidden';
+function renderEmptyCard(area) {
+  return `<a class="empty-card" href="dashboard-4dx.html?area=${encodeURIComponent(area.slug || area.id)}">
+    <div class="empty-card-name">${area.name || 'Obszar'}</div>
+    <div class="empty-card-owner">${area.owner || '—'}</div>
+    <div class="empty-hint">Brak danych — dodaj LAG-i</div>
+    <span class="empty-btn">+ Skonfiguruj obszar</span>
+  </a>`;
 }
 
-function closeModal(e){
-  if(!e||e.target===document.getElementById('modalOverlay')){
-    document.getElementById('modalOverlay').classList.remove('open');
-    document.body.style.overflow='';
-  }
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast toast-${type} show`;
+  setTimeout(() => el.classList.remove('show'), 2500);
 }
 
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
-</script>
+// ── Init ────────────────────────────────────────────────────────
 
-<script src="config.js"></script>
-<script src="firma-wiedza.js"></script>
-<script>
-(function(){
-  const inp  = document.querySelector('.mal-in');
-  const btn  = document.querySelector('.mal-btn');
-  const bub  = document.querySelector('.mal-bubble');
-  const sugs = document.querySelector('.mal-sugs');
+async function init() {
+  try {
+    const [areas, lags, cfg] = await Promise.all([
+      sbGet('areas?select=*&order=id'),
+      sbGet('lags?select=*,lag_items(*,lag_weekly(*))&order=id'),
+      sbGet('config?key=eq.current_week&select=value')
+    ]);
 
-  let history = [];
-  let busy = false;
+    const week = cfg.length ? parseInt(cfg[0].value, 10) : 12;
+    document.getElementById('nav-week').textContent = `T${week}`;
 
-  async function malSend(msg) {
-    if (busy) return;
-    msg = (msg || inp.value).trim();
-    if (!msg) return;
-    busy = true;
-    inp.value = '';
-    sugs.style.display = 'none';
-    bub.style.color = 'var(--muted)';
-    bub.textContent = '…';
-    btn.disabled = true;
-
-    const apiKey = (window.OXM_CONFIG || {}).apiKey || '';
-    if (!apiKey || apiKey === '__ANTHROPIC_KEY__') {
-      bub.style.color = '#e55';
-      bub.textContent = '⚠️ Brak klucza API. Skontaktuj się z Janem.';
-      btn.disabled = false;
-      busy = false;
+    const grid = document.getElementById('wig-grid');
+    if (!areas.length) {
+      grid.innerHTML = '<div style="color:var(--muted);font-size:14px;grid-column:1/-1;text-align:center;padding:48px">Brak obszarów w bazie</div>';
       return;
     }
 
-    history.push({ role: 'user', content: msg });
+    grid.innerHTML = areas.map(area => {
+      const areaLags = lags.filter(l => l.area_id === area.id);
+      return areaLags.length
+        ? renderCard(area, areaLags, week)
+        : renderEmptyCard(area);
+    }).join('');
 
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: (window.OXM_CONFIG || {}).model || 'claude-sonnet-4-6',
-          max_tokens: 1024,
-          system: (window.FIRMA_WIEDZA || '') + '\n\nJesteś Malinoovkiem — asystentem AI firmy OvocxMalinovi. Odpowiadaj krótko, konkretnie, po polsku.',
-          messages: history
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || res.status);
-      const reply = data.content?.[0]?.text || '(brak odpowiedzi)';
-      history.push({ role: 'assistant', content: reply });
-      bub.style.color = '';
-      bub.textContent = reply;
-    } catch(e) {
-      bub.style.color = '#e55';
-      bub.textContent = '⚠️ ' + (e.message || 'Błąd połączenia z API');
-      history.pop();
-    } finally {
-      btn.disabled = false;
-      busy = false;
-    }
+  } catch (e) {
+    toast('Błąd ładowania: ' + e.message, 'error');
+    console.error(e);
   }
+}
 
-  window.malSend = malSend;
-  btn.addEventListener('click', () => malSend());
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter') malSend(); });
-
-  // Sugestie — kliknięcie od razu wysyła (nie tylko wypełnia input)
-  document.querySelectorAll('.mal-sug').forEach(b => {
-    b.addEventListener('click', () => {
-      const txt = b.textContent.replace(/^\S+\s/, '').trim(); // usuń emoji
-      malSend(txt);
-    });
-  });
-})();
+init();
 </script>
 </body>
 </html>
