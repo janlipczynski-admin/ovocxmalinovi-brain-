@@ -385,6 +385,14 @@ async function init() {
       return;
     }
 
+    // Hardcoded kolejność WIG — OS MALINOVI zawsze pierwszy
+    const WIG_ORDER = ['OS MALINOVI 1.0', 'HARVEST 50', 'NO COMPLAINTS', 'PRODUCT X'];
+    areas.sort((a, b) => {
+      const ai = WIG_ORDER.findIndex(n => a.name && a.name.toUpperCase().includes(n.split(' ')[0]));
+      const bi = WIG_ORDER.findIndex(n => b.name && b.name.toUpperCase().includes(n.split(' ')[0]));
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+
     grid.innerHTML = areas.map((area, i) => {
       const areaLags = lags.filter(l => l.area_id === area.id);
       const wigNum = i + 1;
