@@ -348,14 +348,36 @@ function toast(msg) {
 
 async function init() {
   try {
-    const [areas, lags, cfg] = await Promise.all([
+    // Flat fetches — sprawdzone podejście (jak w dashboard-4dx.html)
+    const [areas, lags, lagItems, lagWeekly, cfg] = await Promise.all([
       sbGet('areas?select=*&order=id'),
-      sbGet('lags?select=*,lag_items(*,lag_weekly(*))&order=id'),
+      sbGet('lags?select=*&order=id'),
+      sbGet('lag_items?select=*&order=sort_order'),
+      sbGet('lag_weekly?select=*'),
       sbGet('config?key=eq.current_week&select=value')
     ]);
 
+    console.log('areas:', areas.length, areas.map(a => a.name));
+    console.log('lags:', lags.length);
+    console.log('lag_items:', lagItems.length);
+    console.log('lag_weekly:', lagWeekly.length);
+
     const week = cfg.length ? parseInt(cfg[0].value, 10) : 12;
     document.getElementById('nav-week').textContent = `T${week}`;
+
+    // Zbuduj strukturę: lag.lag_items[].lag_weekly[]
+    const weeklyByItem = {};
+    lagWeekly.forEach(w => {
+      if (!weeklyByItem[w.lag_item_id]) weeklyByItem[w.lag_item_id] = [];
+      weeklyByItem[w.lag_item_id].push(w);
+    });
+    const itemsByLag = {};
+    lagItems.forEach(i => {
+      if (!itemsByLag[i.lag_id]) itemsByLag[i.lag_id] = [];
+      i.lag_weekly = weeklyByItem[i.id] || [];
+      itemsByLag[i.lag_id].push(i);
+    });
+    lags.forEach(l => { l.lag_items = itemsByLag[l.id] || []; });
 
     const grid = document.getElementById('wig-grid');
     if (!areas.length) {
