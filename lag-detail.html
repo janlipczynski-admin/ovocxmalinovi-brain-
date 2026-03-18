@@ -347,15 +347,17 @@ function renderHeader() {
     inp.value = lag.deadline || '';
     span.replaceWith(inp);
     inp.focus();
+    let saved = false;
     async function save() {
+      if (saved) return; saved = true;
       try {
         await sbPatch('lags', lag.id, { deadline: inp.value || null });
         D.lag.deadline = inp.value || null;
         renderHeader();
-        toast('Deadline zaktualizowany');
-      } catch(e) { toast('Błąd: ' + e.message, 'error'); renderHeader(); }
+        toast('Zapisano');
+      } catch(e) { saved = false; toast('Błąd: ' + e.message, 'error'); renderHeader(); }
     }
-    inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') renderHeader(); });
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); save(); } if (e.key === 'Escape') renderHeader(); });
     inp.addEventListener('blur', save);
   });
 
