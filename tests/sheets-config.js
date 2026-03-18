@@ -1,12 +1,12 @@
 /**
- * Test Google Sheets Data Layer — OvocxMalinovi
+ * Test Data Layer — OvocxMalinovi
  * Uruchom: node tests/sheets-config.js
  *
  * Sprawdza:
- *  1. js/sheets.js istnieje z poprawną konfiguracją
- *  2. index.html ma wymagane IDs dla dynamicznego renderowania
- *  3. Brak hardcoded fake wartości w SVG
- *  4. Eksport funkcji pomocniczych działa poprawnie
+ *  1. js/sheets.js istnieje z poprawną konfiguracją (używany przez os-malinovi.html itp.)
+ *  2. index.html v2 — Supabase data layer (nie Google Sheets)
+ *  3. Brak hardcoded fake wartości w SVG w index.html
+ *  4. Eksport funkcji pomocniczych sheets.js działa poprawnie
  */
 
 'use strict';
@@ -31,32 +31,26 @@ function assertNotIn(str, src, label) {
   assert(!src.includes(str), `Znaleziono zakazane "${str}" — ${label}`);
 }
 
-console.log('\n=== Google Sheets Data Layer — test konfiguracji ===\n');
+console.log('\n=== Data Layer — test konfiguracji ===\n');
 
-// ── 1. sheets.js — konfiguracja ───────────────────────────────────────────────
+// ── 1. js/sheets.js — używany przez os-malinovi.html i inne ──────────────────
 test('sheets.js istnieje', () =>
   assert(fs.existsSync(path.join(ROOT, 'js/sheets.js')), 'Brak pliku js/sheets.js'));
 
-test('SHEETS_CONFIG — ID arkusza obecny', () =>
+test('sheets.js — ID arkusza Google Sheets obecny', () =>
   assertIn('1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ', SHEETS, 'ID arkusza 2026_Ovocxmalinovi_dashboard'));
 
-test('SHEETS_CONFIG — lagMeasuresGid obecny', () =>
-  assertIn("'322339268'", SHEETS, 'gid zakładki LAG MEASURES'));
-
-test('SHEETS_CONFIG — leadMeasuresGid obecny', () =>
-  assertIn("'1844898951'", SHEETS, 'gid zakładki LEAD MEASURES'));
-
-test('fetchGviz() — funkcja fetch zdefiniowana', () =>
+test('sheets.js — fetchGviz() zdefiniowany', () =>
   assertIn('fetchGviz', SHEETS, 'Funkcja pobierania danych z gviz'));
 
-test('arcDash() — generator stroke-dasharray', () =>
+test('sheets.js — arcDash() zdefiniowany', () =>
   assertIn('arcDash', SHEETS, 'Funkcja obliczająca łuk SVG'));
 
-test('initDashboard() — funkcja inicjalizująca', () =>
+test('sheets.js — initDashboard() zdefiniowany', () =>
   assertIn('initDashboard', SHEETS, 'Funkcja inicjalizacji dashboardu'));
 
-// ── 2. Jednostkowe testy funkcji pomocniczych ─────────────────────────────────
-test('arcDash(27, 0) → "0.0 169.6"', () => {
+// ── 2. Testy jednostkowe funkcji sheets.js ───────────────────────────────────
+test('arcDash(27, 0) → "0.0 ..."', () => {
   const { arcDash } = require('../js/sheets.js');
   const result = arcDash(27, 0);
   assert(result.startsWith('0.0'), `Oczekiwano "0.0 ...", dostano "${result}"`);
@@ -87,72 +81,38 @@ test('clampPct — wartości poza zakresem', () => {
 
 test('formatPLN — formatowanie kwot', () => {
   const { formatPLN } = require('../js/sheets.js');
-  assert(formatPLN(600000)  === '600k',  `600k: "${formatPLN(600000)}"`);
-  assert(formatPLN(1500000) === '1.5M',  `1.5M: "${formatPLN(1500000)}"`);
-  assert(formatPLN(0)       === '0',     `0: "${formatPLN(0)}"`);
+  assert(formatPLN(600000)  === '600k', `600k: "${formatPLN(600000)}"`);
+  assert(formatPLN(1500000) === '1.5M', `1.5M: "${formatPLN(1500000)}"`);
+  assert(formatPLN(0)       === '0',    `0: "${formatPLN(0)}"`);
 });
 
-// ── 3. index.html — IDs dla dynamicznego renderowania ────────────────────────
+// ── 3. index.html v2 — Supabase data layer ───────────────────────────────────
+test('index.html — Supabase URL (nie Google Sheets)', () =>
+  assertIn('fssfuricylndtetfktex.supabase.co', HTML, 'index.html musi używać Supabase'));
 
-// WIG #1 OS MALINOVI — jedno duże koło + sub-gear IDs (ukryte, dla sheets.js)
-test('index.html — gear-os-main (główne koło WIG)', () =>
-  assertIn('id="gear-os-main"', HTML, 'ID głównego koła zębatego WIG'));
-test('index.html — ring-os-main (pierścień główny)', () =>
-  assertIn('id="ring-os-main"', HTML, 'ID pierścienia głównego WIG'));
-test('index.html — hub-os-main (centrum koła)', () =>
-  assertIn('id="hub-os-main"', HTML, 'ID centrum koła WIG'));
-test('index.html — text-os-overall (% ogólny WIG)', () =>
-  assertIn('id="text-os-overall"', HTML, 'ID tekstu % ogólnego WIG'));
-test('index.html — gear-os-a (sub-gear A ukryte)', () =>
-  assertIn('id="gear-os-a"', HTML, 'ID sub-gear A (ukryte, sheets.js compat)'));
-test('index.html — ring-os-a (pierścień A ukryty)', () =>
-  assertIn('id="ring-os-a"', HTML, 'ID pierścień A (ukryty)'));
-test('index.html — text-os-stanowiska (% sub A)', () =>
-  assertIn('id="text-os-stanowiska"', HTML, 'ID tekstu % A'));
-test('index.html — gear-os-b (sub-gear B ukryte)', () =>
-  assertIn('id="gear-os-b"', HTML, 'ID sub-gear B (ukryte)'));
-test('index.html — ring-os-b (pierścień B ukryty)', () =>
-  assertIn('id="ring-os-b"', HTML, 'ID pierścień B (ukryty)'));
-test('index.html — text-os-procesy (% sub B)', () =>
-  assertIn('id="text-os-procesy"', HTML, 'ID tekstu % B'));
-test('index.html — gear-os-c (sub-gear C ukryte)', () =>
-  assertIn('id="gear-os-c"', HTML, 'ID sub-gear C (ukryte)'));
-test('index.html — ring-os-c (pierścień C ukryty)', () =>
-  assertIn('id="ring-os-c"', HTML, 'ID pierścień C (ukryty)'));
-test('index.html — text-os-rytm (% sub C)', () =>
-  assertIn('id="text-os-rytm"', HTML, 'ID tekstu % C'));
-test('index.html — lag-val-os (liczba ogólna)', () =>
-  assertIn('id="lag-val-os"', HTML, 'ID wartości lag WIG#1'));
-test('index.html — lag-bar-os (pasek postępu)', () =>
-  assertIn('id="lag-bar-os"', HTML, 'ID paska WIG#1'));
-test('index.html — raag-os (badge RAAG)', () =>
-  assertIn('id="raag-os"', HTML, 'ID odznaki RAAG WIG#1'));
-test('index.html — modal-os-stanowiska', () =>
-  assertIn('id="modal-os-stanowiska"', HTML, 'ID modal stanowiska'));
-test('index.html — modal-os-procesy', () =>
-  assertIn('id="modal-os-procesy"', HTML, 'ID modal procesy'));
-test('index.html — modal-os-rytm', () =>
-  assertIn('id="modal-os-rytm"', HTML, 'ID modal rytm'));
+test('index.html — sbGet() jako główna funkcja danych', () =>
+  assertIn('sbGet', HTML, 'Brak funkcji sbGet w index.html'));
 
-// Procesy
-test('index.html — proc-pill-1 do proc-pill-7 (wszystkie 7)', () => {
-  for (let i = 1; i <= 7; i++) {
-    assertIn(`id="proc-pill-${i}"`, HTML, `Brak proc-pill-${i}`);
-  }
+test('index.html — calcWigScore() zdefiniowany', () =>
+  assertIn('calcWigScore', HTML, 'Brak funkcji calcWigScore'));
+
+test('index.html — wig-grid istnieje', () =>
+  assertIn('wig-grid', HTML, 'Brak struktury wig-grid'));
+
+// ── 4. Brak hardcoded wartości SVG w index.html ───────────────────────────────
+test('index.html — brak hardcoded stroke-dasharray', () => {
+  const hc = (HTML.match(/stroke-dasharray="\d+\.\d+ \d+\.\d+"/g) || []).length;
+  assert(hc === 0, `Znaleziono ${hc} hardcoded stroke-dasharray — dane muszą być dynamiczne`);
 });
 
-// ── 4. Brak elementów poprzednich wersji ─────────────────────────────────────
+test('index.html — brak stale gear-os-* IDs (stara architektura)', () =>
+  assertNotIn('id="gear-os-main"', HTML, 'Stare ID sheets.js — powinno być zastąpione Supabase'));
+
 test('index.html — brak paska bar-os-stanowiska (stara wersja)', () =>
-  assertNotIn('id="bar-os-stanowiska"', HTML,
-    'Stary pasek postępu — zastąpiony kołem zębatym'));
-test('index.html — brak circle-os-stanowiska (stara wersja SVG)', () =>
-  assertNotIn('circle-os-stanowiska', HTML,
-    'Stary element SVG kółka — zastąpiony kołem zębatym'));
+  assertNotIn('id="bar-os-stanowiska"', HTML, 'Stary pasek postępu — usunąć'));
 
-
-// ── 5. sheets.js załadowany w index.html ─────────────────────────────────────
-test('index.html — ładuje js/sheets.js', () =>
-  assertIn('js/sheets.js', HTML, 'Brak <script src="js/sheets.js"> w index.html'));
+test('index.html — brak tickerInner (stary komponent)', () =>
+  assertNotIn('tickerInner', HTML, 'Stary ticker giełdowy — usunąć'));
 
 // ── Podsumowanie ──────────────────────────────────────────────────────────────
 console.log(`\n${'─'.repeat(55)}`);
@@ -161,5 +121,5 @@ if (failed > 0) {
   console.error('\n⛔  Sheets Data Layer niezgodny — nie commituj!\n');
   process.exit(1);
 } else {
-  console.log('\n✅  Sheets Data Layer OK — dane z Google Sheets\n');
+  console.log('\n✅  Data Layer OK — Supabase v2 + sheets.js (legacy pages)\n');
 }

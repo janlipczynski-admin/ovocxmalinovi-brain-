@@ -157,6 +157,27 @@ main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
 
 <div id="toast" class="toast"></div>
 
+<style>
+.tools-section { max-width: 1100px; margin: 0 auto; padding: 0 24px 48px; }
+.tools-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px; }
+.tools-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+.tool-link {
+  font-size: 12px; font-weight: 500; color: var(--muted);
+  background: var(--white); border: 1px solid var(--border); border-radius: 6px;
+  padding: 6px 14px; text-decoration: none; transition: background .12s, color .12s;
+}
+.tool-link:hover { background: #F0EFE9; color: var(--text); }
+</style>
+<div class="tools-section">
+  <div class="tools-title">Narzędzia operacyjne</div>
+  <div class="tools-grid">
+    <a class="tool-link" href="zakupy-planowanie.html">Planeta Zakupów</a>
+    <a class="tool-link" href="opakowania.html">Opakowania</a>
+    <a class="tool-link" href="planowanie-i-sprzedaz.html">Planowanie i Sprzedaż</a>
+    <a class="tool-link" href="rozliczenia-rt.html">Rozliczenia RT</a>
+  </div>
+</div>
+
 <script>
 const SB  = 'https://fssfuricylndtetfktex.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
