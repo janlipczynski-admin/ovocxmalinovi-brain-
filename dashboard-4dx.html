@@ -934,7 +934,7 @@ document.getElementById('root').addEventListener('click', function(e) {
   var card = e.target.closest('[id^="lead-card-"]');
   if (card) {
     var leadId = parseInt(card.id.replace('lead-card-', ''), 10);
-    openLeadDetail(leadId);
+    window.location.href = 'lead-detail.html?lead=' + leadId;
   }
 });
 
