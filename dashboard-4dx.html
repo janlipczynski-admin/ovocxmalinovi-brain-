@@ -690,7 +690,7 @@ function paint() {
       <div>
         <div class="wig-label">WIG #1 · ${a.owner||'Jan (CEO)'}</div>
         <div class="wig-title">${a.name||'OS MALINOWI 1.0'}</div>
-        <div class="wig-desc">${a.wig_description||''}</div>
+        <div class="wig-desc" data-edit-wig-desc style="cursor:pointer;" title="Kliknij aby edytować opis WIG">${esc(a.wig_description||'Kliknij aby dodać opis…')}</div>
         <div class="wig-bar-row">
           <div class="wig-bar-label">Postęp ogólny</div>
           <div class="bar-track"><div class="bar-fill" style="width:${pct(wp)}%;background:${col(wp)}"></div></div>
@@ -981,6 +981,30 @@ document.getElementById('root').addEventListener('change', function(e) {
 });
 
 document.getElementById('root').addEventListener('click', function(e) {
+  // Edycja wig_description inline
+  var wdEl = e.target.closest('[data-edit-wig-desc]');
+  if (wdEl && !e.target.closest('input')) {
+    e.stopPropagation();
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = D.area.wig_description || '';
+    inp.style.cssText = 'width:400px;max-width:100%;font-size:14px;border:1px solid var(--s2);border-radius:4px;padding:4px 10px;font-family:var(--fm);background:var(--s1);';
+    wdEl.textContent = '';
+    wdEl.appendChild(inp);
+    inp.focus();
+    var saved = false;
+    function saveWd() {
+      if (saved) return; saved = true;
+      var val = inp.value.trim() || null;
+      q('areas?id=eq.'+D.area.id, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({wig_description:val})})
+        .then(function(){ D.area.wig_description = val; paint(); toast('Zapisano'); })
+        .catch(function(err){ saved = false; toast('Błąd: '+err.message,'error'); paint(); });
+    }
+    inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();saveWd();} if(ev.key==='Escape') paint(); });
+    inp.addEventListener('blur', saveWd);
+    return;
+  }
+
   // Deadline edit inline dla kart LAG
   var dlEl = e.target.closest('[data-edit-lag-deadline]');
   if (dlEl && !e.target.closest('input')) {
