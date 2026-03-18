@@ -503,6 +503,11 @@ async function init() {
 const pct = v => Math.round(v * 100);
 const cls = v => v>=.7 ? 'g' : v>=.3 ? 'm' : 'b';
 const col = v => v>=.7 ? 'var(--gr)' : v>=.3 ? 'var(--acc2)' : 'var(--re)';
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return isNaN(dt) ? '—' : dt.toLocaleDateString('pl-PL', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
 
 const lagProg  = l => { const it=D.li[l.id]||[]; if(!it.length) return 0; const vs=it.map(i=>(D.lw[i.id]||{})[D.week]||0); return vs.reduce((a,b)=>a+b,0)/vs.length; };
 const leadProg = l => { const it=D.lei[l.id]||[]; if(!it.length) return 0; const vs=it.map(i=>(D.lew[i.id]||{})[D.week]||0); return vs.reduce((a,b)=>a+b,0)/vs.length; };
@@ -576,7 +581,7 @@ function cardLag(lag) {
       ${badge}
       ${leadTags ? `<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">${leadTags}</div>` : ''}
     </div>
-    <div class="card-dl">Deadline — T${lag.deadline_week||'?'}</div>
+    <div class="card-dl">Deadline — ${fmtDate(lag.deadline)}</div>
     <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
     <div class="items-list">${rows}</div>
     ${sp}
@@ -611,7 +616,7 @@ function cardLead(lead) {
       ${badge}
       ${assignHtml}
     </div>
-    <div class="card-dl">Deadline — T${lead.deadline_week||'?'}</div>
+    <div class="card-dl">Deadline — ${fmtDate(lead.deadline)}</div>
     <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
     <div class="items-list">${rows}</div>
     ${sp}
@@ -919,7 +924,7 @@ function openLeadDetail(leadId) {
     + '<span class="card-id lead">LEAD-'+String(lead.lead_number).padStart(2,'0')+'</span>'
     + '<div class="detail-title">'+esc(lead.name)+'</div>'
     + lagBadge
-    + '<span class="tag tag-neutral">T'+esc(String(lead.deadline_week||'?'))+'</span>'
+    + (lead.deadline ? '<span class="tag tag-neutral">'+fmtDate(lead.deadline)+'</span>' : '')
     + '<button class="detail-close" onclick="closeLeadDetail()">✕</button>'
     + '</div>'
     + '<div class="metrics-grid">'
