@@ -616,21 +616,16 @@ async function init() {
     return;
   }
   try {
-    const [lagArr, items, weekly, links, leads, cfg] = await Promise.all([
+    const [lagArr, items, links, leads, cfg] = await Promise.all([
       sbGet(`lags?id=eq.${LAG_ID}&select=*`),
       sbGet(`lag_items?lag_id=eq.${LAG_ID}&select=*&order=sort_order`),
-      sbGet(`lag_weekly?lag_item_id=in.(${
-        // We'll fetch all weekly data after we have items — do nested
-        // Workaround: fetch with broad filter, filter client-side
-        'select=*'
-      })`),
       sbGet(`lag_lead_links?lag_id=eq.${LAG_ID}&select=*`),
       sbGet('leads?select=id,code,name'),
       sbGet('config?key=eq.current_week&select=value')
     ]);
 
-    // Re-fetch weekly with actual item IDs
-    const itemIds = (await sbGet(`lag_items?lag_id=eq.${LAG_ID}&select=id`)).map(i => i.id);
+    // Fetch weekly data using actual item IDs
+    const itemIds = items.map(i => i.id);
     const weeklyData = itemIds.length
       ? await sbGet(`lag_weekly?lag_item_id=in.(${itemIds.join(',')})&select=*`)
       : [];
