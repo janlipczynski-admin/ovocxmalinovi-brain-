@@ -317,6 +317,25 @@ nav {
 .btn-solid:hover { background: #144d8a; }
 .btn-solid:disabled { opacity: .35; cursor: not-allowed; }
 
+/* LAG-LEAD PAIR LAYOUT */
+.lag-lead-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 800px) { .lag-lead-row { grid-template-columns: 1fr; } }
+.table-card { border-radius: var(--r); overflow: hidden; }
+.unlinked-section {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--s2);
+}
+.unlinked-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--t3); margin-bottom: 10px;
+}
+
 /* TOAST */
 .toast {
   position: fixed; bottom: 24px; right: 24px;
@@ -506,10 +525,55 @@ function cardLead(lead) {
   </div>`;
 }
 
+var PAIR_COLORS = [
+  '#2D6AC4', // niebieski
+  '#2D8A4E', // zielony
+  '#7C3DC4', // fioletowy
+  '#C4852D', // pomarańczowy
+  '#C42D6A', // różowy
+];
+
+function renderArea() {
+  var pairedLeadIds = new Set();
+  var pairIndex = 0;
+  var html = '';
+
+  D.lags.forEach(function(lag) {
+    var linkedLeadIds = getLeadsForLag(lag.id);
+    var linkedLeads = linkedLeadIds
+      .map(function(id){ return D.leads.find(function(l){ return l.id === id; }); })
+      .filter(Boolean);
+
+    if (!linkedLeads.length) {
+      html += '<div style="margin-bottom:16px;">' + cardLag(lag) + '</div>';
+      return;
+    }
+
+    var color = PAIR_COLORS[pairIndex % PAIR_COLORS.length];
+    pairIndex++;
+
+    linkedLeads.forEach(function(lead) {
+      pairedLeadIds.add(lead.id);
+      html += '<div class="lag-lead-row">'
+        + '<div class="table-card" style="border-left:3px solid ' + color + '">' + cardLag(lag) + '</div>'
+        + '<div class="table-card" style="border-left:3px solid ' + color + '">' + cardLead(lead) + '</div>'
+        + '</div>';
+    });
+  });
+
+  var unlinked = D.leads.filter(function(l){ return !pairedLeadIds.has(l.id); });
+  if (unlinked.length) {
+    html += '<div class="unlinked-section">'
+      + '<div class="unlinked-label">Niepowiązane LEAD</div>'
+      + unlinked.map(cardLead).join('')
+      + '</div>';
+  }
+
+  return html || '<div class="empty-box">Brak danych</div>';
+}
+
 function paint() {
   const wp = wigProg(), a = D.area;
-  const lags  = D.lags.map(cardLag).join('')  || '<div class="empty-box">Brak LAG-ów</div>';
-  const leads = D.leads.map(cardLead).join('') || '<div class="empty-box">Brak LEAD-ów</div>';
 
   document.getElementById('root').innerHTML = `
     <div class="wig-block">
@@ -528,17 +592,7 @@ function paint() {
         <span class="tag tag-neutral">Cel: ${a.wig_target||'100% + RYTM'}</span>
       </div>
     </div>
-
-    <div class="measures">
-      <div>
-        <div class="col-head"><span class="col-tag lag">LAG</span><span class="col-title">Miary opóźnione</span></div>
-        ${lags}
-      </div>
-      <div>
-        <div class="col-head"><span class="col-tag lead">LEAD</span><span class="col-title">Miary wyprzedzające</span></div>
-        ${leads}
-      </div>
-    </div>`;
+    ${renderArea()}`;
 }
 
 function openModal() {
