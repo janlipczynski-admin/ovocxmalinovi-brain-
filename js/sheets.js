@@ -32,7 +32,7 @@ const SHEETS_CONFIG = {
   lagMeasuresGid:  '322339268',
   leadMeasuresGid: '1844898951',
   // Uzupełnij po wdrożeniu Apps Script (js/apps-script.gs):
-  appsScriptUrl:   'https://script.google.com/macros/s/AKfycbzy3UK1jGVLGPb11Goks72YE_cQ7wakAiqlqdHCubdGH3URsqYbDRwhbcjiODTR7LHrFg/exec'
+  appsScriptUrl:   'https://script.google.com/macros/s/AKfycbzI8Emb3lGHZ7dPY9GQEkB8Qacfrl5Y7CvTmYlEcSOa0mjqU5BkrmXnzCFm0LTtXYs9KQ/exec'
 };
 
 // ISO week number (1–53)
@@ -69,12 +69,30 @@ function findWeekCol(rows) {
 // ── Fetch ─────────────────────────────────────────────────────────────────────
 
 // Pobiera z Apps Script Web App → zwraca { lag, lead, updated }
-async function fetchAppsScript() {
-  const res = await fetch(SHEETS_CONFIG.appsScriptUrl);
-  if (!res.ok) throw new Error(`Apps Script HTTP ${res.status}`);
-  const data = await res.json();
-  if (data.error) throw new Error('Apps Script: ' + data.error);
-  return data;
+// Używa JSONP żeby ominąć blokadę CORS przy redirect Apps Script
+function fetchAppsScript() {
+  return new Promise(function(resolve, reject) {
+    const cbName = '_oxmCb' + Date.now();
+    const url = SHEETS_CONFIG.appsScriptUrl + '?callback=' + cbName;
+    const script = document.createElement('script');
+    const timer = setTimeout(function() {
+      cleanup();
+      reject(new Error('Apps Script timeout'));
+    }, 10000);
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = function(data) {
+      cleanup();
+      if (data && data.error) { reject(new Error('Apps Script: ' + data.error)); return; }
+      resolve(data);
+    };
+    script.src = url;
+    script.onerror = function() { cleanup(); reject(new Error('Apps Script load error')); };
+    document.head.appendChild(script);
+  });
 }
 
 // Fallback: gviz API (wymaga arkusza opublikowanego w internecie)
@@ -162,8 +180,12 @@ function osColor(pct) {
 }
 
 // Wspólna logika renderowania — używana przez oba źródła danych
-function renderOSValues(sub1, sub2, sub3) {
-  const overall = Math.round((sub1 + sub2 + sub3) / 3);
+function renderOSValues(sub1, sub2, sub3, overallOverride) {
+  // Fallback (gviz): liczymy tylko z niepustych sub-lagów
+  var nonZero = [sub1, sub2, sub3].filter(function(v) { return v > 0; });
+  const overall = overallOverride !== undefined
+    ? overallOverride
+    : (nonZero.length ? Math.round(nonZero.reduce(function(a, b) { return a + b; }, 0) / nonZero.length) : 0);
 
   // Gear A
   const cA = osColor(sub1);
@@ -225,28 +247,42 @@ function renderOSValues(sub1, sub2, sub3) {
   setText('modal-os-procesy',    sub2 + '%');
   setText('modal-os-rytm',       sub3 + '%');
 
-  // LAG bars w widoku szczegółowym
+  // LAG mini-grid (index.html) + LAG bars w widoku szczegółowym
   setWidth('lag-bar-os-01', sub1);
   setWidth('lag-bar-os-02', sub2);
   setWidth('lag-bar-os-03', sub3);
   setText('lag-val-os-01', sub1 + '%');
   setText('lag-val-os-02', sub2 + '%');
   setText('lag-val-os-03', sub3 + '%');
+  // Kolor mini-val zależny od postępu
+  var elV01 = document.getElementById('lag-val-os-01');
+  var elV02 = document.getElementById('lag-val-os-02');
+  var elV03 = document.getElementById('lag-val-os-03');
+  if (elV01) elV01.style.color = osColor(sub1);
+  if (elV02) elV02.style.color = osColor(sub2);
+  if (elV03) elV03.style.color = osColor(sub3);
 }
 
 // Renderuje WIG #1 z JSON zwróconego przez Apps Script
 function renderOSJson(lag) {
   if (!lag || lag.error) { console.warn('[Sheets] lag error:', lag?.error); return; }
-  renderOSValues(lag.lag01 || 0, lag.lag02 || 0, lag.lag03 || 0);
+  // overall pochodzi z B1 arkusza (formuła Jana: average niepustych B7/B20/B29/B38)
+  renderOSValues(lag.lag01 || 0, lag.lag02 || 0, lag.lag03 || 0, lag.overall);
+  // LAG-04 — mini grid (osobny element poza renderOSValues)
+  var v04 = clampPct(lag.lag04 || 0);
+  setText('lag-val-os-04', v04 + '%');
+  setWidth('lag-bar-os-04', v04);
+  var el04 = document.getElementById('lag-val-os-04');
+  if (el04) el04.style.color = osColor(v04);
 }
 
 // Renderuje WIG #1 z wierszy gviz (fallback)
-function renderOS(lagRows) {
+function renderOS(lagRows, overallOverride) {
   const weekCol = findWeekCol(lagRows);
   const sub1    = extractPostep(lagRows, 'LAG-01 Postęp (średnia %)', weekCol);
   const sub2    = extractPostep(lagRows, 'LAG-02 Postęp (średnia %)', weekCol);
   const sub3    = extractPostep(lagRows, 'LAG-03 Postęp (średnia %)', weekCol);
-  renderOSValues(sub1, sub2, sub3);
+  renderOSValues(sub1, sub2, sub3, overallOverride);
 }
 
 // ── PROCESY ───────────────────────────────────────────────────────────────────
@@ -266,25 +302,105 @@ function renderProcesses(data) {
   }
 }
 
+// ── Error banner ──────────────────────────────────────────────────────────────
+
+function showSheetsError(msg, details) {
+  var banner = document.getElementById('sheets-error');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'sheets-error';
+    banner.style.cssText = 'background:#fff3cd;color:#856404;border:1px solid #ffc107;' +
+      'border-radius:8px;padding:12px 16px;margin:8px 0;font-size:13px;display:none;';
+    var grid = document.querySelector('.wig-grid');
+    if (grid) grid.parentNode.insertBefore(banner, grid);
+  }
+  banner.innerHTML = '<strong>⚠ Dane z Google Sheets niedostępne</strong><br>' +
+    msg + (details ? '<br><small style="opacity:.7">' + details + '</small>' : '');
+  banner.style.display = 'block';
+}
+
+function classifyError(err) {
+  var m = err.message || '';
+  if (m.indexOf('403') >= 0 || m.indexOf('permission') >= 0 || m.indexOf('Forbidden') >= 0) {
+    return {
+      type: '403',
+      msg: 'Brak uprawnień (HTTP 403). Sprawdź czy Apps Script jest wdrożony z dostępem "Wszyscy" ' +
+           'i czy arkusz jest udostępniony.',
+      detail: 'Checklista: 1) Sheets/Drive/Apps Script API włączone w GCP ' +
+              '2) OAuth scope\'y: spreadsheets + drive ' +
+              '3) Arkusz udostępniony (Editor) dla service account ' +
+              '4) Apps Script: Wdróż → Kto ma dostęp: Wszyscy'
+    };
+  }
+  if (m.indexOf('timeout') >= 0 || m.indexOf('Timeout') >= 0) {
+    return { type: 'timeout', msg: 'Timeout — Apps Script nie odpowiedział w 10s.', detail: null };
+  }
+  if (m.indexOf('load error') >= 0 || m.indexOf('network') >= 0 || m.indexOf('Failed to fetch') >= 0) {
+    return { type: 'network', msg: 'Błąd sieci — nie udało się połączyć z Google.', detail: null };
+  }
+  return { type: 'unknown', msg: 'Błąd: ' + m, detail: null };
+}
+
+// ── LEAD debug dump ───────────────────────────────────────────────────────────
+
+// Tymczasowa funkcja diagnostyczna — wypisuje col A ze wszystkich wierszy OS_LEAD
+// żeby zobaczyć co gviz naprawdę zwraca (scalone komórki, null-e, formaty itp.)
+async function debugLeadDump() {
+  try {
+    console.log('[LEAD dump] Pobieranie OS_LEAD (gid=' + SHEETS_CONFIG.leadMeasuresGid + ')...');
+    const table = await fetchGviz(SHEETS_CONFIG.leadMeasuresGid);
+    const rows = table && table.rows ? table.rows : [];
+    console.log('[LEAD dump] Łączna liczba wierszy:', rows.length);
+    for (let i = 0; i < rows.length; i++) {
+      const c0 = rows[i]?.c?.[0];
+      console.log(`[LEAD dump] row[${i}] col A: v=${JSON.stringify(c0?.v)} f=${JSON.stringify(c0?.f)}`);
+    }
+    console.log('[LEAD dump] === KONIEC DUMPA ===');
+  } catch (err) {
+    console.warn('[LEAD dump] Błąd fetchGviz dla OS_LEAD:', err.message);
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 async function initDashboard() {
+  var lastError = null;
+
+  // DEBUG: dump struktury OS_LEAD — do usunięcia po wyjaśnieniu parsowania
+  debugLeadDump();
+
+  // 1. Próba: Apps Script (preferowana) — overall pochodzi z B1 arkusza OS_LAG MEASURES
   try {
-    if (SHEETS_CONFIG.appsScriptUrl) {
-      // ── Ścieżka Apps Script (preferowana, nie wymaga publikowania arkusza)
-      const data = await fetchAppsScript();
-      if (data.lag) renderOSJson(data.lag);
-      renderProcesses({});
-    } else {
-      // ── Fallback: gviz API (wymaga opublikowanego arkusza)
-      const lagTable = await fetchGviz(SHEETS_CONFIG.lagMeasuresGid);
-      renderOS(lagTable?.rows || []);
-      renderProcesses({});
+    const data = await fetchAppsScript();
+    if (data.lag) {
+      renderOSJson(data.lag);
+      console.log('[Sheets] Dashboard załadowany. OS overall:', data.lag.overall);
     }
-    console.log('[Sheets] Dashboard załadowany pomyślnie');
   } catch (err) {
-    console.warn('[Sheets] Błąd ładowania danych:', err.message);
+    lastError = err;
+    var info = classifyError(err);
+    console.warn('[Sheets] Apps Script błąd (' + info.type + '):', err.message);
+    if (info.detail) console.info('[Sheets] ' + info.detail);
   }
+
+  // 2. Fallback: gviz API — TYLKO jeśli Apps Script zawiódł
+  if (!lastError) return;
+  try {
+    console.log('[Sheets] Próba fallback przez gviz...');
+    var lagTable = await fetchGviz(SHEETS_CONFIG.lagMeasuresGid);
+    if (lagTable && lagTable.rows) {
+      renderOS(lagTable.rows);
+      console.log('[Sheets] Dashboard załadowany z gviz (fallback)');
+      return;
+    }
+  } catch (err2) {
+    lastError = err2;
+    console.warn('[Sheets] gviz fallback też nie zadziałał:', err2.message);
+  }
+
+  // 3. Oba źródła zawiodły — pokaż komunikat
+  var info = classifyError(lastError);
+  showSheetsError(info.msg, info.detail);
 }
 
 if (typeof document !== 'undefined') {
@@ -292,5 +408,5 @@ if (typeof document !== 'undefined') {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { SHEETS_CONFIG, arcDash, clampPct, formatPLN, isoWeek, weekColIndex, findWeekCol };
+  module.exports = { SHEETS_CONFIG, arcDash, clampPct, formatPLN, isoWeek, weekColIndex, findWeekCol, classifyError };
 }

@@ -1,4 +1,10 @@
 {
+  "lagNames": [
+    "% procesów opisanych wg DoD",
+    "Obsługa zamówień — kryteria wg DoD",
+    "Rozliczenia tygodniowe — kryteria wg DoD",
+    "Reklamacje — kryteria wg DoD"
+  ],
   "wig": {
     "name": "MALINOVI OS 1.0",
     "owner": "Jan (CEO)",

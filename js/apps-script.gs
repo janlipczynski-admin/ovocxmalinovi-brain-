@@ -10,16 +10,51 @@
  *      - Kto ma dostęp: Wszyscy
  *   4. Skopiuj URL wdrożenia → wklej do js/sheets.js jako SHEETS_CONFIG.appsScriptUrl
  *
+ * ROZWIĄZYWANIE BŁĘDU 403:
+ *   Jeśli dashboard zwraca 403, sprawdź te 3 warstwy:
+ *
+ *   Warstwa 1 — Dostęp do arkusza Google Sheet:
+ *     • Otwórz arkusz → Udostępnij → upewnij się, że konto (lub service account) ma rolę Edytor
+ *     • Dla service account: dodaj email SA (xxx@yyy.iam.gserviceaccount.com) jako Edytor
+ *
+ *   Warstwa 2 — API Google (GCP):
+ *     • Google Cloud Console → APIs & Services → Library
+ *     • Włącz: Google Sheets API, Google Drive API, Google Apps Script API
+ *     • OAuth scope'y muszą zawierać: spreadsheets, drive (lub drive.file)
+ *
+ *   Warstwa 3 — Wdrożenie Apps Script:
+ *     • Wdróż → Nowe wdrożenie → typ: Aplikacja internetowa
+ *     • "Uruchom jako": Ja (konto właściciela arkusza)
+ *     • "Kto ma dostęp": Wszyscy (KRYTYCZNE — bez tego 403!)
+ *     • Po każdej zmianie kodu: Wdróż → Zarządzaj wdrożeniami → Nowa wersja
+ *     • Stary URL nie aktualizuje się automatycznie — zawsze kopiuj nowy URL
+ *
+ *   Dodatkowe przyczyny 403:
+ *     • Google Workspace admin może blokować aplikacje (allowlist/Trust)
+ *     • Token bez wymaganych scope'ów → "insufficientPermissions"
+ *     • Inny profil Google w przeglądarce niż właściciel arkusza
+ *
  * ENDPOINT:
  *   GET {url}         → pełny JSON ze wszystkimi danymi dashboardu
  *   GET {url}?tab=lag → tylko zakładka OS_LAG MEASURES (debug)
  *
- * ROZSZERZANIE:
- *   Dodaj nową funkcję readXxx(sheet) i wstaw wynik do obiektu data w doGet().
+ * STRUKTURA ZWRACANEGO LAG OBIEKTU:
+ *   lag.lag01         → number (current %)          ← backward compat z sheets.js / index.html
+ *   lag.lag02         → number (current %)
+ *   lag.lag03         → number (current %)
+ *   lag.lag04         → number (current %)
+ *   lag.overall       → number (wynik ogólny %)
+ *   lag.weeks         → ['T10','T11',...]            ← lista tygodni z arkusza
+ *   lag.weekLabel     → 'T10'                        ← bieżący tydzień
+ *   lag.details.lag01 → { current, prev, delta, onTrackNow, history[] }  ← dla os-malinovi.html
+ *   lag.details.lag02 → ...
+ *   lag.details.lag03 → ...
+ *   lag.details.lag04 → ...
+ *
+ *   history[] element: { week: 'T10', postep: 14, plan: 20, onTrack: true }
  */
 
 // ── GID zakładek (odporne na zmiany nazw) ──────────────────────────────────────
-// GID nie zmienia się przy zmianie nazwy zakładki — bezpieczne
 const GID = {
   WIGI:                1492902022,
   OS_LAG:              322339268,
@@ -30,48 +65,65 @@ const GID = {
   NOCOMPLAINTS_LEAD:   1872002
 };
 
+// ── ID arkusza ─────────────────────────────────────────────────────────────────
+const SPREADSHEET_ID = '1wbBSadvkRgGISPK7D8Asb0-qrkhPB_Ie9tJUWk6A0OQ';
+
 // ── Helper: pobierz zakładkę po gid ───────────────────────────────────────────
 function getSheetById(ss, gid) {
   return ss.getSheets().find(function(s) { return s.getSheetId() === gid; }) || null;
 }
 
 // ── Główny handler ─────────────────────────────────────────────────────────────
-
 function doGet(e) {
   try {
-    const ss  = SpreadsheetApp.getActiveSpreadsheet();
-    const tab = e && e.parameter && e.parameter.tab;
+    const ss       = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const tab      = e && e.parameter && e.parameter.tab;
+    const callback = e && e.parameter && e.parameter.callback;
 
-    // Tryb debug: tylko jedna zakładka
     if (tab === 'lag') {
       const result = readLagMeasures(getSheetById(ss, GID.OS_LAG));
-      return jsonResponse(result);
+      return jsonResponse(result, callback);
     }
 
-    // Pełny payload dashboardu
     const data = {
       lag:     readLagMeasures(getSheetById(ss, GID.OS_LAG)),
       lead:    readLeadMeasures(getSheetById(ss, GID.OS_LEAD)),
       updated: new Date().toISOString()
     };
 
-    return jsonResponse(data);
+    return jsonResponse(data, callback);
 
   } catch (err) {
-    return jsonResponse({ error: err.message, stack: err.stack });
+    const cb = e && e.parameter && e.parameter.callback;
+    return jsonResponse({ error: err.message, stack: err.stack }, cb);
   }
 }
 
-function jsonResponse(obj) {
+function jsonResponse(obj, callback) {
+  const json = JSON.stringify(obj);
+  if (callback) {
+    return ContentService
+      .createTextOutput(callback + '(' + json + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService
-    .createTextOutput(JSON.stringify(obj))
+    .createTextOutput(json)
     .setMimeType(ContentService.MimeType.JSON);
 }
 
 // ── LAG MEASURES ──────────────────────────────────────────────────────────────
 //
-// Skrypt skanuje CAŁY arkusz — nie zakłada stałej pozycji nagłówków ani etykiet.
-// Wartości: ułamki (0.125 = 12.5%) lub procenty (41.43 = 41.43%)
+// Skanuje CAŁY arkusz OS_LAG MEASURES.
+// Szuka wierszy zawierających:
+//   - "Postęp (średnia %)"   → wartości procentowe per tydzień
+//   - "Plan narastająco (%)" → wartości planu per tydzień
+//   - "On track?"             → TAK/NIE per tydzień
+//
+// Zwraca:
+//   { lag01, lag02, lag03, lag04 }  → numery (backward compat)
+//   { details.lag01..04 }           → pełne obiekty z historią tygodniową
+//
+// Wartości w arkuszu: ułamki (0.125 = 12.5%) lub procenty (14.29 = 14.29%)
 
 function readLagMeasures(sheet) {
   if (!sheet) return { error: 'Brak zakładki OS_LAG MEASURES (gid=' + GID.OS_LAG + ')' };
@@ -79,83 +131,218 @@ function readLagMeasures(sheet) {
   const values = sheet.getDataRange().getValues();
   if (values.length < 2) return { error: 'Pusta zakładka OS_LAG MEASURES' };
 
-  const weekLabel = 'T' + isoWeekNumber();
+  const currentWeekLabel = 'T' + isoWeekNumber();
 
-  // Skanuj cały arkusz — śledź weekCol (zmienia się przy każdym sub-nagłówku T10/T11/...)
-  // Zbieraj wiersze z "Postęp (średnia %)" i odczytuj wartość z bieżącego weekCol
-  let currentWeekCol = -1;
-  const postepValues = [];
-
-  for (let r = 0; r < values.length; r++) {
-    const row = values[r];
-
-    for (let c = 0; c < row.length; c++) {
-      if (String(row[c] || '').trim() === weekLabel) { currentWeekCol = c; break; }
-    }
-
-    for (let c = 0; c < Math.min(row.length, 4); c++) {
-      if (String(row[c] || '').trim().indexOf('Postęp (średnia %)') >= 0) {
-        let val = 0;
-        if (currentWeekCol >= 0 && currentWeekCol < row.length) {
-          const v = row[currentWeekCol];
-          if (v != null && v !== '') {
-            const n = Number(v);
-            if (!isNaN(n)) val = Math.round(n <= 1 ? n * 100 : n);
-          }
-        }
-        postepValues.push(val);
-        break;
+  // === PASS 1: Znajdź kolumny tygodniowe (T10, T11, ...) ===
+  // Szukamy w pierwszych 20 wierszach — nagłówki mogą być w różnych miejscach
+  const weekCols = {}; // { 'T10': 2, 'T11': 3, ... }
+  for (var r = 0; r < Math.min(values.length, 20); r++) {
+    var row = values[r];
+    for (var c = 0; c < row.length; c++) {
+      var cell = String(row[c] || '').trim();
+      if (/^T\d{1,2}$/.test(cell)) {
+        weekCols[cell] = c;
       }
     }
   }
 
-  const lag01   = postepValues[0] || 0;
-  const lag02   = postepValues[1] || 0;
-  const lag03   = postepValues[2] || 0;
-  const overall = postepValues.length > 0 ? Math.round((lag01 + lag02 + lag03) / 3) : 0;
+  var weeks = Object.keys(weekCols).sort(function(a, b) {
+    return parseInt(a.slice(1)) - parseInt(b.slice(1));
+  });
+
+  // === PASS 2: Zbierz wiersze Postęp / Plan / On track ===
+  var lagPostep  = []; // [[val_T10, val_T11, ...], [...], ...]  ← jeden element per LAG
+  var lagPlan    = [];
+  var lagOnTrack = [];
+
+  function extractNumericRow(row) {
+    return weeks.map(function(w) {
+      var col = weekCols[w];
+      if (col === undefined || col >= row.length) return null;
+      var v = row[col];
+      if (v == null || v === '') return null;
+      var n = Number(v);
+      if (isNaN(n)) return null;
+      return Math.round(n <= 1 ? n * 100 : n);
+    });
+  }
+
+  function extractBoolRow(row) {
+    return weeks.map(function(w) {
+      var col = weekCols[w];
+      if (col === undefined || col >= row.length) return null;
+      var v = String(row[col] || '').trim().toUpperCase();
+      if (v === '') return null;
+      if (v === 'TAK' || v === 'YES' || v === 'TRUE' || v === '1') return true;
+      if (v === 'NIE' || v === 'NO'  || v === 'FALSE'|| v === '0') return false;
+      return null;
+    });
+  }
+
+  for (var r = 0; r < values.length; r++) {
+    var row = values[r];
+    // Szukaj etykiety w pierwszych 3 kolumnach
+    var label = '';
+    for (var c = 0; c < Math.min(row.length, 3); c++) {
+      var s = String(row[c] || '').trim();
+      if (s) { label = s.toLowerCase(); break; }
+    }
+    if (!label) continue;
+
+    if (label.indexOf('postęp') >= 0 && label.indexOf('%') >= 0) {
+      lagPostep.push(extractNumericRow(row));
+    } else if (label.indexOf('plan') >= 0 && label.indexOf('%') >= 0) {
+      lagPlan.push(extractNumericRow(row));
+    } else if (label.indexOf('on track') >= 0 || label.indexOf('track?') >= 0) {
+      lagOnTrack.push(extractBoolRow(row));
+    }
+  }
+
+  // === PASS 3: Zbuduj obiekty per LAG ===
+  var currentIdx = weeks.indexOf(currentWeekLabel);
+
+  function getNumVal(arr, idx) {
+    if (!arr || idx < 0 || idx >= arr.length) return null;
+    var v = arr[idx];
+    return (typeof v === 'number') ? v : null;
+  }
+
+  function getLastNumeric(arr) {
+    if (!arr) return null;
+    for (var i = arr.length - 1; i >= 0; i--) {
+      if (typeof arr[i] === 'number') return arr[i];
+    }
+    return null;
+  }
+
+  function makeLagDetail(lagIdx) {
+    var postep  = lagPostep[lagIdx]  || [];
+    var plan    = lagPlan[lagIdx]    || [];
+    var onTrack = lagOnTrack[lagIdx] || [];
+
+    var history = weeks.map(function(w, i) {
+      return {
+        week:    w,
+        postep:  getNumVal(postep, i),
+        plan:    getNumVal(plan, i),
+        onTrack: (onTrack[i] !== undefined) ? onTrack[i] : null
+      };
+    });
+
+    // Bieżąca wartość: z bieżącego tygodnia, fallback: ostatnia niepusta
+    var current = 0;
+    if (currentIdx >= 0 && postep[currentIdx] !== null && postep[currentIdx] !== undefined) {
+      current = postep[currentIdx];
+    } else {
+      current = getLastNumeric(postep) || 0;
+    }
+
+    var prev  = (currentIdx > 0) ? (getNumVal(postep, currentIdx - 1) || 0) : null;
+    var delta = (prev !== null) ? (current - prev) : null;
+    var onTrackNow = (currentIdx >= 0 && onTrack[currentIdx] !== undefined)
+      ? onTrack[currentIdx] : null;
+
+    return { current: current, prev: prev, delta: delta, onTrackNow: onTrackNow, history: history };
+  }
+
+  var d01 = makeLagDetail(0);
+  var d02 = makeLagDetail(1);
+  var d03 = makeLagDetail(2);
+  var d04 = makeLagDetail(3);
+
+  // === Odczyt komórek podsumowujących (formuły Jana) ===
+  // B7  = LAG-01 status (LOOKUP ostatnia niepusta wartość Postęp)
+  // B20 = LAG-02 status
+  // B29 = LAG-03 status
+  // B38 = LAG-04 status
+  // B1  = overall WIG = average niepustych z B7/B20/B29/B38
+  function cellPct(rowIdx) {
+    var v = values[rowIdx] && values[rowIdx][1];
+    if (v == null || v === '') return null;
+    var n = Number(v);
+    if (isNaN(n)) return null;
+    return Math.round(n <= 1 ? n * 100 : n);
+  }
+
+  var b7  = cellPct(6);   // B7
+  var b20 = cellPct(19);  // B20
+  var b29 = cellPct(28);  // B29
+  var b38 = cellPct(37);  // B38
+  var b1  = cellPct(0);   // B1 = overall
+
+  // Użyj B7/B20/B29/B38 jako "current" jeśli Jan wpisał formuły (bardziej dokładne)
+  if (b7  !== null) d01.current = b7;
+  if (b20 !== null) d02.current = b20;
+  if (b29 !== null) d03.current = b29;
+  if (b38 !== null) d04.current = b38;
+
+  // Overall: B1 jeśli Jan ma formułę, fallback: compute z niepustych d01-d04
+  var overall;
+  if (b1 !== null && b1 > 0) {
+    overall = b1;
+  } else {
+    var vals = [d01.current, d02.current, d03.current, d04.current].filter(function(v) { return v > 0; });
+    overall = vals.length ? Math.round(vals.reduce(function(a,b){return a+b;},0) / vals.length) : 0;
+  }
 
   return {
-    weekLabel,
-    currentWeekCol,
-    postepValues,
-    lag01,
-    lag02,
-    lag03,
-    overall,
-    raw: values.slice(0, 10).map(function(r) {
+    weekLabel:   currentWeekLabel,
+    weeks:       weeks,
+    // Liczby — backward compat z sheets.js (index.html)
+    lag01:       d01.current,
+    lag02:       d02.current,
+    lag03:       d03.current,
+    lag04:       d04.current,
+    overall:     overall,
+    // Pełne obiekty z historią — dla os-malinovi.html Pulse Tracker
+    details: {
+      lag01: d01,
+      lag02: d02,
+      lag03: d03,
+      lag04: d04
+    },
+    postepCount: lagPostep.length,
+    // Pierwsze 5 wierszy do debugowania
+    raw: values.slice(0, 5).map(function(r) {
       return r.slice(0, 8).map(function(c) { return String(c || ''); });
     })
   };
 }
 
 // ── LEAD MEASURES ─────────────────────────────────────────────────────────────
-//
-// Placeholder — uzupełnij po udostępnieniu struktury zakładki LEAD MEASURES.
-// Zwraca surowe wiersze dla debugowania (max 20 wierszy).
-
 function readLeadMeasures(sheet) {
   if (!sheet) return { error: 'Brak zakładki OS_LEAD MEASURES (gid=' + GID.OS_LEAD + ')' };
 
-  const values = sheet.getDataRange().getValues();
-  // TODO: zamień na właściwy parsing po poznaniu struktury
+  var values = sheet.getDataRange().getValues();
   return {
-    raw: values.slice(0, 20).map(row =>
-      row.slice(0, 6).map(c => String(c || ''))
-    ),
+    raw: values.slice(0, 20).map(function(row) {
+      return row.slice(0, 6).map(function(c) { return String(c || ''); });
+    }),
     note: 'LEAD MEASURES — wymaga parsowania po ustaleniu struktury'
   };
 }
 
-// ── PROCESY (placeholder) ─────────────────────────────────────────────────────
-// function readProcesy(sheet) { ... }  ← dodaj gdy będzie zakładka MAPA PROCESÓW
-
 // ── ISO week helper ───────────────────────────────────────────────────────────
-
 function isoWeekNumber() {
-  const d    = new Date();
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const day  = date.getUTCDay() || 7;
+  var d    = new Date();
+  var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var day  = date.getUTCDay() || 7;
   date.setUTCDate(date.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  var yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
   return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+}
+
+// ── Funkcja testowa — uruchom z edytora, sprawdzi połączenie i dane OS LAG ────
+function testOSLag() {
+  var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = getSheetById(ss, GID.OS_LAG);
+  if (!sheet) { Logger.log('BŁĄD: nie znaleziono zakładki OS_LAG (gid=' + GID.OS_LAG + ')'); return; }
+  var result = readLagMeasures(sheet);
+  Logger.log('overall : ' + result.overall + '%');
+  Logger.log('lag01   : ' + result.lag01   + '%');
+  Logger.log('lag02   : ' + result.lag02   + '%');
+  Logger.log('lag03   : ' + result.lag03   + '%');
+  Logger.log('lag04   : ' + result.lag04   + '%');
+  Logger.log('week    : ' + result.week);
+  Logger.log('Pełny JSON: ' + JSON.stringify(result));
 }

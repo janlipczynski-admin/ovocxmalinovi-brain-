@@ -17,7 +17,6 @@ const ROOT = path.join(__dirname, '..');
 
 const HTML_FILES = [
   'index.html',
-  'os-malinovi.html',
   'zakupy-planowanie.html',
   'zakupy-stan.html',
   'zakupy-plan2026.html',
@@ -157,7 +156,6 @@ console.log('\n=== 4. Powrót do strony nadrzędnej (hierarchia nawigacji) ===')
 
 const REQUIRED_PARENT = {
   // Poziom 1 — direct z index.html
-  'os-malinovi.html':         'index.html',
   'zakupy-planowanie.html':   'index.html',
   'opakowania.html':          'index.html',
   'planowanie-i-sprzedaz.html': 'index.html',

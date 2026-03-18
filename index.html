@@ -94,6 +94,12 @@ main{padding:32px 48px}
 .lag-bar-track{height:6px;background:var(--bg);overflow:hidden;margin-bottom:6px}
 .lag-bar-fill{height:100%}
 .lag-footnote{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.lag-mini-grid{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+.lag-mini-row{display:flex;align-items:center;gap:6px}
+.lag-mini-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);width:62px;flex-shrink:0;text-transform:uppercase;letter-spacing:.04em}
+.lag-mini-track{flex:1;height:3px;background:var(--bg);border-radius:2px;overflow:hidden}
+.lag-mini-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.lag-mini-val{font-family:'Bebas Neue',sans-serif;font-size:13px;width:30px;text-align:right;flex-shrink:0}
 
 /* Radar */
 @keyframes radar-in{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
@@ -265,13 +271,13 @@ main{padding:32px 48px}
 <div class="wig-grid">
 
   <!-- WIG 1: OS MALINOVI — JEDNO DUŻE KOŁO ZĘBATE -->
-  <div class="wig-card wc-1" onclick="window.location='os-malinovi.html'">
+  <div class="wig-card wc-1" onclick="window.location='dashboard-4dx.html'">
     <div class="wig-bg-num">1</div>
     <div class="wig-top">
       <div>
         <div class="wig-label">WIG #1 · Jan (CEO)</div>
         <div class="wig-name">OS MALINOVI 1.0</div>
-        <div class="wig-owner">Z chaosu i wiedzy w głowach → firma działa jak system</div>
+        <div class="wig-owner">System operacyjny firmy · Owner: Jan (CEO)</div>
       </div>
       <div id="raag-os" class="raag red"><div class="raag-dot"></div>Wymaga akcji</div>
     </div>
@@ -285,17 +291,20 @@ main{padding:32px 48px}
         <circle id="ring-os-main" cx="80" cy="80" r="52" fill="none" stroke="#444" stroke-width="7"
           stroke-dasharray="0 326.7" stroke-linecap="butt"
           style="transform:rotate(-90deg);transform-origin:80px 80px"/>
-        <!-- gear polygon 8 zębów — scaled 1.5× z r_out=26 r_inner=18 w centrum (80,80) -->
-        <polygon id="gear-os-main" fill="#333"
-          points="74.6,41.5 85.4,41.5 83.8,53.3 96.2,58.4 103.4,48.8 111.2,56.6 101.6,63.8 106.7,76.3 118.6,74.6 118.6,85.4 106.7,83.8 101.6,96.2 111.2,103.4 103.4,111.2 96.2,101.6 83.8,106.7 85.4,118.6 74.6,118.6 76.3,106.7 63.8,101.6 56.6,111.2 48.8,103.4 58.4,96.2 53.3,83.8 41.5,85.4 41.5,74.6 53.3,76.3 58.4,63.8 48.8,56.6 56.6,48.8 63.8,58.4 76.3,53.3"/>
-        <!-- hub -->
-        <circle cx="80" cy="80" r="22" fill="var(--black)" stroke="#1a1a18" stroke-width="2"/>
-        <circle id="hub-os-main" cx="80" cy="80" r="7" fill="#333"/>
+        <!-- node network — 3 węzły połączone liniami, symbol systemu procesów -->
+        <line x1="80" y1="55" x2="55" y2="100" stroke="#444" stroke-width="2.5"/>
+        <line x1="80" y1="55" x2="105" y2="100" stroke="#444" stroke-width="2.5"/>
+        <line x1="55" y1="100" x2="105" y2="100" stroke="#444" stroke-width="2.5"/>
+        <circle id="gear-os-main" cx="80" cy="55" r="9" fill="#444" stroke="#333" stroke-width="2"/>
+        <circle cx="55" cy="100" r="9" fill="#444" stroke="#333" stroke-width="2"/>
+        <circle cx="105" cy="100" r="9" fill="#444" stroke="#333" stroke-width="2"/>
+        <!-- dummy dla sheets.js (hub-os-main) -->
+        <circle id="hub-os-main" cx="80" cy="77" r="0" fill="#444"/>
         <!-- ogólny % WIG -->
         <text id="text-os-overall" x="80" y="153" text-anchor="middle" font-family="Bebas Neue" font-size="30" fill="#444">0%</text>
         <text x="80" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="var(--muted)">OS MALINOVI</text>
 
-        <!-- Ukryte ID sub-gear dla sheets.js (dane do modalu / os-malinovi.html) -->
+        <!-- Ukryte ID sub-gear dla sheets.js -->
         <text id="text-os-stanowiska" display="none">0%</text>
         <text id="text-os-procesy"    display="none">0%</text>
         <text id="text-os-rytm"       display="none">0%</text>
@@ -317,7 +326,29 @@ main{padding:32px 48px}
         <div style="text-align:right"><div class="lag-target-lbl">CEL</div><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--blue)">100% + rytm</div></div>
       </div>
       <div class="lag-bar-track"><div id="lag-bar-os" class="lag-bar-fill" style="width:0%;background:var(--blue)"></div></div>
-      <div class="lag-footnote">Deadline: Q2 2026</div>
+      <div class="lag-mini-grid">
+        <div class="lag-mini-row">
+          <span class="lag-mini-lbl">Stanowiska</span>
+          <div class="lag-mini-track"><div id="lag-bar-os-01" class="lag-mini-fill" style="width:0%;background:var(--blue)"></div></div>
+          <span id="lag-val-os-01" class="lag-mini-val" style="color:var(--muted)">0%</span>
+        </div>
+        <div class="lag-mini-row">
+          <span class="lag-mini-lbl">Procesy</span>
+          <div class="lag-mini-track"><div id="lag-bar-os-02" class="lag-mini-fill" style="width:0%;background:var(--blue)"></div></div>
+          <span id="lag-val-os-02" class="lag-mini-val" style="color:var(--muted)">0%</span>
+        </div>
+        <div class="lag-mini-row">
+          <span class="lag-mini-lbl">Rytm</span>
+          <div class="lag-mini-track"><div id="lag-bar-os-03" class="lag-mini-fill" style="width:0%;background:var(--blue)"></div></div>
+          <span id="lag-val-os-03" class="lag-mini-val" style="color:var(--muted)">0%</span>
+        </div>
+        <div class="lag-mini-row">
+          <span class="lag-mini-lbl">LAG-04</span>
+          <div class="lag-mini-track"><div id="lag-bar-os-04" class="lag-mini-fill" style="width:0%;background:var(--blue)"></div></div>
+          <span id="lag-val-os-04" class="lag-mini-val" style="color:var(--muted)">0%</span>
+        </div>
+      </div>
+      <div class="lag-footnote" style="margin-top:6px">Deadline: Q2 2026</div>
     </div>
     <div class="click-hint">↗ szczegóły</div>
   </div>
@@ -465,7 +496,7 @@ main{padding:32px 48px}
   <div class="strip-card">
     <div class="strip-title">NARZĘDZIA</div>
     <div style="height:1px;background:var(--text);margin:8px 0 14px"></div>
-    <a class="tool-row" href="os-malinovi.html"><div class="tool-left"><span class="tool-ico">⚙️</span><div><div class="tool-nm">WIG #1 OS MALINOVI</div><div class="tool-ds">Scoreboard 4DX — procesy, rytm, narzędzia</div></div></div><span class="tool-arr">→</span></a>
+    <a class="tool-row" href="dashboard-4dx.html"><div class="tool-left"><span class="tool-ico">📈</span><div><div class="tool-nm">4DX Dashboard — WIG-i &amp; Procesy</div><div class="tool-ds">React scoreboard — live Google Sheets</div></div></div><span class="tool-arr">→</span></a>
     <a class="tool-row" href="zakupy-planowanie.html"><div class="tool-left"><span class="tool-ico">🛒</span><div><div class="tool-nm">Planeta Zakupów</div><div class="tool-ds">Planowanie, harmonogram, stany</div></div></div><span class="tool-arr">→</span></a>
     <a class="tool-row" href="opakowania.html"><div class="tool-left"><span class="tool-ico">📦</span><div><div class="tool-nm">Planer Opakowań 2026</div><div class="tool-ds">Szacowanie zapotrzebowania</div></div></div><span class="tool-arr">→</span></a>
     <a class="tool-row" href="planowanie-i-sprzedaz.html"><div class="tool-left"><span class="tool-ico">📊</span><div><div class="tool-nm">Planowanie i Sprzedaż</div><div class="tool-ds">Dashboard planowania i marż</div></div></div><span class="tool-arr">→</span></a>
