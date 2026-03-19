@@ -52,6 +52,10 @@ nav {
 .brand-sub { font-size: 13px; color: var(--t3); margin-left: 2px; }
 .nav-right { display: flex; align-items: center; gap: 10px; }
 .week-tag { background: var(--s1); border: 1px solid var(--s2); border-radius: 6px; padding: 5px 11px; font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t2); letter-spacing: .03em; }
+.week-nav { display: flex; align-items: center; gap: 4px; }
+.wk-btn { background: none; border: 1px solid var(--s2); border-radius: 5px; width: 26px; height: 26px; cursor: pointer; font-size: 14px; color: var(--t2); display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s; }
+.wk-btn:hover:not(:disabled) { border-color: var(--t1); color: var(--t1); }
+.wk-btn:disabled { opacity: .3; cursor: not-allowed; }
 .back-link { font-size: 13px; color: var(--t2); text-decoration: none; white-space: nowrap; }
 .back-link:hover { color: var(--t1); }
 
@@ -83,9 +87,11 @@ nav {
   flex-shrink: 0;
   letter-spacing: .04em;
 }
+.avatar-iza    { background: #FBEAF0; color: #72243E; }
 .avatar-jan    { background: #E6F1FB; color: #0C447C; }
 .avatar-kacper { background: #EAF3DE; color: #27500A; }
 .avatar-olgierd{ background: #FAEEDA; color: #633806; }
+.avatar-renia  { background: #EEEDFE; color: #3C3489; }
 .member-name { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
 .member-role { font-size: 12px; color: var(--t3); font-family: var(--fm); }
 
@@ -279,7 +285,11 @@ nav {
     </div>
   </div>
   <div class="nav-right">
-    <div class="week-tag" id="wtag">T—</div>
+    <div class="week-nav">
+      <button class="wk-btn" id="wk-prev" title="Poprzedni tydzień">‹</button>
+      <div class="week-tag" id="wtag">T—</div>
+      <button class="wk-btn" id="wk-next" title="Następny tydzień">›</button>
+    </div>
   </div>
 </nav>
 
@@ -296,17 +306,17 @@ var BASE = 'https://fssfuricylndtetfktex.supabase.co';
 var KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
 var HD   = { 'Content-Type': 'application/json', apikey: KEY, Authorization: 'Bearer ' + KEY };
 
-var MEMBERS = ['Jan', 'Kacper', 'Olgierd'];
-var MEMBER_INITIALS = { Jan: 'JL', Kacper: 'KW', Olgierd: 'ON' };
-var MEMBER_ROLES = { Jan: 'CEO', Kacper: 'Sprzedaż', Olgierd: 'Reklamacje' };
-var MEMBER_AVATAR_CLS = { Jan: 'avatar-jan', Kacper: 'avatar-kacper', Olgierd: 'avatar-olgierd' };
+var MEMBERS = ['Iza', 'Jan', 'Kacper', 'Olgierd', 'Renia'];
+var MEMBER_INITIALS = { Iza: 'Iz', Jan: 'Ja', Kacper: 'Ka', Olgierd: 'Ol', Renia: 'Re' };
+var MEMBER_ROLES = { Iza: '', Jan: 'CEO', Kacper: 'Sprzedaż', Olgierd: 'Reklamacje', Renia: '' };
+var MEMBER_AVATAR_CLS = { Iza: 'avatar-iza', Jan: 'avatar-jan', Kacper: 'avatar-kacper', Olgierd: 'avatar-olgierd', Renia: 'avatar-renia' };
 
-var D = { week: 12, commitments: [] };
+var D = { week: 12, viewWeek: 12, commitments: [] };
 
 // newItems[member] = list of {id: null|uuid, text: string} — bieżący tydzień, nowe lub załadowane
-var newItems = { Jan: [], Kacper: [], Olgierd: [] };
+var newItems = { Iza: [], Jan: [], Kacper: [], Olgierd: [], Renia: [] };
 // prevItems[member] = list of {id, commitment, result_pct, note} — poprzedni tydzień
-var prevItems = { Jan: [], Kacper: [], Olgierd: [] };
+var prevItems = { Iza: [], Jan: [], Kacper: [], Olgierd: [], Renia: [] };
 
 async function q(path, opts) {
   opts = opts || {};
@@ -334,23 +344,67 @@ function dotClass(pct) {
   return 'dot-r';
 }
 
-async function init() {
+async function loadWeekData(w) {
+  document.getElementById('root').innerHTML = '<div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie T' + w + '…</div></div>';
   try {
-    var cfg = await q('config?key=eq.current_week');
-    D.week = cfg.length ? parseInt(cfg[0].value, 10) : 12;
-    document.getElementById('wtag').textContent = 'T' + D.week;
-
-    var prevWeek = D.week - 1;
-    var rows = await q('wig_commitments?week=in.(' + prevWeek + ',' + D.week + ')&order=created_at.asc');
+    var prevWeek = w - 1;
+    var rows = [];
+    if (prevWeek >= 1) {
+      rows = await q('wig_commitments?week=in.(' + prevWeek + ',' + w + ')&order=created_at.asc');
+    } else {
+      rows = await q('wig_commitments?week=eq.' + w + '&order=created_at.asc');
+    }
 
     MEMBERS.forEach(function(m) {
       prevItems[m] = rows.filter(function(r) { return r.member === m && r.week === prevWeek; });
-      newItems[m]  = rows.filter(function(r) { return r.member === m && r.week === D.week; })
+      newItems[m]  = rows.filter(function(r) { return r.member === m && r.week === w; })
         .map(function(r) { return { id: r.id, text: r.commitment }; });
     });
 
     D.commitments = rows;
+    updateWeekUI();
     render();
+  } catch(e) {
+    document.getElementById('root').innerHTML = '<div class="err-box">Błąd połączenia z bazą danych:<br><small>' + esc(e.message) + '</small></div>';
+  }
+}
+
+function updateWeekUI() {
+  document.getElementById('wtag').textContent = 'T' + D.viewWeek;
+  var prevBtn = document.getElementById('wk-prev');
+  var nextBtn = document.getElementById('wk-next');
+  if (prevBtn) prevBtn.disabled = D.viewWeek <= 1;
+  if (nextBtn) nextBtn.disabled = D.viewWeek >= D.week + 1;
+}
+
+function attachWeekNav() {
+  var prevBtn = document.getElementById('wk-prev');
+  var nextBtn = document.getElementById('wk-next');
+  if (prevBtn) {
+    prevBtn.addEventListener('click', function() {
+      if (D.viewWeek <= 1) return;
+      D.viewWeek--;
+      MEMBERS.forEach(function(m) { newItems[m] = []; prevItems[m] = []; });
+      loadWeekData(D.viewWeek);
+    });
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function() {
+      if (D.viewWeek >= D.week + 1) return;
+      D.viewWeek++;
+      MEMBERS.forEach(function(m) { newItems[m] = []; prevItems[m] = []; });
+      loadWeekData(D.viewWeek);
+    });
+  }
+}
+
+async function init() {
+  try {
+    var cfg = await q('config?key=eq.current_week');
+    D.week = cfg.length ? parseInt(cfg[0].value, 10) : 12;
+    D.viewWeek = D.week;
+    attachWeekNav();
+    await loadWeekData(D.viewWeek);
   } catch(e) {
     document.getElementById('root').innerHTML = '<div class="err-box">Błąd połączenia z bazą danych:<br><small>' + esc(e.message) + '</small></div>';
   }
@@ -367,7 +421,7 @@ function render() {
 }
 
 function renderMember(m) {
-  var prevWeek = D.week - 1;
+  var prevWeek = D.viewWeek - 1;
   var prev = prevItems[m];
   var curr = newItems[m];
 
@@ -396,7 +450,7 @@ function renderMember(m) {
   var rightHtml = '';
   curr.forEach(function(item, idx) {
     rightHtml += '<div class="commit-curr" data-curr-idx="' + idx + '" data-member="' + m + '">'
-      + '<input type="text" class="curr-input" data-curr-input="' + m + ':' + idx + '" placeholder="Co zrobię w T' + D.week + '…" value="' + esc(item.text) + '">'
+      + '<input type="text" class="curr-input" data-curr-input="' + m + ':' + idx + '" placeholder="Co zrobię w T' + D.viewWeek + '…" value="' + esc(item.text) + '">'
       + '<button class="del-btn" data-del-curr="' + m + ':' + idx + '" title="Usuń">✕</button>'
       + '</div>';
   });
@@ -415,7 +469,7 @@ function renderMember(m) {
     + leftHtml
     + '</div>'
     + '<div class="col-section">'
-    + '<div class="col-label">Zobowiązania <span class="col-label-week">T' + D.week + '</span> — co zrobię</div>'
+    + '<div class="col-label">Zobowiązania <span class="col-label-week">T' + D.viewWeek + '</span> — co zrobię</div>'
     + '<div id="curr-list-' + m + '">' + rightHtml + '</div>'
     + '<button class="add-commit-btn" data-add-for="' + m + '">+ dodaj zobowiązanie</button>'
     + '</div>'
@@ -428,8 +482,8 @@ function renderMember(m) {
 
 function renderHistory() {
   var allWeeks = [];
-  var maxW = D.week;
-  for (var w = maxW; w >= Math.max(10, maxW - 3); w--) allWeeks.push(w);
+  var maxW = D.viewWeek;
+  for (var w = maxW; w >= Math.max(1, maxW - 3); w--) allWeeks.push(w);
 
   var html = '<div class="history-card">'
     + '<div class="history-title">Historia ostatnich tygodni</div>'
@@ -537,7 +591,7 @@ function rerenderMember(m) {
 async function saveMember(m, btn) {
   btn.disabled = true;
   btn.textContent = 'Zapisuję…';
-  var prevWeek = D.week - 1;
+  var prevWeek = D.viewWeek - 1;
   var MH = Object.assign({}, HD, { Prefer: 'resolution=merge-duplicates,return=representation' });
 
   try {
@@ -568,7 +622,7 @@ async function saveMember(m, btn) {
       var res = await q('wig_commitments', {
         method: 'POST',
         headers: MH,
-        body: JSON.stringify({ member: m, week: D.week, commitment: it.text.trim() })
+        body: JSON.stringify({ member: m, week: D.viewWeek, commitment: it.text.trim() })
       });
       var created = Array.isArray(res) ? res[0] : res;
       if (created) {
@@ -577,7 +631,7 @@ async function saveMember(m, btn) {
       }
     }
 
-    notify('Zapisano ' + m + ' T' + D.week + ' ✓');
+    notify('Zapisano ' + m + ' T' + D.viewWeek + ' ✓');
     rerenderMember(m);
     // przeładuj historię (może zmienił się wynik)
     renderHistorySection();
@@ -587,6 +641,7 @@ async function saveMember(m, btn) {
 
   btn.disabled = false;
   btn.textContent = 'Zapisz ' + m;
+  updateWeekUI();
 }
 
 function renderHistorySection() {
