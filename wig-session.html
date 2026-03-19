@@ -589,21 +589,15 @@ function attachDelegatedHandlers() {
       var id = parts[0];
       var val = parseInt(parts[1], 10);
       var item = null;
+      var ownerMember = null;
       MEMBERS.forEach(function(m) {
-        prevItems[m].forEach(function(r) { if (r.id === id) item = r; });
+        prevItems[m].forEach(function(r) { if (r.id === id) { item = r; ownerMember = m; } });
       });
+      console.log('[emoji] klik id=' + id + ' val=' + val + ' member=' + ownerMember + ' prev_pct=' + (item ? item.result_pct : 'nie znaleziono'));
       if (!item) return;
       item.result_pct = (item.result_pct === val) ? null : val;
-      var row = emojiBtn.closest('.commit-prev');
-      row.querySelectorAll('.emoji-btn').forEach(function(b) {
-        b.classList.remove('active-happy', 'active-meh', 'active-sad');
-      });
-      if (item.result_pct !== null) {
-        var cls = item.result_pct === 100 ? 'active-happy' : item.result_pct === 50 ? 'active-meh' : 'active-sad';
-        emojiBtn.classList.add(cls);
-      }
-      var dot = row.querySelector('.commit-dot');
-      if (dot) dot.className = 'commit-dot ' + dotClass(item.result_pct);
+      console.log('[emoji] nowy result_pct=' + item.result_pct);
+      rerenderMember(ownerMember);
       return;
     }
   });
