@@ -137,20 +137,25 @@ nav {
 .dot-s { background: var(--t3); }
 .commit-text { font-size: 13px; color: var(--t1); flex: 1; line-height: 1.5; }
 .commit-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; margin-left: 16px; flex-wrap: wrap; }
-.pct-input {
-  width: 54px;
-  background: var(--s1);
-  border: 1px solid var(--s2);
-  border-radius: 5px;
-  padding: 4px 6px;
-  font-family: var(--fm);
-  font-size: 12px;
-  text-align: center;
-  outline: none;
-  color: var(--t1);
+/* EMOJI RATING BUTTONS */
+.emoji-btns { display: flex; gap: 4px; align-items: center; }
+.emoji-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: none;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.5;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+  transition: border-color .15s, background .15s, opacity .15s;
+  line-height: 1;
+  flex-shrink: 0;
 }
-.pct-input:focus { border-color: var(--bl); background: var(--white); }
-.pct-suffix { font-family: var(--fm); font-size: 11px; color: var(--t3); }
+.emoji-btn.active-happy { border-color: #16a34a; background: #EAF3DE; opacity: 1; }
+.emoji-btn.active-meh   { border-color: #d97706; background: #FAEEDA; opacity: 1; }
+.emoji-btn.active-sad   { border-color: #dc2626; background: #FCEBEB; opacity: 1; }
 .note-input {
   flex: 1;
   min-width: 0;
@@ -249,10 +254,10 @@ nav {
   font-family: var(--fm); font-size: 12px; font-weight: 500;
   padding: 3px 8px; border-radius: 5px; display: inline-block;
 }
-.hist-g { background: var(--gr2); color: var(--gr); }
-.hist-o { background: var(--or2); color: var(--or); }
-.hist-r { background: var(--re2); color: var(--re); }
-.hist-s { background: var(--s1); color: var(--t3); }
+.hist-g { background: #EAF3DE; color: #27500A; }
+.hist-o { background: #FAEEDA; color: #633806; }
+.hist-r { background: #FCEBEB; color: #791F1F; }
+.hist-s { background: #F3F4F6; color: #6B7280; }
 
 /* TOAST */
 .toast {
@@ -432,14 +437,20 @@ function renderMember(m) {
   } else {
     prev.forEach(function(item) {
       var dc = dotClass(item.result_pct);
+      var happyCls = item.result_pct === 100 ? ' active-happy' : '';
+      var mehCls   = item.result_pct === 50  ? ' active-meh'   : '';
+      var sadCls   = item.result_pct === 0   ? ' active-sad'   : '';
       leftHtml += '<div class="commit-prev">'
         + '<div class="commit-prev-row">'
         + '<div class="commit-dot ' + dc + '"></div>'
         + '<div class="commit-text">' + esc(item.commitment) + '</div>'
         + '</div>'
         + '<div class="commit-meta">'
-        + '<input type="number" class="pct-input" data-prev-pct="' + item.id + '" min="0" max="100" placeholder="%" value="' + (item.result_pct !== null && item.result_pct !== undefined ? item.result_pct : '') + '">'
-        + '<span class="pct-suffix">%</span>'
+        + '<div class="emoji-btns">'
+        + '<button class="emoji-btn' + happyCls + '" data-emoji="' + item.id + ':100" title="Zrobione">😊</button>'
+        + '<button class="emoji-btn' + mehCls   + '" data-emoji="' + item.id + ':50"  title="Częściowo">😐</button>'
+        + '<button class="emoji-btn' + sadCls   + '" data-emoji="' + item.id + ':0"   title="Nie zrobione">😞</button>'
+        + '</div>'
         + '<input type="text" class="note-input" data-prev-note="' + item.id + '" placeholder="Notatka…" value="' + esc(item.note || '') + '">'
         + '</div>'
         + '</div>';
@@ -501,8 +512,9 @@ function renderHistory() {
         html += '<td><span class="hist-cell hist-s">—</span></td>';
       } else {
         var avg = Math.round(rated.reduce(function(s, r) { return s + r.result_pct; }, 0) / rated.length);
-        var cls = avg >= 80 ? 'hist-g' : avg >= 50 ? 'hist-o' : 'hist-r';
-        html += '<td><span class="hist-cell ' + cls + '">' + avg + '%</span></td>';
+        var cls = avg >= 75 ? 'hist-g' : avg >= 50 ? 'hist-o' : 'hist-r';
+        var emoji = avg >= 75 ? '😊' : avg >= 50 ? '😐' : '😞';
+        html += '<td><span class="hist-cell ' + cls + '">' + emoji + '</span></td>';
       }
     });
     html += '</tr>';
@@ -567,14 +579,36 @@ function attachHandlers() {
     });
   });
 
-  // live dot update on pct change
-  document.querySelectorAll('[data-prev-pct]').forEach(function(inp) {
-    inp.addEventListener('input', function() {
-      var id = inp.dataset.prevPct;
-      var dot = inp.closest('.commit-prev').querySelector('.commit-dot');
-      if (dot) {
-        dot.className = 'commit-dot ' + dotClass(inp.value);
+  // emoji rating buttons
+  document.querySelectorAll('[data-emoji]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var parts = btn.dataset.emoji.split(':');
+      var id = parts[0];
+      var val = parseInt(parts[1], 10);
+
+      // znajdź item w prevItems
+      var item = null;
+      MEMBERS.forEach(function(m) {
+        prevItems[m].forEach(function(r) { if (r.id === id) item = r; });
+      });
+      if (!item) return;
+
+      // toggle: kliknięcie aktywnego → null
+      item.result_pct = (item.result_pct === val) ? null : val;
+
+      // odśwież przyciski w tym wierszu
+      var row = btn.closest('.commit-prev');
+      row.querySelectorAll('.emoji-btn').forEach(function(b) {
+        b.classList.remove('active-happy', 'active-meh', 'active-sad');
+      });
+      if (item.result_pct !== null) {
+        var cls = item.result_pct === 100 ? 'active-happy' : item.result_pct === 50 ? 'active-meh' : 'active-sad';
+        btn.classList.add(cls);
       }
+
+      // odśwież dot
+      var dot = row.querySelector('.commit-dot');
+      if (dot) dot.className = 'commit-dot ' + dotClass(item.result_pct);
     });
   });
 }
@@ -595,15 +629,11 @@ async function saveMember(m, btn) {
   var MH = Object.assign({}, HD, { Prefer: 'resolution=merge-duplicates,return=representation' });
 
   try {
-    // 1. PATCH T-1 items: result_pct i note
-    var pctInputs = document.querySelectorAll('[data-prev-pct]');
-    for (var i = 0; i < pctInputs.length; i++) {
-      var inp = pctInputs[i];
-      // sprawdź czy należy do tego membera (przez prevItems)
-      var id = inp.dataset.prevPct;
-      var item = prevItems[m].find(function(r) { return r.id === id; });
-      if (!item) continue;
-      var pctVal = inp.value !== '' ? parseInt(inp.value, 10) : null;
+    // 1. PATCH T-1 items: result_pct i note (z prevItems[m])
+    for (var i = 0; i < prevItems[m].length; i++) {
+      var item = prevItems[m][i];
+      var id = item.id;
+      var pctVal = (item.result_pct !== null && item.result_pct !== undefined) ? item.result_pct : null;
       var noteEl = document.querySelector('[data-prev-note="' + id + '"]');
       var noteVal = noteEl ? noteEl.value.trim() || null : null;
       await q('wig_commitments?id=eq.' + id, {
@@ -611,7 +641,6 @@ async function saveMember(m, btn) {
         headers: Object.assign({}, HD, { Prefer: 'return=representation' }),
         body: JSON.stringify({ result_pct: pctVal, note: noteVal, updated_at: new Date().toISOString() })
       });
-      item.result_pct = pctVal;
       item.note = noteVal;
     }
 
