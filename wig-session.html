@@ -408,6 +408,7 @@ async function init() {
     var cfg = await q('config?key=eq.current_week');
     D.week = cfg.length ? parseInt(cfg[0].value, 10) : 12;
     D.viewWeek = D.week;
+    attachDelegatedHandlers();
     attachWeekNav();
     await loadWeekData(D.viewWeek);
   } catch(e) {
@@ -422,7 +423,6 @@ function render() {
   });
   html += renderHistory();
   document.getElementById('root').innerHTML = html;
-  attachHandlers();
 }
 
 function renderMember(m) {
@@ -524,24 +524,27 @@ function renderHistory() {
   return html;
 }
 
-function attachHandlers() {
-  // input changes — sync to newItems
-  document.querySelectorAll('[data-curr-input]').forEach(function(inp) {
-    inp.addEventListener('input', function() {
-      var parts = inp.dataset.currInput.split(':');
-      var m = parts[0], idx = parseInt(parts[1], 10);
+function attachDelegatedHandlers() {
+  // input: sync curr-input → newItems
+  document.addEventListener('input', function(e) {
+    var inp = e.target.closest('[data-curr-input]');
+    if (!inp) return;
+    var parts = inp.dataset.currInput.split(':');
+    var m = parts[0], idx = parseInt(parts[1], 10);
+    if (newItems[m] && newItems[m][idx] !== undefined) {
       newItems[m][idx].text = inp.value;
-    });
+    }
   });
 
-  // delete current week item
-  document.querySelectorAll('[data-del-curr]').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var parts = btn.dataset.delCurr.split(':');
+  document.addEventListener('click', function(e) {
+    // delete current-week item
+    var delBtn = e.target.closest('[data-del-curr]');
+    if (delBtn) {
+      var parts = delBtn.dataset.delCurr.split(':');
       var m = parts[0], idx = parseInt(parts[1], 10);
-      var item = newItems[m][idx];
+      var item = newItems[m] && newItems[m][idx];
+      if (!item) return;
       if (item.id) {
-        // ma id — DELETE z bazy
         q('wig_commitments?id=eq.' + item.id, { method: 'DELETE' })
           .then(function() {
             D.commitments = D.commitments.filter(function(r) { return r.id !== item.id; });
@@ -551,65 +554,58 @@ function attachHandlers() {
           })
           .catch(function(e) { notify('Błąd: ' + e.message.slice(0, 60)); });
       } else {
-        // tylko z DOM
         newItems[m].splice(idx, 1);
         rerenderMember(m);
         notify('Zobowiązanie usunięte');
       }
-    });
-  });
+      return;
+    }
 
-  // add new
-  document.querySelectorAll('[data-add-for]').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var m = btn.dataset.addFor;
+    // add new commitment
+    var addBtn = e.target.closest('[data-add-for]');
+    if (addBtn) {
+      var m = addBtn.dataset.addFor;
       newItems[m].push({ id: null, text: '' });
       rerenderMember(m);
-      // focus last input
       var list = document.getElementById('curr-list-' + m);
-      var inputs = list.querySelectorAll('.curr-input');
-      if (inputs.length) inputs[inputs.length - 1].focus();
-    });
-  });
+      if (list) {
+        var inputs = list.querySelectorAll('.curr-input');
+        if (inputs.length) inputs[inputs.length - 1].focus();
+      }
+      return;
+    }
 
-  // save per member
-  document.querySelectorAll('[data-save]').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      saveMember(btn.dataset.save, btn);
-    });
-  });
+    // save member
+    var saveBtn = e.target.closest('[data-save]');
+    if (saveBtn) {
+      saveMember(saveBtn.dataset.save, saveBtn);
+      return;
+    }
 
-  // emoji rating buttons
-  document.querySelectorAll('[data-emoji]').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var parts = btn.dataset.emoji.split(':');
+    // emoji rating
+    var emojiBtn = e.target.closest('[data-emoji]');
+    if (emojiBtn) {
+      var parts = emojiBtn.dataset.emoji.split(':');
       var id = parts[0];
       var val = parseInt(parts[1], 10);
-
-      // znajdź item w prevItems
       var item = null;
       MEMBERS.forEach(function(m) {
         prevItems[m].forEach(function(r) { if (r.id === id) item = r; });
       });
       if (!item) return;
-
-      // toggle: kliknięcie aktywnego → null
       item.result_pct = (item.result_pct === val) ? null : val;
-
-      // odśwież przyciski w tym wierszu
-      var row = btn.closest('.commit-prev');
+      var row = emojiBtn.closest('.commit-prev');
       row.querySelectorAll('.emoji-btn').forEach(function(b) {
         b.classList.remove('active-happy', 'active-meh', 'active-sad');
       });
       if (item.result_pct !== null) {
         var cls = item.result_pct === 100 ? 'active-happy' : item.result_pct === 50 ? 'active-meh' : 'active-sad';
-        btn.classList.add(cls);
+        emojiBtn.classList.add(cls);
       }
-
-      // odśwież dot
       var dot = row.querySelector('.commit-dot');
       if (dot) dot.className = 'commit-dot ' + dotClass(item.result_pct);
-    });
+      return;
+    }
   });
 }
 
@@ -619,7 +615,6 @@ function rerenderMember(m) {
   var tmp = document.createElement('div');
   tmp.innerHTML = renderMember(m);
   card.replaceWith(tmp.firstChild);
-  attachHandlers();
 }
 
 async function saveMember(m, btn) {
