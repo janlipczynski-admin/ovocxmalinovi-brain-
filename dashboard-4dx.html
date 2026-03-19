@@ -405,6 +405,34 @@ nav {
   pointer-events: none;
 }
 .toast.on { opacity: 1; transform: translateY(0); }
+
+/* LEAD CRUD */
+.lead-del-btn, .lead-item-del {
+  background: none; border: none; cursor: pointer;
+  color: var(--t3); font-size: 12px; padding: 2px 5px;
+  opacity: 0; transition: opacity .15s, color .15s;
+  flex-shrink: 0; line-height: 1; font-family: var(--f);
+}
+.card:hover .lead-del-btn { opacity: 1; }
+.item:hover .lead-item-del { opacity: 1; }
+.lead-del-btn:hover, .lead-item-del:hover { color: #e53e3e; }
+.add-lead-btn {
+  display: block; width: 100%;
+  background: none; border: 1px dashed var(--s2);
+  border-radius: 6px; padding: 9px 16px;
+  font-family: var(--f); font-size: 12px;
+  color: var(--t3); cursor: pointer;
+  transition: border-color .15s, color .15s;
+  margin-top: 8px;
+}
+.add-lead-btn:hover { border-color: var(--t2); color: var(--t1); }
+.add-item-btn {
+  background: none; border: none; padding: 4px 0;
+  font-family: var(--f); font-size: 11px;
+  color: var(--t3); cursor: pointer;
+  transition: color .15s;
+}
+.add-item-btn:hover { color: var(--bl); }
 </style>
 </head>
 <body>
@@ -611,9 +639,10 @@ function cardLead(lead) {
   const rows = its.map(i=>{
     const v = (D.lew[i.id]||{})[D.week]||0, ok = v>=.5;
     return `<div class="item">
-      <div class="chk ${ok?'y':'n'}">${ok?'✓':'✗'}</div>
-      <div class="item-name">${i.name}</div>
+      <div class="chk ${ok?'y':'n'}" data-toggle-lead-item="${i.id}" style="cursor:pointer;" title="Kliknij aby zmienić">${ok?'✓':'✗'}</div>
+      <div class="item-name" data-edit-lead-item-name="${i.id}" style="cursor:text;" title="Kliknij aby edytować">${esc(i.name)}</div>
       <div class="item-val" style="color:${ok?'var(--gr)':'var(--t3)'}">${pct(v)}%</div>
+      <button class="lead-item-del" data-del-lead-item="${i.id}" title="Usuń zadanie">✕</button>
     </div>`;
   }).join('');
   const sp = sparkSVGLead(lead);
@@ -626,17 +655,18 @@ function cardLead(lead) {
   const assignHtml = '<select data-assign-lead="'+lead.id+'" style="font-size:11px;border:1px solid var(--s2);border-radius:4px;padding:2px 6px;cursor:pointer;background:var(--s1);color:var(--t2);font-family:var(--fm);">'+lagOptions+'</select>';
   const cumul = cumulativeValueLead(lead);
   const badge = statusBadgeHtml(cumul);
-  return `<div class="card" id="lead-card-${lead.id}" style="cursor:pointer;">
+  return `<div class="card" id="lead-card-${lead.id}" style="cursor:pointer;position:relative;">
     <div class="card-head">
-      <a class="card-id lead" href="lead-detail.html?id=${lead.id}" onclick="event.stopPropagation()">LEAD-0${lead.lead_number}</a>
-      <div class="card-name">${lead.name}</div>
+      <a class="card-id lead" href="lead-detail.html?id=${lead.id}" onclick="event.stopPropagation()">LEAD-${String(lead.lead_number).padStart(2,'0')}</a>
+      <div class="card-name" data-edit-lead-name="${lead.id}" style="cursor:text;flex:1;" title="Kliknij aby edytować">${esc(lead.name)}</div>
       <div class="card-pct ${cls(pg)}">${pct(pg)}%</div>
       ${badge}
       ${assignHtml}
+      <button class="lead-del-btn" data-del-lead="${lead.id}" title="Usuń LEAD">✕</button>
     </div>
     <div class="card-dl">Deadline — ${fmtDate(lead.deadline)}</div>
     <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
-    <div class="items-list">${rows}</div>
+    <div class="items-list">${rows}<div style="padding:4px 0 2px;"><button class="add-item-btn" data-add-lead-item="${lead.id}">+ zadanie</button></div></div>
     ${sp}
   </div>`;
 }
@@ -685,6 +715,7 @@ function renderArea() {
       + '</div>';
   }
 
+  html += '<div><button class="add-lead-btn" data-add-lead>+ Dodaj LEAD</button></div>';
   return html || '<div class="empty-box">Brak danych</div>';
 }
 
@@ -1021,6 +1052,155 @@ function openLeadDetail(leadId) {
 
 function closeLeadDetail() { document.getElementById('detail-overlay').classList.remove('on'); }
 
+/* ——— LEAD CRUD ——— */
+
+async function toggleLeadItem(itemId) {
+  var current = (D.lew[itemId]||{})[D.week]||0;
+  var newVal = current >= 0.5 ? 0 : 1;
+  var MH = {...HD, Prefer:'resolution=merge-duplicates,return=representation'};
+  try {
+    await fetch(BASE+'/rest/v1/lead_weekly', {
+      method:'POST', headers:MH,
+      body:JSON.stringify({lead_item_id:itemId, week:D.week, value:newVal})
+    });
+    if (!D.lew[itemId]) D.lew[itemId] = {};
+    D.lew[itemId][D.week] = newVal;
+    var lead = D.leads.find(function(l){ return (D.lei[l.id]||[]).some(function(i){ return i.id===itemId; }); });
+    if (lead) reRenderLead(lead.id);
+    notify(newVal ? '✓ Zaznaczono' : '✗ Odznaczono');
+  } catch(e) { notify('Błąd zapisu: '+e.message.slice(0,60)); }
+}
+
+function startEditLeadName(leadId, el) {
+  var lead = D.leads.find(function(l){ return l.id===leadId; });
+  if (!lead) return;
+  var inp = document.createElement('input');
+  inp.type = 'text'; inp.value = lead.name;
+  inp.style.cssText = 'width:100%;font-size:13px;font-weight:600;border:none;border-bottom:2px solid #2563eb;outline:none;background:transparent;font-family:var(--f);padding:0;';
+  el.textContent = ''; el.appendChild(inp); inp.focus(); inp.select();
+  var saved = false;
+  function save() {
+    if (saved) return; saved = true;
+    var val = inp.value.trim();
+    if (!val) { reRenderLead(leadId); return; }
+    q('leads?id=eq.'+leadId, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({name:val})})
+      .then(function(){ lead.name=val; reRenderLead(leadId); notify('Nazwa LEAD zaktualizowana ✓'); })
+      .catch(function(err){ saved=false; notify('Błąd: '+err.message); reRenderLead(leadId); });
+  }
+  inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();save();} if(ev.key==='Escape') reRenderLead(leadId); });
+  inp.addEventListener('blur', save);
+}
+
+function startEditLeadItemName(itemId, el) {
+  var item=null, leadId=null;
+  D.leads.forEach(function(l){ (D.lei[l.id]||[]).forEach(function(i){ if(i.id===itemId){item=i;leadId=l.id;} }); });
+  if (!item) return;
+  var inp = document.createElement('input');
+  inp.type = 'text'; inp.value = item.name;
+  inp.style.cssText = 'width:100%;font-size:12px;border:none;border-bottom:2px solid #2563eb;outline:none;background:transparent;font-family:var(--f);color:var(--t2);padding:0;';
+  el.textContent = ''; el.appendChild(inp); inp.focus(); inp.select();
+  var saved = false;
+  function save() {
+    if (saved) return; saved = true;
+    var val = inp.value.trim();
+    if (!val) { reRenderLead(leadId); return; }
+    q('lead_items?id=eq.'+itemId, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({name:val})})
+      .then(function(){ item.name=val; reRenderLead(leadId); notify('Zadanie zaktualizowane ✓'); })
+      .catch(function(err){ saved=false; notify('Błąd: '+err.message); reRenderLead(leadId); });
+  }
+  inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();save();} if(ev.key==='Escape') reRenderLead(leadId); });
+  inp.addEventListener('blur', save);
+}
+
+async function deleteLead(leadId) {
+  var lead = D.leads.find(function(l){ return l.id===leadId; });
+  if (!lead) return;
+  var code = 'LEAD-'+String(lead.lead_number).padStart(2,'0');
+  if (!confirm('Usuń '+code+'? Usunięcie kasuje też wszystkie zadania i dane tygodniowe.')) return;
+  try {
+    var items = D.lei[leadId] || [];
+    for (var i=0; i<items.length; i++) {
+      await q('lead_weekly?lead_item_id=eq.'+items[i].id, {method:'DELETE', headers:HD});
+    }
+    await q('lead_items?lead_id=eq.'+leadId, {method:'DELETE', headers:HD});
+    await q('leads?id=eq.'+leadId, {method:'DELETE', headers:HD});
+    notify(code+' usunięty ✓');
+    init();
+  } catch(e) { notify('Błąd usuwania: '+e.message.slice(0,60)); }
+}
+
+async function deleteLeadItem(itemId) {
+  var item=null, leadId=null;
+  D.leads.forEach(function(l){ (D.lei[l.id]||[]).forEach(function(i){ if(i.id===itemId){item=i;leadId=l.id;} }); });
+  if (!item) return;
+  if (!confirm('Usuń zadanie "'+item.name+'"? Usunie też dane tygodniowe.')) return;
+  try {
+    await q('lead_weekly?lead_item_id=eq.'+itemId, {method:'DELETE', headers:HD});
+    await q('lead_items?id=eq.'+itemId, {method:'DELETE', headers:HD});
+    D.lei[leadId] = (D.lei[leadId]||[]).filter(function(i){ return i.id!==itemId; });
+    delete D.lew[itemId];
+    reRenderLead(leadId);
+    notify('Zadanie usunięte ✓');
+  } catch(e) { notify('Błąd usuwania: '+e.message.slice(0,60)); }
+}
+
+function startAddLeadItem(leadId, btn) {
+  var itemsList = btn.closest('.items-list');
+  if (!itemsList || itemsList.querySelector('.new-item-input')) return;
+  var btnContainer = btn.parentElement;
+  var div = document.createElement('div'); div.className = 'item';
+  var inp = document.createElement('input');
+  inp.className = 'new-item-input'; inp.type = 'text'; inp.placeholder = 'Nazwa zadania…';
+  inp.style.cssText = 'flex:1;font-size:12px;border:none;border-bottom:2px solid #2563eb;outline:none;background:transparent;font-family:var(--f);color:var(--t1);padding:2px 0;';
+  div.appendChild(inp);
+  itemsList.insertBefore(div, btnContainer);
+  inp.focus();
+  var saved = false;
+  function save() {
+    if (saved) return; saved = true;
+    var val = inp.value.trim(); div.remove();
+    if (!val) return;
+    var items = D.lei[leadId] || [];
+    var maxOrder = items.length ? Math.max.apply(null, items.map(function(i){ return i.sort_order||0; })) : 0;
+    q('lead_items', {method:'POST', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({lead_id:leadId, name:val, sort_order:maxOrder+1})})
+      .then(function(res){
+        var newItem = Array.isArray(res) ? res[0] : res;
+        if (!D.lei[leadId]) D.lei[leadId] = [];
+        if (newItem) D.lei[leadId].push(newItem);
+        reRenderLead(leadId); notify('Zadanie dodane ✓');
+      })
+      .catch(function(e){ notify('Błąd: '+e.message.slice(0,60)); });
+  }
+  inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();save();} if(ev.key==='Escape') div.remove(); });
+  inp.addEventListener('blur', save);
+}
+
+function startAddLead(btn) {
+  var container = btn.parentElement;
+  if (container.querySelector('.new-lead-input')) return;
+  var div = document.createElement('div'); div.className = 'card';
+  div.style.cssText = 'padding:14px 20px;margin-bottom:10px;';
+  var inp = document.createElement('input');
+  inp.className = 'new-lead-input'; inp.type = 'text'; inp.placeholder = 'Nazwa nowego LEAD…';
+  inp.style.cssText = 'width:100%;font-size:13px;font-weight:600;border:none;border-bottom:2px solid #2563eb;outline:none;background:transparent;font-family:var(--f);color:var(--t1);padding:2px 0;';
+  div.appendChild(inp);
+  container.insertBefore(div, btn);
+  inp.focus();
+  var saved = false;
+  function save() {
+    if (saved) return; saved = true;
+    var val = inp.value.trim(); div.remove();
+    if (!val) return;
+    var maxNum = D.leads.length ? Math.max.apply(null, D.leads.map(function(l){ return l.lead_number||0; })) : 0;
+    var newNum = maxNum + 1;
+    q('leads', {method:'POST', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({area_id:D.area.id, name:val, lead_number:newNum})})
+      .then(function(){ notify('LEAD-'+String(newNum).padStart(2,'0')+' dodany ✓'); init(); })
+      .catch(function(e){ notify('Błąd: '+e.message.slice(0,60)); });
+  }
+  inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();save();} if(ev.key==='Escape') div.remove(); });
+  inp.addEventListener('blur', save);
+}
+
 document.getElementById('overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
 
 document.getElementById('root').addEventListener('change', function(e) {
@@ -1104,6 +1284,28 @@ document.getElementById('root').addEventListener('click', function(e) {
     inp.addEventListener('blur', saveDl);
     return;
   }
+
+  // LEAD CRUD handlers
+  var toggleItem = e.target.closest('[data-toggle-lead-item]');
+  if (toggleItem) { e.stopPropagation(); toggleLeadItem(parseInt(toggleItem.dataset.toggleLeadItem, 10)); return; }
+
+  var editLeadNameEl = e.target.closest('[data-edit-lead-name]');
+  if (editLeadNameEl && !e.target.closest('input')) { e.stopPropagation(); startEditLeadName(parseInt(editLeadNameEl.dataset.editLeadName, 10), editLeadNameEl); return; }
+
+  var editLeadItemEl = e.target.closest('[data-edit-lead-item-name]');
+  if (editLeadItemEl && !e.target.closest('input')) { e.stopPropagation(); startEditLeadItemName(parseInt(editLeadItemEl.dataset.editLeadItemName, 10), editLeadItemEl); return; }
+
+  var delLeadEl = e.target.closest('[data-del-lead]');
+  if (delLeadEl) { e.stopPropagation(); deleteLead(parseInt(delLeadEl.dataset.delLead, 10)); return; }
+
+  var delLeadItemEl = e.target.closest('[data-del-lead-item]');
+  if (delLeadItemEl) { e.stopPropagation(); deleteLeadItem(parseInt(delLeadItemEl.dataset.delLeadItem, 10)); return; }
+
+  var addLeadItemEl = e.target.closest('[data-add-lead-item]');
+  if (addLeadItemEl) { e.stopPropagation(); startAddLeadItem(parseInt(addLeadItemEl.dataset.addLeadItem, 10), addLeadItemEl); return; }
+
+  var addLeadEl = e.target.closest('[data-add-lead]');
+  if (addLeadEl) { e.stopPropagation(); startAddLead(addLeadEl); return; }
 
   if (e.target.closest('select') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
   var card = e.target.closest('[id^="lead-card-"]');
