@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WIG Session — OvocxMalinowi</title>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F6F2;
+  --white: #FFFFFF;
+  --s1: #F0EFE9;
+  --s2: #E8E6DE;
+  --t1: #1C1B18;
+  --t2: #6B6A65;
+  --t3: #AEACA4;
+  --acc: #D64E12;
+  --gr: #16a34a;
+  --gr2: #dcfce7;
+  --or: #d97706;
+  --or2: #fef3c7;
+  --re: #dc2626;
+  --re2: #fee2e2;
+  --bl: #1A5EA8;
+  --bl2: #E8F0FA;
+  --f: 'Familjen Grotesk', sans-serif;
+  --fm: 'DM Mono', monospace;
+  --r: 12px;
+  --sh: 0 1px 4px rgba(0,0,0,.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { background: var(--bg); color: var(--t1); font-family: var(--f); line-height: 1.5; min-height: 100vh; }
+
+/* NAV */
+nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--s2);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand-icon { width: 32px; height: 32px; background: var(--t1); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+.brand-name { font-size: 14px; font-weight: 600; color: var(--t1); letter-spacing: -.01em; }
+.brand-sub { font-size: 13px; color: var(--t3); margin-left: 2px; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.week-tag { background: var(--s1); border: 1px solid var(--s2); border-radius: 6px; padding: 5px 11px; font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t2); letter-spacing: .03em; }
+.back-link { font-size: 13px; color: var(--t2); text-decoration: none; white-space: nowrap; }
+.back-link:hover { color: var(--t1); }
+
+/* LAYOUT */
+.page { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+
+/* MEMBER CARD */
+.member-card {
+  background: var(--white);
+  border: 1px solid var(--s2);
+  border-radius: var(--r);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--sh);
+}
+.member-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--s2);
+}
+.avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fm); font-size: 12px; font-weight: 500;
+  flex-shrink: 0;
+  letter-spacing: .04em;
+}
+.avatar-jan    { background: #E6F1FB; color: #0C447C; }
+.avatar-kacper { background: #EAF3DE; color: #27500A; }
+.avatar-olgierd{ background: #FAEEDA; color: #633806; }
+.member-name { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.member-role { font-size: 12px; color: var(--t3); font-family: var(--fm); }
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 700px) { .cols { grid-template-columns: 1fr; } }
+
+.col-section { }
+.col-label {
+  font-family: var(--fm);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.col-label-week { background: var(--s1); border: 1px solid var(--s2); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+
+/* COMMITMENT ITEMS */
+.commit-prev {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--s1);
+}
+.commit-prev:last-child { border-bottom: none; }
+.commit-prev-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.commit-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.dot-g { background: var(--gr); }
+.dot-o { background: var(--or); }
+.dot-r { background: var(--re); }
+.dot-s { background: var(--t3); }
+.commit-text { font-size: 13px; color: var(--t1); flex: 1; line-height: 1.5; }
+.commit-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; margin-left: 16px; flex-wrap: wrap; }
+.pct-input {
+  width: 54px;
+  background: var(--s1);
+  border: 1px solid var(--s2);
+  border-radius: 5px;
+  padding: 4px 6px;
+  font-family: var(--fm);
+  font-size: 12px;
+  text-align: center;
+  outline: none;
+  color: var(--t1);
+}
+.pct-input:focus { border-color: var(--bl); background: var(--white); }
+.pct-suffix { font-family: var(--fm); font-size: 11px; color: var(--t3); }
+.note-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--s1);
+  border: 1px solid var(--s2);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-family: var(--f);
+  font-size: 12px;
+  outline: none;
+  color: var(--t1);
+}
+.note-input:focus { border-color: var(--bl); background: var(--white); }
+.empty-prev { font-size: 12px; color: var(--t3); padding: 8px 0; font-style: italic; }
+
+/* CURRENT WEEK ITEMS */
+.commit-curr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--s1);
+}
+.commit-curr:last-of-type { border-bottom: none; }
+.curr-input {
+  flex: 1;
+  background: var(--s1);
+  border: 1px solid var(--s2);
+  border-radius: 5px;
+  padding: 6px 10px;
+  font-family: var(--f);
+  font-size: 13px;
+  outline: none;
+  color: var(--t1);
+}
+.curr-input:focus { border-color: var(--bl); background: var(--white); }
+.del-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--t3); font-size: 14px; padding: 2px 6px;
+  transition: color .15s; flex-shrink: 0;
+  font-family: var(--f); line-height: 1;
+}
+.del-btn:hover { color: var(--re); }
+.add-commit-btn {
+  display: block; width: 100%;
+  background: none; border: 1px dashed var(--s2);
+  border-radius: 6px; padding: 8px 14px;
+  font-family: var(--f); font-size: 12px;
+  color: var(--t3); cursor: pointer;
+  transition: border-color .15s, color .15s;
+  margin-top: 8px; text-align: left;
+}
+.add-commit-btn:hover { border-color: var(--t2); color: var(--t1); }
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--s2);
+}
+.btn-save {
+  background: var(--t1); color: white; border: none;
+  border-radius: 6px; padding: 8px 20px;
+  font-family: var(--f); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: background .15s;
+}
+.btn-save:hover { background: #2e2d28; }
+.btn-save:disabled { opacity: .35; cursor: not-allowed; }
+
+/* HISTORY TABLE */
+.history-card {
+  background: var(--white);
+  border: 1px solid var(--s2);
+  border-radius: var(--r);
+  padding: 24px;
+  box-shadow: var(--sh);
+  margin-top: 8px;
+}
+.history-title {
+  font-size: 13px; font-weight: 700;
+  letter-spacing: -.01em; margin-bottom: 16px;
+  text-transform: uppercase; font-size: 11px;
+  color: var(--t2); letter-spacing: .08em;
+}
+.hist-table { width: 100%; border-collapse: collapse; }
+.hist-table th {
+  font-family: var(--fm); font-size: 10px; font-weight: 500;
+  color: var(--t3); text-align: left; padding: 4px 8px 8px;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.hist-table td { padding: 6px 8px; font-size: 13px; }
+.hist-table tr { border-bottom: 1px solid var(--s1); }
+.hist-table tr:last-child { border-bottom: none; }
+.hist-cell {
+  font-family: var(--fm); font-size: 12px; font-weight: 500;
+  padding: 3px 8px; border-radius: 5px; display: inline-block;
+}
+.hist-g { background: var(--gr2); color: var(--gr); }
+.hist-o { background: var(--or2); color: var(--or); }
+.hist-r { background: var(--re2); color: var(--re); }
+.hist-s { background: var(--s1); color: var(--t3); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--t1); color: white;
+  border-radius: 7px; padding: 11px 16px;
+  font-size: 13px; font-weight: 500;
+  z-index: 400; opacity: 0; transform: translateY(8px);
+  transition: all .22s; pointer-events: none;
+}
+.toast.on { opacity: 1; transform: translateY(0); }
+
+/* LOADING */
+.state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 72px 20px; gap: 12px; }
+.spinner { width: 24px; height: 24px; border: 2px solid var(--s2); border-top-color: var(--t1); border-radius: 50%; animation: rot .7s linear infinite; }
+@keyframes rot { to { transform: rotate(360deg); } }
+.state-txt { font-family: var(--fm); font-size: 11px; color: var(--t3); }
+.err-box { background: #fee2e2; border: 1px solid rgba(220,38,38,.15); border-radius: var(--r); padding: 20px; color: var(--re); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <a class="back-link" href="dashboard-4dx.html">← Wróć</a>
+    <div class="brand">
+      <div class="brand-icon">OxM</div>
+      <span class="brand-name">OvocxMalinowi</span>
+      <span class="brand-sub">WIG Session</span>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="week-tag" id="wtag">T—</div>
+  </div>
+</nav>
+
+<div class="page">
+  <div id="root">
+    <div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie danych…</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var BASE = 'https://fssfuricylndtetfktex.supabase.co';
+var KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
+var HD   = { 'Content-Type': 'application/json', apikey: KEY, Authorization: 'Bearer ' + KEY };
+
+var MEMBERS = ['Jan', 'Kacper', 'Olgierd'];
+var MEMBER_INITIALS = { Jan: 'JL', Kacper: 'KW', Olgierd: 'ON' };
+var MEMBER_ROLES = { Jan: 'CEO', Kacper: 'Sprzedaż', Olgierd: 'Reklamacje' };
+var MEMBER_AVATAR_CLS = { Jan: 'avatar-jan', Kacper: 'avatar-kacper', Olgierd: 'avatar-olgierd' };
+
+var D = { week: 12, commitments: [] };
+
+// newItems[member] = list of {id: null|uuid, text: string} — bieżący tydzień, nowe lub załadowane
+var newItems = { Jan: [], Kacper: [], Olgierd: [] };
+// prevItems[member] = list of {id, commitment, result_pct, note} — poprzedni tydzień
+var prevItems = { Jan: [], Kacper: [], Olgierd: [] };
+
+async function q(path, opts) {
+  opts = opts || {};
+  var r = await fetch(BASE + '/rest/v1/' + path, Object.assign({ headers: HD }, opts));
+  if (!r.ok) throw new Error(await r.text());
+  return r.status === 204 ? null : r.json();
+}
+
+function notify(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  setTimeout(function() { t.classList.remove('on'); }, 3000);
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function dotClass(pct) {
+  if (pct === null || pct === undefined || pct === '') return 'dot-s';
+  var v = parseInt(pct, 10);
+  if (v >= 80) return 'dot-g';
+  if (v >= 50) return 'dot-o';
+  return 'dot-r';
+}
+
+async function init() {
+  try {
+    var cfg = await q('config?key=eq.current_week');
+    D.week = cfg.length ? parseInt(cfg[0].value, 10) : 12;
+    document.getElementById('wtag').textContent = 'T' + D.week;
+
+    var prevWeek = D.week - 1;
+    var rows = await q('wig_commitments?week=in.(' + prevWeek + ',' + D.week + ')&order=created_at.asc');
+
+    MEMBERS.forEach(function(m) {
+      prevItems[m] = rows.filter(function(r) { return r.member === m && r.week === prevWeek; });
+      newItems[m]  = rows.filter(function(r) { return r.member === m && r.week === D.week; })
+        .map(function(r) { return { id: r.id, text: r.commitment }; });
+    });
+
+    D.commitments = rows;
+    render();
+  } catch(e) {
+    document.getElementById('root').innerHTML = '<div class="err-box">Błąd połączenia z bazą danych:<br><small>' + esc(e.message) + '</small></div>';
+  }
+}
+
+function render() {
+  var html = '';
+  MEMBERS.forEach(function(m) {
+    html += renderMember(m);
+  });
+  html += renderHistory();
+  document.getElementById('root').innerHTML = html;
+  attachHandlers();
+}
+
+function renderMember(m) {
+  var prevWeek = D.week - 1;
+  var prev = prevItems[m];
+  var curr = newItems[m];
+
+  // Left column — poprzedni tydzień
+  var leftHtml = '';
+  if (!prev.length) {
+    leftHtml = '<div class="empty-prev">Brak zobowiązań z T' + prevWeek + '</div>';
+  } else {
+    prev.forEach(function(item) {
+      var dc = dotClass(item.result_pct);
+      leftHtml += '<div class="commit-prev">'
+        + '<div class="commit-prev-row">'
+        + '<div class="commit-dot ' + dc + '"></div>'
+        + '<div class="commit-text">' + esc(item.commitment) + '</div>'
+        + '</div>'
+        + '<div class="commit-meta">'
+        + '<input type="number" class="pct-input" data-prev-pct="' + item.id + '" min="0" max="100" placeholder="%" value="' + (item.result_pct !== null && item.result_pct !== undefined ? item.result_pct : '') + '">'
+        + '<span class="pct-suffix">%</span>'
+        + '<input type="text" class="note-input" data-prev-note="' + item.id + '" placeholder="Notatka…" value="' + esc(item.note || '') + '">'
+        + '</div>'
+        + '</div>';
+    });
+  }
+
+  // Right column — bieżący tydzień
+  var rightHtml = '';
+  curr.forEach(function(item, idx) {
+    rightHtml += '<div class="commit-curr" data-curr-idx="' + idx + '" data-member="' + m + '">'
+      + '<input type="text" class="curr-input" data-curr-input="' + m + ':' + idx + '" placeholder="Co zrobię w T' + D.week + '…" value="' + esc(item.text) + '">'
+      + '<button class="del-btn" data-del-curr="' + m + ':' + idx + '" title="Usuń">✕</button>'
+      + '</div>';
+  });
+
+  return '<div class="member-card" id="card-' + m + '">'
+    + '<div class="member-head">'
+    + '<div class="avatar ' + MEMBER_AVATAR_CLS[m] + '">' + MEMBER_INITIALS[m] + '</div>'
+    + '<div>'
+    + '<div class="member-name">' + esc(m) + '</div>'
+    + '<div class="member-role">' + esc(MEMBER_ROLES[m]) + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="cols">'
+    + '<div class="col-section">'
+    + '<div class="col-label">Zobowiązania <span class="col-label-week">T' + prevWeek + '</span> — co zrobiłem</div>'
+    + leftHtml
+    + '</div>'
+    + '<div class="col-section">'
+    + '<div class="col-label">Zobowiązania <span class="col-label-week">T' + D.week + '</span> — co zrobię</div>'
+    + '<div id="curr-list-' + m + '">' + rightHtml + '</div>'
+    + '<button class="add-commit-btn" data-add-for="' + m + '">+ dodaj zobowiązanie</button>'
+    + '</div>'
+    + '</div>'
+    + '<div class="card-footer">'
+    + '<button class="btn-save" data-save="' + m + '">Zapisz ' + m + '</button>'
+    + '</div>'
+    + '</div>';
+}
+
+function renderHistory() {
+  var allWeeks = [];
+  var maxW = D.week;
+  for (var w = maxW; w >= Math.max(10, maxW - 3); w--) allWeeks.push(w);
+
+  var html = '<div class="history-card">'
+    + '<div class="history-title">Historia ostatnich tygodni</div>'
+    + '<table class="hist-table">'
+    + '<thead><tr><th>Tydzień</th>';
+  MEMBERS.forEach(function(m) { html += '<th>' + esc(m) + '</th>'; });
+  html += '</tr></thead><tbody>';
+
+  allWeeks.forEach(function(w) {
+    html += '<tr><td style="font-family:var(--fm);font-size:12px;color:var(--t2);">T' + w + '</td>';
+    MEMBERS.forEach(function(m) {
+      var items = D.commitments.filter(function(r) { return r.member === m && r.week === w; });
+      var rated = items.filter(function(r) { return r.result_pct !== null && r.result_pct !== undefined; });
+      if (!rated.length) {
+        html += '<td><span class="hist-cell hist-s">—</span></td>';
+      } else {
+        var avg = Math.round(rated.reduce(function(s, r) { return s + r.result_pct; }, 0) / rated.length);
+        var cls = avg >= 80 ? 'hist-g' : avg >= 50 ? 'hist-o' : 'hist-r';
+        html += '<td><span class="hist-cell ' + cls + '">' + avg + '%</span></td>';
+      }
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function attachHandlers() {
+  // input changes — sync to newItems
+  document.querySelectorAll('[data-curr-input]').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      var parts = inp.dataset.currInput.split(':');
+      var m = parts[0], idx = parseInt(parts[1], 10);
+      newItems[m][idx].text = inp.value;
+    });
+  });
+
+  // delete current week item
+  document.querySelectorAll('[data-del-curr]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var parts = btn.dataset.delCurr.split(':');
+      var m = parts[0], idx = parseInt(parts[1], 10);
+      var item = newItems[m][idx];
+      if (item.id) {
+        // ma id — DELETE z bazy
+        q('wig_commitments?id=eq.' + item.id, { method: 'DELETE' })
+          .then(function() {
+            D.commitments = D.commitments.filter(function(r) { return r.id !== item.id; });
+            newItems[m].splice(idx, 1);
+            rerenderMember(m);
+            notify('Zobowiązanie usunięte');
+          })
+          .catch(function(e) { notify('Błąd: ' + e.message.slice(0, 60)); });
+      } else {
+        // tylko z DOM
+        newItems[m].splice(idx, 1);
+        rerenderMember(m);
+        notify('Zobowiązanie usunięte');
+      }
+    });
+  });
+
+  // add new
+  document.querySelectorAll('[data-add-for]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var m = btn.dataset.addFor;
+      newItems[m].push({ id: null, text: '' });
+      rerenderMember(m);
+      // focus last input
+      var list = document.getElementById('curr-list-' + m);
+      var inputs = list.querySelectorAll('.curr-input');
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    });
+  });
+
+  // save per member
+  document.querySelectorAll('[data-save]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      saveMember(btn.dataset.save, btn);
+    });
+  });
+
+  // live dot update on pct change
+  document.querySelectorAll('[data-prev-pct]').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      var id = inp.dataset.prevPct;
+      var dot = inp.closest('.commit-prev').querySelector('.commit-dot');
+      if (dot) {
+        dot.className = 'commit-dot ' + dotClass(inp.value);
+      }
+    });
+  });
+}
+
+function rerenderMember(m) {
+  var card = document.getElementById('card-' + m);
+  if (!card) return;
+  var tmp = document.createElement('div');
+  tmp.innerHTML = renderMember(m);
+  card.replaceWith(tmp.firstChild);
+  attachHandlers();
+}
+
+async function saveMember(m, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Zapisuję…';
+  var prevWeek = D.week - 1;
+  var MH = Object.assign({}, HD, { Prefer: 'resolution=merge-duplicates,return=representation' });
+
+  try {
+    // 1. PATCH T-1 items: result_pct i note
+    var pctInputs = document.querySelectorAll('[data-prev-pct]');
+    for (var i = 0; i < pctInputs.length; i++) {
+      var inp = pctInputs[i];
+      // sprawdź czy należy do tego membera (przez prevItems)
+      var id = inp.dataset.prevPct;
+      var item = prevItems[m].find(function(r) { return r.id === id; });
+      if (!item) continue;
+      var pctVal = inp.value !== '' ? parseInt(inp.value, 10) : null;
+      var noteEl = document.querySelector('[data-prev-note="' + id + '"]');
+      var noteVal = noteEl ? noteEl.value.trim() || null : null;
+      await q('wig_commitments?id=eq.' + id, {
+        method: 'PATCH',
+        headers: Object.assign({}, HD, { Prefer: 'return=representation' }),
+        body: JSON.stringify({ result_pct: pctVal, note: noteVal, updated_at: new Date().toISOString() })
+      });
+      item.result_pct = pctVal;
+      item.note = noteVal;
+    }
+
+    // 2. POST nowe zobowiązania T (tylko te bez id i z tekstem)
+    var toPost = newItems[m].filter(function(it) { return !it.id && it.text.trim(); });
+    for (var j = 0; j < toPost.length; j++) {
+      var it = toPost[j];
+      var res = await q('wig_commitments', {
+        method: 'POST',
+        headers: MH,
+        body: JSON.stringify({ member: m, week: D.week, commitment: it.text.trim() })
+      });
+      var created = Array.isArray(res) ? res[0] : res;
+      if (created) {
+        it.id = created.id;
+        D.commitments.push(created);
+      }
+    }
+
+    notify('Zapisano ' + m + ' T' + D.week + ' ✓');
+    rerenderMember(m);
+    // przeładuj historię (może zmienił się wynik)
+    renderHistorySection();
+  } catch(e) {
+    notify('Błąd zapisu: ' + e.message.slice(0, 80));
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Zapisz ' + m;
+}
+
+function renderHistorySection() {
+  var histEl = document.querySelector('.history-card');
+  if (!histEl) return;
+  var tmp = document.createElement('div');
+  tmp.innerHTML = renderHistory();
+  histEl.replaceWith(tmp.firstChild);
+}
+
+init();
+</script>
+</body>
+</html>
