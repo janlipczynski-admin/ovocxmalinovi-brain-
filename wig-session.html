@@ -95,91 +95,16 @@ nav {
 .member-name { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
 .member-role { font-size: 12px; color: var(--t3); font-family: var(--fm); }
 
-.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-@media (max-width: 700px) { .cols { grid-template-columns: 1fr; } }
-
-.col-section { }
-.col-label {
-  font-family: var(--fm);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--t3);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.col-label-week { background: var(--s1); border: 1px solid var(--s2); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
-
 /* COMMITMENT ITEMS */
-.commit-prev {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--s1);
-}
-.commit-prev:last-child { border-bottom: none; }
-.commit-prev-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.commit-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 6px;
-}
-.dot-g { background: var(--gr); }
-.dot-o { background: var(--or); }
-.dot-r { background: var(--re); }
-.dot-s { background: var(--t3); }
-.commit-text { font-size: 13px; color: var(--t1); flex: 1; line-height: 1.5; }
-.commit-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; margin-left: 16px; flex-wrap: wrap; }
-/* EMOJI RATING BUTTONS */
-.emoji-btns { display: flex; gap: 4px; align-items: center; }
-.emoji-btn {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: none;
-  font-size: 18px;
-  cursor: pointer;
-  opacity: 0.5;
-  display: flex; align-items: center; justify-content: center;
-  padding: 0;
-  transition: border-color .15s, background .15s, opacity .15s;
-  line-height: 1;
-  flex-shrink: 0;
-}
-.emoji-btn.active-happy { border-color: #16a34a; background: #EAF3DE; opacity: 1; }
-.emoji-btn.active-meh   { border-color: #d97706; background: #FAEEDA; opacity: 1; }
-.emoji-btn.active-sad   { border-color: #dc2626; background: #FCEBEB; opacity: 1; }
-.note-input {
-  flex: 1;
-  min-width: 0;
-  background: var(--s1);
-  border: 1px solid var(--s2);
-  border-radius: 5px;
-  padding: 4px 8px;
-  font-family: var(--f);
-  font-size: 12px;
-  outline: none;
-  color: var(--t1);
-}
-.note-input:focus { border-color: var(--bl); background: var(--white); }
-.empty-prev { font-size: 12px; color: var(--t3); padding: 8px 0; font-style: italic; }
-
-/* CURRENT WEEK ITEMS */
-.commit-curr {
+.commit-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 0;
+  padding: 7px 0;
   border-bottom: 1px solid var(--s1);
 }
-.commit-curr:last-of-type { border-bottom: none; }
+.commit-item:last-of-type { border-bottom: none; }
+.commit-emoji { font-size: 20px; width: 26px; text-align: center; flex-shrink: 0; line-height: 1; }
 .curr-input {
   flex: 1;
   background: var(--s1);
@@ -192,6 +117,20 @@ nav {
   color: var(--t1);
 }
 .curr-input:focus { border-color: var(--bl); background: var(--white); }
+.pct-input {
+  width: 90px;
+  background: var(--s1);
+  border: 1px solid var(--s2);
+  border-radius: 5px;
+  padding: 6px 8px;
+  font-family: var(--fm);
+  font-size: 12px;
+  outline: none;
+  color: var(--t1);
+  text-align: right;
+  flex-shrink: 0;
+}
+.pct-input:focus { border-color: var(--bl); background: var(--white); }
 .del-btn {
   background: none; border: none; cursor: pointer;
   color: var(--t3); font-size: 14px; padding: 2px 6px;
@@ -318,10 +257,17 @@ var MEMBER_AVATAR_CLS = { Iza: 'avatar-iza', Jan: 'avatar-jan', Kacper: 'avatar-
 
 var D = { week: 12, viewWeek: 12, commitments: [] };
 
-// newItems[member] = list of {id: null|uuid, text: string} — bieżący tydzień, nowe lub załadowane
-var newItems = { Iza: [], Jan: [], Kacper: [], Olgierd: [], Renia: [] };
-// prevItems[member] = list of {id, commitment, result_pct, note} — poprzedni tydzień
-var prevItems = { Iza: [], Jan: [], Kacper: [], Olgierd: [], Renia: [] };
+// items[member] = list of {id: null|uuid, text: string, result_pct: null|number} — bieżący tydzień
+var items = { Iza: [], Jan: [], Kacper: [], Olgierd: [], Renia: [] };
+
+function emojiFor(pct) {
+  if (pct === null || pct === undefined || pct === '') return '';
+  var v = parseInt(pct, 10);
+  if (isNaN(v)) return '';
+  if (v >= 75) return '😊';
+  if (v >= 50) return '😐';
+  return '😞';
+}
 
 async function q(path, opts) {
   opts = opts || {};
@@ -341,29 +287,16 @@ function esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function dotClass(pct) {
-  if (pct === null || pct === undefined || pct === '') return 'dot-s';
-  var v = parseInt(pct, 10);
-  if (v >= 80) return 'dot-g';
-  if (v >= 50) return 'dot-o';
-  return 'dot-r';
-}
 
 async function loadWeekData(w) {
   document.getElementById('root').innerHTML = '<div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie T' + w + '…</div></div>';
   try {
-    var prevWeek = w - 1;
-    var rows = [];
-    if (prevWeek >= 1) {
-      rows = await q('wig_commitments?week=in.(' + prevWeek + ',' + w + ')&order=created_at.asc');
-    } else {
-      rows = await q('wig_commitments?week=eq.' + w + '&order=created_at.asc');
-    }
+    var minW = Math.max(1, w - 3);
+    var rows = await q('wig_commitments?week=gte.' + minW + '&week=lte.' + w + '&order=created_at.asc');
 
     MEMBERS.forEach(function(m) {
-      prevItems[m] = rows.filter(function(r) { return r.member === m && r.week === prevWeek; });
-      newItems[m]  = rows.filter(function(r) { return r.member === m && r.week === w; })
-        .map(function(r) { return { id: r.id, text: r.commitment }; });
+      items[m] = rows.filter(function(r) { return r.member === m && r.week === w; })
+        .map(function(r) { return { id: r.id, text: r.commitment, result_pct: r.result_pct }; });
     });
 
     D.commitments = rows;
@@ -389,7 +322,7 @@ function attachWeekNav() {
     prevBtn.addEventListener('click', function() {
       if (D.viewWeek <= 1) return;
       D.viewWeek--;
-      MEMBERS.forEach(function(m) { newItems[m] = []; prevItems[m] = []; });
+      MEMBERS.forEach(function(m) { items[m] = []; });
       loadWeekData(D.viewWeek);
     });
   }
@@ -397,7 +330,7 @@ function attachWeekNav() {
     nextBtn.addEventListener('click', function() {
       if (D.viewWeek >= D.week + 1) return;
       D.viewWeek++;
-      MEMBERS.forEach(function(m) { newItems[m] = []; prevItems[m] = []; });
+      MEMBERS.forEach(function(m) { items[m] = []; });
       loadWeekData(D.viewWeek);
     });
   }
@@ -426,42 +359,15 @@ function render() {
 }
 
 function renderMember(m) {
-  var prevWeek = D.viewWeek - 1;
-  var prev = prevItems[m];
-  var curr = newItems[m];
-
-  // Left column — poprzedni tydzień
-  var leftHtml = '';
-  if (!prev.length) {
-    leftHtml = '<div class="empty-prev">Brak zobowiązań z T' + prevWeek + '</div>';
-  } else {
-    prev.forEach(function(item) {
-      var dc = dotClass(item.result_pct);
-      var happyCls = item.result_pct === 100 ? ' active-happy' : '';
-      var mehCls   = item.result_pct === 50  ? ' active-meh'   : '';
-      var sadCls   = item.result_pct === 0   ? ' active-sad'   : '';
-      leftHtml += '<div class="commit-prev">'
-        + '<div class="commit-prev-row">'
-        + '<div class="commit-dot ' + dc + '"></div>'
-        + '<div class="commit-text">' + esc(item.commitment) + '</div>'
-        + '</div>'
-        + '<div class="commit-meta">'
-        + '<div class="emoji-btns">'
-        + '<button class="emoji-btn' + happyCls + '" data-emoji="' + item.id + ':100" title="Zrobione">😊</button>'
-        + '<button class="emoji-btn' + mehCls   + '" data-emoji="' + item.id + ':50"  title="Częściowo">😐</button>'
-        + '<button class="emoji-btn' + sadCls   + '" data-emoji="' + item.id + ':0"   title="Nie zrobione">😞</button>'
-        + '</div>'
-        + '<input type="text" class="note-input" data-prev-note="' + item.id + '" placeholder="Notatka…" value="' + esc(item.note || '') + '">'
-        + '</div>'
-        + '</div>';
-    });
-  }
-
-  // Right column — bieżący tydzień
-  var rightHtml = '';
-  curr.forEach(function(item, idx) {
-    rightHtml += '<div class="commit-curr" data-curr-idx="' + idx + '" data-member="' + m + '">'
-      + '<input type="text" class="curr-input" data-curr-input="' + m + ':' + idx + '" placeholder="Co zrobię w T' + D.viewWeek + '…" value="' + esc(item.text) + '">'
+  var list = items[m];
+  var listHtml = '';
+  list.forEach(function(item, idx) {
+    var emoji = emojiFor(item.result_pct);
+    var pctVal = (item.result_pct !== null && item.result_pct !== undefined) ? item.result_pct : '';
+    listHtml += '<div class="commit-item">'
+      + '<span class="commit-emoji">' + emoji + '</span>'
+      + '<input type="text" class="curr-input" data-curr-input="' + m + ':' + idx + '" placeholder="Zobowiązanie T' + D.viewWeek + '…" value="' + esc(item.text) + '">'
+      + '<input type="number" class="pct-input" min="0" max="100" data-pct-input="' + m + ':' + idx + '" placeholder="% wykonania" value="' + esc(pctVal) + '">'
       + '<button class="del-btn" data-del-curr="' + m + ':' + idx + '" title="Usuń">✕</button>'
       + '</div>';
   });
@@ -474,17 +380,8 @@ function renderMember(m) {
     + '<div class="member-role">' + esc(MEMBER_ROLES[m]) + '</div>'
     + '</div>'
     + '</div>'
-    + '<div class="cols">'
-    + '<div class="col-section">'
-    + '<div class="col-label">Zobowiązania <span class="col-label-week">T' + prevWeek + '</span> — co zrobiłem</div>'
-    + leftHtml
-    + '</div>'
-    + '<div class="col-section">'
-    + '<div class="col-label">Zobowiązania <span class="col-label-week">T' + D.viewWeek + '</span> — co zrobię</div>'
-    + '<div id="curr-list-' + m + '">' + rightHtml + '</div>'
+    + '<div id="curr-list-' + m + '">' + listHtml + '</div>'
     + '<button class="add-commit-btn" data-add-for="' + m + '">+ dodaj zobowiązanie</button>'
-    + '</div>'
-    + '</div>'
     + '<div class="card-footer">'
     + '<button class="btn-save" data-save="' + m + '">Zapisz ' + m + '</button>'
     + '</div>'
@@ -514,7 +411,7 @@ function renderHistory() {
         var avg = Math.round(rated.reduce(function(s, r) { return s + r.result_pct; }, 0) / rated.length);
         var cls = avg >= 75 ? 'hist-g' : avg >= 50 ? 'hist-o' : 'hist-r';
         var emoji = avg >= 75 ? '😊' : avg >= 50 ? '😐' : '😞';
-        html += '<td><span class="hist-cell ' + cls + '">' + emoji + '</span></td>';
+        html += '<td><span class="hist-cell ' + cls + '">' + emoji + ' ' + avg + '%</span></td>';
       }
     });
     html += '</tr>';
@@ -525,36 +422,49 @@ function renderHistory() {
 }
 
 function attachDelegatedHandlers() {
-  // input: sync curr-input → newItems
   document.addEventListener('input', function(e) {
+    // sync text
     var inp = e.target.closest('[data-curr-input]');
-    if (!inp) return;
-    var parts = inp.dataset.currInput.split(':');
-    var m = parts[0], idx = parseInt(parts[1], 10);
-    if (newItems[m] && newItems[m][idx] !== undefined) {
-      newItems[m][idx].text = inp.value;
+    if (inp) {
+      var parts = inp.dataset.currInput.split(':');
+      var m = parts[0], idx = parseInt(parts[1], 10);
+      if (items[m] && items[m][idx] !== undefined) items[m][idx].text = inp.value;
+      return;
+    }
+    // sync % i odśwież emoji
+    var pct = e.target.closest('[data-pct-input]');
+    if (pct) {
+      var parts = pct.dataset.pctInput.split(':');
+      var m = parts[0], idx = parseInt(parts[1], 10);
+      if (items[m] && items[m][idx] !== undefined) {
+        var v = pct.value.trim();
+        items[m][idx].result_pct = v === '' ? null : Math.min(100, Math.max(0, parseInt(v, 10)));
+        // odśwież tylko emoji w tym samym wierszu
+        var row = pct.closest('.commit-item');
+        if (row) row.querySelector('.commit-emoji').textContent = emojiFor(items[m][idx].result_pct);
+      }
     }
   });
 
   document.addEventListener('click', function(e) {
-    // delete current-week item
+    // delete item
     var delBtn = e.target.closest('[data-del-curr]');
     if (delBtn) {
       var parts = delBtn.dataset.delCurr.split(':');
       var m = parts[0], idx = parseInt(parts[1], 10);
-      var item = newItems[m] && newItems[m][idx];
+      var item = items[m] && items[m][idx];
       if (!item) return;
       if (item.id) {
         q('wig_commitments?id=eq.' + item.id, { method: 'DELETE' })
           .then(function() {
             D.commitments = D.commitments.filter(function(r) { return r.id !== item.id; });
-            newItems[m].splice(idx, 1);
+            items[m].splice(idx, 1);
             rerenderMember(m);
             notify('Zobowiązanie usunięte');
           })
           .catch(function(e) { notify('Błąd: ' + e.message.slice(0, 60)); });
       } else {
-        newItems[m].splice(idx, 1);
+        items[m].splice(idx, 1);
         rerenderMember(m);
         notify('Zobowiązanie usunięte');
       }
@@ -565,7 +475,7 @@ function attachDelegatedHandlers() {
     var addBtn = e.target.closest('[data-add-for]');
     if (addBtn) {
       var m = addBtn.dataset.addFor;
-      newItems[m].push({ id: null, text: '' });
+      items[m].push({ id: null, text: '', result_pct: null });
       rerenderMember(m);
       var list = document.getElementById('curr-list-' + m);
       if (list) {
@@ -579,25 +489,6 @@ function attachDelegatedHandlers() {
     var saveBtn = e.target.closest('[data-save]');
     if (saveBtn) {
       saveMember(saveBtn.dataset.save, saveBtn);
-      return;
-    }
-
-    // emoji rating
-    var emojiBtn = e.target.closest('[data-emoji]');
-    if (emojiBtn) {
-      var parts = emojiBtn.dataset.emoji.split(':');
-      var id = parts[0];
-      var val = parseInt(parts[1], 10);
-      var item = null;
-      var ownerMember = null;
-      MEMBERS.forEach(function(m) {
-        prevItems[m].forEach(function(r) { if (r.id === id) { item = r; ownerMember = m; } });
-      });
-      console.log('[emoji] klik id=' + id + ' val=' + val + ' member=' + ownerMember + ' prev_pct=' + (item ? item.result_pct : 'nie znaleziono'));
-      if (!item) return;
-      item.result_pct = (item.result_pct === val) ? null : val;
-      console.log('[emoji] nowy result_pct=' + item.result_pct);
-      rerenderMember(ownerMember);
       return;
     }
   });
@@ -614,44 +505,37 @@ function rerenderMember(m) {
 async function saveMember(m, btn) {
   btn.disabled = true;
   btn.textContent = 'Zapisuję…';
-  var prevWeek = D.viewWeek - 1;
   var MH = Object.assign({}, HD, { Prefer: 'resolution=merge-duplicates,return=representation' });
 
   try {
-    // 1. PATCH T-1 items: result_pct i note (z prevItems[m])
-    for (var i = 0; i < prevItems[m].length; i++) {
-      var item = prevItems[m][i];
-      var id = item.id;
-      var pctVal = (item.result_pct !== null && item.result_pct !== undefined) ? item.result_pct : null;
-      var noteEl = document.querySelector('[data-prev-note="' + id + '"]');
-      var noteVal = noteEl ? noteEl.value.trim() || null : null;
-      await q('wig_commitments?id=eq.' + id, {
-        method: 'PATCH',
-        headers: Object.assign({}, HD, { Prefer: 'return=representation' }),
-        body: JSON.stringify({ result_pct: pctVal, note: noteVal, updated_at: new Date().toISOString() })
-      });
-      item.note = noteVal;
-    }
-
-    // 2. POST nowe zobowiązania T (tylko te bez id i z tekstem)
-    var toPost = newItems[m].filter(function(it) { return !it.id && it.text.trim(); });
-    for (var j = 0; j < toPost.length; j++) {
-      var it = toPost[j];
-      var res = await q('wig_commitments', {
-        method: 'POST',
-        headers: MH,
-        body: JSON.stringify({ member: m, week: D.viewWeek, commitment: it.text.trim() })
-      });
-      var created = Array.isArray(res) ? res[0] : res;
-      if (created) {
-        it.id = created.id;
-        D.commitments.push(created);
+    for (var i = 0; i < items[m].length; i++) {
+      var it = items[m][i];
+      if (!it.text.trim()) continue;
+      var pct = (it.result_pct !== null && it.result_pct !== undefined) ? it.result_pct : null;
+      if (it.id) {
+        // PATCH — aktualizuj tekst i wynik
+        await q('wig_commitments?id=eq.' + it.id, {
+          method: 'PATCH',
+          headers: Object.assign({}, HD, { Prefer: 'return=representation' }),
+          body: JSON.stringify({ commitment: it.text.trim(), result_pct: pct, updated_at: new Date().toISOString() })
+        });
+      } else {
+        // POST — nowe zobowiązanie
+        var res = await q('wig_commitments', {
+          method: 'POST',
+          headers: MH,
+          body: JSON.stringify({ member: m, week: D.viewWeek, commitment: it.text.trim(), result_pct: pct })
+        });
+        var created = Array.isArray(res) ? res[0] : res;
+        if (created) {
+          it.id = created.id;
+          D.commitments.push(created);
+        }
       }
     }
 
     notify('Zapisano ' + m + ' T' + D.viewWeek + ' ✓');
     rerenderMember(m);
-    // przeładuj historię (może zmienił się wynik)
     renderHistorySection();
   } catch(e) {
     notify('Błąd zapisu: ' + e.message.slice(0, 80));
