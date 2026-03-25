@@ -16,18 +16,18 @@
   --t2: #6B6A65;
   --t3: #AEACA4;
   --acc: #D64E12;
-  --gr: #16a34a;
-  --gr2: #dcfce7;
-  --or: #d97706;
-  --or2: #fef3c7;
-  --re: #dc2626;
-  --re2: #fee2e2;
+  --gr: #217A52;
+  --gr2: #E8F4EE;
+  --re: #C0392B;
+  --re2: #FCECEA;
+  --or: #E8941A;
+  --or2: #FEF3C7;
   --bl: #1A5EA8;
   --bl2: #E8F0FA;
   --f: 'Familjen Grotesk', sans-serif;
   --fm: 'DM Mono', monospace;
-  --r: 12px;
-  --sh: 0 1px 4px rgba(0,0,0,.08);
+  --r: 10px;
+  --sh: 0 1px 3px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.04);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; }
@@ -38,190 +38,241 @@ nav {
   background: var(--white);
   border-bottom: 1px solid var(--s2);
   height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 0 32px;
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  position: sticky; top: 0; z-index: 50;
 }
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-.brand-icon { width: 32px; height: 32px; background: var(--t1); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+.brand-icon { width: 32px; height: 32px; background: var(--t1); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 700; }
 .brand-name { font-size: 14px; font-weight: 600; color: var(--t1); letter-spacing: -.01em; }
 .brand-sub { font-size: 13px; color: var(--t3); margin-left: 2px; }
-.nav-right { display: flex; align-items: center; gap: 10px; }
-.week-tag { background: var(--s1); border: 1px solid var(--s2); border-radius: 6px; padding: 5px 11px; font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t2); letter-spacing: .03em; }
-.week-nav { display: flex; align-items: center; gap: 4px; }
-.wk-btn { background: none; border: 1px solid var(--s2); border-radius: 5px; width: 26px; height: 26px; cursor: pointer; font-size: 14px; color: var(--t2); display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s; }
-.wk-btn:hover:not(:disabled) { border-color: var(--t1); color: var(--t1); }
-.wk-btn:disabled { opacity: .3; cursor: not-allowed; }
-.back-link { font-size: 13px; color: var(--t2); text-decoration: none; white-space: nowrap; }
+.back-link { font-size: 13px; color: var(--t2); text-decoration: none; }
 .back-link:hover { color: var(--t1); }
+.nav-right { display: flex; align-items: center; gap: 10px; }
 
-/* LAYOUT */
-.page { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+/* PAGE */
+.page { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
 
-/* MEMBER CARD */
-.member-card {
+/* SESSION NAVIGATOR */
+.session-nav {
+  display: flex; align-items: center; gap: 0;
+  background: var(--white); border: 1px solid var(--s2);
+  border-radius: var(--r); overflow: hidden;
+  margin-bottom: 28px;
+  box-shadow: var(--sh);
+}
+.snav-btn {
+  background: none; border: none; border-right: 1px solid var(--s2);
+  padding: 0 16px; height: 44px; font-size: 16px;
+  cursor: pointer; color: var(--t2);
+  transition: background .12s, color .12s;
+  display: flex; align-items: center;
+}
+.snav-btn:last-child { border-right: none; border-left: 1px solid var(--s2); border-right: none; }
+.snav-btn:hover:not(:disabled) { background: var(--s1); color: var(--t1); }
+.snav-btn:disabled { opacity: .3; cursor: not-allowed; }
+.snav-items { display: flex; flex: 1; overflow-x: auto; }
+.snav-item {
+  padding: 0 20px; height: 44px;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer; white-space: nowrap;
+  border-right: 1px solid var(--s2);
+  font-size: 13px; color: var(--t2);
+  transition: background .12s, color .12s;
+  user-select: none;
+}
+.snav-item:last-child { border-right: none; }
+.snav-item:hover { background: var(--s1); color: var(--t1); }
+.snav-item.active {
+  background: var(--t1); color: var(--white);
+  font-weight: 600;
+}
+.snav-item.active .snav-num { color: rgba(255,255,255,.6); }
+.snav-num { font-family: var(--fm); font-size: 10px; letter-spacing: .06em; }
+.snav-date { font-family: var(--fm); font-size: 11px; }
+
+/* MAIN GRID */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+@media (max-width: 860px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* SECTION CARD */
+.section-card {
   background: var(--white);
   border: 1px solid var(--s2);
   border-radius: var(--r);
-  padding: 24px;
-  margin-bottom: 20px;
   box-shadow: var(--sh);
+  overflow: hidden;
 }
-.member-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+.section-head {
+  padding: 16px 20px;
   border-bottom: 1px solid var(--s2);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
 }
-.avatar {
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--fm); font-size: 12px; font-weight: 500;
-  flex-shrink: 0;
-  letter-spacing: .04em;
+.section-title {
+  font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--t2);
 }
-.avatar-iza    { background: #FBEAF0; color: #72243E; }
-.avatar-jan    { background: #E6F1FB; color: #0C447C; }
-.avatar-kacper { background: #EAF3DE; color: #27500A; }
-.avatar-olgierd{ background: #FAEEDA; color: #633806; }
-.avatar-renia  { background: #EEEDFE; color: #3C3489; }
-.member-name { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
-.member-role { font-size: 12px; color: var(--t3); font-family: var(--fm); }
+.section-label {
+  font-family: var(--fm); font-size: 10px;
+  color: var(--t3); letter-spacing: .04em;
+}
+.score-badge {
+  font-family: var(--fm); font-size: 20px; font-weight: 600;
+  letter-spacing: -.02em;
+}
+.score-badge.good { color: var(--gr); }
+.score-badge.mid  { color: var(--or); }
+.score-badge.bad  { color: var(--re); }
+.section-body { padding: 16px 20px; }
 
-/* COMMITMENT ITEMS */
-.commit-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--s1);
+/* COMMITMENT LIST */
+.commitment-list { display: flex; flex-direction: column; gap: 2px; }
+.commitment-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 10px; border-radius: 6px;
+  transition: background .12s;
 }
-.commit-item:last-of-type { border-bottom: none; }
-.commit-emoji { font-size: 20px; width: 26px; text-align: center; flex-shrink: 0; line-height: 1; }
-.curr-input {
-  flex: 1;
-  background: var(--s1);
-  border: 1px solid var(--s2);
-  border-radius: 5px;
-  padding: 6px 10px;
-  font-family: var(--f);
-  font-size: 13px;
-  outline: none;
-  color: var(--t1);
+.commitment-row:hover { background: var(--s1); }
+.chk-btn {
+  width: 22px; height: 22px; border-radius: 5px;
+  border: 1.5px solid var(--s2); background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  font-size: 11px; font-weight: 700;
+  transition: all .12s;
 }
-.curr-input:focus { border-color: var(--bl); background: var(--white); }
-.pct-input {
-  width: 90px;
-  background: var(--s1);
-  border: 1px solid var(--s2);
-  border-radius: 5px;
-  padding: 6px 8px;
-  font-family: var(--fm);
-  font-size: 12px;
-  outline: none;
-  color: var(--t1);
-  text-align: right;
+.chk-btn.done { background: var(--gr); border-color: var(--gr); color: white; }
+.chk-btn.fail { background: var(--re2); border-color: var(--re); color: var(--re); }
+.commitment-text {
+  flex: 1; font-size: 13px; line-height: 1.4; color: var(--t1);
+}
+.commitment-text.done { text-decoration: line-through; color: var(--t3); }
+.commitment-member-tag {
+  font-family: var(--fm); font-size: 9px; letter-spacing: .06em;
+  padding: 2px 6px; border-radius: 4px;
+  background: var(--s1); color: var(--t3);
   flex-shrink: 0;
 }
-.pct-input:focus { border-color: var(--bl); background: var(--white); }
+
+/* MEMBER SECTION */
+.member-section { margin-bottom: 14px; }
+.member-section:last-child { margin-bottom: 0; }
+.member-label {
+  font-family: var(--fm); font-size: 9px; font-weight: 500;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--t3); margin-bottom: 6px; padding-left: 4px;
+}
+.member-commitments { display: flex; flex-direction: column; gap: 2px; }
+.commit-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-radius: 6px;
+}
+.commit-row:hover { background: var(--s1); }
+.commit-text { flex: 1; font-size: 13px; color: var(--t1); line-height: 1.4; }
 .del-btn {
   background: none; border: none; cursor: pointer;
-  color: var(--t3); font-size: 14px; padding: 2px 6px;
-  transition: color .15s; flex-shrink: 0;
-  font-family: var(--f); line-height: 1;
+  color: var(--t3); font-size: 13px; padding: 2px 5px;
+  opacity: 0; transition: opacity .12s, color .12s;
+  flex-shrink: 0;
 }
+.commit-row:hover .del-btn { opacity: 1; }
 .del-btn:hover { color: var(--re); }
-.add-commit-btn {
-  display: block; width: 100%;
-  background: none; border: 1px dashed var(--s2);
-  border-radius: 6px; padding: 8px 14px;
-  font-family: var(--f); font-size: 12px;
-  color: var(--t3); cursor: pointer;
-  transition: border-color .15s, color .15s;
-  margin-top: 8px; text-align: left;
-}
-.add-commit-btn:hover { border-color: var(--t2); color: var(--t1); }
 
-.card-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid var(--s2);
+/* ADD INPUT */
+.add-row {
+  display: flex; gap: 8px; margin-top: 8px; align-items: center;
 }
-.btn-save {
-  background: var(--t1); color: white; border: none;
-  border-radius: 6px; padding: 8px 20px;
-  font-family: var(--f); font-size: 13px; font-weight: 700;
-  cursor: pointer; transition: background .15s;
+.add-input {
+  flex: 1; background: var(--s1); border: 1px solid var(--s2);
+  border-radius: 6px; padding: 7px 10px;
+  font-family: var(--f); font-size: 13px; color: var(--t1);
+  outline: none; transition: border-color .15s;
 }
-.btn-save:hover { background: #2e2d28; }
-.btn-save:disabled { opacity: .35; cursor: not-allowed; }
+.add-input:focus { border-color: var(--bl); background: var(--white); }
+.add-input::placeholder { color: var(--t3); }
 
-/* HISTORY TABLE */
-.history-card {
+/* TRANSFER BTN */
+.transfer-btn {
+  width: 100%; background: none; border: 1px dashed var(--s2);
+  border-radius: 6px; padding: 9px 16px;
+  font-family: var(--f); font-size: 12px; color: var(--t3);
+  cursor: pointer; transition: border-color .15s, color .15s;
+  margin-top: 12px;
+}
+.transfer-btn:hover { border-color: var(--t2); color: var(--t1); }
+
+/* PROGRESS SECTION */
+.progress-section {
   background: var(--white);
   border: 1px solid var(--s2);
   border-radius: var(--r);
-  padding: 24px;
   box-shadow: var(--sh);
-  margin-top: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
 }
-.history-title {
-  font-size: 13px; font-weight: 700;
-  letter-spacing: -.01em; margin-bottom: 16px;
-  text-transform: uppercase; font-size: 11px;
-  color: var(--t2); letter-spacing: .08em;
+.progress-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
 }
-.hist-table { width: 100%; border-collapse: collapse; }
-.hist-table th {
-  font-family: var(--fm); font-size: 10px; font-weight: 500;
-  color: var(--t3); text-align: left; padding: 4px 8px 8px;
-  letter-spacing: .06em; text-transform: uppercase;
+@media (max-width: 680px) { .progress-grid { grid-template-columns: 1fr; } }
+.progress-col { padding: 16px 20px; }
+.progress-col + .progress-col { border-left: 1px solid var(--s2); }
+.prog-col-title {
+  font-family: var(--fm); font-size: 9px; font-weight: 500;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--t3); margin-bottom: 10px;
 }
-.hist-table td { padding: 6px 8px; font-size: 13px; }
-.hist-table tr { border-bottom: 1px solid var(--s1); }
-.hist-table tr:last-child { border-bottom: none; }
-.hist-cell {
-  font-family: var(--fm); font-size: 12px; font-weight: 500;
-  padding: 3px 8px; border-radius: 5px; display: inline-block;
+.prog-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 0; border-bottom: 1px solid var(--bg);
 }
-.hist-g { background: #EAF3DE; color: #27500A; }
-.hist-o { background: #FAEEDA; color: #633806; }
-.hist-r { background: #FCEBEB; color: #791F1F; }
-.hist-s { background: #F3F4F6; color: #6B7280; }
+.prog-item:last-child { border-bottom: none; }
+.prog-chk {
+  width: 18px; height: 18px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; flex-shrink: 0;
+}
+.prog-chk.y { background: var(--gr2); color: var(--gr); }
+.prog-chk.n { background: var(--re2); color: var(--re); }
+.prog-chk.h { background: var(--or2); color: var(--or); }
+.prog-name { font-size: 12px; color: var(--t2); flex: 1; line-height: 1.4; }
+.prog-val { font-family: var(--fm); font-size: 10px; color: var(--t3); flex-shrink: 0; }
+
+/* EMPTY / STATE */
+.empty { font-size: 12px; color: var(--t3); padding: 16px 0; text-align: center; }
+.state { display: flex; align-items: center; justify-content: center; padding: 60px 20px; gap: 12px; flex-direction: column; }
+.spinner { width: 22px; height: 22px; border: 2px solid var(--s2); border-top-color: var(--t1); border-radius: 50%; animation: rot .7s linear infinite; }
+@keyframes rot { to { transform: rotate(360deg); } }
+.state-txt { font-family: var(--fm); font-size: 11px; color: var(--t3); }
 
 /* TOAST */
 .toast {
   position: fixed; bottom: 24px; right: 24px;
   background: var(--t1); color: white;
-  border-radius: 7px; padding: 11px 16px;
-  font-size: 13px; font-weight: 500;
-  z-index: 400; opacity: 0; transform: translateY(8px);
-  transition: all .22s; pointer-events: none;
+  border-radius: 8px; padding: 11px 16px;
+  font-size: 13px; font-weight: 500; z-index: 999;
+  opacity: 0; transform: translateY(8px);
+  transition: all .2s; pointer-events: none;
 }
 .toast.on { opacity: 1; transform: translateY(0); }
 
-/* LOADING */
-.state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 72px 20px; gap: 12px; }
-.spinner { width: 24px; height: 24px; border: 2px solid var(--s2); border-top-color: var(--t1); border-radius: 50%; animation: rot .7s linear infinite; }
-@keyframes rot { to { transform: rotate(360deg); } }
-.state-txt { font-family: var(--fm); font-size: 11px; color: var(--t3); }
-.err-box { background: #fee2e2; border: 1px solid rgba(220,38,38,.15); border-radius: var(--r); padding: 20px; color: var(--re); font-size: 13px; }
+/* DIVIDER between members */
+.member-divider { height: 1px; background: var(--s1); margin: 10px 0; }
 </style>
 </head>
 <body>
 
 <nav>
   <div style="display:flex;align-items:center;gap:16px;">
-    <a class="back-link" href="dashboard-4dx.html">← Wróć</a>
+    <a class="back-link" href="dashboard-4dx.html">← Dashboard</a>
     <div class="brand">
       <div class="brand-icon">OxM</div>
       <span class="brand-name">OvocxMalinowi</span>
@@ -229,45 +280,40 @@ nav {
     </div>
   </div>
   <div class="nav-right">
-    <div class="week-nav">
-      <button class="wk-btn" id="wk-prev" title="Poprzedni tydzień">‹</button>
-      <div class="week-tag" id="wtag">T—</div>
-      <button class="wk-btn" id="wk-next" title="Następny tydzień">›</button>
-    </div>
+    <span id="session-week-tag" style="font-family:var(--fm);font-size:11px;color:var(--t3);letter-spacing:.04em;"></span>
   </div>
 </nav>
 
 <div class="page">
+  <div class="session-nav" id="session-nav">
+    <button class="snav-btn" id="snav-prev" disabled>←</button>
+    <div class="snav-items" id="snav-items"></div>
+    <button class="snav-btn" id="snav-next" disabled>→</button>
+  </div>
+
   <div id="root">
-    <div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie danych…</div></div>
+    <div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie sesji…</div></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-var BASE = 'https://fssfuricylndtetfktex.supabase.co';
-var KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
-var HD   = { 'Content-Type': 'application/json', apikey: KEY, Authorization: 'Bearer ' + KEY };
+const BASE = 'https://fssfuricylndtetfktex.supabase.co';
+const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
+const HD   = { 'Content-Type': 'application/json', apikey: KEY, Authorization: 'Bearer ' + KEY };
 
-var MEMBERS = ['Iza', 'Jan', 'Kacper', 'Olgierd', 'Renia'];
-var MEMBER_INITIALS = { Iza: 'Iz', Jan: 'Ja', Kacper: 'Ka', Olgierd: 'Ol', Renia: 'Re' };
-var MEMBER_ROLES = { Iza: '', Jan: 'CEO', Kacper: 'Sprzedaż', Olgierd: 'Reklamacje', Renia: '' };
-var MEMBER_AVATAR_CLS = { Iza: 'avatar-iza', Jan: 'avatar-jan', Kacper: 'avatar-kacper', Olgierd: 'avatar-olgierd', Renia: 'avatar-renia' };
+const MEMBERS = ['Jan', 'Kacper', 'Olgierd', 'Iza', 'Renia'];
 
-var D = { week: 12, viewWeek: 12, commitments: [] };
-
-// items[member] = list of {id: null|uuid, text: string, result_pct: null|number} — bieżący tydzień
-var items = { Iza: [], Jan: [], Kacper: [], Olgierd: [], Renia: [] };
-
-function emojiFor(pct) {
-  if (pct === null || pct === undefined || pct === '') return '';
-  var v = parseInt(pct, 10);
-  if (isNaN(v)) return '';
-  if (v >= 75) return '😊';
-  if (v >= 50) return '😐';
-  return '😞';
-}
+var S = {
+  sessions: [],
+  currentIdx: 0,
+  commitments: {},
+  lagItems: [],
+  leadItems: [],
+  lagWeekly: {},
+  leadWeekly: {}
+};
 
 async function q(path, opts) {
   opts = opts || {};
@@ -276,282 +322,288 @@ async function q(path, opts) {
   return r.status === 204 ? null : r.json();
 }
 
-function notify(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('on');
-  setTimeout(function() { t.classList.remove('on'); }, 3000);
+function fmtDate(d) {
+  if (!d) return '—';
+  var parts = d.split('-');
+  return parts[2] + '.' + parts[1];
 }
 
 function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-
-async function loadWeekData(w) {
-  document.getElementById('root').innerHTML = '<div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie T' + w + '…</div></div>';
-  try {
-    var minW = Math.max(1, w - 3);
-    var rows = await q('wig_commitments?week=gte.' + minW + '&week=lte.' + w + '&order=created_at.asc');
-
-    MEMBERS.forEach(function(m) {
-      items[m] = rows.filter(function(r) { return r.member === m && r.week === w; })
-        .map(function(r) { return { id: r.id, text: r.commitment, result_pct: r.result_pct }; });
-    });
-
-    D.commitments = rows;
-    updateWeekUI();
-    render();
-  } catch(e) {
-    document.getElementById('root').innerHTML = '<div class="err-box">Błąd połączenia z bazą danych:<br><small>' + esc(e.message) + '</small></div>';
-  }
-}
-
-function updateWeekUI() {
-  document.getElementById('wtag').textContent = 'T' + D.viewWeek;
-  var prevBtn = document.getElementById('wk-prev');
-  var nextBtn = document.getElementById('wk-next');
-  if (prevBtn) prevBtn.disabled = D.viewWeek <= 1;
-  if (nextBtn) nextBtn.disabled = D.viewWeek >= D.week + 1;
-}
-
-function attachWeekNav() {
-  var prevBtn = document.getElementById('wk-prev');
-  var nextBtn = document.getElementById('wk-next');
-  if (prevBtn) {
-    prevBtn.addEventListener('click', function() {
-      if (D.viewWeek <= 1) return;
-      D.viewWeek--;
-      MEMBERS.forEach(function(m) { items[m] = []; });
-      loadWeekData(D.viewWeek);
-    });
-  }
-  if (nextBtn) {
-    nextBtn.addEventListener('click', function() {
-      if (D.viewWeek >= D.week + 1) return;
-      D.viewWeek++;
-      MEMBERS.forEach(function(m) { items[m] = []; });
-      loadWeekData(D.viewWeek);
-    });
-  }
+function notify(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  setTimeout(function() { t.classList.remove('on'); }, 2800);
 }
 
 async function init() {
   try {
-    var cfg = await q('config?key=eq.current_week');
-    D.week = cfg.length ? parseInt(cfg[0].value, 10) : 12;
-    D.viewWeek = D.week;
-    attachDelegatedHandlers();
-    attachWeekNav();
-    await loadWeekData(D.viewWeek);
+    S.sessions = await q('sessions?order=number');
+    if (!S.sessions.length) {
+      document.getElementById('root').innerHTML = '<div class="state"><div class="state-txt">Brak sesji w bazie. Wykonaj SQL z instrukcji.</div></div>';
+      return;
+    }
+    S.currentIdx = S.sessions.length - 1;
+
+    var allC = await q('wig_commitments?order=created_at');
+    allC.forEach(function(c) {
+      if (!S.commitments[c.session_id]) S.commitments[c.session_id] = [];
+      S.commitments[c.session_id].push(c);
+    });
+
+    renderNav();
+    await loadProgressData();
+    renderSession();
   } catch(e) {
-    document.getElementById('root').innerHTML = '<div class="err-box">Błąd połączenia z bazą danych:<br><small>' + esc(e.message) + '</small></div>';
+    document.getElementById('root').innerHTML = '<div class="state"><div class="state-txt">Błąd: ' + esc(e.message.slice(0, 120)) + '</div></div>';
   }
 }
 
-function render() {
-  var html = '';
-  MEMBERS.forEach(function(m) {
-    html += renderMember(m);
-  });
-  html += renderHistory();
-  document.getElementById('root').innerHTML = html;
+async function loadProgressData() {
+  var sess = S.sessions[S.currentIdx];
+  var week = parseInt(sess.week.replace('T', ''), 10);
+  try {
+    var lagItems = await q('lag_items?select=id,name,lag_id&order=sort_order');
+    S.lagItems = lagItems;
+    var lids = lagItems.map(function(i) { return i.id; });
+    if (lids.length) {
+      var lw = await q('lag_weekly?lag_item_id=in.(' + lids + ')&week=eq.' + week + '&select=*');
+      S.lagWeekly = {};
+      lw.forEach(function(r) { S.lagWeekly[r.lag_item_id] = r.value; });
+    }
+    var leadItems = await q('lead_items?select=id,name,lead_id&order=sort_order');
+    S.leadItems = leadItems;
+    var eids = leadItems.map(function(i) { return i.id; });
+    if (eids.length) {
+      var ew = await q('lead_weekly?lead_item_id=in.(' + eids + ')&week=eq.' + week + '&select=*');
+      S.leadWeekly = {};
+      ew.forEach(function(r) { S.leadWeekly[r.lead_item_id] = r.value; });
+    }
+  } catch(e) {
+    S.lagItems = []; S.leadItems = [];
+  }
 }
 
-function renderMember(m) {
-  var list = items[m];
-  var listHtml = '';
-  list.forEach(function(item, idx) {
-    var emoji = emojiFor(item.result_pct);
-    var pctVal = (item.result_pct !== null && item.result_pct !== undefined) ? item.result_pct : '';
-    listHtml += '<div class="commit-item">'
-      + '<span class="commit-emoji">' + emoji + '</span>'
-      + '<input type="text" class="curr-input" data-curr-input="' + m + ':' + idx + '" placeholder="Zobowiązanie T' + D.viewWeek + '…" value="' + esc(item.text) + '">'
-      + '<input type="number" class="pct-input" min="0" max="100" data-pct-input="' + m + ':' + idx + '" placeholder="% wykonania" value="' + esc(pctVal) + '">'
-      + '<button class="del-btn" data-del-curr="' + m + ':' + idx + '" title="Usuń">✕</button>'
+function renderNav() {
+  var items = S.sessions.map(function(s, i) {
+    var active = i === S.currentIdx ? ' active' : '';
+    return '<div class="snav-item' + active + '" data-idx="' + i + '">'
+      + '<span class="snav-num">SESJA ' + s.number + '</span>'
+      + '<span class="snav-date">' + fmtDate(s.date) + '</span>'
       + '</div>';
-  });
+  }).join('');
+  document.getElementById('snav-items').innerHTML = items;
+  document.getElementById('snav-prev').disabled = S.currentIdx <= 0;
+  document.getElementById('snav-next').disabled = S.currentIdx >= S.sessions.length - 1;
+  var sess = S.sessions[S.currentIdx];
+  document.getElementById('session-week-tag').textContent = sess.week;
+}
 
-  return '<div class="member-card" id="card-' + m + '">'
-    + '<div class="member-head">'
-    + '<div class="avatar ' + MEMBER_AVATAR_CLS[m] + '">' + MEMBER_INITIALS[m] + '</div>'
-    + '<div>'
-    + '<div class="member-name">' + esc(m) + '</div>'
-    + '<div class="member-role">' + esc(MEMBER_ROLES[m]) + '</div>'
-    + '</div>'
-    + '</div>'
-    + '<div id="curr-list-' + m + '">' + listHtml + '</div>'
-    + '<button class="add-commit-btn" data-add-for="' + m + '">+ dodaj zobowiązanie</button>'
-    + '<div class="card-footer">'
-    + '<button class="btn-save" data-save="' + m + '">Zapisz ' + m + '</button>'
-    + '</div>'
+function renderSession() {
+  var sess = S.sessions[S.currentIdx];
+  var prevSess = S.currentIdx > 0 ? S.sessions[S.currentIdx - 1] : null;
+  document.getElementById('root').innerHTML =
+    '<div class="main-grid">' + renderResolve(sess, prevSess) + renderCommit(sess) + '</div>'
+    + renderProgress(sess);
+  attachHandlers();
+}
+
+function renderResolve(sess, prevSess) {
+  if (!prevSess) {
+    return '<div class="section-card">'
+      + '<div class="section-head"><span class="section-title">Rozliczenie</span></div>'
+      + '<div class="section-body"><div class="empty">Brak poprzedniej sesji</div></div>'
+      + '</div>';
+  }
+  var commitments = S.commitments[prevSess.id] || [];
+  var total = commitments.length;
+  var done  = commitments.filter(function(c) { return c.done === true; }).length;
+  var pct   = total ? Math.round((done / total) * 100) : null;
+  var scoreClass = pct === null ? '' : pct >= 80 ? 'good' : pct >= 50 ? 'mid' : 'bad';
+  var scoreHtml = pct !== null ? '<span class="score-badge ' + scoreClass + '">' + pct + '%</span>' : '';
+  var label = 'Rozliczenie ' + fmtDate(prevSess.period_from) + '–' + fmtDate(prevSess.period_to);
+  var rows = commitments.length
+    ? commitments.map(function(c) {
+        var isDone = c.done === true, isFail = c.done === false;
+        var chkClass = isDone ? 'done' : (isFail ? 'fail' : '');
+        var chkIcon  = isDone ? '✓' : (isFail ? '✗' : '');
+        return '<div class="commitment-row">'
+          + '<button class="chk-btn ' + chkClass + '" data-toggle="' + c.id + '" data-sess="' + prevSess.id + '">' + chkIcon + '</button>'
+          + '<span class="commitment-text' + (isDone ? ' done' : '') + '">' + esc(c.commitment) + '</span>'
+          + '<span class="commitment-member-tag">' + esc(c.member) + '</span>'
+          + '</div>';
+      }).join('')
+    : '<div class="empty">Brak commitmentów z poprzedniej sesji</div>';
+  return '<div class="section-card">'
+    + '<div class="section-head"><span class="section-title">' + esc(label) + '</span>' + scoreHtml + '</div>'
+    + '<div class="section-body"><div class="commitment-list">' + rows + '</div></div>'
     + '</div>';
 }
 
-function renderHistory() {
-  var allWeeks = [];
-  var maxW = D.viewWeek;
-  for (var w = maxW; w >= Math.max(1, maxW - 3); w--) allWeeks.push(w);
+function renderCommit(sess) {
+  var commitments = S.commitments[sess.id] || [];
+  var label = 'Commitment · Sesja ' + sess.number + ' · ' + fmtDate(sess.date);
+  var membersHtml = MEMBERS.map(function(member) {
+    var mc = commitments.filter(function(c) { return c.member === member; });
+    var rows = mc.map(function(c) {
+      return '<div class="commit-row">'
+        + '<span class="commit-text">' + esc(c.commitment) + '</span>'
+        + '<button class="del-btn" data-del="' + c.id + '" data-sess="' + sess.id + '" title="Usuń">✕</button>'
+        + '</div>';
+    }).join('');
+    return '<div class="member-section">'
+      + '<div class="member-label">' + esc(member) + '</div>'
+      + '<div class="member-commitments">' + (rows || '') + '</div>'
+      + '<div class="add-row"><input class="add-input" placeholder="Nowy commitment…" data-member="' + esc(member) + '" data-sess="' + sess.id + '"></div>'
+      + '</div>';
+  }).join('<div class="member-divider"></div>');
+  var prevSess = S.currentIdx > 0 ? S.sessions[S.currentIdx - 1] : null;
+  var transferBtn = prevSess
+    ? '<button class="transfer-btn" id="btn-transfer" data-curr="' + sess.id + '" data-prev="' + prevSess.id + '">↩ Przenieś niewykonane z sesji ' + prevSess.number + '</button>'
+    : '';
+  return '<div class="section-card">'
+    + '<div class="section-head"><span class="section-title">' + esc(label) + '</span></div>'
+    + '<div class="section-body">' + membersHtml + transferBtn + '</div>'
+    + '</div>';
+}
 
-  var html = '<div class="history-card">'
-    + '<div class="history-title">Historia ostatnich tygodni</div>'
-    + '<table class="hist-table">'
-    + '<thead><tr><th>Tydzień</th>';
-  MEMBERS.forEach(function(m) { html += '<th>' + esc(m) + '</th>'; });
-  html += '</tr></thead><tbody>';
+function renderProgress(sess) {
+  var lagRows = S.lagItems.map(function(item) {
+    var v = S.lagWeekly[item.id];
+    var hasVal = v !== undefined && v !== null;
+    var chkCls = !hasVal ? 'h' : v >= 0.7 ? 'y' : v >= 0.3 ? 'h' : 'n';
+    var chkIcon = !hasVal ? '—' : v >= 0.7 ? '✓' : v >= 0.3 ? '~' : '✗';
+    return '<div class="prog-item"><div class="prog-chk ' + chkCls + '">' + chkIcon + '</div>'
+      + '<div class="prog-name">' + esc(item.name) + '</div>'
+      + '<div class="prog-val">' + (hasVal ? Math.round(v * 100) + '%' : '—') + '</div></div>';
+  }).join('') || '<div class="empty">Brak danych LAG</div>';
+  var leadRows = S.leadItems.map(function(item) {
+    var v = S.leadWeekly[item.id];
+    var hasVal = v !== undefined && v !== null;
+    var done = hasVal && v >= 0.5;
+    var chkCls = !hasVal ? 'h' : done ? 'y' : 'n';
+    var chkIcon = !hasVal ? '—' : done ? '✓' : '✗';
+    return '<div class="prog-item"><div class="prog-chk ' + chkCls + '">' + chkIcon + '</div>'
+      + '<div class="prog-name">' + esc(item.name) + '</div>'
+      + '<div class="prog-val">' + (hasVal ? (done ? '100%' : '0%') : '—') + '</div></div>';
+  }).join('') || '<div class="empty">Brak danych LEAD</div>';
+  return '<div class="progress-section">'
+    + '<div class="section-head" style="padding:14px 20px;"><span class="section-title">Postęp tygodnia ' + esc(sess.week) + '</span><span class="section-label">Readonly · dane z bazy</span></div>'
+    + '<div class="progress-grid">'
+    + '<div class="progress-col"><div class="prog-col-title">LAG — procesy</div>' + lagRows + '</div>'
+    + '<div class="progress-col"><div class="prog-col-title">LEAD — zadania</div>' + leadRows + '</div>'
+    + '</div></div>';
+}
 
-  allWeeks.forEach(function(w) {
-    html += '<tr><td style="font-family:var(--fm);font-size:12px;color:var(--t2);">T' + w + '</td>';
-    MEMBERS.forEach(function(m) {
-      var items = D.commitments.filter(function(r) { return r.member === m && r.week === w; });
-      var rated = items.filter(function(r) { return r.result_pct !== null && r.result_pct !== undefined; });
-      if (!rated.length) {
-        html += '<td><span class="hist-cell hist-s">—</span></td>';
-      } else {
-        var avg = Math.round(rated.reduce(function(s, r) { return s + r.result_pct; }, 0) / rated.length);
-        var cls = avg >= 75 ? 'hist-g' : avg >= 50 ? 'hist-o' : 'hist-r';
-        var emoji = avg >= 75 ? '😊' : avg >= 50 ? '😐' : '😞';
-        html += '<td><span class="hist-cell ' + cls + '">' + emoji + ' ' + avg + '%</span></td>';
-      }
+function attachHandlers() {
+  var root = document.getElementById('root');
+  root.onclick = function(e) {
+    var toggleEl = e.target.closest('[data-toggle]');
+    if (toggleEl) { e.stopPropagation(); toggleDone(toggleEl.dataset.toggle, toggleEl.dataset.sess); return; }
+    var delEl = e.target.closest('[data-del]');
+    if (delEl) { e.stopPropagation(); deleteCommitment(delEl.dataset.del, delEl.dataset.sess); return; }
+    var transferEl = e.target.closest('#btn-transfer');
+    if (transferEl) { e.stopPropagation(); transferUnfinished(transferEl.dataset.curr, transferEl.dataset.prev); return; }
+  };
+  root.querySelectorAll('.add-input').forEach(function(inp) {
+    inp.addEventListener('keydown', function(ev) {
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      var val = inp.value.trim();
+      if (!val) return;
+      addCommitment(inp.dataset.sess, inp.dataset.member, val, inp);
     });
-    html += '</tr>';
-  });
-
-  html += '</tbody></table></div>';
-  return html;
-}
-
-function attachDelegatedHandlers() {
-  document.addEventListener('input', function(e) {
-    // sync text
-    var inp = e.target.closest('[data-curr-input]');
-    if (inp) {
-      var parts = inp.dataset.currInput.split(':');
-      var m = parts[0], idx = parseInt(parts[1], 10);
-      if (items[m] && items[m][idx] !== undefined) items[m][idx].text = inp.value;
-      return;
-    }
-    // sync % i odśwież emoji
-    var pct = e.target.closest('[data-pct-input]');
-    if (pct) {
-      var parts = pct.dataset.pctInput.split(':');
-      var m = parts[0], idx = parseInt(parts[1], 10);
-      if (items[m] && items[m][idx] !== undefined) {
-        var v = pct.value.trim();
-        items[m][idx].result_pct = v === '' ? null : Math.min(100, Math.max(0, parseInt(v, 10)));
-        // odśwież tylko emoji w tym samym wierszu
-        var row = pct.closest('.commit-item');
-        if (row) row.querySelector('.commit-emoji').textContent = emojiFor(items[m][idx].result_pct);
-      }
-    }
-  });
-
-  document.addEventListener('click', function(e) {
-    // delete item
-    var delBtn = e.target.closest('[data-del-curr]');
-    if (delBtn) {
-      var parts = delBtn.dataset.delCurr.split(':');
-      var m = parts[0], idx = parseInt(parts[1], 10);
-      var item = items[m] && items[m][idx];
-      if (!item) return;
-      if (item.id) {
-        q('wig_commitments?id=eq.' + item.id, { method: 'DELETE' })
-          .then(function() {
-            D.commitments = D.commitments.filter(function(r) { return r.id !== item.id; });
-            items[m].splice(idx, 1);
-            rerenderMember(m);
-            notify('Zobowiązanie usunięte');
-          })
-          .catch(function(e) { notify('Błąd: ' + e.message.slice(0, 60)); });
-      } else {
-        items[m].splice(idx, 1);
-        rerenderMember(m);
-        notify('Zobowiązanie usunięte');
-      }
-      return;
-    }
-
-    // add new commitment
-    var addBtn = e.target.closest('[data-add-for]');
-    if (addBtn) {
-      var m = addBtn.dataset.addFor;
-      items[m].push({ id: null, text: '', result_pct: null });
-      rerenderMember(m);
-      var list = document.getElementById('curr-list-' + m);
-      if (list) {
-        var inputs = list.querySelectorAll('.curr-input');
-        if (inputs.length) inputs[inputs.length - 1].focus();
-      }
-      return;
-    }
-
-    // save member
-    var saveBtn = e.target.closest('[data-save]');
-    if (saveBtn) {
-      saveMember(saveBtn.dataset.save, saveBtn);
-      return;
-    }
   });
 }
 
-function rerenderMember(m) {
-  var card = document.getElementById('card-' + m);
-  if (!card) return;
-  var tmp = document.createElement('div');
-  tmp.innerHTML = renderMember(m);
-  card.replaceWith(tmp.firstChild);
-}
-
-async function saveMember(m, btn) {
-  btn.disabled = true;
-  btn.textContent = 'Zapisuję…';
-  var MH = Object.assign({}, HD, { Prefer: 'resolution=merge-duplicates,return=representation' });
-
+async function toggleDone(commitmentId, sessId) {
+  var cs = S.commitments[sessId] || [];
+  var c = cs.find(function(x) { return x.id === commitmentId; });
+  if (!c) return;
+  var next = c.done === null ? true : c.done === true ? false : null;
   try {
-    for (var i = 0; i < items[m].length; i++) {
-      var it = items[m][i];
-      if (!it.text.trim()) continue;
-      var pct = (it.result_pct !== null && it.result_pct !== undefined) ? it.result_pct : null;
-      if (it.id) {
-        // PATCH — aktualizuj tekst i wynik
-        await q('wig_commitments?id=eq.' + it.id, {
-          method: 'PATCH',
-          headers: Object.assign({}, HD, { Prefer: 'return=representation' }),
-          body: JSON.stringify({ commitment: it.text.trim(), result_pct: pct, updated_at: new Date().toISOString() })
-        });
-      } else {
-        // POST — nowe zobowiązanie
-        var res = await q('wig_commitments', {
-          method: 'POST',
-          headers: MH,
-          body: JSON.stringify({ member: m, week: D.viewWeek, commitment: it.text.trim(), result_pct: pct })
-        });
-        var created = Array.isArray(res) ? res[0] : res;
-        if (created) {
-          it.id = created.id;
-          D.commitments.push(created);
-        }
-      }
-    }
-
-    notify('Zapisano ' + m + ' T' + D.viewWeek + ' ✓');
-    rerenderMember(m);
-    renderHistorySection();
-  } catch(e) {
-    notify('Błąd zapisu: ' + e.message.slice(0, 80));
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Zapisz ' + m;
-  updateWeekUI();
+    await q('wig_commitments?id=eq.' + commitmentId, {
+      method: 'PATCH',
+      headers: Object.assign({}, HD, { Prefer: 'return=representation' }),
+      body: JSON.stringify({ done: next })
+    });
+    c.done = next;
+    renderSession();
+    notify(next === true ? '✓ Zaznaczono' : next === false ? '✗ Niezaliczone' : '— Wyczyszczono');
+  } catch(err) { notify('Błąd: ' + err.message.slice(0, 60)); }
 }
 
-function renderHistorySection() {
-  var histEl = document.querySelector('.history-card');
-  if (!histEl) return;
-  var tmp = document.createElement('div');
-  tmp.innerHTML = renderHistory();
-  histEl.replaceWith(tmp.firstChild);
+async function deleteCommitment(commitmentId, sessId) {
+  if (!confirm('Usuń ten commitment?')) return;
+  try {
+    await q('wig_commitments?id=eq.' + commitmentId, { method: 'DELETE' });
+    if (S.commitments[sessId]) {
+      S.commitments[sessId] = S.commitments[sessId].filter(function(c) { return c.id !== commitmentId; });
+    }
+    renderSession();
+    notify('Commitment usunięty ✓');
+  } catch(err) { notify('Błąd: ' + err.message.slice(0, 60)); }
+}
+
+async function addCommitment(sessId, member, text, inp) {
+  try {
+    var res = await q('wig_commitments', {
+      method: 'POST',
+      headers: Object.assign({}, HD, { Prefer: 'return=representation' }),
+      body: JSON.stringify({ session_id: sessId, member: member, commitment: text, done: null })
+    });
+    var newC = Array.isArray(res) ? res[0] : res;
+    if (!S.commitments[sessId]) S.commitments[sessId] = [];
+    if (newC) S.commitments[sessId].push(newC);
+    inp.value = '';
+    renderSession();
+    notify('Commitment dodany ✓');
+  } catch(err) { notify('Błąd: ' + err.message.slice(0, 60)); }
+}
+
+async function transferUnfinished(currSessId, prevSessId) {
+  var prevCommitments = (S.commitments[prevSessId] || []).filter(function(c) { return c.done !== true; });
+  if (!prevCommitments.length) { notify('Brak niewykonanych commitmentów'); return; }
+  if (!confirm('Przenieść ' + prevCommitments.length + ' niewykonanych commitmentów do bieżącej sesji?')) return;
+  try {
+    for (var i = 0; i < prevCommitments.length; i++) {
+      var pc = prevCommitments[i];
+      var res = await q('wig_commitments', {
+        method: 'POST',
+        headers: Object.assign({}, HD, { Prefer: 'return=representation' }),
+        body: JSON.stringify({ session_id: currSessId, member: pc.member, commitment: pc.commitment, done: null })
+      });
+      var newC = Array.isArray(res) ? res[0] : res;
+      if (!S.commitments[currSessId]) S.commitments[currSessId] = [];
+      if (newC) S.commitments[currSessId].push(newC);
+    }
+    renderSession();
+    notify(prevCommitments.length + ' commitmentów przeniesione ✓');
+  } catch(err) { notify('Błąd: ' + err.message.slice(0, 60)); }
+}
+
+document.getElementById('snav-prev').addEventListener('click', function() {
+  if (S.currentIdx > 0) { S.currentIdx--; switchSession(); }
+});
+document.getElementById('snav-next').addEventListener('click', function() {
+  if (S.currentIdx < S.sessions.length - 1) { S.currentIdx++; switchSession(); }
+});
+document.getElementById('snav-items').addEventListener('click', function(e) {
+  var item = e.target.closest('[data-idx]');
+  if (!item) return;
+  var idx = parseInt(item.dataset.idx, 10);
+  if (idx === S.currentIdx) return;
+  S.currentIdx = idx;
+  switchSession();
+});
+
+async function switchSession() {
+  renderNav();
+  document.getElementById('root').innerHTML = '<div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie…</div></div>';
+  await loadProgressData();
+  renderSession();
 }
 
 init();
