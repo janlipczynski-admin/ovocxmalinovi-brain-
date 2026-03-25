@@ -55,7 +55,10 @@ nav {
 }
 .card-score-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
 .card-info { flex: 1; min-width: 0; }
-.card-name { font-size: 18px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; margin-bottom: 3px; }
+.card-name-row { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
+.card-name { font-size: 18px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+.area-icon-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; mix-blend-mode: multiply; flex-shrink: 0; }
+.area-icon-init { width: 40px; height: 40px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
 .card-owner { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
 .card-desc {
   font-size: 12px; color: var(--muted); line-height: 1.45;
@@ -257,6 +260,28 @@ function statusInfo(score, pace) {
 
 function pct(v) { return Math.round(v * 100); }
 
+function areaIconHtml(area) {
+  var id   = (area.id   || '').toLowerCase();
+  var name = (area.name || '').toLowerCase();
+  var imgSrc = null;
+  var init = (area.name || '?').charAt(0).toUpperCase();
+  if (id === 'os_malinovi' || name.indexOf('malinovi') !== -1) {
+    imgSrc = 'assets/os-malinovi-icon.png'; init = 'O';
+  } else if (id === 'product_x' || name.indexOf('product') !== -1) {
+    imgSrc = 'assets/product-x-icon.png'; init = 'P';
+  } else if (name.indexOf('harvest') !== -1) {
+    init = 'H';
+  } else if (name.indexOf('complaints') !== -1) {
+    init = 'N';
+  }
+  if (imgSrc) {
+    return '<img class="area-icon-img" src="' + imgSrc + '" alt="' + init + '" ' +
+      'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+      '<span class="area-icon-init" style="display:none">' + init + '</span>';
+  }
+  return '<span class="area-icon-init">' + init + '</span>';
+}
+
 function fmtDate(d) {
   if (!d) return '';
   const dt = new Date(d);
@@ -294,7 +319,7 @@ function renderCard(area, lags, week, wigNum) {
         <div class="progress-fill" style="display:none;width:${pct(wigScore)}%;background:${scoreCol}"></div>
       </div>
       <div class="card-info">
-        <div class="card-name">${esc(area.name||'Obszar')}</div>
+        <div class="card-name-row">${areaIconHtml(area)}<div class="card-name">${esc(area.name||'Obszar')}</div></div>
         <div class="card-owner">${esc(area.owner||'—')}</div>
         ${area.wig_description ? `<div class="card-desc">${esc(area.wig_description)}</div>` : ''}
         ${dlStr ? `<div class="card-deadline">Deadline: ${dlStr}</div>` : ''}
@@ -323,7 +348,7 @@ function renderEmptyCard(area, wigNum) {
         <div class="progress-fill" style="display:none;width:0%"></div>
       </div>
       <div class="card-info">
-        <div class="card-name">${esc(area.name||'Obszar')}</div>
+        <div class="card-name-row">${areaIconHtml(area)}<div class="card-name">${esc(area.name||'Obszar')}</div></div>
         <div class="card-owner">${esc(area.owner||'—')}</div>
         <div class="card-desc">Brak danych</div>
       </div>
