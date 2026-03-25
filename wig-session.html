@@ -355,12 +355,12 @@ async function loadSession() {
 
   var wn = week.replace('T','');
   var lagW = await q('lag_weekly?week=eq.' + wn + '&select=lag_item_id,value');
-  var leadW = await q('lead_weekly?week=eq.' + wn + '&select=lead_item_id,done');
+  var leadW = await q('lead_weekly?week=eq.' + wn + '&select=lead_item_id,value');
 
   ST.lagW = {};
   (lagW || []).forEach(function(r) { ST.lagW[r.lag_item_id] = r.value; });
   ST.leadW = {};
-  (leadW || []).forEach(function(r) { ST.leadW[r.lead_item_id] = r.done; });
+  (leadW || []).forEach(function(r) { ST.leadW[r.lead_item_id] = r.value; });
 
   render();
 }
@@ -613,8 +613,9 @@ function renderProgress() {
     html += '<div class="prog-card-type">LEAD</div>';
     html += '<div class="prog-card-name">' + esc(grp.name) + '</div>';
     grp.items.forEach(function(li) {
-      var done = ST.leadW[li.id];
-      var dotClass = done === true ? 'done' : done === false ? 'notdone' : '';
+      var val = ST.leadW[li.id];
+      var hasDot = val !== undefined && val !== null;
+      var dotClass = hasDot ? (val >= 1 ? 'done' : val === 0 ? 'notdone' : '') : '';
       html += '<div class="prog-item">';
       html += '<div class="prog-dot ' + dotClass + '"></div>';
       html += '<span>' + esc(li.name) + '</span>';
