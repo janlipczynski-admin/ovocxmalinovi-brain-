@@ -9,602 +9,631 @@
 <style>
 :root {
   --bg: #F7F6F2;
-  --white: #FFFFFF;
-  --s1: #F0EFE9;
-  --s2: #E8E6DE;
-  --t1: #1C1B18;
-  --t2: #6B6A65;
-  --t3: #AEACA4;
-  --acc: #D64E12;
-  --gr: #217A52;
-  --gr2: #E8F4EE;
-  --re: #C0392B;
-  --re2: #FCECEA;
-  --or: #E8941A;
-  --or2: #FEF3C7;
-  --bl: #1A5EA8;
-  --bl2: #E8F0FA;
-  --f: 'Familjen Grotesk', sans-serif;
+  --s1: #EFEFEA;
+  --s2: #DEDDD8;
+  --s3: #CDCDC8;
+  --t1: #1A1A18;
+  --t2: #4A4A46;
+  --t3: #8A8A86;
+  --acc: #2D6A4F;
+  --acc2: #52B788;
+  --red: #C0392B;
+  --yellow: #E67E22;
+  --ff: 'Familjen Grotesk', sans-serif;
   --fm: 'DM Mono', monospace;
   --r: 10px;
-  --sh: 0 1px 3px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.04);
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; }
-body { background: var(--bg); color: var(--t1); font-family: var(--f); line-height: 1.5; min-height: 100vh; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--ff); background: var(--bg); color: var(--t1); min-height: 100vh; }
 
-/* NAV */
-nav {
-  background: var(--white);
-  border-bottom: 1px solid var(--s2);
-  height: 56px;
+/* TOP NAV */
+.top-nav {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 32px;
-  position: sticky; top: 0; z-index: 50;
+  padding: 12px 24px; background: var(--bg);
+  border-bottom: 1px solid var(--s2); position: sticky; top: 0; z-index: 100;
 }
-.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-.brand-icon { width: 32px; height: 32px; background: var(--t1); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 700; }
-.brand-name { font-size: 14px; font-weight: 600; color: var(--t1); letter-spacing: -.01em; }
-.brand-sub { font-size: 13px; color: var(--t3); margin-left: 2px; }
-.back-link { font-size: 13px; color: var(--t2); text-decoration: none; }
-.back-link:hover { color: var(--t1); }
-.nav-right { display: flex; align-items: center; gap: 10px; }
-
-/* PAGE */
-.page { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+.nav-left { display: flex; align-items: center; gap: 16px; }
+.nav-logo { font-size: 14px; font-weight: 700; color: var(--t1); text-decoration: none; }
+.nav-sep { color: var(--s3); }
+.nav-title { font-size: 14px; font-weight: 600; color: var(--t2); }
 
 /* SESSION NAVIGATOR */
-.session-nav {
-  display: flex; align-items: center; gap: 0;
-  background: var(--white); border: 1px solid var(--s2);
-  border-radius: var(--r); overflow: hidden;
-  margin-bottom: 28px;
-  box-shadow: var(--sh);
-}
-.snav-btn {
-  background: none; border: none; border-right: 1px solid var(--s2);
-  padding: 0 16px; height: 44px; font-size: 16px;
-  cursor: pointer; color: var(--t2);
-  transition: background .12s, color .12s;
-  display: flex; align-items: center;
-}
-.snav-btn:last-child { border-right: none; border-left: 1px solid var(--s2); border-right: none; }
-.snav-btn:hover:not(:disabled) { background: var(--s1); color: var(--t1); }
-.snav-btn:disabled { opacity: .3; cursor: not-allowed; }
-.snav-items { display: flex; flex: 1; overflow-x: auto; }
-.snav-item {
-  padding: 0 20px; height: 44px;
+.sess-nav {
   display: flex; align-items: center; gap: 8px;
-  cursor: pointer; white-space: nowrap;
-  border-right: 1px solid var(--s2);
-  font-size: 13px; color: var(--t2);
-  transition: background .12s, color .12s;
-  user-select: none;
 }
-.snav-item:last-child { border-right: none; }
-.snav-item:hover { background: var(--s1); color: var(--t1); }
-.snav-item.active {
-  background: var(--t1); color: var(--white);
-  font-weight: 600;
-}
-.snav-item.active .snav-num { color: rgba(255,255,255,.6); }
-.snav-num { font-family: var(--fm); font-size: 10px; letter-spacing: .06em; }
-.snav-date { font-family: var(--fm); font-size: 11px; }
-
-/* MAIN GRID */
-.main-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 28px;
-}
-@media (max-width: 860px) { .main-grid { grid-template-columns: 1fr; } }
-
-/* SECTION CARD */
-.section-card {
-  background: var(--white);
-  border: 1px solid var(--s2);
-  border-radius: var(--r);
-  box-shadow: var(--sh);
-  overflow: hidden;
-}
-.section-head {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--s2);
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px;
-}
-.section-title {
-  font-size: 13px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .08em;
-  color: var(--t2);
-}
-.section-label {
-  font-family: var(--fm); font-size: 10px;
-  color: var(--t3); letter-spacing: .04em;
-}
-.score-badge {
-  font-family: var(--fm); font-size: 20px; font-weight: 600;
-  letter-spacing: -.02em;
-}
-.score-badge.good { color: var(--gr); }
-.score-badge.mid  { color: var(--or); }
-.score-badge.bad  { color: var(--re); }
-.section-body { padding: 16px 20px; }
-
-/* COMMITMENT LIST */
-.commitment-list { display: flex; flex-direction: column; gap: 2px; }
-.commitment-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 7px 10px; border-radius: 6px;
-  transition: background .12s;
-}
-.commitment-row:hover { background: var(--s1); }
-.chk-btn {
-  width: 22px; height: 22px; border-radius: 5px;
-  border: 1.5px solid var(--s2); background: var(--white);
+.sn-arr {
+  background: var(--s1); border: 1px solid var(--s2); border-radius: 6px;
+  width: 28px; height: 28px; font-size: 14px; cursor: pointer; color: var(--t2);
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; flex-shrink: 0;
-  font-size: 11px; font-weight: 700;
-  transition: all .12s;
+  transition: background .1s;
 }
-.chk-btn.done { background: var(--gr); border-color: var(--gr); color: white; }
-.chk-btn.fail { background: var(--re2); border-color: var(--re); color: var(--re); }
-.commitment-text {
-  flex: 1; font-size: 13px; line-height: 1.4; color: var(--t1);
+.sn-arr:hover:not(:disabled) { background: var(--s2); }
+.sn-arr:disabled { opacity: .3; cursor: not-allowed; }
+.sn-list {
+  display: flex; gap: 4px;
 }
-.commitment-text.done { text-decoration: line-through; color: var(--t3); }
-.commitment-member-tag {
-  font-family: var(--fm); font-size: 9px; letter-spacing: .06em;
-  padding: 2px 6px; border-radius: 4px;
-  background: var(--s1); color: var(--t3);
-  flex-shrink: 0;
+.sn-chip {
+  padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  background: var(--s1); border: 1px solid var(--s2); cursor: pointer;
+  color: var(--t3); white-space: nowrap; transition: background .1s, color .1s, border-color .1s;
+}
+.sn-chip:hover { background: var(--s2); color: var(--t2); }
+.sn-chip.active {
+  background: var(--t1); border-color: var(--t1); color: #fff;
 }
 
-/* MEMBER SECTION */
-.member-section { margin-bottom: 14px; }
-.member-section:last-child { margin-bottom: 0; }
-.member-label {
-  font-family: var(--fm); font-size: 9px; font-weight: 500;
-  letter-spacing: .12em; text-transform: uppercase;
-  color: var(--t3); margin-bottom: 6px; padding-left: 4px;
+/* MAIN LAYOUT */
+.main {
+  max-width: 1200px; margin: 0 auto; padding: 24px 20px;
 }
-.member-commitments { display: flex; flex-direction: column; gap: 2px; }
+.page-header {
+  margin-bottom: 20px;
+}
+.page-header h1 { font-size: 20px; font-weight: 700; color: var(--t1); }
+.page-header .meta { font-size: 13px; color: var(--t3); font-family: var(--fm); margin-top: 4px; }
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+@media(max-width: 768px) { .cols { grid-template-columns: 1fr; } }
+
+.col-header {
+  font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--t3); margin-bottom: 12px;
+}
+
+/* MEMBER CARD */
+.member-card {
+  background: #fff; border: 1px solid var(--s2); border-radius: var(--r);
+  margin-bottom: 12px; overflow: hidden;
+}
+.member-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--s1); border-bottom: 1px solid var(--s2);
+}
+.member-name { font-size: 13px; font-weight: 700; color: var(--t1); }
+.member-score {
+  font-size: 12px; font-family: var(--fm); font-weight: 500;
+  padding: 2px 8px; border-radius: 20px; background: var(--s2); color: var(--t2);
+}
+.member-score.good { background: #D4EDDA; color: #1A6B35; }
+.member-score.mid { background: #FFF3CD; color: #7A5300; }
+.member-score.bad { background: #FDECEA; color: #8C2118; }
+.member-card-body { padding: 10px 14px; }
+
+/* COMMITMENT ROWS */
 .commit-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 5px 8px; border-radius: 6px;
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid var(--s1);
 }
-.commit-row:hover { background: var(--s1); }
-.commit-text { flex: 1; font-size: 13px; color: var(--t1); line-height: 1.4; }
-.del-btn {
-  background: none; border: none; cursor: pointer;
-  color: var(--t3); font-size: 13px; padding: 2px 5px;
-  opacity: 0; transition: opacity .12s, color .12s;
-  flex-shrink: 0;
+.commit-row:last-child { border-bottom: none; }
+.commit-toggle {
+  width: 22px; height: 22px; flex-shrink: 0; margin-top: 1px;
+  border-radius: 50%; border: 1.5px solid var(--s3);
+  background: none; cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s, border-color .12s;
 }
-.commit-row:hover .del-btn { opacity: 1; }
-.del-btn:hover { color: var(--re); }
+.commit-toggle.done { background: var(--acc); border-color: var(--acc); color: #fff; }
+.commit-toggle.notdone { background: var(--red); border-color: var(--red); color: #fff; }
+.commit-toggle.pending { border-color: var(--s3); color: transparent; }
+.commit-text {
+  font-size: 13px; color: var(--t2); flex: 1; line-height: 1.5;
+  padding-top: 1px;
+}
+.commit-delete {
+  background: none; border: none; cursor: pointer; color: var(--s3);
+  font-size: 16px; padding: 0 2px; line-height: 1;
+  transition: color .1s;
+}
+.commit-delete:hover { color: var(--red); }
 
 /* ADD INPUT */
 .add-row {
-  display: flex; gap: 8px; margin-top: 8px; align-items: center;
+  display: flex; gap: 8px; margin-top: 10px;
 }
 .add-input {
-  flex: 1; background: var(--s1); border: 1px solid var(--s2);
-  border-radius: 6px; padding: 7px 10px;
-  font-family: var(--f); font-size: 13px; color: var(--t1);
-  outline: none; transition: border-color .15s;
+  flex: 1; padding: 7px 10px; font-family: var(--ff); font-size: 13px;
+  border: 1px solid var(--s2); border-radius: 6px; background: var(--s1);
+  color: var(--t1); outline: none;
+  transition: border-color .1s, background .1s;
 }
-.add-input:focus { border-color: var(--bl); background: var(--white); }
+.add-input:focus { border-color: var(--acc); background: #fff; }
 .add-input::placeholder { color: var(--t3); }
 
-/* TRANSFER BTN */
+/* TRANSFER BUTTON */
 .transfer-btn {
-  width: 100%; background: none; border: 1px dashed var(--s2);
-  border-radius: 6px; padding: 9px 16px;
-  font-family: var(--f); font-size: 12px; color: var(--t3);
-  cursor: pointer; transition: border-color .15s, color .15s;
-  margin-top: 12px;
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 12px; padding: 7px 12px;
+  background: none; border: 1px dashed var(--s3); border-radius: 6px;
+  font-size: 12px; color: var(--t3); cursor: pointer; font-family: var(--ff);
+  transition: border-color .1s, color .1s;
 }
-.transfer-btn:hover { border-color: var(--t2); color: var(--t1); }
+.transfer-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+.transfer-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center; padding: 60px 20px; color: var(--t3);
+}
+.empty-state p { font-size: 15px; margin-bottom: 8px; }
+.empty-state small { font-size: 12px; font-family: var(--fm); }
 
 /* PROGRESS SECTION */
-.progress-section {
-  background: var(--white);
-  border: 1px solid var(--s2);
-  border-radius: var(--r);
-  box-shadow: var(--sh);
-  overflow: hidden;
-  margin-bottom: 20px;
+.progress-section { margin-top: 8px; }
+.progress-section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--t3); margin-bottom: 12px;
 }
 .progress-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
 }
-@media (max-width: 680px) { .progress-grid { grid-template-columns: 1fr; } }
-.progress-col { padding: 16px 20px; }
-.progress-col + .progress-col { border-left: 1px solid var(--s2); }
-.prog-col-title {
-  font-family: var(--fm); font-size: 9px; font-weight: 500;
-  letter-spacing: .12em; text-transform: uppercase;
-  color: var(--t3); margin-bottom: 10px;
+.prog-card {
+  background: #fff; border: 1px solid var(--s2); border-radius: var(--r); padding: 14px;
+}
+.prog-card-name { font-size: 13px; font-weight: 600; color: var(--t1); margin-bottom: 8px; }
+.prog-card-type {
+  font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--t3); margin-bottom: 4px; font-family: var(--fm);
 }
 .prog-item {
   display: flex; align-items: center; gap: 8px;
-  padding: 4px 0; border-bottom: 1px solid var(--bg);
+  padding: 5px 0; border-bottom: 1px solid var(--s1); font-size: 12px; color: var(--t2);
 }
 .prog-item:last-child { border-bottom: none; }
-.prog-chk {
-  width: 18px; height: 18px; border-radius: 4px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 700; flex-shrink: 0;
+.prog-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  background: var(--s3);
 }
-.prog-chk.y { background: var(--gr2); color: var(--gr); }
-.prog-chk.n { background: var(--re2); color: var(--re); }
-.prog-chk.h { background: var(--or2); color: var(--or); }
-.prog-name { font-size: 12px; color: var(--t2); flex: 1; line-height: 1.4; }
-.prog-val { font-family: var(--fm); font-size: 10px; color: var(--t3); flex-shrink: 0; }
+.prog-dot.done { background: var(--acc); }
+.prog-dot.notdone { background: var(--red); }
+.prog-bar-wrap { flex: 1; height: 4px; background: var(--s2); border-radius: 2px; }
+.prog-bar { height: 100%; border-radius: 2px; background: var(--acc); }
 
-/* EMPTY / STATE */
-.empty { font-size: 12px; color: var(--t3); padding: 16px 0; text-align: center; }
-.state { display: flex; align-items: center; justify-content: center; padding: 60px 20px; gap: 12px; flex-direction: column; }
-.spinner { width: 22px; height: 22px; border: 2px solid var(--s2); border-top-color: var(--t1); border-radius: 50%; animation: rot .7s linear infinite; }
-@keyframes rot { to { transform: rotate(360deg); } }
-.state-txt { font-family: var(--fm); font-size: 11px; color: var(--t3); }
+/* DIVIDER */
+.section-divider {
+  border: none; border-top: 1px solid var(--s2); margin: 24px 0;
+}
 
 /* TOAST */
 .toast {
-  position: fixed; bottom: 24px; right: 24px;
-  background: var(--t1); color: white;
-  border-radius: 8px; padding: 11px 16px;
-  font-size: 13px; font-weight: 500; z-index: 999;
-  opacity: 0; transform: translateY(8px);
-  transition: all .2s; pointer-events: none;
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--t1); color: #fff; padding: 10px 20px;
+  border-radius: 8px; font-size: 13px; opacity: 0;
+  transition: opacity .2s, transform .2s; pointer-events: none; z-index: 999;
 }
-.toast.on { opacity: 1; transform: translateY(0); }
-
-/* DIVIDER between members */
-.member-divider { height: 1px; background: var(--s1); margin: 10px 0; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<nav>
-  <div style="display:flex;align-items:center;gap:16px;">
-    <a class="back-link" href="dashboard-4dx.html">← Dashboard</a>
-    <div class="brand">
-      <div class="brand-icon">OxM</div>
-      <span class="brand-name">OvocxMalinowi</span>
-      <span class="brand-sub">WIG Session</span>
-    </div>
+<nav class="top-nav">
+  <div class="nav-left">
+    <a href="index.html" class="nav-logo">🧠 Malinoovek</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">WIG Sesja</span>
   </div>
-  <div class="nav-right">
-    <span id="session-week-tag" style="font-family:var(--fm);font-size:11px;color:var(--t3);letter-spacing:.04em;"></span>
+  <div class="sess-nav">
+    <button class="sn-arr" id="sn-prev" disabled>←</button>
+    <div class="sn-list" id="sn-list"></div>
+    <button class="sn-arr" id="sn-next" disabled>→</button>
   </div>
 </nav>
 
-<div class="page">
-  <div class="session-nav" id="session-nav">
-    <button class="snav-btn" id="snav-prev" disabled>←</button>
-    <div class="snav-items" id="snav-items"></div>
-    <button class="snav-btn" id="snav-next" disabled>→</button>
-  </div>
-
-  <div id="root">
-    <div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie sesji…</div></div>
+<div class="main">
+  <div id="page-content">
+    <div class="empty-state">
+      <p>Ładowanie sesji…</p>
+    </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const BASE = 'https://fssfuricylndtetfktex.supabase.co';
-const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
-const HD   = { 'Content-Type': 'application/json', apikey: KEY, Authorization: 'Bearer ' + KEY };
+var SB = 'https://fssfuricylndtetfktex.supabase.co';
+var SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5Mzk1NzksImV4cCI6MjA1NjUxNTU3OX0.D2lPFe1QYBb2bqnSrmHfq_AhLrOdOsWjDJ0CkmhM3ww';
+var MEMBERS = ['Jan', 'Kacper', 'Olgierd', 'Iza', 'Renia'];
 
-const MEMBERS = ['Jan', 'Kacper', 'Olgierd', 'Iza', 'Renia'];
-
-var S = {
+var ST = {
   sessions: [],
-  currentIdx: 0,
-  commitments: {},
+  idx: 0,
+  curr: null,
+  prev: null,
+  currC: [],
+  prevC: [],
   lagItems: [],
   leadItems: [],
-  lagWeekly: {},
-  leadWeekly: {}
+  lagW: {},
+  leadW: {}
 };
 
-async function q(path, opts) {
-  opts = opts || {};
-  var r = await fetch(BASE + '/rest/v1/' + path, Object.assign({ headers: HD }, opts));
-  if (!r.ok) throw new Error(await r.text());
-  return r.status === 204 ? null : r.json();
+function esc(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
 }
 
-function fmtDate(d) {
-  if (!d) return '—';
+function fmt(d) {
+  if (!d) return '';
   var parts = d.split('-');
+  if (parts.length < 3) return d;
   return parts[2] + '.' + parts[1];
 }
 
-function esc(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2500);
 }
 
-function notify(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('on');
-  setTimeout(function() { t.classList.remove('on'); }, 2800);
-}
-
-async function init() {
-  try {
-    S.sessions = await q('sessions?order=number');
-    if (!S.sessions.length) {
-      document.getElementById('root').innerHTML = '<div class="state"><div class="state-txt">Brak sesji w bazie. Wykonaj SQL z instrukcji.</div></div>';
-      return;
-    }
-    S.currentIdx = S.sessions.length - 1;
-
-    var allC = await q('wig_commitments?order=created_at');
-    allC.forEach(function(c) {
-      if (!S.commitments[c.session_id]) S.commitments[c.session_id] = [];
-      S.commitments[c.session_id].push(c);
-    });
-
-    renderNav();
-    await loadProgressData();
-    renderSession();
-  } catch(e) {
-    document.getElementById('root').innerHTML = '<div class="state"><div class="state-txt">Błąd: ' + esc(e.message.slice(0, 120)) + '</div></div>';
-  }
-}
-
-async function loadProgressData() {
-  var sess = S.sessions[S.currentIdx];
-  var week = parseInt(sess.week.replace('T', ''), 10);
-  try {
-    var lagItems = await q('lag_items?select=id,name,lag_id&order=sort_order');
-    S.lagItems = lagItems;
-    var lids = lagItems.map(function(i) { return i.id; });
-    if (lids.length) {
-      var lw = await q('lag_weekly?lag_item_id=in.(' + lids + ')&week=eq.' + week + '&select=*');
-      S.lagWeekly = {};
-      lw.forEach(function(r) { S.lagWeekly[r.lag_item_id] = r.value; });
-    }
-    var leadItems = await q('lead_items?select=id,name,lead_id&order=sort_order');
-    S.leadItems = leadItems;
-    var eids = leadItems.map(function(i) { return i.id; });
-    if (eids.length) {
-      var ew = await q('lead_weekly?lead_item_id=in.(' + eids + ')&week=eq.' + week + '&select=*');
-      S.leadWeekly = {};
-      ew.forEach(function(r) { S.leadWeekly[r.lead_item_id] = r.value; });
-    }
-  } catch(e) {
-    S.lagItems = []; S.leadItems = [];
-  }
-}
-
-function renderNav() {
-  var items = S.sessions.map(function(s, i) {
-    var active = i === S.currentIdx ? ' active' : '';
-    return '<div class="snav-item' + active + '" data-idx="' + i + '">'
-      + '<span class="snav-num">SESJA ' + s.number + '</span>'
-      + '<span class="snav-date">' + fmtDate(s.date) + '</span>'
-      + '</div>';
-  }).join('');
-  document.getElementById('snav-items').innerHTML = items;
-  document.getElementById('snav-prev').disabled = S.currentIdx <= 0;
-  document.getElementById('snav-next').disabled = S.currentIdx >= S.sessions.length - 1;
-  var sess = S.sessions[S.currentIdx];
-  document.getElementById('session-week-tag').textContent = sess.week;
-}
-
-function renderSession() {
-  var sess = S.sessions[S.currentIdx];
-  var prevSess = S.currentIdx > 0 ? S.sessions[S.currentIdx - 1] : null;
-  document.getElementById('root').innerHTML =
-    '<div class="main-grid">' + renderResolve(sess, prevSess) + renderCommit(sess) + '</div>'
-    + renderProgress(sess);
-  attachHandlers();
-}
-
-function renderResolve(sess, prevSess) {
-  if (!prevSess) {
-    return '<div class="section-card">'
-      + '<div class="section-head"><span class="section-title">Rozliczenie</span></div>'
-      + '<div class="section-body"><div class="empty">Brak poprzedniej sesji</div></div>'
-      + '</div>';
-  }
-  var commitments = S.commitments[prevSess.id] || [];
-  var total = commitments.length;
-  var done  = commitments.filter(function(c) { return c.done === true; }).length;
-  var pct   = total ? Math.round((done / total) * 100) : null;
-  var scoreClass = pct === null ? '' : pct >= 80 ? 'good' : pct >= 50 ? 'mid' : 'bad';
-  var scoreHtml = pct !== null ? '<span class="score-badge ' + scoreClass + '">' + pct + '%</span>' : '';
-  var label = 'Rozliczenie ' + fmtDate(prevSess.period_from) + '–' + fmtDate(prevSess.period_to);
-  var rows = commitments.length
-    ? commitments.map(function(c) {
-        var isDone = c.done === true, isFail = c.done === false;
-        var chkClass = isDone ? 'done' : (isFail ? 'fail' : '');
-        var chkIcon  = isDone ? '✓' : (isFail ? '✗' : '');
-        return '<div class="commitment-row">'
-          + '<button class="chk-btn ' + chkClass + '" data-toggle="' + c.id + '" data-sess="' + prevSess.id + '">' + chkIcon + '</button>'
-          + '<span class="commitment-text' + (isDone ? ' done' : '') + '">' + esc(c.commitment) + '</span>'
-          + '<span class="commitment-member-tag">' + esc(c.member) + '</span>'
-          + '</div>';
-      }).join('')
-    : '<div class="empty">Brak commitmentów z poprzedniej sesji</div>';
-  return '<div class="section-card">'
-    + '<div class="section-head"><span class="section-title">' + esc(label) + '</span>' + scoreHtml + '</div>'
-    + '<div class="section-body"><div class="commitment-list">' + rows + '</div></div>'
-    + '</div>';
-}
-
-function renderCommit(sess) {
-  var commitments = S.commitments[sess.id] || [];
-  var label = 'Commitment · Sesja ' + sess.number + ' · ' + fmtDate(sess.date);
-  var membersHtml = MEMBERS.map(function(member) {
-    var mc = commitments.filter(function(c) { return c.member === member; });
-    var rows = mc.map(function(c) {
-      return '<div class="commit-row">'
-        + '<span class="commit-text">' + esc(c.commitment) + '</span>'
-        + '<button class="del-btn" data-del="' + c.id + '" data-sess="' + sess.id + '" title="Usuń">✕</button>'
-        + '</div>';
-    }).join('');
-    return '<div class="member-section">'
-      + '<div class="member-label">' + esc(member) + '</div>'
-      + '<div class="member-commitments">' + (rows || '') + '</div>'
-      + '<div class="add-row"><input class="add-input" placeholder="Nowy commitment…" data-member="' + esc(member) + '" data-sess="' + sess.id + '"></div>'
-      + '</div>';
-  }).join('<div class="member-divider"></div>');
-  var prevSess = S.currentIdx > 0 ? S.sessions[S.currentIdx - 1] : null;
-  var transferBtn = prevSess
-    ? '<button class="transfer-btn" id="btn-transfer" data-curr="' + sess.id + '" data-prev="' + prevSess.id + '">↩ Przenieś niewykonane z sesji ' + prevSess.number + '</button>'
-    : '';
-  return '<div class="section-card">'
-    + '<div class="section-head"><span class="section-title">' + esc(label) + '</span></div>'
-    + '<div class="section-body">' + membersHtml + transferBtn + '</div>'
-    + '</div>';
-}
-
-function renderProgress(sess) {
-  var lagRows = S.lagItems.map(function(item) {
-    var v = S.lagWeekly[item.id];
-    var hasVal = v !== undefined && v !== null;
-    var chkCls = !hasVal ? 'h' : v >= 0.7 ? 'y' : v >= 0.3 ? 'h' : 'n';
-    var chkIcon = !hasVal ? '—' : v >= 0.7 ? '✓' : v >= 0.3 ? '~' : '✗';
-    return '<div class="prog-item"><div class="prog-chk ' + chkCls + '">' + chkIcon + '</div>'
-      + '<div class="prog-name">' + esc(item.name) + '</div>'
-      + '<div class="prog-val">' + (hasVal ? Math.round(v * 100) + '%' : '—') + '</div></div>';
-  }).join('') || '<div class="empty">Brak danych LAG</div>';
-  var leadRows = S.leadItems.map(function(item) {
-    var v = S.leadWeekly[item.id];
-    var hasVal = v !== undefined && v !== null;
-    var done = hasVal && v >= 0.5;
-    var chkCls = !hasVal ? 'h' : done ? 'y' : 'n';
-    var chkIcon = !hasVal ? '—' : done ? '✓' : '✗';
-    return '<div class="prog-item"><div class="prog-chk ' + chkCls + '">' + chkIcon + '</div>'
-      + '<div class="prog-name">' + esc(item.name) + '</div>'
-      + '<div class="prog-val">' + (hasVal ? (done ? '100%' : '0%') : '—') + '</div></div>';
-  }).join('') || '<div class="empty">Brak danych LEAD</div>';
-  return '<div class="progress-section">'
-    + '<div class="section-head" style="padding:14px 20px;"><span class="section-title">Postęp tygodnia ' + esc(sess.week) + '</span><span class="section-label">Readonly · dane z bazy</span></div>'
-    + '<div class="progress-grid">'
-    + '<div class="progress-col"><div class="prog-col-title">LAG — procesy</div>' + lagRows + '</div>'
-    + '<div class="progress-col"><div class="prog-col-title">LEAD — zadania</div>' + leadRows + '</div>'
-    + '</div></div>';
-}
-
-function attachHandlers() {
-  var root = document.getElementById('root');
-  root.onclick = function(e) {
-    var toggleEl = e.target.closest('[data-toggle]');
-    if (toggleEl) { e.stopPropagation(); toggleDone(toggleEl.dataset.toggle, toggleEl.dataset.sess); return; }
-    var delEl = e.target.closest('[data-del]');
-    if (delEl) { e.stopPropagation(); deleteCommitment(delEl.dataset.del, delEl.dataset.sess); return; }
-    var transferEl = e.target.closest('#btn-transfer');
-    if (transferEl) { e.stopPropagation(); transferUnfinished(transferEl.dataset.curr, transferEl.dataset.prev); return; }
+async function q(path, opts) {
+  var url = SB + '/rest/v1/' + path;
+  var headers = {
+    'apikey': SK,
+    'Authorization': 'Bearer ' + SK,
+    'Content-Type': 'application/json'
   };
-  root.querySelectorAll('.add-input').forEach(function(inp) {
-    inp.addEventListener('keydown', function(ev) {
-      if (ev.key !== 'Enter') return;
-      ev.preventDefault();
-      var val = inp.value.trim();
-      if (!val) return;
-      addCommitment(inp.dataset.sess, inp.dataset.member, val, inp);
+  if (opts && opts.prefer) headers['Prefer'] = opts.prefer;
+  var res = await fetch(url, {
+    method: opts && opts.method ? opts.method : 'GET',
+    headers: headers,
+    body: opts && opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  if (!res.ok) {
+    var txt = await res.text();
+    throw new Error(res.status + ' ' + txt);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+/* ---- SESSION NAVIGATOR ---- */
+function renderNav() {
+  var list = document.getElementById('sn-list');
+  var prev = document.getElementById('sn-prev');
+  var next = document.getElementById('sn-next');
+  prev.disabled = ST.idx <= 0;
+  next.disabled = ST.idx >= ST.sessions.length - 1;
+  list.innerHTML = ST.sessions.map(function(s, i) {
+    var cls = 'sn-chip' + (i === ST.idx ? ' active' : '');
+    return '<button class="' + cls + '" data-i="' + i + '">SESJA ' + s.number + ' · ' + fmt(s.date) + '</button>';
+  }).join('');
+  list.querySelectorAll('.sn-chip').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      setSession(parseInt(this.dataset.i));
     });
   });
 }
 
-async function toggleDone(commitmentId, sessId) {
-  var cs = S.commitments[sessId] || [];
-  var c = cs.find(function(x) { return x.id === commitmentId; });
-  if (!c) return;
-  var next = c.done === null ? true : c.done === true ? false : null;
-  try {
-    await q('wig_commitments?id=eq.' + commitmentId, {
-      method: 'PATCH',
-      headers: Object.assign({}, HD, { Prefer: 'return=representation' }),
-      body: JSON.stringify({ done: next })
-    });
-    c.done = next;
-    renderSession();
-    notify(next === true ? '✓ Zaznaczono' : next === false ? '✗ Niezaliczone' : '— Wyczyszczono');
-  } catch(err) { notify('Błąd: ' + err.message.slice(0, 60)); }
-}
-
-async function deleteCommitment(commitmentId, sessId) {
-  if (!confirm('Usuń ten commitment?')) return;
-  try {
-    await q('wig_commitments?id=eq.' + commitmentId, { method: 'DELETE' });
-    if (S.commitments[sessId]) {
-      S.commitments[sessId] = S.commitments[sessId].filter(function(c) { return c.id !== commitmentId; });
-    }
-    renderSession();
-    notify('Commitment usunięty ✓');
-  } catch(err) { notify('Błąd: ' + err.message.slice(0, 60)); }
-}
-
-async function addCommitment(sessId, member, text, inp) {
-  try {
-    var res = await q('wig_commitments', {
-      method: 'POST',
-      headers: Object.assign({}, HD, { Prefer: 'return=representation' }),
-      body: JSON.stringify({ session_id: sessId, member: member, commitment: text, done: null })
-    });
-    var newC = Array.isArray(res) ? res[0] : res;
-    if (!S.commitments[sessId]) S.commitments[sessId] = [];
-    if (newC) S.commitments[sessId].push(newC);
-    inp.value = '';
-    renderSession();
-    notify('Commitment dodany ✓');
-  } catch(err) { notify('Błąd: ' + err.message.slice(0, 60)); }
-}
-
-async function transferUnfinished(currSessId, prevSessId) {
-  var prevCommitments = (S.commitments[prevSessId] || []).filter(function(c) { return c.done !== true; });
-  if (!prevCommitments.length) { notify('Brak niewykonanych commitmentów'); return; }
-  if (!confirm('Przenieść ' + prevCommitments.length + ' niewykonanych commitmentów do bieżącej sesji?')) return;
-  try {
-    for (var i = 0; i < prevCommitments.length; i++) {
-      var pc = prevCommitments[i];
-      var res = await q('wig_commitments', {
-        method: 'POST',
-        headers: Object.assign({}, HD, { Prefer: 'return=representation' }),
-        body: JSON.stringify({ session_id: currSessId, member: pc.member, commitment: pc.commitment, done: null })
-      });
-      var newC = Array.isArray(res) ? res[0] : res;
-      if (!S.commitments[currSessId]) S.commitments[currSessId] = [];
-      if (newC) S.commitments[currSessId].push(newC);
-    }
-    renderSession();
-    notify(prevCommitments.length + ' commitmentów przeniesione ✓');
-  } catch(err) { notify('Błąd: ' + err.message.slice(0, 60)); }
-}
-
-document.getElementById('snav-prev').addEventListener('click', function() {
-  if (S.currentIdx > 0) { S.currentIdx--; switchSession(); }
-});
-document.getElementById('snav-next').addEventListener('click', function() {
-  if (S.currentIdx < S.sessions.length - 1) { S.currentIdx++; switchSession(); }
-});
-document.getElementById('snav-items').addEventListener('click', function(e) {
-  var item = e.target.closest('[data-idx]');
-  if (!item) return;
-  var idx = parseInt(item.dataset.idx, 10);
-  if (idx === S.currentIdx) return;
-  S.currentIdx = idx;
-  switchSession();
-});
-
-async function switchSession() {
+function setSession(i) {
+  ST.idx = i;
   renderNav();
-  document.getElementById('root').innerHTML = '<div class="state"><div class="spinner"></div><div class="state-txt">Ładowanie…</div></div>';
-  await loadProgressData();
-  renderSession();
+  loadSession();
 }
+
+/* ---- DATA LOADING ---- */
+async function init() {
+  try {
+    var sessions = await q('sessions?order=number');
+    ST.sessions = sessions;
+    if (!sessions || sessions.length === 0) {
+      document.getElementById('page-content').innerHTML =
+        '<div class="empty-state"><p>Brak sesji — dodaj pierwszą sesję w Supabase</p>' +
+        '<small>INSERT INTO sessions (number, date, period_from, period_to, week) VALUES (...)</small></div>';
+      return;
+    }
+    ST.idx = sessions.length - 1;
+    renderNav();
+    await loadSession();
+  } catch(e) {
+    document.getElementById('page-content').innerHTML =
+      '<div class="empty-state"><p>Błąd ładowania: ' + esc(e.message) + '</p></div>';
+  }
+}
+
+async function loadSession() {
+  ST.curr = ST.sessions[ST.idx];
+  ST.prev = ST.idx > 0 ? ST.sessions[ST.idx - 1] : null;
+
+  var ids = [ST.curr.id];
+  if (ST.prev) ids.push(ST.prev.id);
+
+  var all = await q('wig_commitments?session_id=in.(' + ids.join(',') + ')&order=created_at');
+  ST.currC = (all || []).filter(function(c) { return c.session_id === ST.curr.id; });
+  ST.prevC = ST.prev ? (all || []).filter(function(c) { return c.session_id === ST.prev.id; }) : [];
+
+  var week = ST.curr.week;
+  var lagItems = await q('lag_items?select=*,lags(id,name,owner)&order=sort_order');
+  ST.lagItems = lagItems || [];
+
+  var leadItems = await q('lead_items?select=*,leads(id,name,owner)&order=sort_order');
+  ST.leadItems = leadItems || [];
+
+  var wn = week.replace('T','');
+  var lagW = await q('lag_weekly?week=eq.' + wn + '&select=lag_item_id,value');
+  var leadW = await q('lead_weekly?week=eq.' + wn + '&select=lead_item_id,done');
+
+  ST.lagW = {};
+  (lagW || []).forEach(function(r) { ST.lagW[r.lag_item_id] = r.value; });
+  ST.leadW = {};
+  (leadW || []).forEach(function(r) { ST.leadW[r.lead_item_id] = r.done; });
+
+  render();
+}
+
+/* ---- RENDER ---- */
+function render() {
+  var s = ST.curr;
+  var html = '';
+
+  html += '<div class="page-header">';
+  html += '<h1>SESJA ' + s.number + ' &mdash; ' + fmt(s.date) + '</h1>';
+  html += '<div class="meta">Okres: ' + fmt(s.period_from) + ' – ' + fmt(s.period_to) + ' &nbsp;·&nbsp; Tydzień: ' + esc(s.week) + '</div>';
+  html += '</div>';
+
+  html += '<div class="cols">';
+  html += '<div id="col-left"></div>';
+  html += '<div id="col-right"></div>';
+  html += '</div>';
+
+  html += '<hr class="section-divider">';
+  html += '<div id="col-progress"></div>';
+
+  document.getElementById('page-content').innerHTML = html;
+
+  renderLeft();
+  renderRight();
+  renderProgress();
+}
+
+/* ---- LEFT: ROZLICZENIE ---- */
+function renderLeft() {
+  var el = document.getElementById('col-left');
+  if (!el) return;
+  var html = '<div class="col-header">Rozliczenie — SESJA ' +
+    (ST.prev ? ST.prev.number : '—') + '</div>';
+
+  if (!ST.prev || ST.prevC.length === 0) {
+    html += '<div style="color:var(--t3);font-size:13px;padding:8px 0;">Brak zobowiązań z poprzedniej sesji.</div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  MEMBERS.forEach(function(m) {
+    var mc = ST.prevC.filter(function(c) { return c.member === m; });
+    if (mc.length === 0) return;
+    var done = mc.filter(function(c) { return c.done === true; }).length;
+    var total = mc.length;
+    var pct = Math.round(done / total * 100);
+    var scoreClass = pct >= 80 ? 'good' : pct >= 50 ? 'mid' : 'bad';
+
+    html += '<div class="member-card">';
+    html += '<div class="member-card-head">';
+    html += '<span class="member-name">' + esc(m) + '</span>';
+    html += '<span class="member-score ' + scoreClass + '">' + done + '/' + total + ' (' + pct + '%)</span>';
+    html += '</div>';
+    html += '<div class="member-card-body">';
+
+    mc.forEach(function(c) {
+      var doneState = c.done === true ? 'done' : c.done === false ? 'notdone' : 'pending';
+      var icon = c.done === true ? '✓' : c.done === false ? '✗' : '';
+      html += '<div class="commit-row">';
+      html += '<button class="commit-toggle ' + doneState + '" data-cid="' + c.id + '" data-curr="' + (c.done === null ? 'null' : String(c.done)) + '">' + icon + '</button>';
+      html += '<span class="commit-text">' + esc(c.commitment) + '</span>';
+      html += '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  el.innerHTML = html;
+
+  el.querySelectorAll('.commit-toggle').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      toggleDone(this);
+    });
+  });
+}
+
+async function toggleDone(btn) {
+  var cid = btn.dataset.cid;
+  var curr = btn.dataset.curr;
+  var next;
+  if (curr === 'null') next = true;
+  else if (curr === 'true') next = false;
+  else next = null;
+
+  try {
+    await q('wig_commitments?id=eq.' + cid, {
+      method: 'PATCH',
+      prefer: 'return=minimal',
+      body: { done: next }
+    });
+    btn.dataset.curr = next === null ? 'null' : String(next);
+    btn.className = 'commit-toggle ' + (next === true ? 'done' : next === false ? 'notdone' : 'pending');
+    btn.textContent = next === true ? '✓' : next === false ? '✗' : '';
+    toast('Zapisano');
+    renderLeft();
+  } catch(e) {
+    toast('Błąd: ' + e.message);
+  }
+}
+
+/* ---- RIGHT: ZOBOWIĄZANIA ---- */
+function renderRight() {
+  var el = document.getElementById('col-right');
+  if (!el) return;
+  var html = '<div class="col-header">Zobowiązania — SESJA ' + ST.curr.number + '</div>';
+
+  MEMBERS.forEach(function(m) {
+    var mc = ST.currC.filter(function(c) { return c.member === m; });
+    html += '<div class="member-card">';
+    html += '<div class="member-card-head"><span class="member-name">' + esc(m) + '</span></div>';
+    html += '<div class="member-card-body">';
+
+    if (mc.length === 0) {
+      html += '<div style="color:var(--t3);font-size:12px;padding:4px 0;">Brak zobowiązań</div>';
+    } else {
+      mc.forEach(function(c) {
+        html += '<div class="commit-row">';
+        html += '<span class="commit-text">' + esc(c.commitment) + '</span>';
+        html += '<button class="commit-delete" data-cid="' + c.id + '" title="Usuń">×</button>';
+        html += '</div>';
+      });
+    }
+
+    html += '<div class="add-row">';
+    html += '<input class="add-input" placeholder="Dodaj zobowiązanie… (Enter)" data-member="' + esc(m) + '">';
+    html += '</div>';
+
+    var undone = ST.prevC.filter(function(c) { return c.member === m && c.done !== true; });
+    html += '<button class="transfer-btn" data-member="' + esc(m) + '" ' + (undone.length === 0 ? 'disabled' : '') + '>⟳ Przenieś niewykonane (' + undone.length + ')</button>';
+
+    html += '</div></div>';
+  });
+
+  el.innerHTML = html;
+
+  el.querySelectorAll('.commit-delete').forEach(function(btn) {
+    btn.addEventListener('click', function() { deleteCommit(this.dataset.cid); });
+  });
+
+  el.querySelectorAll('.add-input').forEach(function(inp) {
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && this.value.trim()) {
+        addCommit(this.dataset.member, this.value.trim());
+        this.value = '';
+      }
+    });
+  });
+
+  el.querySelectorAll('.transfer-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { transferUndone(this.dataset.member); });
+  });
+}
+
+async function addCommit(member, text) {
+  try {
+    var rows = await q('wig_commitments', {
+      method: 'POST',
+      prefer: 'return=representation',
+      body: { session_id: ST.curr.id, member: member, commitment: text, done: null }
+    });
+    if (rows && rows.length) {
+      ST.currC.push(rows[0]);
+    }
+    toast('Dodano');
+    renderRight();
+  } catch(e) {
+    toast('Błąd: ' + e.message);
+  }
+}
+
+async function deleteCommit(cid) {
+  try {
+    await q('wig_commitments?id=eq.' + cid, { method: 'DELETE' });
+    ST.currC = ST.currC.filter(function(c) { return c.id !== cid; });
+    toast('Usunięto');
+    renderRight();
+  } catch(e) {
+    toast('Błąd: ' + e.message);
+  }
+}
+
+async function transferUndone(member) {
+  var undone = ST.prevC.filter(function(c) { return c.member === member && c.done !== true; });
+  if (undone.length === 0) return;
+  try {
+    for (var i = 0; i < undone.length; i++) {
+      var rows = await q('wig_commitments', {
+        method: 'POST',
+        prefer: 'return=representation',
+        body: { session_id: ST.curr.id, member: member, commitment: undone[i].commitment, done: null }
+      });
+      if (rows && rows.length) ST.currC.push(rows[0]);
+    }
+    toast('Przeniesiono ' + undone.length + ' zobowiązań');
+    renderRight();
+  } catch(e) {
+    toast('Błąd: ' + e.message);
+  }
+}
+
+/* ---- PROGRESS (LAG + LEAD) ---- */
+function renderProgress() {
+  var el = document.getElementById('col-progress');
+  if (!el) return;
+  var html = '<div class="progress-section">';
+  html += '<div class="progress-section-title">Postęp — ' + esc(ST.curr.week) + '</div>';
+  html += '<div class="progress-grid">';
+
+  var lagsByParent = {};
+  ST.lagItems.forEach(function(li) {
+    var pid = li.lags ? li.lags.id : li.lag_id;
+    var pname = li.lags ? li.lags.name : 'LAG';
+    if (!lagsByParent[pid]) lagsByParent[pid] = { name: pname, items: [] };
+    lagsByParent[pid].items.push(li);
+  });
+
+  Object.keys(lagsByParent).forEach(function(pid) {
+    var grp = lagsByParent[pid];
+    html += '<div class="prog-card">';
+    html += '<div class="prog-card-type">LAG</div>';
+    html += '<div class="prog-card-name">' + esc(grp.name) + '</div>';
+    grp.items.forEach(function(li) {
+      var val = ST.lagW[li.id];
+      var hasDot = val !== undefined && val !== null;
+      var dotClass = hasDot ? (val >= 1 ? 'done' : val === 0 ? 'notdone' : '') : '';
+      var pct = hasDot ? Math.round(val * 100) : 0;
+      html += '<div class="prog-item">';
+      html += '<div class="prog-dot ' + dotClass + '"></div>';
+      html += '<span style="flex:1">' + esc(li.name) + '</span>';
+      html += '<div class="prog-bar-wrap"><div class="prog-bar" style="width:' + pct + '%"></div></div>';
+      html += '<span style="font-family:var(--fm);font-size:11px;color:var(--t3);margin-left:4px;width:30px;text-align:right">' + (hasDot ? pct + '%' : '—') + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+
+  var leadsByParent = {};
+  ST.leadItems.forEach(function(li) {
+    var pid = li.leads ? li.leads.id : li.lead_id;
+    var pname = li.leads ? li.leads.name : 'LEAD';
+    if (!leadsByParent[pid]) leadsByParent[pid] = { name: pname, items: [] };
+    leadsByParent[pid].items.push(li);
+  });
+
+  Object.keys(leadsByParent).forEach(function(pid) {
+    var grp = leadsByParent[pid];
+    html += '<div class="prog-card">';
+    html += '<div class="prog-card-type">LEAD</div>';
+    html += '<div class="prog-card-name">' + esc(grp.name) + '</div>';
+    grp.items.forEach(function(li) {
+      var done = ST.leadW[li.id];
+      var dotClass = done === true ? 'done' : done === false ? 'notdone' : '';
+      html += '<div class="prog-item">';
+      html += '<div class="prog-dot ' + dotClass + '"></div>';
+      html += '<span>' + esc(li.name) + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+
+  html += '</div></div>';
+  el.innerHTML = html;
+}
+
+/* ---- NAV BUTTONS ---- */
+document.getElementById('sn-prev').addEventListener('click', function() {
+  if (ST.idx > 0) setSession(ST.idx - 1);
+});
+document.getElementById('sn-next').addEventListener('click', function() {
+  if (ST.idx < ST.sessions.length - 1) setSession(ST.idx + 1);
+});
 
 init();
 </script>
