@@ -186,11 +186,6 @@ var SB = 'https://fssfuricylndtetfktex.supabase.co';
 var SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
 var MEMBERS = ['Jan', 'Kacper', 'Olgierd', 'Iza', 'Renia'];
 
-// ST.sessions  — wszystkie sesje posortowane wg number
-// ST.viewIdx   — indeks aktualnie oglądanej sesji
-// ST.currIdx   — indeks bieżącej sesji (ostatnia, max number)
-// ST.viewC     — commitmenty oglądanej sesji
-// ST.currC     — commitmenty bieżącej sesji (cel dla carry_over)
 var ST = { sessions:[], viewIdx:0, currIdx:0, viewC:[], currC:[] };
 
 function esc(s) {
@@ -368,7 +363,6 @@ function renderAccounting() {
     if (mc.length === 0) return;
     anyMember = true;
 
-    // % = done=true / (done=true + done=false), null nie wchodzi do mianownika
     var decided = mc.filter(function(c){ return c.done !== null; });
     var doneN = mc.filter(function(c){ return c.done === true; }).length;
     var pct = decided.length > 0 ? Math.round(doneN / decided.length * 100) : null;
@@ -413,16 +407,19 @@ function renderAccounting() {
 
 async function handleAction(act, cid) {
   console.log('handleAction', act, cid, 'viewC len:', ST.viewC.length);
-  // FIX: porównuj jako string — id z bazy jest liczbą, dataset.cid jest stringiem
   var c = ST.viewC.find(function(x){ return String(x.id) === String(cid); });
   if (!c) { console.warn('nie znaleziono commit id='+cid, ST.viewC); return; }
 
+  // done/fail nie wysyłają carry_over — działają nawet bez kolumny w bazie
+  // carry wymaga kolumny carry_over (SQL: ALTER TABLE wig_commitments ADD COLUMN IF NOT EXISTS carry_over boolean DEFAULT false)
   var patch;
-  if      (act === 'done')  patch = { done:true,  carry_over:false };
-  else if (act === 'fail')  patch = { done:false, carry_over:false };
-  else                      patch = { done:false, carry_over:true  };
+  if      (act === 'done')  patch = { done:true  };
+  else if (act === 'fail')  patch = { done:false };
+  else                      patch = { done:false, carry_over:true };
 
+  // Jeśli done/fail a wcześniej był carry_over — wyczyść (wymaga kolumny)
   var wasCarry = c.carry_over === true;
+  if ((act === 'done' || act === 'fail') && wasCarry) patch.carry_over = false;
 
   console.log('PATCH wig_commitments?id=eq.'+cid, patch);
 
@@ -430,7 +427,6 @@ async function handleAction(act, cid) {
     await q('wig_commitments?id=eq.'+cid, { method:'PATCH', prefer:'return=minimal', body:patch });
     Object.assign(c, patch);
 
-    // Jeśli PRZERZUĆ i wcześniej NIE był carry_over → utwórz nowy rekord w bieżącej sesji
     if (act === 'carry' && !wasCarry) {
       var rows = await q('wig_commitments', {
         method:'POST', prefer:'return=representation',
