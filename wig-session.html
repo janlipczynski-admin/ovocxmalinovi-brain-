@@ -15,10 +15,13 @@
   --t1: #1A1A18;
   --t2: #4A4A46;
   --t3: #8A8A86;
+  --gr: #217A52;
+  --gr2: #D4EDDA;
+  --re: #C0392B;
+  --re2: #FDECEA;
+  --or: #E67E22;
+  --or2: #FFF3CD;
   --acc: #2D6A4F;
-  --acc2: #52B788;
-  --red: #C0392B;
-  --yellow: #E67E22;
   --ff: 'Familjen Grotesk', sans-serif;
   --fm: 'DM Mono', monospace;
   --r: 10px;
@@ -38,161 +41,109 @@ body { font-family: var(--ff); background: var(--bg); color: var(--t1); min-heig
 .nav-title { font-size: 14px; font-weight: 600; color: var(--t2); }
 
 /* SESSION NAVIGATOR */
-.sess-nav {
-  display: flex; align-items: center; gap: 8px;
-}
+.sess-nav { display: flex; align-items: center; gap: 6px; }
 .sn-arr {
   background: var(--s1); border: 1px solid var(--s2); border-radius: 6px;
   width: 28px; height: 28px; font-size: 14px; cursor: pointer; color: var(--t2);
-  display: flex; align-items: center; justify-content: center;
-  transition: background .1s;
+  display: flex; align-items: center; justify-content: center; transition: background .1s;
 }
 .sn-arr:hover:not(:disabled) { background: var(--s2); }
 .sn-arr:disabled { opacity: .3; cursor: not-allowed; }
-.sn-list {
-  display: flex; gap: 4px;
-}
+.sn-list { display: flex; gap: 4px; }
 .sn-chip {
   padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
   background: var(--s1); border: 1px solid var(--s2); cursor: pointer;
   color: var(--t3); white-space: nowrap; transition: background .1s, color .1s, border-color .1s;
 }
 .sn-chip:hover { background: var(--s2); color: var(--t2); }
-.sn-chip.active {
-  background: var(--t1); border-color: var(--t1); color: #fff;
-}
+.sn-chip.active { background: var(--t1); border-color: var(--t1); color: #fff; }
+.sn-chip.is-curr:not(.active) { border-color: var(--acc); color: var(--acc); }
 
-/* MAIN LAYOUT */
-.main {
-  max-width: 1200px; margin: 0 auto; padding: 24px 20px;
-}
-.page-header {
-  margin-bottom: 20px;
-}
-.page-header h1 { font-size: 20px; font-weight: 700; color: var(--t1); }
-.page-header .meta { font-size: 13px; color: var(--t3); font-family: var(--fm); margin-top: 4px; }
+/* MAIN */
+.main { max-width: 960px; margin: 0 auto; padding: 28px 20px; }
 
-.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-@media(max-width: 768px) { .cols { grid-template-columns: 1fr; } }
-
-.col-header {
-  font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--t3); margin-bottom: 12px;
-}
+/* PAGE HEADER */
+.page-hd { margin-bottom: 20px; }
+.page-hd h2 { font-size: 17px; font-weight: 700; color: var(--t1); }
+.page-hd .meta { font-size: 12px; color: var(--t3); font-family: var(--fm); margin-top: 3px; }
 
 /* MEMBER CARD */
-.member-card {
+.m-card {
   background: #fff; border: 1px solid var(--s2); border-radius: var(--r);
   margin-bottom: 12px; overflow: hidden;
 }
-.member-card-head {
+.m-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px; background: var(--s1); border-bottom: 1px solid var(--s2);
+  padding: 10px 16px; background: var(--s1); border-bottom: 1px solid var(--s2);
 }
-.member-name { font-size: 13px; font-weight: 700; color: var(--t1); }
-.member-score {
-  font-size: 12px; font-family: var(--fm); font-weight: 500;
+.m-name { font-size: 13px; font-weight: 700; color: var(--t1); }
+.m-pct {
+  font-size: 11px; font-family: var(--fm); font-weight: 500;
   padding: 2px 8px; border-radius: 20px; background: var(--s2); color: var(--t2);
 }
-.member-score.good { background: #D4EDDA; color: #1A6B35; }
-.member-score.mid { background: #FFF3CD; color: #7A5300; }
-.member-score.bad { background: #FDECEA; color: #8C2118; }
-.member-card-body { padding: 10px 14px; }
+.m-pct.good { background: var(--gr2); color: var(--gr); }
+.m-pct.mid  { background: var(--or2); color: #7A5300; }
+.m-pct.bad  { background: var(--re2); color: var(--re); }
+.m-body { padding: 6px 16px 12px; }
 
-/* COMMITMENT ROWS */
-.commit-row {
-  display: flex; align-items: flex-start; gap: 10px;
+/* COMMIT ROW (zobowiązania) */
+.c-row {
+  display: flex; align-items: center; gap: 8px;
   padding: 7px 0; border-bottom: 1px solid var(--s1);
 }
-.commit-row:last-child { border-bottom: none; }
-.commit-toggle {
-  width: 22px; height: 22px; flex-shrink: 0; margin-top: 1px;
-  border-radius: 50%; border: 1.5px solid var(--s3);
-  background: none; cursor: pointer; font-size: 13px;
-  display: flex; align-items: center; justify-content: center;
-  transition: background .12s, border-color .12s;
-}
-.commit-toggle.done { background: var(--acc); border-color: var(--acc); color: #fff; }
-.commit-toggle.notdone { background: var(--red); border-color: var(--red); color: #fff; }
-.commit-toggle.pending { border-color: var(--s3); color: transparent; }
-.commit-text {
-  font-size: 13px; color: var(--t2); flex: 1; line-height: 1.5;
-  padding-top: 1px;
-}
-.commit-delete {
+.c-row:last-child { border-bottom: none; }
+.c-icon { font-size: 11px; color: var(--or); font-weight: 700; flex-shrink: 0; }
+.c-text { flex: 1; font-size: 13px; color: var(--t2); line-height: 1.4; }
+.c-text.carried { color: var(--t3); font-style: italic; }
+.c-del {
   background: none; border: none; cursor: pointer; color: var(--s3);
-  font-size: 16px; padding: 0 2px; line-height: 1;
-  transition: color .1s;
+  font-size: 16px; padding: 0 3px; line-height: 1; flex-shrink: 0; transition: color .1s;
 }
-.commit-delete:hover { color: var(--red); }
+.c-del:hover { color: var(--re); }
+
+/* ACCOUNT ROW (rozliczenie) */
+.a-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px; margin: 3px 0; border-radius: 7px;
+  transition: background .1s;
+}
+.a-row.st-done { background: var(--gr2); }
+.a-row.st-fail { background: var(--re2); }
+.a-row.st-carry { background: var(--or2); }
+.a-text {
+  flex: 1; font-size: 13px; color: var(--t2); line-height: 1.4; padding-top: 2px;
+}
+.a-text.st-done { text-decoration: line-through; color: var(--gr); }
+.a-text.st-fail { color: var(--re); }
+.a-text.st-carry { color: var(--t3); }
+.a-carry-icon { font-size: 11px; color: var(--or); font-weight: 700; padding-top: 3px; flex-shrink: 0; }
+.a-btns { display: flex; gap: 4px; flex-shrink: 0; }
+.a-btn {
+  padding: 3px 9px; border-radius: 5px; border: 1px solid var(--s2);
+  font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--ff);
+  background: var(--s1); color: var(--t3);
+  transition: background .1s, border-color .1s, color .1s;
+}
+.a-btn:hover { background: var(--s2); color: var(--t2); }
+.a-btn.on-done  { background: var(--gr);  border-color: var(--gr);  color: #fff; }
+.a-btn.on-fail  { background: var(--re);  border-color: var(--re);  color: #fff; }
+.a-btn.on-carry { background: var(--or);  border-color: var(--or);  color: #fff; }
 
 /* ADD INPUT */
-.add-row {
-  display: flex; gap: 8px; margin-top: 10px;
-}
+.add-row { margin-top: 8px; }
 .add-input {
-  flex: 1; padding: 7px 10px; font-family: var(--ff); font-size: 13px;
+  width: 100%; padding: 7px 10px; font-family: var(--ff); font-size: 13px;
   border: 1px solid var(--s2); border-radius: 6px; background: var(--s1);
-  color: var(--t1); outline: none;
-  transition: border-color .1s, background .1s;
+  color: var(--t1); outline: none; transition: border-color .1s, background .1s;
 }
 .add-input:focus { border-color: var(--acc); background: #fff; }
 .add-input::placeholder { color: var(--t3); }
 
-/* TRANSFER BUTTON */
-.transfer-btn {
-  display: flex; align-items: center; gap: 6px;
-  margin-top: 12px; padding: 7px 12px;
-  background: none; border: 1px dashed var(--s3); border-radius: 6px;
-  font-size: 12px; color: var(--t3); cursor: pointer; font-family: var(--ff);
-  transition: border-color .1s, color .1s;
-}
-.transfer-btn:hover { border-color: var(--yellow); color: var(--yellow); }
-.transfer-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-/* EMPTY STATE */
-.empty-state {
-  text-align: center; padding: 60px 20px; color: var(--t3);
-}
+/* EMPTY */
+.empty-note { font-size: 12px; color: var(--t3); padding: 8px 0; }
+.empty-state { text-align: center; padding: 60px 20px; color: var(--t3); }
 .empty-state p { font-size: 15px; margin-bottom: 8px; }
 .empty-state small { font-size: 12px; font-family: var(--fm); }
-
-/* PROGRESS SECTION */
-.progress-section { margin-top: 8px; }
-.progress-section-title {
-  font-size: 11px; font-weight: 700; letter-spacing: .08em;
-  text-transform: uppercase; color: var(--t3); margin-bottom: 12px;
-}
-.progress-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
-}
-.prog-card {
-  background: #fff; border: 1px solid var(--s2); border-radius: var(--r); padding: 14px;
-}
-.prog-card-name { font-size: 13px; font-weight: 600; color: var(--t1); margin-bottom: 8px; }
-.prog-card-type {
-  font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--t3); margin-bottom: 4px; font-family: var(--fm);
-}
-.prog-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 5px 0; border-bottom: 1px solid var(--s1); font-size: 12px; color: var(--t2);
-}
-.prog-item:last-child { border-bottom: none; }
-.prog-dot {
-  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-  background: var(--s3);
-}
-.prog-dot.done { background: var(--acc); }
-.prog-dot.notdone { background: var(--red); }
-.prog-bar-wrap { flex: 1; height: 4px; background: var(--s2); border-radius: 2px; }
-.prog-bar { height: 100%; border-radius: 2px; background: var(--acc); }
-
-/* DIVIDER */
-.section-divider {
-  border: none; border-top: 1px solid var(--s2); margin: 24px 0;
-}
 
 /* TOAST */
 .toast {
@@ -219,12 +170,8 @@ body { font-family: var(--ff); background: var(--bg); color: var(--t1); min-heig
   </div>
 </nav>
 
-<div class="main">
-  <div id="page-content">
-    <div class="empty-state">
-      <p>Ładowanie sesji…</p>
-    </div>
-  </div>
+<div class="main" id="root">
+  <div class="empty-state"><p>Ładowanie sesji…</p></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -234,406 +181,266 @@ var SB = 'https://fssfuricylndtetfktex.supabase.co';
 var SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
 var MEMBERS = ['Jan', 'Kacper', 'Olgierd', 'Iza', 'Renia'];
 
-var ST = {
-  sessions: [],
-  idx: 0,
-  curr: null,
-  prev: null,
-  currC: [],
-  prevC: [],
-  lagItems: [],
-  leadItems: [],
-  lagW: {},
-  leadW: {}
-};
+// ST.sessions  — wszystkie sesje posortowane wg number
+// ST.viewIdx   — indeks aktualnie oglądanej sesji
+// ST.currIdx   — indeks bieżącej sesji (ostatnia, max number)
+// ST.viewC     — commitmenty oglądanej sesji
+// ST.currC     — commitmenty bieżącej sesji (cel dla carry_over)
+var ST = { sessions:[], viewIdx:0, currIdx:0, viewC:[], currC:[] };
 
 function esc(s) {
-  if (!s) return '';
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 function fmt(d) {
   if (!d) return '';
-  var parts = d.split('-');
-  if (parts.length < 3) return d;
-  return parts[2] + '.' + parts[1];
+  var p = d.split('-');
+  return p.length < 3 ? d : p[2]+'.'+p[1];
 }
-
 function toast(msg) {
   var el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
   setTimeout(function() { el.classList.remove('show'); }, 2500);
 }
-
 async function q(path, opts) {
-  var url = SB + '/rest/v1/' + path;
-  var headers = {
-    'apikey': SK,
-    'Authorization': 'Bearer ' + SK,
-    'Content-Type': 'application/json'
-  };
+  var url = SB+'/rest/v1/'+path;
+  var headers = { 'apikey':SK, 'Authorization':'Bearer '+SK, 'Content-Type':'application/json' };
   if (opts && opts.prefer) headers['Prefer'] = opts.prefer;
   var res = await fetch(url, {
     method: opts && opts.method ? opts.method : 'GET',
     headers: headers,
     body: opts && opts.body ? JSON.stringify(opts.body) : undefined
   });
-  if (!res.ok) {
-    var txt = await res.text();
-    throw new Error(res.status + ' ' + txt);
-  }
+  if (!res.ok) { var t = await res.text(); throw new Error(res.status+' '+t); }
   if (res.status === 204) return null;
   return res.json();
 }
 
-/* ---- SESSION NAVIGATOR ---- */
+/* ---- NAV ---- */
 function renderNav() {
   var list = document.getElementById('sn-list');
-  var prev = document.getElementById('sn-prev');
-  var next = document.getElementById('sn-next');
-  prev.disabled = ST.idx <= 0;
-  next.disabled = ST.idx >= ST.sessions.length - 1;
+  document.getElementById('sn-prev').disabled = ST.viewIdx <= 0;
+  document.getElementById('sn-next').disabled = ST.viewIdx >= ST.sessions.length - 1;
   list.innerHTML = ST.sessions.map(function(s, i) {
-    var cls = 'sn-chip' + (i === ST.idx ? ' active' : '');
-    return '<button class="' + cls + '" data-i="' + i + '">SESJA ' + s.number + ' · ' + fmt(s.date) + '</button>';
+    var cls = 'sn-chip'
+      + (i === ST.viewIdx ? ' active' : '')
+      + (i === ST.currIdx ? ' is-curr' : '');
+    return '<button class="'+cls+'" data-i="'+i+'">SESJA '+s.number+' · '+fmt(s.date)+'</button>';
   }).join('');
   list.querySelectorAll('.sn-chip').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      setSession(parseInt(this.dataset.i));
-    });
+    btn.addEventListener('click', function() { setView(parseInt(this.dataset.i)); });
   });
 }
 
-function setSession(i) {
-  ST.idx = i;
+async function setView(i) {
+  ST.viewIdx = i;
   renderNav();
-  loadSession();
+  await loadData();
+  render();
 }
 
-/* ---- DATA LOADING ---- */
+/* ---- DATA ---- */
 async function init() {
   try {
     var sessions = await q('sessions?order=number');
-    ST.sessions = sessions;
     if (!sessions || sessions.length === 0) {
-      document.getElementById('page-content').innerHTML =
-        '<div class="empty-state"><p>Brak sesji — dodaj pierwszą sesję w Supabase</p>' +
+      document.getElementById('root').innerHTML =
+        '<div class="empty-state"><p>Brak sesji — dodaj w Supabase</p>' +
         '<small>INSERT INTO sessions (number, date, period_from, period_to, week) VALUES (...)</small></div>';
       return;
     }
-    ST.idx = sessions.length - 1;
+    ST.sessions = sessions;
+    ST.currIdx = sessions.length - 1;
+    ST.viewIdx = ST.currIdx;
     renderNav();
-    await loadSession();
+    await loadData();
+    render();
   } catch(e) {
-    document.getElementById('page-content').innerHTML =
-      '<div class="empty-state"><p>Błąd ładowania: ' + esc(e.message) + '</p></div>';
+    document.getElementById('root').innerHTML =
+      '<div class="empty-state"><p>Błąd: '+esc(e.message)+'</p></div>';
   }
 }
 
-async function loadSession() {
-  ST.curr = ST.sessions[ST.idx];
-  ST.prev = ST.idx > 0 ? ST.sessions[ST.idx - 1] : null;
-
-  var ids = [ST.curr.id];
-  if (ST.prev) ids.push(ST.prev.id);
-
-  var all = await q('wig_commitments?session_id=in.(' + ids.join(',') + ')&order=created_at');
-  ST.currC = (all || []).filter(function(c) { return c.session_id === ST.curr.id; });
-  ST.prevC = ST.prev ? (all || []).filter(function(c) { return c.session_id === ST.prev.id; }) : [];
-
-  var week = ST.curr.week;
-  var lagItems = await q('lag_items?select=*,lags(id,name,owner)&order=sort_order');
-  ST.lagItems = lagItems || [];
-
-  var leadItems = await q('lead_items?select=*,leads(id,name,owner)&order=sort_order');
-  ST.leadItems = leadItems || [];
-
-  var wn = week.replace('T','');
-  var lagW = await q('lag_weekly?week=eq.' + wn + '&select=lag_item_id,value');
-  var leadW = await q('lead_weekly?week=eq.' + wn + '&select=lead_item_id,value');
-
-  ST.lagW = {};
-  (lagW || []).forEach(function(r) { ST.lagW[r.lag_item_id] = r.value; });
-  ST.leadW = {};
-  (leadW || []).forEach(function(r) { ST.leadW[r.lead_item_id] = r.value; });
-
-  render();
+async function loadData() {
+  var viewSess = ST.sessions[ST.viewIdx];
+  var currSess = ST.sessions[ST.currIdx];
+  var ids = viewSess.id === currSess.id ? [viewSess.id] : [viewSess.id, currSess.id];
+  var all = await q('wig_commitments?session_id=in.('+ids.join(',')+')'+'&order=created_at');
+  ST.viewC = (all||[]).filter(function(c){ return c.session_id === viewSess.id; });
+  ST.currC = (all||[]).filter(function(c){ return c.session_id === currSess.id; });
 }
 
 /* ---- RENDER ---- */
 function render() {
-  var s = ST.curr;
-  var html = '';
-
-  html += '<div class="page-header">';
-  html += '<h1>SESJA ' + s.number + ' &mdash; ' + fmt(s.date) + '</h1>';
-  html += '<div class="meta">Okres: ' + fmt(s.period_from) + ' – ' + fmt(s.period_to) + ' &nbsp;·&nbsp; Tydzień: ' + esc(s.week) + '</div>';
-  html += '</div>';
-
-  html += '<div class="cols">';
-  html += '<div id="col-left"></div>';
-  html += '<div id="col-right"></div>';
-  html += '</div>';
-
-  html += '<hr class="section-divider">';
-  html += '<div id="col-progress"></div>';
-
-  document.getElementById('page-content').innerHTML = html;
-
-  renderLeft();
-  renderRight();
-  renderProgress();
+  if (ST.viewIdx === ST.currIdx) renderCommitments();
+  else renderAccounting();
 }
 
-/* ---- LEFT: ROZLICZENIE ---- */
-function renderLeft() {
-  var el = document.getElementById('col-left');
-  if (!el) return;
-  var html = '<div class="col-header">Rozliczenie — SESJA ' +
-    (ST.prev ? ST.prev.number : '—') + '</div>';
-
-  if (!ST.prev || ST.prevC.length === 0) {
-    html += '<div style="color:var(--t3);font-size:13px;padding:8px 0;">Brak zobowiązań z poprzedniej sesji.</div>';
-    el.innerHTML = html;
-    return;
-  }
+/* ======== WIDOK: ZOBOWIĄZANIA (bieżąca sesja) ======== */
+function renderCommitments() {
+  var s = ST.sessions[ST.currIdx];
+  var html = '<div class="page-hd">'
+    + '<h2>Zobowiązania — Sesja '+s.number+'</h2>'
+    + '<div class="meta">'+fmt(s.period_from)+' – '+fmt(s.period_to)+' · '+esc(s.week)+'</div>'
+    + '</div>';
 
   MEMBERS.forEach(function(m) {
-    var mc = ST.prevC.filter(function(c) { return c.member === m; });
-    if (mc.length === 0) return;
-    var done = mc.filter(function(c) { return c.done === true; }).length;
-    var total = mc.length;
-    var pct = Math.round(done / total * 100);
-    var scoreClass = pct >= 80 ? 'good' : pct >= 50 ? 'mid' : 'bad';
-
-    html += '<div class="member-card">';
-    html += '<div class="member-card-head">';
-    html += '<span class="member-name">' + esc(m) + '</span>';
-    html += '<span class="member-score ' + scoreClass + '">' + done + '/' + total + ' (' + pct + '%)</span>';
-    html += '</div>';
-    html += '<div class="member-card-body">';
-
-    mc.forEach(function(c) {
-      var doneState = c.done === true ? 'done' : c.done === false ? 'notdone' : 'pending';
-      var icon = c.done === true ? '✓' : c.done === false ? '✗' : '';
-      html += '<div class="commit-row">';
-      html += '<button class="commit-toggle ' + doneState + '" data-cid="' + c.id + '" data-curr="' + (c.done === null ? 'null' : String(c.done)) + '">' + icon + '</button>';
-      html += '<span class="commit-text">' + esc(c.commitment) + '</span>';
-      html += '</div>';
-    });
-
-    html += '</div></div>';
-  });
-
-  el.innerHTML = html;
-
-  el.querySelectorAll('.commit-toggle').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      toggleDone(this);
-    });
-  });
-}
-
-async function toggleDone(btn) {
-  var cid = btn.dataset.cid;
-  var curr = btn.dataset.curr;
-  var next;
-  if (curr === 'null') next = true;
-  else if (curr === 'true') next = false;
-  else next = null;
-
-  try {
-    await q('wig_commitments?id=eq.' + cid, {
-      method: 'PATCH',
-      prefer: 'return=minimal',
-      body: { done: next }
-    });
-    btn.dataset.curr = next === null ? 'null' : String(next);
-    btn.className = 'commit-toggle ' + (next === true ? 'done' : next === false ? 'notdone' : 'pending');
-    btn.textContent = next === true ? '✓' : next === false ? '✗' : '';
-    toast('Zapisano');
-    renderLeft();
-  } catch(e) {
-    toast('Błąd: ' + e.message);
-  }
-}
-
-/* ---- RIGHT: ZOBOWIĄZANIA ---- */
-function renderRight() {
-  var el = document.getElementById('col-right');
-  if (!el) return;
-  var html = '<div class="col-header">Zobowiązania — SESJA ' + ST.curr.number + '</div>';
-
-  MEMBERS.forEach(function(m) {
-    var mc = ST.currC.filter(function(c) { return c.member === m; });
-    html += '<div class="member-card">';
-    html += '<div class="member-card-head"><span class="member-name">' + esc(m) + '</span></div>';
-    html += '<div class="member-card-body">';
+    var mc = ST.currC.filter(function(c){ return c.member === m; });
+    html += '<div class="m-card">'
+      + '<div class="m-head"><span class="m-name">'+esc(m)+'</span></div>'
+      + '<div class="m-body">';
 
     if (mc.length === 0) {
-      html += '<div style="color:var(--t3);font-size:12px;padding:4px 0;">Brak zobowiązań</div>';
+      html += '<div class="empty-note">Brak zobowiązań</div>';
     } else {
       mc.forEach(function(c) {
-        html += '<div class="commit-row">';
-        html += '<span class="commit-text">' + esc(c.commitment) + '</span>';
-        html += '<button class="commit-delete" data-cid="' + c.id + '" title="Usuń">×</button>';
+        var carried = c.carry_over === true;
+        html += '<div class="c-row">';
+        if (carried) html += '<span class="c-icon" title="Przeniesione z poprzedniej sesji">→</span>';
+        html += '<span class="c-text'+(carried?' carried':'')+'">'+esc(c.commitment)+'</span>';
+        html += '<button class="c-del" data-del="'+c.id+'" title="Usuń">×</button>';
         html += '</div>';
       });
     }
 
-    html += '<div class="add-row">';
-    html += '<input class="add-input" placeholder="Dodaj zobowiązanie… (Enter)" data-member="' + esc(m) + '">';
-    html += '</div>';
+    html += '<div class="add-row"><input class="add-input" placeholder="Dodaj zobowiązanie… (Enter)" data-member="'+esc(m)+'"></div>';
+    html += '</div></div>';
+  });
 
-    var undone = ST.prevC.filter(function(c) { return c.member === m && c.done !== true; });
-    html += '<button class="transfer-btn" data-member="' + esc(m) + '" ' + (undone.length === 0 ? 'disabled' : '') + '>⟳ Przenieś niewykonane (' + undone.length + ')</button>';
+  document.getElementById('root').innerHTML = html;
+
+  var root = document.getElementById('root');
+  root.querySelectorAll('.c-del').forEach(function(btn) {
+    btn.addEventListener('click', function(){ deleteCommit(this.dataset.del); });
+  });
+  root.querySelectorAll('.add-input').forEach(function(inp) {
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && this.value.trim()) {
+        addCommit(this.dataset.member, this.value.trim(), this);
+      }
+    });
+  });
+}
+
+async function addCommit(member, text, inp) {
+  inp.disabled = true;
+  try {
+    var rows = await q('wig_commitments', {
+      method:'POST', prefer:'return=representation',
+      body:{ session_id: ST.sessions[ST.currIdx].id, member:member, commitment:text, done:null, carry_over:false }
+    });
+    if (rows && rows.length) ST.currC.push(rows[0]);
+    inp.value = '';
+    toast('Dodano ✓');
+    renderCommitments();
+  } catch(e) { toast('Błąd: '+e.message); inp.disabled = false; }
+}
+
+async function deleteCommit(id) {
+  try {
+    await q('wig_commitments?id=eq.'+id, { method:'DELETE' });
+    ST.currC = ST.currC.filter(function(c){ return c.id !== id; });
+    toast('Usunięto');
+    renderCommitments();
+  } catch(e) { toast('Błąd: '+e.message); }
+}
+
+/* ======== WIDOK: ROZLICZENIE (poprzednia sesja) ======== */
+function renderAccounting() {
+  var s = ST.sessions[ST.viewIdx];
+  var currS = ST.sessions[ST.currIdx];
+  var html = '<div class="page-hd">'
+    + '<h2>Rozliczenie — Sesja '+s.number+'</h2>'
+    + '<div class="meta">'+fmt(s.period_from)+' – '+fmt(s.period_to)+' · '+esc(s.week)
+    + ' &nbsp;·&nbsp; <span style="color:var(--acc)">→ trafia do Sesji '+currS.number+'</span></div>'
+    + '</div>';
+
+  var anyMember = false;
+  MEMBERS.forEach(function(m) {
+    var mc = ST.viewC.filter(function(c){ return c.member === m; });
+    if (mc.length === 0) return;
+    anyMember = true;
+
+    // % = done=true / (done=true + done=false), null nie wchodzi do mianownika
+    var decided = mc.filter(function(c){ return c.done !== null; });
+    var doneN = mc.filter(function(c){ return c.done === true; }).length;
+    var pct = decided.length > 0 ? Math.round(doneN / decided.length * 100) : null;
+    var pctClass = pct === null ? '' : pct >= 80 ? 'good' : pct >= 50 ? 'mid' : 'bad';
+    var pctHtml = pct !== null
+      ? '<span class="m-pct '+pctClass+'">'+doneN+'/'+decided.length+' ('+pct+'%)</span>'
+      : '<span class="m-pct" style="opacity:.4">—</span>';
+
+    html += '<div class="m-card">'
+      + '<div class="m-head"><span class="m-name">'+esc(m)+'</span>'+pctHtml+'</div>'
+      + '<div class="m-body">';
+
+    mc.forEach(function(c) {
+      var st = '';
+      if (c.done === true)                         st = 'done';
+      else if (c.done === false && c.carry_over)   st = 'carry';
+      else if (c.done === false)                   st = 'fail';
+
+      html += '<div class="a-row'+(st?' st-'+st:'')+'">';
+      if (st === 'carry') html += '<span class="a-carry-icon">→</span>';
+      html += '<span class="a-text'+(st?' st-'+st:'')+'">'+esc(c.commitment)+'</span>';
+      html += '<div class="a-btns">'
+        + '<button class="a-btn'+(c.done===true?' on-done':'')+'" data-act="done" data-cid="'+c.id+'" title="Zrobione">✓</button>'
+        + '<button class="a-btn'+(c.done===false&&!c.carry_over?' on-fail':'')+'" data-act="fail" data-cid="'+c.id+'" title="Niezrobione">✗</button>'
+        + '<button class="a-btn'+(c.carry_over?' on-carry':'')+'" data-act="carry" data-cid="'+c.id+'" title="Przerzeń do bieżącej sesji">→</button>'
+        + '</div>';
+      html += '</div>';
+    });
 
     html += '</div></div>';
   });
 
-  el.innerHTML = html;
-
-  el.querySelectorAll('.commit-delete').forEach(function(btn) {
-    btn.addEventListener('click', function() { deleteCommit(this.dataset.cid); });
-  });
-
-  el.querySelectorAll('.add-input').forEach(function(inp) {
-    inp.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' && this.value.trim()) {
-        addCommit(this.dataset.member, this.value.trim());
-        this.value = '';
-      }
-    });
-  });
-
-  el.querySelectorAll('.transfer-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { transferUndone(this.dataset.member); });
-  });
-}
-
-async function addCommit(member, text) {
-  try {
-    var rows = await q('wig_commitments', {
-      method: 'POST',
-      prefer: 'return=representation',
-      body: { session_id: ST.curr.id, member: member, commitment: text, done: null }
-    });
-    if (rows && rows.length) {
-      ST.currC.push(rows[0]);
-    }
-    toast('Dodano');
-    renderRight();
-  } catch(e) {
-    toast('Błąd: ' + e.message);
+  if (!anyMember) {
+    html += '<div class="empty-note" style="padding:20px 0">Brak zobowiązań z tej sesji.</div>';
   }
+
+  document.getElementById('root').innerHTML = html;
+  document.getElementById('root').querySelectorAll('.a-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(){ handleAction(this.dataset.act, this.dataset.cid); });
+  });
 }
 
-async function deleteCommit(cid) {
-  try {
-    await q('wig_commitments?id=eq.' + cid, { method: 'DELETE' });
-    ST.currC = ST.currC.filter(function(c) { return c.id !== cid; });
-    toast('Usunięto');
-    renderRight();
-  } catch(e) {
-    toast('Błąd: ' + e.message);
-  }
-}
+async function handleAction(act, cid) {
+  var c = ST.viewC.find(function(x){ return x.id === cid; });
+  if (!c) return;
 
-async function transferUndone(member) {
-  var undone = ST.prevC.filter(function(c) { return c.member === member && c.done !== true; });
-  if (undone.length === 0) return;
+  var patch;
+  if      (act === 'done')  patch = { done:true,  carry_over:false };
+  else if (act === 'fail')  patch = { done:false, carry_over:false };
+  else                      patch = { done:false, carry_over:true  };
+
+  var wasCarry = c.carry_over === true;
+
   try {
-    for (var i = 0; i < undone.length; i++) {
+    await q('wig_commitments?id=eq.'+cid, { method:'PATCH', prefer:'return=minimal', body:patch });
+    Object.assign(c, patch);
+
+    // Jeśli PRZERZUĆ i wcześniej NIE był carry_over → utwórz nowy rekord w bieżącej sesji
+    if (act === 'carry' && !wasCarry) {
       var rows = await q('wig_commitments', {
-        method: 'POST',
-        prefer: 'return=representation',
-        body: { session_id: ST.curr.id, member: member, commitment: undone[i].commitment, done: null }
+        method:'POST', prefer:'return=representation',
+        body:{ session_id: ST.sessions[ST.currIdx].id, member:c.member, commitment:c.commitment, done:null, carry_over:true }
       });
       if (rows && rows.length) ST.currC.push(rows[0]);
+      toast('Przerzucono → Sesja '+ST.sessions[ST.currIdx].number+' ✓');
+    } else {
+      toast('Zapisano ✓');
     }
-    toast('Przeniesiono ' + undone.length + ' zobowiązań');
-    renderRight();
-  } catch(e) {
-    toast('Błąd: ' + e.message);
-  }
+
+    renderAccounting();
+  } catch(e) { toast('Błąd: '+e.message); }
 }
 
-/* ---- PROGRESS (LAG + LEAD) ---- */
-function renderProgress() {
-  var el = document.getElementById('col-progress');
-  if (!el) return;
-  var html = '<div class="progress-section">';
-  html += '<div class="progress-section-title">Postęp — ' + esc(ST.curr.week) + '</div>';
-  html += '<div class="progress-grid">';
-
-  var lagsByParent = {};
-  ST.lagItems.forEach(function(li) {
-    var pid = li.lags ? li.lags.id : li.lag_id;
-    var pname = li.lags ? li.lags.name : 'LAG';
-    if (!lagsByParent[pid]) lagsByParent[pid] = { name: pname, items: [] };
-    lagsByParent[pid].items.push(li);
-  });
-
-  Object.keys(lagsByParent).forEach(function(pid) {
-    var grp = lagsByParent[pid];
-    html += '<div class="prog-card">';
-    html += '<div class="prog-card-type">LAG</div>';
-    html += '<div class="prog-card-name">' + esc(grp.name) + '</div>';
-    grp.items.forEach(function(li) {
-      var val = ST.lagW[li.id];
-      var hasDot = val !== undefined && val !== null;
-      var dotClass = hasDot ? (val >= 1 ? 'done' : val === 0 ? 'notdone' : '') : '';
-      var pct = hasDot ? Math.round(val * 100) : 0;
-      html += '<div class="prog-item">';
-      html += '<div class="prog-dot ' + dotClass + '"></div>';
-      html += '<span style="flex:1">' + esc(li.name) + '</span>';
-      html += '<div class="prog-bar-wrap"><div class="prog-bar" style="width:' + pct + '%"></div></div>';
-      html += '<span style="font-family:var(--fm);font-size:11px;color:var(--t3);margin-left:4px;width:30px;text-align:right">' + (hasDot ? pct + '%' : '—') + '</span>';
-      html += '</div>';
-    });
-    html += '</div>';
-  });
-
-  var leadsByParent = {};
-  ST.leadItems.forEach(function(li) {
-    var pid = li.leads ? li.leads.id : li.lead_id;
-    var pname = li.leads ? li.leads.name : 'LEAD';
-    if (!leadsByParent[pid]) leadsByParent[pid] = { name: pname, items: [] };
-    leadsByParent[pid].items.push(li);
-  });
-
-  Object.keys(leadsByParent).forEach(function(pid) {
-    var grp = leadsByParent[pid];
-    html += '<div class="prog-card">';
-    html += '<div class="prog-card-type">LEAD</div>';
-    html += '<div class="prog-card-name">' + esc(grp.name) + '</div>';
-    grp.items.forEach(function(li) {
-      var val = ST.leadW[li.id];
-      var hasDot = val !== undefined && val !== null;
-      var dotClass = hasDot ? (val >= 1 ? 'done' : val === 0 ? 'notdone' : '') : '';
-      html += '<div class="prog-item">';
-      html += '<div class="prog-dot ' + dotClass + '"></div>';
-      html += '<span>' + esc(li.name) + '</span>';
-      html += '</div>';
-    });
-    html += '</div>';
-  });
-
-  html += '</div></div>';
-  el.innerHTML = html;
-}
-
-/* ---- NAV BUTTONS ---- */
+/* ---- PRZYCISKI NAWIGATORA ---- */
 document.getElementById('sn-prev').addEventListener('click', function() {
-  if (ST.idx > 0) setSession(ST.idx - 1);
+  if (ST.viewIdx > 0) setView(ST.viewIdx - 1);
 });
 document.getElementById('sn-next').addEventListener('click', function() {
-  if (ST.idx < ST.sessions.length - 1) setSession(ST.idx + 1);
+  if (ST.viewIdx < ST.sessions.length - 1) setView(ST.viewIdx + 1);
 });
 
 init();
