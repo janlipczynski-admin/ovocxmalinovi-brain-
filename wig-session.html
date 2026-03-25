@@ -10,12 +10,12 @@
 :root {
   --bg: #F7F6F2;
   --s1: #EFEFEA;
-  --s2: #DEDDD8;
+  --s2: #E0DDDA;
   --s3: #CDCDC8;
   --t1: #1A1A18;
   --t2: #4A4A46;
   --t3: #8A8A86;
-  --gr: #217A52;
+  --gr: #2D6A4F;
   --gr2: #D4EDDA;
   --re: #C0392B;
   --re2: #FDECEA;
@@ -56,15 +56,19 @@ body { font-family: var(--ff); background: var(--bg); color: var(--t1); min-heig
   color: var(--t3); white-space: nowrap; transition: background .1s, color .1s, border-color .1s;
 }
 .sn-chip:hover { background: var(--s2); color: var(--t2); }
-.sn-chip.active { background: var(--t1); border-color: var(--t1); color: #fff; }
-.sn-chip.is-curr:not(.active) { border-color: var(--acc); color: var(--acc); }
+.sn-chip.active { background: #1A1A1A; border-color: #1A1A1A; color: #fff; }
+.sn-chip.is-curr:not(.active) { border-color: #2D6A4F; color: #2D6A4F; }
 
 /* MAIN */
 .main { max-width: 960px; margin: 0 auto; padding: 28px 20px; }
 
 /* PAGE HEADER */
 .page-hd { margin-bottom: 20px; }
-.page-hd h2 { font-size: 17px; font-weight: 700; color: var(--t1); }
+.page-hd h2 {
+  font-size: 16px; font-weight: 700; font-family: var(--fm);
+  color: #1A1A1A;
+}
+.page-hd h2.hd-acc { color: #2D6A4F; }
 .page-hd .meta { font-size: 12px; color: var(--t3); font-family: var(--fm); margin-top: 3px; }
 
 /* MEMBER CARD */
@@ -81,9 +85,9 @@ body { font-family: var(--ff); background: var(--bg); color: var(--t1); min-heig
   font-size: 11px; font-family: var(--fm); font-weight: 500;
   padding: 2px 8px; border-radius: 20px; background: var(--s2); color: var(--t2);
 }
-.m-pct.good { background: var(--gr2); color: var(--gr); }
-.m-pct.mid  { background: var(--or2); color: #7A5300; }
-.m-pct.bad  { background: var(--re2); color: var(--re); }
+.m-pct.good { background: #D4EDDA; color: #2D6A4F; }
+.m-pct.mid  { background: #FFF3CD; color: #7A5300; }
+.m-pct.bad  { background: #FDECEA; color: #C0392B; }
 .m-body { padding: 6px 16px 12px; }
 
 /* COMMIT ROW (zobowiązania) */
@@ -105,29 +109,30 @@ body { font-family: var(--ff); background: var(--bg); color: var(--t1); min-heig
 .a-row {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 8px; margin: 3px 0; border-radius: 7px;
+  border-left: 3px solid #E5E4E0;
   transition: background .1s;
 }
-.a-row.st-done { background: var(--gr2); }
-.a-row.st-fail { background: var(--re2); }
-.a-row.st-carry { background: var(--or2); }
+.a-row.st-done  { background: #D4EDDA; border-left-color: #2D6A4F; }
+.a-row.st-fail  { background: #FDECEA; border-left-color: #C0392B; }
+.a-row.st-carry { background: #FFF3CD; border-left-color: #E67E22; }
 .a-text {
   flex: 1; font-size: 13px; color: var(--t2); line-height: 1.4; padding-top: 2px;
 }
-.a-text.st-done { text-decoration: line-through; color: var(--gr); }
-.a-text.st-fail { color: var(--re); }
-.a-text.st-carry { color: var(--t3); }
+.a-text.st-done  { text-decoration: line-through; color: #2D6A4F; }
+.a-text.st-fail  { color: #C0392B; }
+.a-text.st-carry { color: #888; font-style: italic; }
 .a-carry-icon { font-size: 11px; color: var(--or); font-weight: 700; padding-top: 3px; flex-shrink: 0; }
 .a-btns { display: flex; gap: 4px; flex-shrink: 0; }
 .a-btn {
-  padding: 3px 9px; border-radius: 5px; border: 1px solid var(--s2);
-  font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--ff);
-  background: var(--s1); color: var(--t3);
+  padding: 4px 10px; border-radius: 6px; border: 1px solid #E0DDDA;
+  font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--ff);
+  background: #F0EFEB; color: #888;
   transition: background .1s, border-color .1s, color .1s;
 }
 .a-btn:hover { background: var(--s2); color: var(--t2); }
-.a-btn.on-done  { background: var(--gr);  border-color: var(--gr);  color: #fff; }
-.a-btn.on-fail  { background: var(--re);  border-color: var(--re);  color: #fff; }
-.a-btn.on-carry { background: var(--or);  border-color: var(--or);  color: #fff; }
+.a-btn.on-done  { background: #2D6A4F; border-color: #2D6A4F; color: #fff; }
+.a-btn.on-fail  { background: #C0392B; border-color: #C0392B; color: #fff; }
+.a-btn.on-carry { background: #E67E22; border-color: #E67E22; color: #fff; }
 
 /* ADD INPUT */
 .add-row { margin-top: 8px; }
@@ -268,10 +273,12 @@ async function loadData() {
   var all = await q('wig_commitments?session_id=in.('+ids.join(',')+')'+'&order=created_at');
   ST.viewC = (all||[]).filter(function(c){ return c.session_id === viewSess.id; });
   ST.currC = (all||[]).filter(function(c){ return c.session_id === currSess.id; });
+  console.log('loadData viewC:', ST.viewC.length, 'currC:', ST.currC.length);
 }
 
 /* ---- RENDER ---- */
 function render() {
+  console.log('render viewIdx='+ST.viewIdx+' currIdx='+ST.currIdx+' viewC:', ST.viewC);
   if (ST.viewIdx === ST.currIdx) renderCommitments();
   else renderAccounting();
 }
@@ -339,7 +346,7 @@ async function addCommit(member, text, inp) {
 async function deleteCommit(id) {
   try {
     await q('wig_commitments?id=eq.'+id, { method:'DELETE' });
-    ST.currC = ST.currC.filter(function(c){ return c.id !== id; });
+    ST.currC = ST.currC.filter(function(c){ return String(c.id) !== String(id); });
     toast('Usunięto');
     renderCommitments();
   } catch(e) { toast('Błąd: '+e.message); }
@@ -350,7 +357,7 @@ function renderAccounting() {
   var s = ST.sessions[ST.viewIdx];
   var currS = ST.sessions[ST.currIdx];
   var html = '<div class="page-hd">'
-    + '<h2>Rozliczenie — Sesja '+s.number+'</h2>'
+    + '<h2 class="hd-acc">Rozliczenie — Sesja '+s.number+'</h2>'
     + '<div class="meta">'+fmt(s.period_from)+' – '+fmt(s.period_to)+' · '+esc(s.week)
     + ' &nbsp;·&nbsp; <span style="color:var(--acc)">→ trafia do Sesji '+currS.number+'</span></div>'
     + '</div>';
@@ -376,9 +383,9 @@ function renderAccounting() {
 
     mc.forEach(function(c) {
       var st = '';
-      if (c.done === true)                         st = 'done';
-      else if (c.done === false && c.carry_over)   st = 'carry';
-      else if (c.done === false)                   st = 'fail';
+      if (c.done === true)                        st = 'done';
+      else if (c.done === false && c.carry_over)  st = 'carry';
+      else if (c.done === false)                  st = 'fail';
 
       html += '<div class="a-row'+(st?' st-'+st:'')+'">';
       if (st === 'carry') html += '<span class="a-carry-icon">→</span>';
@@ -386,7 +393,7 @@ function renderAccounting() {
       html += '<div class="a-btns">'
         + '<button class="a-btn'+(c.done===true?' on-done':'')+'" data-act="done" data-cid="'+c.id+'" title="Zrobione">✓</button>'
         + '<button class="a-btn'+(c.done===false&&!c.carry_over?' on-fail':'')+'" data-act="fail" data-cid="'+c.id+'" title="Niezrobione">✗</button>'
-        + '<button class="a-btn'+(c.carry_over?' on-carry':'')+'" data-act="carry" data-cid="'+c.id+'" title="Przerzeń do bieżącej sesji">→</button>'
+        + '<button class="a-btn'+(c.carry_over?' on-carry':'')+'" data-act="carry" data-cid="'+c.id+'" title="Przerzuć do bieżącej sesji">→</button>'
         + '</div>';
       html += '</div>';
     });
@@ -405,8 +412,10 @@ function renderAccounting() {
 }
 
 async function handleAction(act, cid) {
-  var c = ST.viewC.find(function(x){ return x.id === cid; });
-  if (!c) return;
+  console.log('handleAction', act, cid, 'viewC len:', ST.viewC.length);
+  // FIX: porównuj jako string — id z bazy jest liczbą, dataset.cid jest stringiem
+  var c = ST.viewC.find(function(x){ return String(x.id) === String(cid); });
+  if (!c) { console.warn('nie znaleziono commit id='+cid, ST.viewC); return; }
 
   var patch;
   if      (act === 'done')  patch = { done:true,  carry_over:false };
@@ -414,6 +423,8 @@ async function handleAction(act, cid) {
   else                      patch = { done:false, carry_over:true  };
 
   var wasCarry = c.carry_over === true;
+
+  console.log('PATCH wig_commitments?id=eq.'+cid, patch);
 
   try {
     await q('wig_commitments?id=eq.'+cid, { method:'PATCH', prefer:'return=minimal', body:patch });
@@ -432,7 +443,10 @@ async function handleAction(act, cid) {
     }
 
     renderAccounting();
-  } catch(e) { toast('Błąd: '+e.message); }
+  } catch(e) {
+    console.error('handleAction error:', e);
+    toast('Błąd: '+e.message);
+  }
 }
 
 /* ---- PRZYCISKI NAWIGATORA ---- */
