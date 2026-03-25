@@ -433,6 +433,48 @@ nav {
   transition: color .15s;
 }
 .add-item-btn:hover { color: var(--bl); }
+
+/* WEEK NAVIGATOR */
+.week-nav {
+  display: flex; align-items: center; gap: 4px;
+}
+.wk-btn {
+  background: var(--s1); border: 1px solid var(--s2);
+  border-radius: 5px; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; cursor: pointer; color: var(--t2);
+  transition: background .12s, color .12s;
+  line-height: 1; font-family: var(--f);
+}
+.wk-btn:hover:not(:disabled) { background: var(--s2); color: var(--t1); }
+.wk-btn:disabled { opacity: .3; cursor: not-allowed; }
+.wk-label {
+  background: var(--s1); border: 1px solid var(--s2);
+  border-radius: 6px; padding: 5px 12px;
+  font-family: var(--fm); font-size: 12px; font-weight: 600;
+  color: var(--t1); letter-spacing: .04em; min-width: 44px;
+  text-align: center;
+}
+.wk-label.is-past { color: var(--t3); }
+.wk-today {
+  background: none; border: 1px solid var(--s2);
+  border-radius: 5px; padding: 5px 10px;
+  font-family: var(--f); font-size: 11px; font-weight: 600;
+  color: var(--t2); cursor: pointer;
+  transition: all .12s;
+}
+.wk-today:hover { border-color: var(--t2); color: var(--t1); }
+
+/* OWNER TAG */
+.owner-tag {
+  font-size: 11px; color: var(--t3);
+  font-family: var(--fm); cursor: pointer;
+  display: inline-block; margin-bottom: 6px;
+  padding: 1px 6px; border-radius: 4px;
+  border: 1px dashed transparent;
+  transition: border-color .12s, color .12s;
+}
+.owner-tag:hover { border-color: var(--s2); color: var(--t2); }
 </style>
 </head>
 <body>
@@ -447,7 +489,12 @@ nav {
   </div>
   </div>
   <div class="nav-right">
-    <div class="week-tag" id="wtag">T—</div>
+    <div class="week-nav">
+      <button class="wk-btn" id="wk-prev" title="Poprzedni tydzień">←</button>
+      <span class="wk-label" id="wtag">T—</span>
+      <button class="wk-btn" id="wk-next" title="Następny tydzień">→</button>
+      <button class="wk-today" id="wk-today" title="Wróć do aktualnego tygodnia">Dziś</button>
+    </div>
     <a href="wig-session.html" class="btn-ghost" style="text-decoration:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid var(--s2);color:var(--t2);">WIG Session</a>
     <button class="nav-btn" onclick="openModal()">+ Wpis tygodniowy</button>
   </div>
@@ -491,7 +538,27 @@ const BASE = 'https://fssfuricylndtetfktex.supabase.co';
 const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
 const HD   = { 'Content-Type':'application/json', apikey:KEY, Authorization:'Bearer '+KEY };
 
-const D = { week:12, area:{}, lags:[], leads:[], li:{}, lei:{}, lw:{}, lew:{}, lagLeadLinks:[] };
+const D = { week:12, currentWeek:12, area:{}, lags:[], leads:[], li:{}, lei:{}, lw:{}, lew:{}, lagLeadLinks:[] };
+
+function updateWeekNav() {
+  var wk = D.week, cw = D.currentWeek;
+  var tag = document.getElementById('wtag');
+  var prev = document.getElementById('wk-prev');
+  var next = document.getElementById('wk-next');
+  var today = document.getElementById('wk-today');
+  if (!tag) return;
+  tag.textContent = 'T' + wk;
+  tag.className = 'wk-label' + (wk < cw ? ' is-past' : '');
+  prev.disabled = wk <= 10;
+  next.disabled = wk >= 22;
+  today.style.display = wk === cw ? 'none' : '';
+}
+
+function setViewWeek(w) {
+  D.week = Math.max(10, Math.min(22, w));
+  updateWeekNav();
+  paint();
+}
 
 async function q(path, opts={}) {
   const r = await fetch(BASE+'/rest/v1/'+path, { headers:HD, ...opts });
@@ -503,8 +570,9 @@ async function init() {
   try {
     const cfg = await q('config?key=eq.current_week');
     D.week = cfg.length ? +cfg[0].value : 12;
-    document.getElementById('wtag').textContent = 'T'+D.week;
-    document.getElementById('inp-week').value = D.week;
+    D.currentWeek = D.week;
+    updateWeekNav();
+    document.getElementById('inp-week').value = D.currentWeek;
 
     const ar = await q('areas?id=eq.os_malinovi');
     D.area = ar[0] || {};
@@ -617,6 +685,7 @@ function cardLag(lag) {
       ${badge}
       ${leadTags ? `<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">${leadTags}</div>` : ''}
     </div>
+    <div class="owner-tag" data-edit-lag-owner="${lag.id}" title="Kliknij aby edytować właściciela">👤 ${esc(lag.owner||'—')}</div>
     <div class="card-dl" data-edit-lag-deadline="${lag.id}" style="cursor:pointer;user-select:none;" title="Kliknij aby edytować deadline">📅 ${dlText}</div>
     <div class="items-list">${rows}</div>
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--s1);">
@@ -665,6 +734,7 @@ function cardLead(lead) {
       ${assignHtml}
       <button class="lead-del-btn" data-del-lead="${lead.id}" title="Usuń LEAD">✕</button>
     </div>
+    <div class="owner-tag" data-edit-lead-owner="${lead.id}" title="Kliknij aby edytować właściciela">👤 ${esc(lead.owner||'—')}</div>
     <div class="card-dl">Deadline — ${fmtDate(lead.deadline)}</div>
     <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
     <div class="items-list">${rows}<div style="padding:4px 0 2px;"><button class="add-item-btn" data-add-lead-item="${lead.id}">+ zadanie</button></div></div>
@@ -787,7 +857,7 @@ function paint() {
 }
 
 function openModal() {
-  const w = D.week;
+  const w = D.currentWeek;
   document.getElementById('inp-week').value = w;
   document.getElementById('modal-sub').textContent = 'T'+w+' · OS Malinovi';
 
@@ -831,7 +901,8 @@ async function saveEntry() {
     }
     await fetch(BASE+'/rest/v1/config?key=eq.current_week', {method:'PATCH',headers:HD,body:JSON.stringify({value:String(week)})});
     D.week = week;
-    document.getElementById('wtag').textContent = 'T'+week;
+    D.currentWeek = week;
+    updateWeekNav();
     closeModal(); paint();
     notify('Zapisano dane dla T'+week+' ✓');
   } catch(e) { notify('Błąd: '+e.message.slice(0,60)); }
@@ -1286,6 +1357,58 @@ document.getElementById('root').addEventListener('click', function(e) {
     return;
   }
 
+  // Edycja owner LAG inline
+  var lagOwnerEl = e.target.closest('[data-edit-lag-owner]');
+  if (lagOwnerEl && !e.target.closest('input')) {
+    e.stopPropagation();
+    var lagId = parseInt(lagOwnerEl.dataset.editLagOwner, 10);
+    var lag = D.lags.find(function(l){ return l.id === lagId; });
+    if (!lag) return;
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.value = lag.owner || '';
+    inp.placeholder = 'Imię właściciela…';
+    inp.style.cssText = 'font-size:11px;border:none;border-bottom:2px solid #2563eb;outline:none;background:transparent;font-family:var(--fm);color:var(--t2);padding:0;width:120px;';
+    lagOwnerEl.textContent = '👤 '; lagOwnerEl.appendChild(inp);
+    inp.focus(); inp.select();
+    var saved = false;
+    function saveLagOwner() {
+      if (saved) return; saved = true;
+      var val = inp.value.trim() || null;
+      q('lags?id=eq.'+lagId, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({owner:val})})
+        .then(function(){ lag.owner = val; reRenderLag(lagId); notify('Właściciel LAG zapisany ✓'); })
+        .catch(function(err){ saved = false; notify('Błąd: '+err.message); reRenderLag(lagId); });
+    }
+    inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();saveLagOwner();} if(ev.key==='Escape') reRenderLag(lagId); });
+    inp.addEventListener('blur', saveLagOwner);
+    return;
+  }
+
+  // Edycja owner LEAD inline
+  var leadOwnerEl = e.target.closest('[data-edit-lead-owner]');
+  if (leadOwnerEl && !e.target.closest('input')) {
+    e.stopPropagation();
+    var leadOwnerId = parseInt(leadOwnerEl.dataset.editLeadOwner, 10);
+    var lead = D.leads.find(function(l){ return l.id === leadOwnerId; });
+    if (!lead) return;
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.value = lead.owner || '';
+    inp.placeholder = 'Imię właściciela…';
+    inp.style.cssText = 'font-size:11px;border:none;border-bottom:2px solid #2563eb;outline:none;background:transparent;font-family:var(--fm);color:var(--t2);padding:0;width:120px;';
+    leadOwnerEl.textContent = '👤 '; leadOwnerEl.appendChild(inp);
+    inp.focus(); inp.select();
+    var saved2 = false;
+    function saveLeadOwner() {
+      if (saved2) return; saved2 = true;
+      var val = inp.value.trim() || null;
+      q('leads?id=eq.'+leadOwnerId, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({owner:val})})
+        .then(function(){ lead.owner = val; reRenderLead(leadOwnerId); notify('Właściciel LEAD zapisany ✓'); })
+        .catch(function(err){ saved2 = false; notify('Błąd: '+err.message); reRenderLead(leadOwnerId); });
+    }
+    inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();saveLeadOwner();} if(ev.key==='Escape') reRenderLead(leadOwnerId); });
+    inp.addEventListener('blur', saveLeadOwner);
+    return;
+  }
+
   // LEAD CRUD handlers
   var toggleItem = e.target.closest('[data-toggle-lead-item]');
   if (toggleItem) { e.stopPropagation(); toggleLeadItem(parseInt(toggleItem.dataset.toggleLeadItem, 10)); return; }
@@ -1319,6 +1442,10 @@ document.getElementById('root').addEventListener('click', function(e) {
 document.getElementById('detail-overlay').addEventListener('click', function(e) {
   if (e.target === e.currentTarget) closeLeadDetail();
 });
+
+document.getElementById('wk-prev').addEventListener('click', function() { setViewWeek(D.week - 1); });
+document.getElementById('wk-next').addEventListener('click', function() { setViewWeek(D.week + 1); });
+document.getElementById('wk-today').addEventListener('click', function() { setViewWeek(D.currentWeek); });
 
 init();
 </script>
