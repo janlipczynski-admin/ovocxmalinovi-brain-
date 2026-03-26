@@ -294,14 +294,32 @@ function fmtDate(d) {
 
 // ── Render kart ─────────────────────────────────────────────────
 
-function renderCard(area, wig, lags, week, wigNum) {
-  const wigScore = calcWigScore(lags);
-  const pace     = idealPace(week);
-  const st       = statusInfo(wigScore, pace);
-  const scoreCol = wigScore >= pace ? '#2D6A4F' : '#C0392B';
+// Renderuj mini-pasek postępu jednego WIG-a wewnątrz karty
+function renderWigBar(wig, wigLags, week) {
+  const score = calcWigScore(wigLags);
+  const pace = idealPace(week);
+  const barCol = score >= pace ? '#2D6A4F' : '#C0392B';
+  const st = statusInfo(score, pace);
+  return `<div style="margin-bottom:8px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text);line-height:1.3;">${esc(wig.name)}</div>
+      <div style="font-family:var(--fm);font-size:13px;font-weight:700;color:${barCol};flex-shrink:0;margin-left:8px;">${pct(score)}%</div>
+    </div>
+    <div style="height:5px;background:#F0EFE9;border-radius:3px;overflow:hidden;">
+      <div style="width:${pct(score)}%;height:100%;background:${barCol};border-radius:3px;transition:width .4s;"></div>
+    </div>
+  </div>`;
+}
 
-  // Historia tygodniowa — wynik per tydzień (nie skumulowany)
-  const weekScores = ALL_WEEKS.map(w => w <= week ? calcWigScoreForWeek(lags, w) : null);
+function renderCard(area, areaWigs, areaLags, week, wigNum) {
+  // Ogólny score obszaru = średnia ważona wszystkich LAG-ów
+  const areaScore = calcWigScore(areaLags);
+  const pace = idealPace(week);
+  const st = statusInfo(areaScore, pace);
+  const scoreCol = areaScore >= pace ? '#2D6A4F' : '#C0392B';
+
+  // Historia tygodniowa — wynik per tydzień
+  const weekScores = ALL_WEEKS.map(w => w <= week ? calcWigScoreForWeek(areaLags, w) : null);
   const maxWS = Math.max(...weekScores.filter(s => s !== null).concat([0.01]));
 
   const bars = ALL_WEEKS.map((w, i) => {
@@ -312,23 +330,31 @@ function renderCard(area, wig, lags, week, wigNum) {
     return `<div class="card-bar" style="height:${h}px;background:${bg};align-self:flex-end;"></div>`;
   }).join('');
 
-  const wigName = wig ? wig.name : (area.wig_description || area.name);
-  const wigTarget = wig ? wig.target : area.wig_target;
-  const wigDeadline = wig ? wig.deadline : area.wig_deadline;
-  const dlStr = wigDeadline ? fmtDate(wigDeadline) : '';
+  const dlStr = area.wig_deadline ? fmtDate(area.wig_deadline) : '';
 
-  return `<a class="wig-card" href="dashboard-4dx.html?area=${encodeURIComponent(area.slug || area.id)}${wig ? '&wig=' + encodeURIComponent(wig.id) : ''}">
+  // Mini-paski per WIG (jeśli area ma WIG-i)
+  let wigBarsHtml = '';
+  if (areaWigs.length) {
+    wigBarsHtml = '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);">'
+      + areaWigs.map(wig => {
+          const wigLags = areaLags.filter(l => l.wig_id === wig.id);
+          return renderWigBar(wig, wigLags, week);
+        }).join('')
+      + '</div>';
+  }
+
+  return `<a class="wig-card" href="dashboard-4dx.html?area=${encodeURIComponent(area.slug || area.id)}">
     <div class="card-label">WIG #${wigNum} · ${esc((area.owner||'—').toUpperCase())}</div>
     <div class="card-body">
       <div class="card-score">
-        <div class="card-score-num" style="color:${scoreCol}">${pct(wigScore)}%</div>
-        <div class="card-score-sub">z ${esc(wigTarget||'100%')}</div>
-        <div class="progress-fill" style="display:none;width:${pct(wigScore)}%;background:${scoreCol}"></div>
+        <div class="card-score-num" style="color:${scoreCol}">${pct(areaScore)}%</div>
+        <div class="card-score-sub">z 100%</div>
+        <div class="progress-fill" style="display:none;width:${pct(areaScore)}%;background:${scoreCol}"></div>
       </div>
       <div class="card-info">
-        <div class="card-name-row">${areaIconHtml(area)}<div class="card-name">${esc(wigName)}</div></div>
+        <div class="card-name-row">${areaIconHtml(area)}<div class="card-name">${esc(area.name||'Obszar')}</div></div>
         <div class="card-owner">${esc(area.owner||'—')}</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">${esc(area.name)}</div>
+        ${area.wig_description ? `<div class="card-desc">${esc(area.wig_description)}</div>` : ''}
         ${dlStr ? `<div class="card-deadline">Deadline: ${dlStr}</div>` : ''}
       </div>
     </div>
@@ -337,17 +363,17 @@ function renderCard(area, wig, lags, week, wigNum) {
       <span class="card-bars-lbl">T10</span>
       <span class="card-bars-lbl">T22</span>
     </div>
+    ${wigBarsHtml}
     <div class="card-footer">
       <span class="status-badge ${st.cls}">● ${st.label}</span>
-      <span class="details-link">→ Szczegóły</span>
+      <span class="details-link">${areaWigs.length ? areaWigs.length + ' WIG' + (areaWigs.length > 1 ? '-ów' : '') + ' · ' : ''}→ Szczegóły</span>
     </div>
     <div class="lag-mini-grid" style="display:none"></div>
   </a>`;
 }
 
-function renderEmptyCard(area, wig, wigNum) {
-  const wigName = wig ? wig.name : area.name;
-  return `<a class="empty-card" href="dashboard-4dx.html?area=${encodeURIComponent(area.slug || area.id)}${wig ? '&wig=' + encodeURIComponent(wig.id) : ''}">
+function renderEmptyCard(area, wigNum) {
+  return `<a class="empty-card" href="dashboard-4dx.html?area=${encodeURIComponent(area.slug || area.id)}">
     <div class="card-label" style="margin-bottom:14px;">WIG #${wigNum} · ${esc((area.owner||'—').toUpperCase())}</div>
     <div class="card-body">
       <div class="card-score">
@@ -356,7 +382,7 @@ function renderEmptyCard(area, wig, wigNum) {
         <div class="progress-fill" style="display:none;width:0%"></div>
       </div>
       <div class="card-info">
-        <div class="card-name-row">${areaIconHtml(area)}<div class="card-name">${esc(wigName)}</div></div>
+        <div class="card-name-row">${areaIconHtml(area)}<div class="card-name">${esc(area.name||'Obszar')}</div></div>
         <div class="card-owner">${esc(area.owner||'—')}</div>
         <div class="card-desc">Brak danych</div>
       </div>
@@ -421,40 +447,15 @@ async function init() {
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
     });
 
-    // Buduj karty: po jednej na każdy WIG (multi-WIG per area)
-    let cards = [];
-    let wigNum = 0;
-
-    areas.forEach(area => {
+    // 1 karta per area, wiele WIG-ów wewnątrz karty
+    grid.innerHTML = areas.map((area, i) => {
       const areaWigs = wigs.filter(w => w.area_id === area.id);
       const areaLags = lags.filter(l => l.area_id === area.id);
-
-      if (areaWigs.length) {
-        // Obszar ma WIG-i — jedna karta per WIG
-        areaWigs.forEach(wig => {
-          wigNum++;
-          const wigLags = areaLags.filter(l => l.wig_id === wig.id);
-          cards.push(wigLags.length
-            ? renderCard(area, wig, wigLags, week, wigNum)
-            : renderEmptyCard(area, wig, wigNum));
-        });
-
-        // Sprawdź nieprzypisane LAG-i (fallback)
-        const unassignedLags = areaLags.filter(l => !l.wig_id || !areaWigs.some(w => w.id === l.wig_id));
-        if (unassignedLags.length) {
-          wigNum++;
-          cards.push(renderCard(area, null, unassignedLags, week, wigNum));
-        }
-      } else {
-        // Brak WIG-ów — fallback na starą logikę (1 karta per area)
-        wigNum++;
-        cards.push(areaLags.length
-          ? renderCard(area, null, areaLags, week, wigNum)
-          : renderEmptyCard(area, null, wigNum));
-      }
-    });
-
-    grid.innerHTML = cards.join('');
+      const wigNum = i + 1;
+      return areaLags.length
+        ? renderCard(area, areaWigs, areaLags, week, wigNum)
+        : renderEmptyCard(area, wigNum);
+    }).join('');
 
   } catch (e) {
     toast('Błąd ładowania: ' + e.message);
