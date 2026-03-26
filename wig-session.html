@@ -479,6 +479,7 @@ function renderAccounting() {
         + '<button class="a-btn'+(c.done===true?' on-done':'')+' " data-act="done" data-cid="'+c.id+'" title="Zrobione">✓</button>'
         + '<button class="a-btn'+(c.done===false&&!c.carry_over?' on-fail':'')+' " data-act="fail" data-cid="'+c.id+'" title="Niezrobione">✗</button>'
         + '<button class="a-btn'+(c.carry_over?' on-carry':'')+' " data-act="carry" data-cid="'+c.id+'" title="Przerzuć do bieżącej sesji">→</button>'
+        + '<button class="c-del" data-del="'+c.id+'" title="Usuń">🗑</button>'
         + '</div>';
       html += '</div>';
     });
@@ -493,6 +494,17 @@ function renderAccounting() {
   document.getElementById('root').innerHTML = html;
   document.getElementById('root').querySelectorAll('.a-btn').forEach(function(btn) {
     btn.addEventListener('click', function(){ handleAction(this.dataset.act, this.dataset.cid); });
+  });
+  document.getElementById('root').querySelectorAll('.c-del').forEach(function(btn) {
+    btn.addEventListener('click', async function(){
+      var id = this.dataset.del;
+      try {
+        await q('wig_commitments?id=eq.'+id, { method:'DELETE' });
+        ST.viewC = ST.viewC.filter(function(c){ return String(c.id) !== String(id); });
+        toast('Usunięto');
+        renderAccounting();
+      } catch(e) { toast('Błąd: '+e.message); }
+    });
   });
 }
 
