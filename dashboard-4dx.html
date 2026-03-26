@@ -568,17 +568,19 @@ async function q(path, opts={}) {
 
 async function init() {
   try {
+    const areaParam = new URLSearchParams(window.location.search).get('area') || 'os_malinovi';
+
     const cfg = await q('config?key=eq.current_week');
     D.week = cfg.length ? +cfg[0].value : 12;
     D.currentWeek = D.week;
     updateWeekNav();
     document.getElementById('inp-week').value = D.currentWeek;
 
-    const ar = await q('areas?id=eq.os_malinovi');
+    const ar = await q('areas?id=eq.'+areaParam);
     D.area = ar[0] || {};
 
-    D.lags  = await q('lags?area_id=eq.os_malinovi&order=lag_number');
-    D.leads = await q('leads?area_id=eq.os_malinovi&order=lead_number');
+    D.lags  = await q('lags?area_id=eq.'+areaParam+'&order=lag_number');
+    D.leads = await q('leads?area_id=eq.'+areaParam+'&order=lead_number');
     D.lagLeadLinks = await q('lag_lead_links?select=*') || [];
 
     for (const l of D.lags)  D.li[l.id]  = await q('lag_items?lag_id=eq.'+l.id+'&order=sort_order');
