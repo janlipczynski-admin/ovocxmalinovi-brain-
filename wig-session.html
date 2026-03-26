@@ -307,6 +307,7 @@ function renderCommitments() {
         var carried = c.carry_over === true;
         var st = '';
         if (c.done === true) st = 'done';
+        else if (c.done === false && carried) st = 'carry';
         else if (c.done === false) st = 'fail';
 
         html += '<div class="a-row'+(st?' st-'+st:'')+'">';
@@ -315,7 +316,7 @@ function renderCommitments() {
         html += '<div class="a-btns">'
           + '<button class="a-btn'+(c.done===true?' on-done':'')+'" data-act="done" data-cid="'+c.id+'" title="Zrobione">✓</button>'
           + '<button class="a-btn'+(c.done===false?' on-fail':'')+'" data-act="fail" data-cid="'+c.id+'" title="Niezrobione">✗</button>'
-          + '<button class="a-btn" data-act="carry" data-cid="'+c.id+'" title="Przenieś na kolejną sesję">→</button>'
+          + '<button class="a-btn'+(carried&&c.done===false?' on-carry':'')+'" data-act="carry" data-cid="'+c.id+'" title="Przenieś na kolejną sesję">→</button>'
           + '<button class="c-del" data-del="'+c.id+'" title="Usuń">🗑</button>'
           + '</div>';
         html += '</div>';
@@ -390,8 +391,13 @@ async function carryCommitForward(cid) {
       method:'POST', prefer:'return=representation',
       body:{ session_id: nextSess.id, member:c.member, commitment:c.commitment, done:null, carry_over:true, week: weekNum }
     });
+    // Update currIdx to new session and reload
+    ST.currIdx = ST.sessions.length - 1;
+    ST.viewIdx = ST.currIdx;
+    renderNav();
+    await loadData();
     toast('Przerzucono → Sesja '+nextSess.number+' ✓');
-    renderCommitments();
+    render();
   } catch(e) { toast('Błąd: '+e.message); }
 }
 
