@@ -1,1 +1,459 @@
-placeholder
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WIG Session — OvocxMalinowi</title>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F6F2;
+  --s1: #EFEFEA;
+  --s2: #E0DDDA;
+  --s3: #CDCDC8;
+  --t1: #1A1A18;
+  --t2: #4A4A46;
+  --t3: #8A8A86;
+  --gr: #2D6A4F;
+  --gr2: #D4EDDA;
+  --re: #C0392B;
+  --re2: #FDECEA;
+  --or: #E67E22;
+  --or2: #FFF3CD;
+  --acc: #2D6A4F;
+  --ff: 'Familjen Grotesk', sans-serif;
+  --fm: 'DM Mono', monospace;
+  --r: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--ff); background: var(--bg); color: var(--t1); min-height: 100vh; }
+
+/* TOP NAV */
+.top-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; background: var(--bg);
+  border-bottom: 1px solid var(--s2); position: sticky; top: 0; z-index: 100;
+}
+.nav-left { display: flex; align-items: center; gap: 16px; }
+.nav-logo { font-size: 14px; font-weight: 700; color: var(--t1); text-decoration: none; }
+.nav-sep { color: var(--s3); }
+.nav-title { font-size: 14px; font-weight: 600; color: var(--t2); }
+
+/* SESSION NAVIGATOR */
+.sess-nav { display: flex; align-items: center; gap: 6px; }
+.sn-arr {
+  background: var(--s1); border: 1px solid var(--s2); border-radius: 6px;
+  width: 28px; height: 28px; font-size: 14px; cursor: pointer; color: var(--t2);
+  display: flex; align-items: center; justify-content: center; transition: background .1s;
+}
+.sn-arr:hover:not(:disabled) { background: var(--s2); }
+.sn-arr:disabled { opacity: .3; cursor: not-allowed; }
+.sn-list { display: flex; gap: 4px; }
+.sn-chip {
+  padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  background: var(--s1); border: 1px solid var(--s2); cursor: pointer;
+  color: var(--t3); white-space: nowrap; transition: background .1s, color .1s, border-color .1s;
+}
+.sn-chip:hover { background: var(--s2); color: var(--t2); }
+.sn-chip.active { background: #1A1A1A; border-color: #1A1A1A; color: #fff; }
+.sn-chip.is-curr:not(.active) { border-color: #2D6A4F; color: #2D6A4F; }
+
+/* MAIN */
+.main { max-width: 960px; margin: 0 auto; padding: 28px 20px; }
+
+/* PAGE HEADER */
+.page-hd { margin-bottom: 20px; }
+.page-hd h2 {
+  font-size: 16px; font-weight: 700; font-family: var(--fm);
+  color: #1A1A1A;
+}
+.page-hd h2.hd-acc { color: #2D6A4F; }
+.page-hd .meta { font-size: 12px; color: var(--t3); font-family: var(--fm); margin-top: 3px; }
+
+/* MEMBER CARD */
+.m-card {
+  background: #fff; border: 1px solid var(--s2); border-radius: var(--r);
+  margin-bottom: 12px; overflow: hidden;
+}
+.m-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; background: var(--s1); border-bottom: 1px solid var(--s2);
+}
+.m-name { font-size: 13px; font-weight: 700; color: var(--t1); }
+.m-pct {
+  font-size: 11px; font-family: var(--fm); font-weight: 500;
+  padding: 2px 8px; border-radius: 20px; background: var(--s2); color: var(--t2);
+}
+.m-pct.good { background: #D4EDDA; color: #2D6A4F; }
+.m-pct.mid  { background: #FFF3CD; color: #7A5300; }
+.m-pct.bad  { background: #FDECEA; color: #C0392B; }
+.m-body { padding: 6px 16px 12px; }
+
+/* COMMIT ROW (zobowiązania) */
+.c-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 0; border-bottom: 1px solid var(--s1);
+}
+.c-row:last-child { border-bottom: none; }
+.c-icon { font-size: 11px; color: var(--or); font-weight: 700; flex-shrink: 0; }
+.c-text { flex: 1; font-size: 13px; color: var(--t2); line-height: 1.4; }
+.c-text.carried { color: var(--t3); font-style: italic; }
+.c-del {
+  background: none; border: none; cursor: pointer; color: var(--s3);
+  font-size: 16px; padding: 0 3px; line-height: 1; flex-shrink: 0; transition: color .1s;
+}
+.c-del:hover { color: var(--re); }
+
+/* ACCOUNT ROW (rozliczenie) */
+.a-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px; margin: 3px 0; border-radius: 7px;
+  border-left: 3px solid #E5E4E0;
+  transition: background .1s;
+}
+.a-row.st-done  { background: #D4EDDA; border-left-color: #2D6A4F; }
+.a-row.st-fail  { background: #FDECEA; border-left-color: #C0392B; }
+.a-row.st-carry { background: #FFF3CD; border-left-color: #E67E22; }
+.a-text {
+  flex: 1; font-size: 13px; color: var(--t2); line-height: 1.4; padding-top: 2px;
+}
+.a-text.st-done  { text-decoration: line-through; color: #2D6A4F; }
+.a-text.st-fail  { color: #C0392B; }
+.a-text.st-carry { color: #888; font-style: italic; }
+.a-carry-icon { font-size: 11px; color: var(--or); font-weight: 700; padding-top: 3px; flex-shrink: 0; }
+.a-btns { display: flex; gap: 4px; flex-shrink: 0; }
+.a-btn {
+  padding: 4px 10px; border-radius: 6px; border: 1px solid #E0DDDA;
+  font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--ff);
+  background: #F0EFEB; color: #888;
+  transition: background .1s, border-color .1s, color .1s;
+}
+.a-btn:hover { background: var(--s2); color: var(--t2); }
+.a-btn.on-done  { background: #2D6A4F; border-color: #2D6A4F; color: #fff; }
+.a-btn.on-fail  { background: #C0392B; border-color: #C0392B; color: #fff; }
+.a-btn.on-carry { background: #E67E22; border-color: #E67E22; color: #fff; }
+
+/* ADD INPUT */
+.add-row { margin-top: 8px; }
+.add-input {
+  width: 100%; padding: 7px 10px; font-family: var(--ff); font-size: 13px;
+  border: 1px solid var(--s2); border-radius: 6px; background: var(--s1);
+  color: var(--t1); outline: none; transition: border-color .1s, background .1s;
+}
+.add-input:focus { border-color: var(--acc); background: #fff; }
+.add-input::placeholder { color: var(--t3); }
+
+/* EMPTY */
+.empty-note { font-size: 12px; color: var(--t3); padding: 8px 0; }
+.empty-state { text-align: center; padding: 60px 20px; color: var(--t3); }
+.empty-state p { font-size: 15px; margin-bottom: 8px; }
+.empty-state small { font-size: 12px; font-family: var(--fm); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--t1); color: #fff; padding: 10px 20px;
+  border-radius: 8px; font-size: 13px; opacity: 0;
+  transition: opacity .2s, transform .2s; pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <div class="nav-left">
+    <a href="index.html" class="nav-logo">← Dashboard</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">WIG Sesja</span>
+  </div>
+  <div class="sess-nav">
+    <button class="sn-arr" id="sn-prev" disabled>←</button>
+    <div class="sn-list" id="sn-list"></div>
+    <button class="sn-arr" id="sn-next" disabled>→</button>
+  </div>
+</nav>
+
+<div class="main" id="root">
+  <div class="empty-state"><p>Ładowanie sesji…</p></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SB = 'https://fssfuricylndtetfktex.supabase.co';
+var SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
+var MEMBERS = ['Jan', 'Kacper', 'Olgierd', 'Iza', 'Renia'];
+
+var ST = { sessions:[], viewIdx:0, currIdx:0, viewC:[], currC:[] };
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmt(d) {
+  if (!d) return '';
+  var p = d.split('-');
+  return p.length < 3 ? d : p[2]+'.'+p[1];
+}
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2500);
+}
+async function q(path, opts) {
+  var url = SB+'/rest/v1/'+path;
+  var headers = { 'apikey':SK, 'Authorization':'Bearer '+SK, 'Content-Type':'application/json' };
+  if (opts && opts.prefer) headers['Prefer'] = opts.prefer;
+  var res = await fetch(url, {
+    method: opts && opts.method ? opts.method : 'GET',
+    headers: headers,
+    body: opts && opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  if (!res.ok) { var t = await res.text(); throw new Error(res.status+' '+t); }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+/* ---- NAV ---- */
+function renderNav() {
+  var list = document.getElementById('sn-list');
+  document.getElementById('sn-prev').disabled = ST.viewIdx <= 0;
+  document.getElementById('sn-next').disabled = ST.viewIdx >= ST.sessions.length - 1;
+  list.innerHTML = ST.sessions.map(function(s, i) {
+    var cls = 'sn-chip'
+      + (i === ST.viewIdx ? ' active' : '')
+      + (i === ST.currIdx ? ' is-curr' : '');
+    return '<button class="'+cls+'" data-i="'+i+'">SESJA '+s.number+' · '+fmt(s.date)+'</button>';
+  }).join('');
+  list.querySelectorAll('.sn-chip').forEach(function(btn) {
+    btn.addEventListener('click', function() { setView(parseInt(this.dataset.i)); });
+  });
+}
+
+async function setView(i) {
+  ST.viewIdx = i;
+  renderNav();
+  await loadData();
+  render();
+}
+
+/* ---- DATA ---- */
+async function init() {
+  try {
+    var sessions = await q('sessions?order=number');
+    if (!sessions || sessions.length === 0) {
+      document.getElementById('root').innerHTML =
+        '<div class="empty-state"><p>Brak sesji — dodaj w Supabase</p>' +
+        '<small>INSERT INTO sessions (number, date, period_from, period_to, week) VALUES (...)</small></div>';
+      return;
+    }
+    ST.sessions = sessions;
+    ST.currIdx = sessions.length - 1;
+    ST.viewIdx = ST.currIdx;
+    renderNav();
+    await loadData();
+    render();
+  } catch(e) {
+    document.getElementById('root').innerHTML =
+      '<div class="empty-state"><p>Błąd: '+esc(e.message)+'</p></div>';
+  }
+}
+
+async function loadData() {
+  var viewSess = ST.sessions[ST.viewIdx];
+  var currSess = ST.sessions[ST.currIdx];
+  var ids = viewSess.id === currSess.id ? [viewSess.id] : [viewSess.id, currSess.id];
+  var all = await q('wig_commitments?session_id=in.('+ids.join(',')+')'+'&order=created_at');
+  ST.viewC = (all||[]).filter(function(c){ return c.session_id === viewSess.id; });
+  ST.currC = (all||[]).filter(function(c){ return c.session_id === currSess.id; });
+  console.log('loadData viewC:', ST.viewC.length, 'currC:', ST.currC.length);
+}
+
+/* ---- RENDER ---- */
+function render() {
+  console.log('render viewIdx='+ST.viewIdx+' currIdx='+ST.currIdx+' viewC:', ST.viewC);
+  if (ST.viewIdx === ST.currIdx) renderCommitments();
+  else renderAccounting();
+}
+
+/* ======== WIDOK: ZOBOWIĄZANIA (bieżąca sesja) ======== */
+function renderCommitments() {
+  var s = ST.sessions[ST.currIdx];
+  var html = '<div class="page-hd">'
+    + '<h2>Zobowiązania — Sesja '+s.number+'</h2>'
+    + '<div class="meta">'+fmt(s.period_from)+' – '+fmt(s.period_to)+' · '+esc(s.week)+'</div>'
+    + '</div>';
+
+  MEMBERS.forEach(function(m) {
+    var mc = ST.currC.filter(function(c){ return c.member === m; });
+    html += '<div class="m-card">'
+      + '<div class="m-head"><span class="m-name">'+esc(m)+'</span></div>'
+      + '<div class="m-body">';
+
+    if (mc.length === 0) {
+      html += '<div class="empty-note">Brak zobowiązań</div>';
+    } else {
+      mc.forEach(function(c) {
+        var carried = c.carry_over === true;
+        html += '<div class="c-row">';
+        if (carried) html += '<span class="c-icon" title="Przeniesione z poprzedniej sesji">→</span>';
+        html += '<span class="c-text'+(carried?' carried':'')+'">'+esc(c.commitment)+'</span>';
+        html += '<button class="c-del" data-del="'+c.id+'" title="Usuń">×</button>';
+        html += '</div>';
+      });
+    }
+
+    html += '<div class="add-row"><input class="add-input" placeholder="Dodaj zobowiązanie… (Enter)" data-member="'+esc(m)+'"></div>';
+    html += '</div></div>';
+  });
+
+  document.getElementById('root').innerHTML = html;
+
+  var root = document.getElementById('root');
+  root.querySelectorAll('.c-del').forEach(function(btn) {
+    btn.addEventListener('click', function(){ deleteCommit(this.dataset.del); });
+  });
+  root.querySelectorAll('.add-input').forEach(function(inp) {
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && this.value.trim()) {
+        addCommit(this.dataset.member, this.value.trim(), this);
+      }
+    });
+  });
+}
+
+async function addCommit(member, text, inp) {
+  inp.disabled = true;
+  try {
+    var rows = await q('wig_commitments', {
+      method:'POST', prefer:'return=representation',
+      body:{ session_id: ST.sessions[ST.currIdx].id, member:member, commitment:text, done:null, carry_over:false }
+    });
+    if (rows && rows.length) ST.currC.push(rows[0]);
+    inp.value = '';
+    toast('Dodano ✓');
+    renderCommitments();
+  } catch(e) { toast('Błąd: '+e.message); inp.disabled = false; }
+}
+
+async function deleteCommit(id) {
+  try {
+    await q('wig_commitments?id=eq.'+id, { method:'DELETE' });
+    ST.currC = ST.currC.filter(function(c){ return String(c.id) !== String(id); });
+    toast('Usunięto');
+    renderCommitments();
+  } catch(e) { toast('Błąd: '+e.message); }
+}
+
+/* ======== WIDOK: ROZLICZENIE (poprzednia sesja) ======== */
+function renderAccounting() {
+  var s = ST.sessions[ST.viewIdx];
+  var currS = ST.sessions[ST.currIdx];
+  var html = '<div class="page-hd">'
+    + '<h2 class="hd-acc">Rozliczenie — Sesja '+s.number+'</h2>'
+    + '<div class="meta">'+fmt(s.period_from)+' – '+fmt(s.period_to)+' · '+esc(s.week)
+    + ' &nbsp;·&nbsp; <span style="color:var(--acc)">→ trafia do Sesji '+currS.number+'</span></div>'
+    + '</div>';
+
+  var anyMember = false;
+  MEMBERS.forEach(function(m) {
+    var mc = ST.viewC.filter(function(c){ return c.member === m; });
+    if (mc.length === 0) return;
+    anyMember = true;
+
+    var decided = mc.filter(function(c){ return c.done !== null; });
+    var doneN = mc.filter(function(c){ return c.done === true; }).length;
+    var pct = decided.length > 0 ? Math.round(doneN / decided.length * 100) : null;
+    var pctClass = pct === null ? '' : pct >= 80 ? 'good' : pct >= 50 ? 'mid' : 'bad';
+    var pctHtml = pct !== null
+      ? '<span class="m-pct '+pctClass+'">'+doneN+'/'+decided.length+' ('+pct+'%)</span>'
+      : '<span class="m-pct" style="opacity:.4">—</span>';
+
+    html += '<div class="m-card">'
+      + '<div class="m-head"><span class="m-name">'+esc(m)+'</span>'+pctHtml+'</div>'
+      + '<div class="m-body">';
+
+    mc.forEach(function(c) {
+      var st = '';
+      if (c.done === true)                        st = 'done';
+      else if (c.done === false && c.carry_over)  st = 'carry';
+      else if (c.done === false)                  st = 'fail';
+
+      html += '<div class="a-row'+(st?' st-'+st:'')+'">'
+      if (st === 'carry') html += '<span class="a-carry-icon">→</span>';
+      html += '<span class="a-text'+(st?' st-'+st:'')+'">'+esc(c.commitment)+'</span>';
+      html += '<div class="a-btns">'
+        + '<button class="a-btn'+(c.done===true?' on-done':'')+' " data-act="done" data-cid="'+c.id+'" title="Zrobione">✓</button>'
+        + '<button class="a-btn'+(c.done===false&&!c.carry_over?' on-fail':'')+' " data-act="fail" data-cid="'+c.id+'" title="Niezrobione">✗</button>'
+        + '<button class="a-btn'+(c.carry_over?' on-carry':'')+' " data-act="carry" data-cid="'+c.id+'" title="Przerzuć do bieżącej sesji">→</button>'
+        + '</div>';
+      html += '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  if (!anyMember) {
+    html += '<div class="empty-note" style="padding:20px 0">Brak zobowiązań z tej sesji.</div>';
+  }
+
+  document.getElementById('root').innerHTML = html;
+  document.getElementById('root').querySelectorAll('.a-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(){ handleAction(this.dataset.act, this.dataset.cid); });
+  });
+}
+
+async function handleAction(act, cid) {
+  console.log('handleAction', act, cid, 'viewC len:', ST.viewC.length);
+  var c = ST.viewC.find(function(x){ return String(x.id) === String(cid); });
+  if (!c) { console.warn('nie znaleziono commit id='+cid, ST.viewC); return; }
+
+  // done/fail nie wysyłają carry_over — działają nawet bez kolumny w bazie
+  // carry wymaga kolumny carry_over (SQL: ALTER TABLE wig_commitments ADD COLUMN IF NOT EXISTS carry_over boolean DEFAULT false)
+  var patch;
+  if      (act === 'done')  patch = { done:true  };
+  else if (act === 'fail')  patch = { done:false };
+  else                      patch = { done:false, carry_over:true };
+
+  // Jeśli done/fail a wcześniej był carry_over — wyczyść (wymaga kolumny)
+  var wasCarry = c.carry_over === true;
+  if ((act === 'done' || act === 'fail') && wasCarry) patch.carry_over = false;
+
+  console.log('PATCH wig_commitments?id=eq.'+cid, patch);
+
+  try {
+    await q('wig_commitments?id=eq.'+cid, { method:'PATCH', prefer:'return=minimal', body:patch });
+    Object.assign(c, patch);
+
+    if (act === 'carry' && !wasCarry) {
+      var rows = await q('wig_commitments', {
+        method:'POST', prefer:'return=representation',
+        body:{ session_id: ST.sessions[ST.currIdx].id, member:c.member, commitment:c.commitment, done:null, carry_over:true, week: ST.sessions[ST.currIdx].week || 13 }
+      });
+      if (rows && rows.length) ST.currC.push(rows[0]);
+      toast('Przerzucono → Sesja '+ST.sessions[ST.currIdx].number+' ✓');
+    } else {
+      toast('Zapisano ✓');
+    }
+
+    renderAccounting();
+  } catch(e) {
+    console.error('handleAction error:', e);
+    toast('Błąd: '+e.message);
+  }
+}
+
+/* ---- PRZYCISKI NAWIGATORA ---- */
+document.getElementById('sn-prev').addEventListener('click', function() {
+  if (ST.viewIdx > 0) setView(ST.viewIdx - 1);
+});
+document.getElementById('sn-next').addEventListener('click', function() {
+  if (ST.viewIdx < ST.sessions.length - 1) setView(ST.viewIdx + 1);
+});
+
+init();
+</script>
+</body>
+</html>
