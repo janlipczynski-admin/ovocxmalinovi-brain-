@@ -381,13 +381,13 @@ function renderAccounting() {
       else if (c.done === false && c.carry_over)  st = 'carry';
       else if (c.done === false)                  st = 'fail';
 
-      html += '<div class="a-row'+(st?' st-'+st:'')+'">';
+      html += '<div class="a-row'+(st?' st-'+st:'')+'">'
       if (st === 'carry') html += '<span class="a-carry-icon">→</span>';
       html += '<span class="a-text'+(st?' st-'+st:'')+'">'+esc(c.commitment)+'</span>';
       html += '<div class="a-btns">'
-        + '<button class="a-btn'+(c.done===true?' on-done':'')+'" data-act="done" data-cid="'+c.id+'" title="Zrobione">✓</button>'
-        + '<button class="a-btn'+(c.done===false&&!c.carry_over?' on-fail':'')+'" data-act="fail" data-cid="'+c.id+'" title="Niezrobione">✗</button>'
-        + '<button class="a-btn'+(c.carry_over?' on-carry':'')+'" data-act="carry" data-cid="'+c.id+'" title="Przerzuć do bieżącej sesji">→</button>'
+        + '<button class="a-btn'+(c.done===true?' on-done':'')+' " data-act="done" data-cid="'+c.id+'" title="Zrobione">✓</button>'
+        + '<button class="a-btn'+(c.done===false&&!c.carry_over?' on-fail':'')+' " data-act="fail" data-cid="'+c.id+'" title="Niezrobione">✗</button>'
+        + '<button class="a-btn'+(c.carry_over?' on-carry':'')+' " data-act="carry" data-cid="'+c.id+'" title="Przerzuć do bieżącej sesji">→</button>'
         + '</div>';
       html += '</div>';
     });
@@ -430,7 +430,7 @@ async function handleAction(act, cid) {
     if (act === 'carry' && !wasCarry) {
       var rows = await q('wig_commitments', {
         method:'POST', prefer:'return=representation',
-        body:{ session_id: ST.sessions[ST.currIdx].id, member:c.member, commitment:c.commitment, done:null, carry_over:true }
+        body:{ session_id: ST.sessions[ST.currIdx].id, member:c.member, commitment:c.commitment, done:null, carry_over:true, week: ST.sessions[ST.currIdx].week || 13 }
       });
       if (rows && rows.length) ST.currC.push(rows[0]);
       toast('Przerzucono → Sesja '+ST.sessions[ST.currIdx].number+' ✓');
