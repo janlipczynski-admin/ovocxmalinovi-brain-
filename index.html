@@ -452,9 +452,7 @@ async function init() {
       const areaWigs = wigs.filter(w => w.area_id === area.id);
       const areaLags = lags.filter(l => l.area_id === area.id);
       const wigNum = i + 1;
-      return areaLags.length
-        ? renderCard(area, areaWigs, areaLags, week, wigNum)
-        : renderEmptyCard(area, wigNum);
+      return renderCard(area, areaWigs, areaLags, week, wigNum);
     }).join('');
 
   } catch (e) {
