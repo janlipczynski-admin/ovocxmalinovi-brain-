@@ -431,7 +431,7 @@ async function handleAction(act, cid) {
     if (act === 'carry' && !alreadyCarried) {
       var rows = await q('wig_commitments', {
         method:'POST', prefer:'return=representation',
-        body:{ session_id: ST.sessions[ST.currIdx].id, member:c.member, commitment:c.commitment, done:null, carry_over:true, week: ST.sessions[ST.currIdx].week || 13 }
+        body:{ session_id: ST.sessions[ST.currIdx].id, member:c.member, commitment:c.commitment, done:null, carry_over:true, week: parseInt(String(ST.sessions[ST.currIdx].week).replace('T','')) || 13 }
       });
       if (rows && rows.length) ST.currC.push(rows[0]);
       toast('Przerzucono → Sesja '+ST.sessions[ST.currIdx].number+' ✓');
