@@ -288,8 +288,16 @@ function renderCommitments() {
 
   MEMBERS.forEach(function(m) {
     var mc = ST.currC.filter(function(c){ return c.member === m; });
+    var decided = mc.filter(function(c){ return c.done !== null; });
+    var doneN = mc.filter(function(c){ return c.done === true; }).length;
+    var pct = decided.length > 0 ? Math.round(doneN / decided.length * 100) : null;
+    var pctClass = pct === null ? '' : pct >= 80 ? 'good' : pct >= 50 ? 'mid' : 'bad';
+    var pctHtml = mc.length > 0 && pct !== null
+      ? '<span class="m-pct '+pctClass+'">'+doneN+'/'+mc.length+'</span>'
+      : '';
+
     html += '<div class="m-card">'
-      + '<div class="m-head"><span class="m-name">'+esc(m)+'</span></div>'
+      + '<div class="m-head"><span class="m-name">'+esc(m)+'</span>'+pctHtml+'</div>'
       + '<div class="m-body">';
 
     if (mc.length === 0) {
@@ -297,10 +305,18 @@ function renderCommitments() {
     } else {
       mc.forEach(function(c) {
         var carried = c.carry_over === true;
-        html += '<div class="c-row">';
-        if (carried) html += '<span class="c-icon" title="Przeniesione z poprzedniej sesji">→</span>';
-        html += '<span class="c-text'+(carried?' carried':'')+'">'+esc(c.commitment)+'</span>';
-        html += '<button class="c-del" data-del="'+c.id+'" title="Usuń">×</button>';
+        var st = '';
+        if (c.done === true) st = 'done';
+        else if (c.done === false) st = 'fail';
+
+        html += '<div class="a-row'+(st?' st-'+st:'')+'">';
+        if (carried) html += '<span class="a-carry-icon" title="Przeniesione z poprzedniej sesji">→</span>';
+        html += '<span class="a-text'+(st?' st-'+st:'')+'">'+esc(c.commitment)+'</span>';
+        html += '<div class="a-btns">'
+          + '<button class="a-btn'+(c.done===true?' on-done':'')+'" data-act="done" data-cid="'+c.id+'" title="Zrobione">✓</button>'
+          + '<button class="a-btn'+(c.done===false?' on-fail':'')+'" data-act="fail" data-cid="'+c.id+'" title="Niezrobione">✗</button>'
+          + '<button class="c-del" data-del="'+c.id+'" title="Usuń">🗑</button>'
+          + '</div>';
         html += '</div>';
       });
     }
@@ -312,6 +328,9 @@ function renderCommitments() {
   document.getElementById('root').innerHTML = html;
 
   var root = document.getElementById('root');
+  root.querySelectorAll('.a-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(){ toggleStatus(this.dataset.act, this.dataset.cid); });
+  });
   root.querySelectorAll('.c-del').forEach(function(btn) {
     btn.addEventListener('click', function(){ deleteCommit(this.dataset.del); });
   });
@@ -322,6 +341,20 @@ function renderCommitments() {
       }
     });
   });
+}
+
+async function toggleStatus(act, cid) {
+  var c = ST.currC.find(function(x){ return String(x.id) === String(cid); });
+  if (!c) return;
+  var patch;
+  if (act === 'done') patch = { done: c.done === true ? null : true };
+  else patch = { done: c.done === false ? null : false };
+  try {
+    await q('wig_commitments?id=eq.'+cid, { method:'PATCH', prefer:'return=minimal', body:patch });
+    Object.assign(c, patch);
+    toast('Zapisano ✓');
+    renderCommitments();
+  } catch(e) { toast('Błąd: '+e.message); }
 }
 
 async function addCommit(member, text, inp) {
