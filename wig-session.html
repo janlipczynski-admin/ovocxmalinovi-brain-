@@ -315,6 +315,7 @@ function renderCommitments() {
         html += '<div class="a-btns">'
           + '<button class="a-btn'+(c.done===true?' on-done':'')+'" data-act="done" data-cid="'+c.id+'" title="Zrobione">✓</button>'
           + '<button class="a-btn'+(c.done===false?' on-fail':'')+'" data-act="fail" data-cid="'+c.id+'" title="Niezrobione">✗</button>'
+          + '<button class="a-btn" data-act="carry" data-cid="'+c.id+'" title="Przenieś na kolejną sesję">→</button>'
           + '<button class="c-del" data-del="'+c.id+'" title="Usuń">🗑</button>'
           + '</div>';
         html += '</div>';
@@ -329,7 +330,10 @@ function renderCommitments() {
 
   var root = document.getElementById('root');
   root.querySelectorAll('.a-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(){ toggleStatus(this.dataset.act, this.dataset.cid); });
+    btn.addEventListener('click', function(){
+      if (this.dataset.act === 'carry') carryCommitForward(this.dataset.cid);
+      else toggleStatus(this.dataset.act, this.dataset.cid);
+    });
   });
   root.querySelectorAll('.c-del').forEach(function(btn) {
     btn.addEventListener('click', function(){ deleteCommit(this.dataset.del); });
@@ -341,6 +345,54 @@ function renderCommitments() {
       }
     });
   });
+}
+
+async function getOrCreateNextSession() {
+  var curr = ST.sessions[ST.currIdx];
+  if (ST.currIdx < ST.sessions.length - 1) return ST.sessions[ST.currIdx + 1];
+  // Auto-create next session
+  var nextNum = curr.number + 1;
+  var nextWeekNum = parseInt(String(curr.week).replace('T','')) + 1;
+  var from = new Date(curr.period_to);
+  from.setDate(from.getDate() + 1);
+  var to = new Date(from);
+  to.setDate(to.getDate() + 6);
+  var date = new Date(to);
+  date.setDate(date.getDate() + 1);
+  function iso(d) { return d.toISOString().split('T')[0]; }
+  var body = { number: nextNum, date: iso(date), period_from: iso(from), period_to: iso(to), week: 'T'+nextWeekNum };
+  var rows = await q('sessions', { method:'POST', prefer:'return=representation', body: body });
+  if (rows && rows.length) {
+    ST.sessions.push(rows[0]);
+    renderNav();
+    return rows[0];
+  }
+  throw new Error('Nie udało się utworzyć sesji');
+}
+
+async function carryCommitForward(cid) {
+  var c = ST.currC.find(function(x){ return String(x.id) === String(cid); });
+  if (!c) return;
+  try {
+    var nextSess = await getOrCreateNextSession();
+    // Check if already carried
+    var nextCommits = await q('wig_commitments?session_id=eq.'+nextSess.id+'&member=eq.'+encodeURIComponent(c.member)+'&commitment=eq.'+encodeURIComponent(c.commitment)+'&carry_over=eq.true');
+    if (nextCommits && nextCommits.length > 0) {
+      toast('Już przeniesione');
+      return;
+    }
+    // Mark source as not done + carry
+    await q('wig_commitments?id=eq.'+cid, { method:'PATCH', prefer:'return=minimal', body:{ done:false, carry_over:true } });
+    Object.assign(c, { done:false, carry_over:true });
+    // Create in next session
+    var weekNum = parseInt(String(nextSess.week).replace('T','')) || 13;
+    await q('wig_commitments', {
+      method:'POST', prefer:'return=representation',
+      body:{ session_id: nextSess.id, member:c.member, commitment:c.commitment, done:null, carry_over:true, week: weekNum }
+    });
+    toast('Przerzucono → Sesja '+nextSess.number+' ✓');
+    renderCommitments();
+  } catch(e) { toast('Błąd: '+e.message); }
 }
 
 async function toggleStatus(act, cid) {
