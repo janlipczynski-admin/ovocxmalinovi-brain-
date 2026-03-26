@@ -538,7 +538,7 @@ const BASE = 'https://fssfuricylndtetfktex.supabase.co';
 const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
 const HD   = { 'Content-Type':'application/json', apikey:KEY, Authorization:'Bearer '+KEY };
 
-const D = { week:12, currentWeek:12, area:{}, lags:[], leads:[], li:{}, lei:{}, lw:{}, lew:{}, lagLeadLinks:[] };
+const D = { week:12, currentWeek:12, area:{}, wigs:[], lags:[], leads:[], li:{}, lei:{}, lw:{}, lew:{}, lagLeadLinks:[] };
 
 function updateWeekNav() {
   var wk = D.week, cw = D.currentWeek;
@@ -581,6 +581,7 @@ async function init() {
 
     D.lags  = await q('lags?area_id=eq.'+areaParam+'&order=lag_number');
     D.leads = await q('leads?area_id=eq.'+areaParam+'&order=lead_number');
+    D.wigs  = await q('wigs?area_id=eq.'+areaParam+'&order=sort_order,created_at');
     D.lagLeadLinks = await q('lag_lead_links?select=*') || [];
 
     for (const l of D.lags)  D.li[l.id]  = await q('lag_items?lag_id=eq.'+l.id+'&order=sort_order');
@@ -615,7 +616,13 @@ function fmtDate(d) {
 
 const lagProg  = l => { const it=D.li[l.id]||[]; if(!it.length) return 0; const vs=it.map(i=>(D.lw[i.id]||{})[D.week]||0); return vs.reduce((a,b)=>a+b,0)/vs.length; };
 const leadProg = l => { const it=D.lei[l.id]||[]; if(!it.length) return 0; const vs=it.map(i=>(D.lew[i.id]||{})[D.week]||0); return vs.reduce((a,b)=>a+b,0)/vs.length; };
-const wigProg  = () => !D.lags.length ? 0 : D.lags.map(lagProg).reduce((a,b)=>a+b,0)/D.lags.length;
+function wigProg(wigId) {
+  var filteredLags = wigId ? D.lags.filter(function(l){ return l.wig_id === wigId; }) : D.lags;
+  if (!filteredLags.length) return 0;
+  var totalW = filteredLags.reduce(function(s,l){ return s + (l.weight || 100); }, 0);
+  if (!totalW) return 0;
+  return filteredLags.reduce(function(s,l){ return s + lagProg(l) * (l.weight || 100); }, 0) / totalW;
+}
 
 function sparkSVG(id, type, color) {
   const data = type==='lag' ? D.lw[id]||{} : D.lew[id]||{};
@@ -792,24 +799,19 @@ function renderArea() {
   return html || '<div class="empty-box">Brak danych</div>';
 }
 
-function paint() {
-  const wp = wigProg(), a = D.area;
-  const ip = idealPace();
-  const barCol = wp >= ip ? '#2D6A4F' : '#C0392B';
-
-  // Historia tygodniowa WIG (wynik per tydzień, nie skumulowany)
-  const ALL_WKS = [10,11,12,13,14,15,16,17,18,19,20,21,22];
-  const weekScores = ALL_WKS.map(function(w) {
-    if (w > D.week || !D.lags.length) return null;
-    var ls = D.lags.map(function(lag) {
+function buildWigWeekBars(wigLags) {
+  var ALL_WKS = [10,11,12,13,14,15,16,17,18,19,20,21,22];
+  var weekScores = ALL_WKS.map(function(w) {
+    if (w > D.week || !wigLags.length) return null;
+    var ls = wigLags.map(function(lag) {
       var its = D.li[lag.id] || [];
       if (!its.length) return null;
       return its.filter(function(i){ return (D.lw[i.id]||{})[w] === 1; }).length / its.length;
     }).filter(function(s){ return s !== null; });
     return ls.length ? ls.reduce(function(a,b){return a+b;},0)/ls.length : 0;
   });
-  const maxWS = Math.max.apply(null, weekScores.filter(function(s){return s!==null;}).concat([0.01]));
-  const weekBars = ALL_WKS.map(function(w, i) {
+  var maxWS = Math.max.apply(null, weekScores.filter(function(s){return s!==null;}).concat([0.01]));
+  return ALL_WKS.map(function(w, i) {
     var score = weekScores[i];
     var isFuture = w > D.week;
     var barH = isFuture ? 6 : Math.max(4, Math.round((score / maxWS) * 48));
@@ -825,37 +827,79 @@ function paint() {
       +'<div style="font-size:8px;color:'+wCol+';font-family:var(--fm);font-weight:'+wW+';">T'+w+'</div>'
       +'</div>';
   }).join('');
+}
 
-  const dlText = a.wig_deadline ? fmtDate(a.wig_deadline) : 'Brak deadline';
+function renderWigBlock(wig, wigLags, wigNum) {
+  var a = D.area;
+  var wp = 0;
+  if (wigLags.length) {
+    var totalW = wigLags.reduce(function(s,l){ return s + (l.weight || 100); }, 0);
+    wp = totalW ? wigLags.reduce(function(s,l){ return s + lagProg(l) * (l.weight || 100); }, 0) / totalW : 0;
+  }
+  var ip = idealPace();
+  var barCol = wp >= ip ? '#2D6A4F' : '#C0392B';
 
-  document.getElementById('root').innerHTML = `
-    <div class="wig-block">
-      <div style="flex:1;min-width:0;">
-        <div class="wig-label">WIG #1 · ${esc((a.owner||'Jan (CEO)').toUpperCase())}</div>
-        <div class="wig-title">${esc(a.name||'OS MALINOWI 1.0')}</div>
-        <div class="wig-desc" data-edit-wig-desc style="cursor:pointer;" title="Kliknij aby edytować opis WIG">${esc(a.wig_description||'Kliknij aby dodać opis…')}</div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
-          <span data-edit-wig-deadline style="cursor:pointer;font-size:12px;color:var(--t3);font-family:var(--fm);" title="Kliknij aby edytować deadline">📅 ${esc(dlText)}</span>
-          <span style="color:var(--s2);">·</span>
-          <span style="font-size:12px;color:var(--t3);">Idealne tempo T${D.week}: ${pct(ip)}%</span>
-        </div>
-        <div style="position:relative;height:12px;margin-bottom:16px;">
-          <div style="position:absolute;inset:0;background:#F0EFE9;border-radius:6px;overflow:hidden;">
-            <div style="width:${pct(wp)}%;height:100%;background:${barCol};transition:width .8s;"></div>
-          </div>
-          <div style="position:absolute;top:-4px;bottom:-4px;left:${pct(ip)}%;transform:translateX(-50%);width:2px;background:#CCCCCC;border-radius:2px;pointer-events:none;"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(13,1fr);gap:2px;">
-          ${weekBars}
-        </div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;padding-left:28px;">
-        <div style="font-size:56px;font-weight:700;color:${barCol};font-family:var(--fm);line-height:1;margin-bottom:8px;">${pct(wp)}%</div>
-        <div style="font-size:12px;color:var(--t3);margin-bottom:10px;">Cel: ${esc(a.wig_target||'100% + RYTM')}</div>
-        ${statusBadgeHtml(wp)}
-      </div>
-    </div>
-    ${renderArea()}`;
+  var wigName = wig ? wig.name : (a.wig_description || a.name);
+  var wigTarget = wig ? (wig.target || '100%') : (a.wig_target || '100% + RYTM');
+  var wigDeadline = wig ? wig.deadline : a.wig_deadline;
+  var dlText = wigDeadline ? fmtDate(wigDeadline) : 'Brak deadline';
+
+  var weekBars = buildWigWeekBars(wigLags);
+
+  return '<div class="wig-block">'
+    +'<div style="flex:1;min-width:0;">'
+      +'<div class="wig-label">WIG #'+wigNum+' · '+esc((a.owner||'Jan (CEO)').toUpperCase())+'</div>'
+      +'<div class="wig-title">'+esc(wigName)+'</div>'
+      +(wig ? '' : '<div class="wig-desc" data-edit-wig-desc style="cursor:pointer;" title="Kliknij aby edytować opis WIG">'+esc(a.wig_description||'Kliknij aby dodać opis…')+'</div>')
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">'
+        +'<span '+(wig ? '' : 'data-edit-wig-deadline ')+' style="'+(wig?'':'cursor:pointer;')+'font-size:12px;color:var(--t3);font-family:var(--fm);" title="Deadline">📅 '+esc(dlText)+'</span>'
+        +'<span style="color:var(--s2);">·</span>'
+        +'<span style="font-size:12px;color:var(--t3);">Idealne tempo T'+D.week+': '+pct(ip)+'%</span>'
+      +'</div>'
+      +'<div style="position:relative;height:12px;margin-bottom:16px;">'
+        +'<div style="position:absolute;inset:0;background:#F0EFE9;border-radius:6px;overflow:hidden;">'
+          +'<div style="width:'+pct(wp)+'%;height:100%;background:'+barCol+';transition:width .8s;"></div>'
+        +'</div>'
+        +'<div style="position:absolute;top:-4px;bottom:-4px;left:'+pct(ip)+'%;transform:translateX(-50%);width:2px;background:#CCCCCC;border-radius:2px;pointer-events:none;"></div>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(13,1fr);gap:2px;">'
+        +weekBars
+      +'</div>'
+    +'</div>'
+    +'<div style="text-align:right;flex-shrink:0;padding-left:28px;">'
+      +'<div style="font-size:56px;font-weight:700;color:'+barCol+';font-family:var(--fm);line-height:1;margin-bottom:8px;">'+pct(wp)+'%</div>'
+      +'<div style="font-size:12px;color:var(--t3);margin-bottom:10px;">Cel: '+esc(wigTarget)+'</div>'
+      +statusBadgeHtml(wp)
+    +'</div>'
+  +'</div>';
+}
+
+function paint() {
+  var a = D.area;
+  var ip = idealPace();
+  var html = '';
+
+  if (D.wigs.length) {
+    // Multi-WIG: jeden blok per WIG
+    D.wigs.forEach(function(wig, i) {
+      var wigLags = D.lags.filter(function(l){ return l.wig_id === wig.id; });
+      html += renderWigBlock(wig, wigLags, i + 1);
+    });
+
+    // Nieprzypisane LAG-i (fallback)
+    var assignedWigIds = D.wigs.map(function(w){ return w.id; });
+    var unassignedLags = D.lags.filter(function(l){ return !l.wig_id || assignedWigIds.indexOf(l.wig_id) === -1; });
+    if (unassignedLags.length) {
+      html += '<div style="margin-bottom:12px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;">Nieprzypisane LAG-i</div>';
+      html += renderWigBlock(null, unassignedLags, D.wigs.length + 1);
+    }
+  } else {
+    // Fallback: stary tryb — 1 WIG per area
+    html += renderWigBlock(null, D.lags, 1);
+  }
+
+  html += renderArea();
+  document.getElementById('root').innerHTML = html;
 }
 
 function openModal() {
@@ -1300,8 +1344,8 @@ document.getElementById('root').addEventListener('click', function(e) {
       if (saved) return; saved = true;
       var val = inp.value || null;
       q('areas?id=eq.'+D.area.id, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({wig_deadline:val})})
-        .then(function(){ D.area.wig_deadline = val; paint(); toast('Zapisano'); })
-        .catch(function(err){ saved = false; toast('Błąd: '+err.message,'error'); paint(); });
+        .then(function(){ D.area.wig_deadline = val; paint(); notify('Zapisano'); })
+        .catch(function(err){ saved = false; notify('Błąd: '+err.message); paint(); });
     }
     inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();saveWDead();} if(ev.key==='Escape') paint(); });
     inp.addEventListener('blur', saveWDead);
@@ -1324,8 +1368,8 @@ document.getElementById('root').addEventListener('click', function(e) {
       if (saved) return; saved = true;
       var val = inp.value.trim() || null;
       q('areas?id=eq.'+D.area.id, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({wig_description:val})})
-        .then(function(){ D.area.wig_description = val; paint(); toast('Zapisano'); })
-        .catch(function(err){ saved = false; toast('Błąd: '+err.message,'error'); paint(); });
+        .then(function(){ D.area.wig_description = val; paint(); notify('Zapisano'); })
+        .catch(function(err){ saved = false; notify('Błąd: '+err.message); paint(); });
     }
     inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();saveWd();} if(ev.key==='Escape') paint(); });
     inp.addEventListener('blur', saveWd);
@@ -1351,8 +1395,8 @@ document.getElementById('root').addEventListener('click', function(e) {
       if (saved) return; saved = true;
       var val = inp.value || null;
       q('lags?id=eq.'+lagId, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({deadline:val})})
-        .then(function(){ lag.deadline = val; reRenderLag(lagId); toast('Zapisano'); })
-        .catch(function(err){ saved = false; toast('Błąd: '+err.message,'error'); reRenderLag(lagId); });
+        .then(function(){ lag.deadline = val; reRenderLag(lagId); notify('Zapisano'); })
+        .catch(function(err){ saved = false; notify('Błąd: '+err.message); reRenderLag(lagId); });
     }
     inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();saveDl();} if(ev.key==='Escape') reRenderLag(lagId); });
     inp.addEventListener('blur', saveDl);

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Zarządzanie WIG — OvocxMalinowi</title>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F6F2; --white: #FFFFFF;
+  --text: #1A1A1A; --muted: #6B6B6B; --border: #E5E4E0;
+  --green: #2D6A4F; --orange: #E07A2F; --red: #C0392B;
+  --blue: #1A5EA8; --blue2: #E8F0FA;
+  --f: 'Familjen Grotesk', sans-serif; --fm: 'DM Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--f); line-height: 1.5; min-height: 100vh; }
+
+nav {
+  background: var(--white); border-bottom: 0.5px solid var(--border);
+  height: 52px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; position: sticky; top: 0; z-index: 50;
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand-name { font-size: 16px; font-weight: 700; letter-spacing: -.02em; }
+.back-link { font-size: 13px; color: var(--muted); text-decoration: none; }
+.back-link:hover { color: var(--text); }
+
+.page { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+.page-title {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 24px;
+}
+
+.area-group { margin-bottom: 32px; }
+.area-label {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.area-badge {
+  font-family: var(--fm); font-size: 10px; background: #F0EFE9;
+  color: var(--muted); padding: 2px 8px; border-radius: 4px;
+}
+
+.wig-item {
+  background: var(--white); border: 1px solid var(--border); border-radius: 10px;
+  padding: 18px 22px; margin-bottom: 10px;
+  transition: box-shadow .15s;
+}
+.wig-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+.wig-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.wig-name { font-size: 15px; font-weight: 700; flex: 1; letter-spacing: -.01em; }
+.wig-target { font-family: var(--fm); font-size: 11px; color: var(--muted); }
+.wig-deadline { font-family: var(--fm); font-size: 11px; color: var(--muted); }
+
+.wig-lags { margin-top: 10px; padding-top: 10px; border-top: 1px solid #F0EFE9; }
+.wig-lags-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+.lag-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; background: #FEF0E4; color: var(--orange);
+  border-radius: 4px; padding: 2px 8px; margin: 2px 4px 2px 0;
+  font-family: var(--fm);
+}
+.lag-tag .remove-lag {
+  cursor: pointer; margin-left: 4px; font-size: 13px;
+  opacity: .6; transition: opacity .12s;
+}
+.lag-tag .remove-lag:hover { opacity: 1; }
+
+.assign-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.assign-select {
+  font-size: 12px; font-family: var(--fm); border: 1px solid var(--border);
+  border-radius: 5px; padding: 4px 8px; background: var(--white); color: var(--text);
+  cursor: pointer;
+}
+.assign-btn {
+  font-size: 12px; font-weight: 600; background: var(--blue); color: white;
+  border: none; border-radius: 5px; padding: 4px 12px; cursor: pointer;
+  transition: background .12s;
+}
+.assign-btn:hover { background: #144d8a; }
+.assign-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.wig-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.btn-icon {
+  background: none; border: 1px solid var(--border); border-radius: 5px;
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 13px; color: var(--muted);
+  transition: all .12s;
+}
+.btn-icon:hover { border-color: var(--text); color: var(--text); }
+.btn-icon.danger:hover { border-color: var(--red); color: var(--red); }
+
+.add-wig-btn {
+  display: block; width: 100%; background: none;
+  border: 1px dashed var(--border); border-radius: 8px;
+  padding: 12px; font-family: var(--f); font-size: 13px;
+  color: var(--muted); cursor: pointer; transition: all .12s;
+  margin-top: 8px;
+}
+.add-wig-btn:hover { border-color: var(--text); color: var(--text); }
+
+/* Modal */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.4);
+  z-index: 200; display: flex; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.overlay.on { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--white); border-radius: 12px; padding: 28px;
+  width: 100%; max-width: 460px; box-shadow: 0 24px 64px rgba(0,0,0,.12);
+  transform: translateY(14px); transition: transform .2s;
+}
+.overlay.on .modal { transform: translateY(0); }
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 18px; }
+.field { margin-bottom: 14px; }
+.field-label {
+  display: block; font-family: var(--fm); font-size: 10px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px;
+}
+.field-input {
+  width: 100%; background: #F0EFE9; border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 12px; font-family: var(--f);
+  font-size: 14px; color: var(--text); outline: none;
+}
+.field-input:focus { border-color: var(--muted); background: var(--white); }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+.btn-ghost {
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+  padding: 8px 16px; border-radius: 6px; font-family: var(--f); font-size: 13px;
+  font-weight: 600; cursor: pointer;
+}
+.btn-ghost:hover { border-color: var(--text); color: var(--text); }
+.btn-solid {
+  background: var(--blue); border: none; color: white;
+  padding: 8px 20px; border-radius: 6px; font-family: var(--f); font-size: 13px;
+  font-weight: 700; cursor: pointer;
+}
+.btn-solid:hover { background: #144d8a; }
+.btn-solid:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px);
+  background: var(--text); color: white; padding: 10px 20px;
+  border-radius: 8px; font-size: 13px; font-weight: 500;
+  opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.empty-msg {
+  text-align: center; color: var(--muted); font-size: 13px; padding: 28px;
+  border: 1px dashed var(--border); border-radius: 8px;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <a class="back-link" href="index.html">← Powrót</a>
+    <a class="brand" href="index.html">
+      <img src="favicon.svg" width="24" height="24" alt="">
+      <span class="brand-name">Zarządzanie WIG</span>
+    </a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-title">WIG-i pogrupowane po obszarach</div>
+  <div id="content"><div class="empty-msg">Ładowanie...</div></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Nowy WIG</div>
+    <input type="hidden" id="edit-wig-id">
+    <input type="hidden" id="edit-wig-area">
+    <div class="field">
+      <label class="field-label">Nazwa WIG</label>
+      <input type="text" class="field-input" id="inp-name" placeholder="np. 100% procesów operacyjnych wdrożonych">
+    </div>
+    <div class="field">
+      <label class="field-label">Cel (target)</label>
+      <input type="text" class="field-input" id="inp-target" placeholder="np. 100% + RYTM">
+    </div>
+    <div class="field">
+      <label class="field-label">Deadline</label>
+      <input type="date" class="field-input" id="inp-deadline" style="max-width:200px;">
+    </div>
+    <div class="field">
+      <label class="field-label">Kolejność (sort_order)</label>
+      <input type="number" class="field-input" id="inp-sort" value="0" min="0" style="max-width:100px;">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal()">Anuluj</button>
+      <button class="btn-solid" id="btn-save" onclick="saveWig()">Zapisz</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const SB  = 'https://fssfuricylndtetfktex.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
+const H   = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' };
+
+async function sbGet(path) {
+  const r = await fetch(`${SB}/rest/v1/${path}`, { headers: H });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function sbPost(path, body) {
+  const r = await fetch(`${SB}/rest/v1/${path}`, {
+    method: 'POST', headers: { ...H, 'Prefer': 'return=representation' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function sbPatch(path, body) {
+  const r = await fetch(`${SB}/rest/v1/${path}`, {
+    method: 'PATCH', headers: { ...H, 'Prefer': 'return=representation' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function sbDelete(path) {
+  const r = await fetch(`${SB}/rest/v1/${path}`, { method: 'DELETE', headers: H });
+  if (!r.ok) throw new Error(await r.text());
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  return isNaN(dt) ? '' : dt.toLocaleDateString('pl-PL', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+let areas = [];
+let wigs = [];
+let lags = [];
+
+async function load() {
+  [areas, wigs, lags] = await Promise.all([
+    sbGet('areas?select=*&order=id'),
+    sbGet('wigs?select=*&order=sort_order,created_at'),
+    sbGet('lags?select=id,name,lag_number,area_id,wig_id&order=lag_number')
+  ]);
+  render();
+}
+
+function render() {
+  const content = document.getElementById('content');
+  if (!areas.length) {
+    content.innerHTML = '<div class="empty-msg">Brak obszarów w bazie</div>';
+    return;
+  }
+
+  let html = '';
+  areas.forEach(area => {
+    const areaWigs = wigs.filter(w => w.area_id === area.id);
+    const areaLags = lags.filter(l => l.area_id === area.id);
+    const unassignedLags = areaLags.filter(l => !l.wig_id || !areaWigs.some(w => w.id === l.wig_id));
+
+    html += `<div class="area-group">
+      <div class="area-label">
+        ${esc(area.name)}
+        <span class="area-badge">${areaWigs.length} WIG</span>
+        <span class="area-badge">${areaLags.length} LAG</span>
+      </div>`;
+
+    if (!areaWigs.length) {
+      html += '<div class="empty-msg">Brak WIG-ów w tym obszarze</div>';
+    }
+
+    areaWigs.forEach(wig => {
+      const wigLags = lags.filter(l => l.wig_id === wig.id);
+      const availableLags = areaLags.filter(l => !l.wig_id || l.wig_id === wig.id);
+
+      const lagTags = wigLags.map(l =>
+        `<span class="lag-tag">LAG-${String(l.lag_number).padStart(2,'0')}: ${esc(l.name)}<span class="remove-lag" data-unassign-lag="${l.id}">×</span></span>`
+      ).join('');
+
+      const unassignedForWig = areaLags.filter(l => !l.wig_id);
+      const assignOptions = unassignedForWig.map(l =>
+        `<option value="${l.id}">LAG-${String(l.lag_number).padStart(2,'0')}: ${esc(l.name)}</option>`
+      ).join('');
+
+      html += `<div class="wig-item" data-wig-id="${wig.id}">
+        <div class="wig-header">
+          <div class="wig-name">${esc(wig.name)}</div>
+          ${wig.target ? `<div class="wig-target">Cel: ${esc(wig.target)}</div>` : ''}
+          ${wig.deadline ? `<div class="wig-deadline">${fmtDate(wig.deadline)}</div>` : ''}
+          <div class="wig-actions">
+            <button class="btn-icon" data-edit-wig="${wig.id}" title="Edytuj">✎</button>
+            <button class="btn-icon danger" data-delete-wig="${wig.id}" title="Usuń">✕</button>
+          </div>
+        </div>
+        <div class="wig-lags">
+          <div class="wig-lags-label">Przypisane LAG-i</div>
+          ${lagTags || '<span style="font-size:12px;color:var(--muted);">Brak przypisanych LAG-ów</span>'}
+          ${assignOptions ? `<div class="assign-row">
+            <select class="assign-select" data-assign-select="${wig.id}">
+              <option value="">— Przypisz LAG —</option>
+              ${assignOptions}
+            </select>
+            <button class="assign-btn" data-assign-btn="${wig.id}">Przypisz</button>
+          </div>` : ''}
+        </div>
+      </div>`;
+    });
+
+    html += `<button class="add-wig-btn" data-add-wig="${area.id}">+ Dodaj WIG do ${esc(area.name)}</button>`;
+
+    if (unassignedLags.length) {
+      html += `<div style="margin-top:10px;padding:12px;background:#FFF8F0;border:1px solid #F0E0CC;border-radius:8px;">
+        <div style="font-size:10px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Nieprzypisane LAG-i</div>
+        ${unassignedLags.map(l => `<span class="lag-tag" style="background:#FFF0E0;"">LAG-${String(l.lag_number).padStart(2,'0')}: ${esc(l.name)}</span>`).join('')}
+      </div>`;
+    }
+
+    html += '</div>';
+  });
+
+  content.innerHTML = html;
+}
+
+// Modal
+function openModal(areaId, wigData) {
+  document.getElementById('edit-wig-id').value = wigData ? wigData.id : '';
+  document.getElementById('edit-wig-area').value = areaId;
+  document.getElementById('inp-name').value = wigData ? wigData.name : '';
+  document.getElementById('inp-target').value = wigData ? (wigData.target || '') : '';
+  document.getElementById('inp-deadline').value = wigData ? (wigData.deadline || '') : '';
+  document.getElementById('inp-sort').value = wigData ? (wigData.sort_order || 0) : 0;
+  document.getElementById('modal-title').textContent = wigData ? 'Edytuj WIG' : 'Nowy WIG';
+  document.getElementById('overlay').classList.add('on');
+  document.getElementById('inp-name').focus();
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('on');
+}
+
+async function saveWig() {
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.textContent = 'Zapisuję...';
+
+  const wigId = document.getElementById('edit-wig-id').value;
+  const areaId = document.getElementById('edit-wig-area').value;
+  const name = document.getElementById('inp-name').value.trim();
+  const target = document.getElementById('inp-target').value.trim() || null;
+  const deadline = document.getElementById('inp-deadline').value || null;
+  const sort_order = parseInt(document.getElementById('inp-sort').value) || 0;
+
+  if (!name) { toast('Nazwa jest wymagana'); btn.disabled = false; btn.textContent = 'Zapisz'; return; }
+
+  try {
+    if (wigId) {
+      await sbPatch(`wigs?id=eq.${wigId}`, { name, target, deadline, sort_order });
+      toast('WIG zaktualizowany');
+    } else {
+      await sbPost('wigs', { area_id: areaId, name, target, deadline, sort_order });
+      toast('WIG dodany');
+    }
+    closeModal();
+    await load();
+  } catch (e) {
+    toast('Błąd: ' + e.message.slice(0, 60));
+  }
+
+  btn.disabled = false; btn.textContent = 'Zapisz';
+}
+
+async function deleteWig(wigId) {
+  const wig = wigs.find(w => w.id === wigId);
+  if (!wig) return;
+  if (!confirm(`Usunąć WIG "${wig.name}"? LAG-i zostaną odpięte (nie usunięte).`)) return;
+
+  try {
+    // Odepnij LAG-i
+    const wigLags = lags.filter(l => l.wig_id === wigId);
+    for (const l of wigLags) {
+      await sbPatch(`lags?id=eq.${l.id}`, { wig_id: null });
+    }
+    await sbDelete(`wigs?id=eq.${wigId}`);
+    toast('WIG usunięty');
+    await load();
+  } catch (e) {
+    toast('Błąd: ' + e.message.slice(0, 60));
+  }
+}
+
+async function assignLag(wigId) {
+  const select = document.querySelector(`[data-assign-select="${wigId}"]`);
+  if (!select || !select.value) return;
+  const lagId = parseInt(select.value, 10);
+
+  try {
+    await sbPatch(`lags?id=eq.${lagId}`, { wig_id: wigId });
+    toast('LAG przypisany');
+    await load();
+  } catch (e) {
+    toast('Błąd: ' + e.message.slice(0, 60));
+  }
+}
+
+async function unassignLag(lagId) {
+  try {
+    await sbPatch(`lags?id=eq.${lagId}`, { wig_id: null });
+    toast('LAG odpięty');
+    await load();
+  } catch (e) {
+    toast('Błąd: ' + e.message.slice(0, 60));
+  }
+}
+
+// Event delegation
+document.getElementById('content').addEventListener('click', function(e) {
+  var addBtn = e.target.closest('[data-add-wig]');
+  if (addBtn) { openModal(addBtn.dataset.addWig, null); return; }
+
+  var editBtn = e.target.closest('[data-edit-wig]');
+  if (editBtn) {
+    var wig = wigs.find(w => w.id === editBtn.dataset.editWig);
+    if (wig) openModal(wig.area_id, wig);
+    return;
+  }
+
+  var delBtn = e.target.closest('[data-delete-wig]');
+  if (delBtn) { deleteWig(delBtn.dataset.deleteWig); return; }
+
+  var assignBtn = e.target.closest('[data-assign-btn]');
+  if (assignBtn) { assignLag(assignBtn.dataset.assignBtn); return; }
+
+  var unassignBtn = e.target.closest('[data-unassign-lag]');
+  if (unassignBtn) { unassignLag(parseInt(unassignBtn.dataset.unassignLag, 10)); return; }
+});
+
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+load();
+</script>
+</body>
+</html>
