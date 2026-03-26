@@ -220,7 +220,7 @@ async function q(path, opts) {
 function renderNav() {
   var list = document.getElementById('sn-list');
   document.getElementById('sn-prev').disabled = ST.viewIdx <= 0;
-  document.getElementById('sn-next').disabled = ST.viewIdx >= ST.sessions.length - 1;
+  document.getElementById('sn-next').disabled = false;
   list.innerHTML = ST.sessions.map(function(s, i) {
     var cls = 'sn-chip'
       + (i === ST.viewIdx ? ' active' : '')
@@ -541,8 +541,16 @@ async function handleAction(act, cid) {
 document.getElementById('sn-prev').addEventListener('click', function() {
   if (ST.viewIdx > 0) setView(ST.viewIdx - 1);
 });
-document.getElementById('sn-next').addEventListener('click', function() {
-  if (ST.viewIdx < ST.sessions.length - 1) setView(ST.viewIdx + 1);
+document.getElementById('sn-next').addEventListener('click', async function() {
+  if (ST.viewIdx < ST.sessions.length - 1) {
+    setView(ST.viewIdx + 1);
+  } else {
+    try {
+      await getOrCreateNextSession();
+      ST.currIdx = ST.sessions.length - 1;
+      setView(ST.currIdx);
+    } catch(e) { toast('Błąd: '+e.message); }
+  }
 });
 
 init();
