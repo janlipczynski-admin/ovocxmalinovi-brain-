@@ -427,7 +427,8 @@ async function handleAction(act, cid) {
     await q('wig_commitments?id=eq.'+cid, { method:'PATCH', prefer:'return=minimal', body:patch });
     Object.assign(c, patch);
 
-    if (act === 'carry' && !wasCarry) {
+    var alreadyCarried = ST.currC.some(function(x){ return x.commitment === c.commitment && x.member === c.member && x.carry_over === true; });
+    if (act === 'carry' && !alreadyCarried) {
       var rows = await q('wig_commitments', {
         method:'POST', prefer:'return=representation',
         body:{ session_id: ST.sessions[ST.currIdx].id, member:c.member, commitment:c.commitment, done:null, carry_over:true, week: ST.sessions[ST.currIdx].week || 13 }
