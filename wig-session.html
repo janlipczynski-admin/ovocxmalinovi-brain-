@@ -362,7 +362,7 @@ async function addCommit(member, text, inp) {
   try {
     var rows = await q('wig_commitments', {
       method:'POST', prefer:'return=representation',
-      body:{ session_id: ST.sessions[ST.currIdx].id, member:member, commitment:text, done:null, carry_over:false }
+      body:{ session_id: ST.sessions[ST.currIdx].id, member:member, commitment:text, done:null, carry_over:false, week: parseInt(String(ST.sessions[ST.currIdx].week).replace('T','')) || 13 }
     });
     if (rows && rows.length) ST.currC.push(rows[0]);
     inp.value = '';
