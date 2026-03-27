@@ -492,6 +492,19 @@ nav {
 .raci-circle.unassigned { border-style: dashed; }
 .raci-circle[data-role="R"] { color: #1A5EA8; background: #E8F0FA; border: 2px solid #1A5EA8; }
 .raci-circle[data-role="R"].unassigned { border-color: #1A5EA8; }
+
+/* RACI MINI (inline per item) */
+.raci-mini { display: inline-flex; align-items: center; gap: 3px; cursor: pointer; flex-shrink: 0; position: relative; }
+.raci-mini-circle {
+  width: 18px; height: 18px; border-radius: 50%; font-size: 9px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  color: #2D6A4F; background: #E8F4EE; font-family: var(--fm);
+  transition: transform .12s;
+}
+.raci-mini-circle.assigned { border: 1.5px solid #2D6A4F; }
+.raci-mini-circle.unassigned { border: 1.5px dashed #2D6A4F; opacity: .5; }
+.raci-mini:hover .raci-mini-circle { transform: scale(1.15); }
+.raci-mini-name { font-size: 9px; color: var(--t3); font-family: var(--fm); }
 .raci-circle[data-role="A"] { color: #2D6A4F; background: #E8F4EE; border: 2px solid #2D6A4F; }
 .raci-circle[data-role="A"].unassigned { border-color: #2D6A4F; }
 .raci-circle[data-role="C"] { color: #E07A2F; background: #FEF0E4; border: 2px solid #E07A2F; }
@@ -716,6 +729,7 @@ function cardLag(lag) {
     const v = (D.lw[i.id]||{})[D.week]||0;
     return `<div class="item">
       <div class="item-name">${i.name}</div>
+      ${raciMiniHtml('lag_item', i.id)}
       <div class="mini-bar"><div class="mini-fill" style="width:${pct(v)}%;background:${col(v)}"></div></div>
       <div class="item-val" style="color:${col(v)}">${pct(v)}%</div>
     </div>`;
@@ -764,6 +778,7 @@ function cardLead(lead) {
     return `<div class="item">
       <div class="chk ${ok?'y':'n'}" data-toggle-lead-item="${i.id}" style="cursor:pointer;" title="Kliknij aby zmienić">${ok?'✓':'✗'}</div>
       <div class="item-name" data-edit-lead-item-name="${i.id}" style="cursor:text;" title="Kliknij aby edytować">${esc(i.name)}</div>
+      ${raciMiniHtml('lead_item', i.id)}
       <div class="item-val" style="color:${ok?'var(--gr)':'var(--t3)'}">${pct(v)}%</div>
       <button class="lead-item-del" data-del-lead-item="${i.id}" title="Usuń zadanie">✕</button>
     </div>`;
@@ -1526,6 +1541,15 @@ function raciStripHtml(entityType, entityId) {
   return html;
 }
 
+function raciMiniHtml(entityType, entityId) {
+  var person = getRaci(entityType, String(entityId), 'A');
+  var cls = person ? 'assigned' : 'unassigned';
+  return '<div class="raci-mini" data-raci-click="' + entityType + ':' + entityId + ':A">'
+    + '<span class="raci-mini-circle ' + cls + '">A</span>'
+    + (person ? '<span class="raci-mini-name">' + esc(person) + '</span>' : '')
+    + '</div>';
+}
+
 async function saveRaci(eType, eId, role, person) {
   try {
     if (person) {
@@ -1567,7 +1591,8 @@ function openRaciDropdown(eType, eId, role, circleEl) {
     del.addEventListener('click', function(ev) { ev.stopPropagation(); closeRaciDropdown(); saveRaci(eType, eId, role, null); });
     dd.appendChild(del);
   }
-  circleEl.closest('.raci-item').appendChild(dd);
+  var container = circleEl.closest('.raci-item') || circleEl.closest('.raci-mini');
+  container.appendChild(dd);
 }
 
 function closeRaciDropdown() {

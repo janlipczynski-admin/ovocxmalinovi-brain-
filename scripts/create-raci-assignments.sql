@@ -1,7 +1,7 @@
 -- Tabela RACI — przypisanie ról do WIG-ów, LAG-ów i LEAD-ów
 CREATE TABLE raci_assignments (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  entity_type text NOT NULL CHECK (entity_type IN ('wig','lag','lead')),
+  entity_type text NOT NULL CHECK (entity_type IN ('wig','lag','lead','lag_item','lead_item')),
   entity_id text NOT NULL,
   role text NOT NULL CHECK (role IN ('R','A','C','I')),
   person text NOT NULL,
