@@ -154,6 +154,47 @@ nav {
   text-align: center; color: var(--muted); font-size: 13px; padding: 28px;
   border: 1px dashed var(--border); border-radius: 8px;
 }
+
+/* RACI STRIP */
+.raci-strip { display: inline-flex; gap: 10px; margin: 8px 0 4px; position: relative; }
+.raci-item { display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative; }
+.raci-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fm); font-size: 11px; font-weight: 700;
+  letter-spacing: .02em; transition: all .15s; user-select: none;
+}
+.raci-circle.active { cursor: pointer; }
+.raci-circle.active:hover { transform: scale(1.12); box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.raci-circle.disabled { opacity: .35; cursor: default; }
+.raci-circle.assigned { border-style: solid; }
+.raci-circle.unassigned { border-style: dashed; }
+.raci-circle[data-role="R"] { color: #1A5EA8; background: #E8F0FA; border: 2px solid #1A5EA8; }
+.raci-circle[data-role="A"] { color: #2D6A4F; background: #E8F4EE; border: 2px solid #2D6A4F; }
+.raci-circle[data-role="C"] { color: #E07A2F; background: #FEF0E4; border: 2px solid #E07A2F; }
+.raci-circle[data-role="I"] { color: #6B6B6B; background: #F0EFE9; border: 2px solid #6B6B6B; }
+.raci-person { font-size: 9px; font-family: var(--fm); color: var(--muted); max-width: 48px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.raci-tooltip {
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: #1A1A1A; color: white; font-size: 11px; padding: 5px 10px;
+  border-radius: 6px; white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity .15s; z-index: 80;
+}
+.raci-item:hover .raci-tooltip { opacity: 1; }
+.raci-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+  background: var(--white); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 100; min-width: 130px;
+  padding: 4px 0; overflow: hidden;
+}
+.raci-dropdown-item {
+  display: block; width: 100%; text-align: left; background: none; border: none;
+  padding: 7px 14px; font-family: var(--f); font-size: 12px; color: #1A1A1A;
+  cursor: pointer; transition: background .1s;
+}
+.raci-dropdown-item:hover { background: #F0EFE9; }
+.raci-dropdown-item.danger { color: #C0392B; }
+.raci-dropdown-item.danger:hover { background: #FCECEA; }
 </style>
 </head>
 <body>
@@ -258,7 +299,102 @@ let areas = [];
 let wigs = [];
 let lags = [];
 
+/* ——— RACI ——— */
+var MEMBERS = ['Jan', 'Kacper', 'Olgierd', 'Iza', 'Renia'];
+var RACI_ROLES = [
+  { key:'R', label:'Responsible', desc:'Wykonuje zadanie', active:true },
+  { key:'A', label:'Accountable', desc:'Odpowiada za wynik', active:true },
+  { key:'C', label:'Consulted', desc:'Konsultowany', active:false },
+  { key:'I', label:'Informed', desc:'Informowany', active:false }
+];
+var raciMap = {};
+
+function raciKey(eType, eId, role) { return eType+':'+eId+':'+role; }
+function getRaci(eType, eId, role) { return raciMap[raciKey(eType, eId, role)] || null; }
+
+async function loadRaci() {
+  try {
+    var rows = await sbGet('raci_assignments?select=*');
+    raciMap = {};
+    rows.forEach(function(r) { raciMap[raciKey(r.entity_type, r.entity_id, r.role)] = r.person; });
+  } catch(e) { /* silent */ }
+}
+
+function raciStripHtml(entityType, entityId) {
+  var html = '<div class="raci-strip">';
+  RACI_ROLES.forEach(function(r) {
+    var person = getRaci(entityType, entityId, r.key);
+    var activeClass = r.active ? 'active' : 'disabled';
+    var assignedClass = person ? 'assigned' : 'unassigned';
+    html += '<div class="raci-item">'
+      + '<div class="raci-tooltip">' + esc(r.label) + ': ' + esc(r.desc) + '</div>'
+      + '<div class="raci-circle ' + activeClass + ' ' + assignedClass + '" data-role="' + r.key + '"'
+      + (r.active ? ' data-raci-click="' + entityType + ':' + entityId + ':' + r.key + '"' : '')
+      + '>' + r.key + '</div>'
+      + '<div class="raci-person">' + esc(person || '---') + '</div>'
+      + '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+async function saveRaci(eType, eId, role, person) {
+  try {
+    if (person) {
+      await fetch(`${SB}/rest/v1/raci_assignments`, {
+        method:'POST',
+        headers:{...H, 'Prefer':'resolution=merge-duplicates,return=representation'},
+        body:JSON.stringify({entity_type:eType, entity_id:String(eId), role:role, person:person})
+      });
+      raciMap[raciKey(eType, eId, role)] = person;
+      toast(role + ' przypisany: ' + person);
+    } else {
+      await fetch(`${SB}/rest/v1/raci_assignments?entity_type=eq.${eType}&entity_id=eq.${eId}&role=eq.${role}`, {
+        method:'DELETE', headers:H
+      });
+      delete raciMap[raciKey(eType, eId, role)];
+      toast(role + ' usunięty');
+    }
+    render();
+  } catch(e) { toast('Błąd RACI: ' + e.message.slice(0,60)); }
+}
+
+function openRaciDropdown(eType, eId, role, circleEl) {
+  closeRaciDropdown();
+  var current = getRaci(eType, eId, role);
+  var dd = document.createElement('div');
+  dd.className = 'raci-dropdown';
+  dd.id = 'raci-dd';
+  MEMBERS.forEach(function(m) {
+    var btn = document.createElement('button');
+    btn.className = 'raci-dropdown-item';
+    btn.textContent = m + (m === current ? ' ✓' : '');
+    btn.addEventListener('click', function(ev) { ev.stopPropagation(); closeRaciDropdown(); saveRaci(eType, eId, role, m); });
+    dd.appendChild(btn);
+  });
+  if (current) {
+    var del = document.createElement('button');
+    del.className = 'raci-dropdown-item danger';
+    del.textContent = 'Usuń';
+    del.addEventListener('click', function(ev) { ev.stopPropagation(); closeRaciDropdown(); saveRaci(eType, eId, role, null); });
+    dd.appendChild(del);
+  }
+  circleEl.closest('.raci-item').appendChild(dd);
+}
+
+function closeRaciDropdown() {
+  var dd = document.getElementById('raci-dd');
+  if (dd) dd.remove();
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.raci-dropdown') && !e.target.closest('[data-raci-click]')) {
+    closeRaciDropdown();
+  }
+});
+
 async function load() {
+  await loadRaci();
   [areas, wigs, lags] = await Promise.all([
     sbGet('areas?select=*&order=id'),
     sbGet('wigs?select=*&order=sort_order,created_at'),
@@ -314,6 +450,7 @@ function render() {
             <button class="btn-icon danger" data-delete-wig="${wig.id}" title="Usuń">✕</button>
           </div>
         </div>
+        ${raciStripHtml('wig', wig.id)}
         <div class="wig-lags">
           <div class="wig-lags-label">Przypisane LAG-i</div>
           ${lagTags || '<span style="font-size:12px;color:var(--muted);">Brak przypisanych LAG-ów</span>'}
@@ -435,6 +572,14 @@ async function unassignLag(lagId) {
 
 // Event delegation
 document.getElementById('content').addEventListener('click', function(e) {
+  var raciEl = e.target.closest('[data-raci-click]');
+  if (raciEl) {
+    e.stopPropagation();
+    var parts = raciEl.dataset.raciClick.split(':');
+    openRaciDropdown(parts[0], parts[1], parts[2], raciEl);
+    return;
+  }
+
   var addBtn = e.target.closest('[data-add-wig]');
   if (addBtn) { openModal(addBtn.dataset.addWig, null); return; }
 

@@ -475,6 +475,49 @@ nav {
   transition: border-color .12s, color .12s;
 }
 .owner-tag:hover { border-color: var(--s2); color: var(--t2); }
+
+/* RACI STRIP */
+.raci-strip { display: inline-flex; gap: 10px; margin-bottom: 6px; position: relative; }
+.raci-item { display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative; }
+.raci-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fm); font-size: 11px; font-weight: 700;
+  letter-spacing: .02em; transition: all .15s; user-select: none;
+}
+.raci-circle.active { cursor: pointer; }
+.raci-circle.active:hover { transform: scale(1.12); box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.raci-circle.disabled { opacity: .35; cursor: default; }
+.raci-circle.assigned { border-style: solid; }
+.raci-circle.unassigned { border-style: dashed; }
+.raci-circle[data-role="R"] { color: #1A5EA8; background: #E8F0FA; border: 2px solid #1A5EA8; }
+.raci-circle[data-role="R"].unassigned { border-color: #1A5EA8; }
+.raci-circle[data-role="A"] { color: #2D6A4F; background: #E8F4EE; border: 2px solid #2D6A4F; }
+.raci-circle[data-role="A"].unassigned { border-color: #2D6A4F; }
+.raci-circle[data-role="C"] { color: #E07A2F; background: #FEF0E4; border: 2px solid #E07A2F; }
+.raci-circle[data-role="I"] { color: #6B6B6B; background: #F0EFE9; border: 2px solid #6B6B6B; }
+.raci-person { font-size: 9px; font-family: var(--fm); color: var(--t3); max-width: 48px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.raci-tooltip {
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: var(--t1); color: white; font-size: 11px; padding: 5px 10px;
+  border-radius: 6px; white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity .15s; z-index: 80;
+}
+.raci-item:hover .raci-tooltip { opacity: 1; }
+.raci-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+  background: var(--white); border: 1px solid var(--s2); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 100; min-width: 130px;
+  padding: 4px 0; overflow: hidden;
+}
+.raci-dropdown-item {
+  display: block; width: 100%; text-align: left; background: none; border: none;
+  padding: 7px 14px; font-family: var(--f); font-size: 12px; color: var(--t1);
+  cursor: pointer; transition: background .1s;
+}
+.raci-dropdown-item:hover { background: var(--s1); }
+.raci-dropdown-item.danger { color: var(--re); }
+.raci-dropdown-item.danger:hover { background: var(--re2); }
 </style>
 </head>
 <body>
@@ -695,7 +738,7 @@ function cardLag(lag) {
       ${badge}
       ${leadTags ? `<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">${leadTags}</div>` : ''}
     </div>
-    <div class="owner-tag" data-edit-lag-owner="${lag.id}" title="Kliknij aby edytować właściciela">👤 ${esc(lag.owner||'—')}</div>
+    ${raciStripHtml('lag', lag.id)}
     <div class="card-dl" data-edit-lag-deadline="${lag.id}" style="cursor:pointer;user-select:none;" title="Kliknij aby edytować deadline">📅 ${dlText}</div>
     <div class="items-list">${rows}</div>
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--s1);">
@@ -744,7 +787,7 @@ function cardLead(lead) {
       ${assignHtml}
       <button class="lead-del-btn" data-del-lead="${lead.id}" title="Usuń LEAD">✕</button>
     </div>
-    <div class="owner-tag" data-edit-lead-owner="${lead.id}" title="Kliknij aby edytować właściciela">👤 ${esc(lead.owner||'—')}</div>
+    ${raciStripHtml('lead', lead.id)}
     <div class="card-dl">Deadline — ${fmtDate(lead.deadline)}</div>
     <div class="card-bar"><div class="card-bar-fill" style="width:${pct(pg)}%;background:${col(pg)}"></div></div>
     <div class="items-list">${rows}<div style="padding:4px 0 2px;"><button class="add-item-btn" data-add-lead-item="${lead.id}">+ zadanie</button></div></div>
@@ -851,6 +894,7 @@ function renderWigBlock(wig, wigLags, wigNum) {
     +'<div style="flex:1;min-width:0;">'
       +'<div class="wig-label">WIG #'+wigNum+' · '+esc((a.owner||'Jan (CEO)').toUpperCase())+'</div>'
       +'<div class="wig-title">'+esc(wigName)+'</div>'
+      +(wig ? raciStripHtml('wig', wig.id) : '')
       +(wig ? '' : '<div class="wig-desc" data-edit-wig-desc style="cursor:pointer;" title="Kliknij aby edytować opis WIG">'+esc(a.wig_description||'Kliknij aby dodać opis…')+'</div>')
       +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">'
         +'<span '+(wig ? '' : 'data-edit-wig-deadline ')+' style="'+(wig?'':'cursor:pointer;')+'font-size:12px;color:var(--t3);font-family:var(--fm);" title="Deadline">📅 '+esc(dlText)+'</span>'
@@ -1404,58 +1448,6 @@ document.getElementById('root').addEventListener('click', function(e) {
     return;
   }
 
-  // Edycja owner LAG inline
-  var lagOwnerEl = e.target.closest('[data-edit-lag-owner]');
-  if (lagOwnerEl && !e.target.closest('input')) {
-    e.stopPropagation();
-    var lagId = parseInt(lagOwnerEl.dataset.editLagOwner, 10);
-    var lag = D.lags.find(function(l){ return l.id === lagId; });
-    if (!lag) return;
-    var inp = document.createElement('input');
-    inp.type = 'text'; inp.value = lag.owner || '';
-    inp.placeholder = 'Imię właściciela…';
-    inp.style.cssText = 'font-size:11px;border:none;border-bottom:2px solid #2563eb;outline:none;background:transparent;font-family:var(--fm);color:var(--t2);padding:0;width:120px;';
-    lagOwnerEl.textContent = '👤 '; lagOwnerEl.appendChild(inp);
-    inp.focus(); inp.select();
-    var saved = false;
-    function saveLagOwner() {
-      if (saved) return; saved = true;
-      var val = inp.value.trim() || null;
-      q('lags?id=eq.'+lagId, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({owner:val})})
-        .then(function(){ lag.owner = val; reRenderLag(lagId); notify('Właściciel LAG zapisany ✓'); })
-        .catch(function(err){ saved = false; notify('Błąd: '+err.message); reRenderLag(lagId); });
-    }
-    inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();saveLagOwner();} if(ev.key==='Escape') reRenderLag(lagId); });
-    inp.addEventListener('blur', saveLagOwner);
-    return;
-  }
-
-  // Edycja owner LEAD inline
-  var leadOwnerEl = e.target.closest('[data-edit-lead-owner]');
-  if (leadOwnerEl && !e.target.closest('input')) {
-    e.stopPropagation();
-    var leadOwnerId = parseInt(leadOwnerEl.dataset.editLeadOwner, 10);
-    var lead = D.leads.find(function(l){ return l.id === leadOwnerId; });
-    if (!lead) return;
-    var inp = document.createElement('input');
-    inp.type = 'text'; inp.value = lead.owner || '';
-    inp.placeholder = 'Imię właściciela…';
-    inp.style.cssText = 'font-size:11px;border:none;border-bottom:2px solid #2563eb;outline:none;background:transparent;font-family:var(--fm);color:var(--t2);padding:0;width:120px;';
-    leadOwnerEl.textContent = '👤 '; leadOwnerEl.appendChild(inp);
-    inp.focus(); inp.select();
-    var saved2 = false;
-    function saveLeadOwner() {
-      if (saved2) return; saved2 = true;
-      var val = inp.value.trim() || null;
-      q('leads?id=eq.'+leadOwnerId, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({owner:val})})
-        .then(function(){ lead.owner = val; reRenderLead(leadOwnerId); notify('Właściciel LEAD zapisany ✓'); })
-        .catch(function(err){ saved2 = false; notify('Błąd: '+err.message); reRenderLead(leadOwnerId); });
-    }
-    inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();saveLeadOwner();} if(ev.key==='Escape') reRenderLead(leadOwnerId); });
-    inp.addEventListener('blur', saveLeadOwner);
-    return;
-  }
-
   // LEAD CRUD handlers
   var toggleItem = e.target.closest('[data-toggle-lead-item]');
   if (toggleItem) { e.stopPropagation(); toggleLeadItem(parseInt(toggleItem.dataset.toggleLeadItem, 10)); return; }
@@ -1493,6 +1485,119 @@ document.getElementById('detail-overlay').addEventListener('click', function(e) 
 document.getElementById('wk-prev').addEventListener('click', function() { setViewWeek(D.week - 1); });
 document.getElementById('wk-next').addEventListener('click', function() { setViewWeek(D.week + 1); });
 document.getElementById('wk-today').addEventListener('click', function() { setViewWeek(D.currentWeek); });
+
+/* ——— RACI ——— */
+var MEMBERS = ['Jan', 'Kacper', 'Olgierd', 'Iza', 'Renia'];
+var RACI_ROLES = [
+  { key:'R', label:'Responsible', desc:'Wykonuje zadanie', active:true },
+  { key:'A', label:'Accountable', desc:'Odpowiada za wynik', active:true },
+  { key:'C', label:'Consulted', desc:'Konsultowany', active:false },
+  { key:'I', label:'Informed', desc:'Informowany', active:false }
+];
+var raciMap = {}; // key: "wig:uuid:R" => person
+
+function raciKey(eType, eId, role) { return eType+':'+eId+':'+role; }
+
+function getRaci(eType, eId, role) { return raciMap[raciKey(eType, eId, role)] || null; }
+
+async function loadRaci() {
+  try {
+    var rows = await q('raci_assignments?select=*');
+    raciMap = {};
+    rows.forEach(function(r) { raciMap[raciKey(r.entity_type, r.entity_id, r.role)] = r.person; });
+  } catch(e) { /* silent */ }
+}
+
+function raciStripHtml(entityType, entityId) {
+  var html = '<div class="raci-strip">';
+  RACI_ROLES.forEach(function(r) {
+    var person = getRaci(entityType, entityId, r.key);
+    var activeClass = r.active ? 'active' : 'disabled';
+    var assignedClass = person ? 'assigned' : 'unassigned';
+    html += '<div class="raci-item">'
+      + '<div class="raci-tooltip">' + esc(r.label) + ': ' + esc(r.desc) + '</div>'
+      + '<div class="raci-circle ' + activeClass + ' ' + assignedClass + '" data-role="' + r.key + '"'
+      + (r.active ? ' data-raci-click="' + entityType + ':' + entityId + ':' + r.key + '"' : '')
+      + '>' + r.key + '</div>'
+      + '<div class="raci-person">' + esc(person || '---') + '</div>'
+      + '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+async function saveRaci(eType, eId, role, person) {
+  try {
+    if (person) {
+      await fetch(BASE+'/rest/v1/raci_assignments', {
+        method:'POST',
+        headers:{...HD, 'Prefer':'resolution=merge-duplicates,return=representation'},
+        body:JSON.stringify({entity_type:eType, entity_id:String(eId), role:role, person:person})
+      });
+      raciMap[raciKey(eType, eId, role)] = person;
+      notify(role + ' przypisany: ' + person + ' ✓');
+    } else {
+      await fetch(BASE+'/rest/v1/raci_assignments?entity_type=eq.'+eType+'&entity_id=eq.'+eId+'&role=eq.'+role, {
+        method:'DELETE', headers:HD
+      });
+      delete raciMap[raciKey(eType, eId, role)];
+      notify(role + ' usunięty ✓');
+    }
+    paint();
+  } catch(e) { notify('Błąd RACI: ' + e.message.slice(0,60)); }
+}
+
+function openRaciDropdown(eType, eId, role, circleEl) {
+  closeRaciDropdown();
+  var current = getRaci(eType, eId, role);
+  var dd = document.createElement('div');
+  dd.className = 'raci-dropdown';
+  dd.id = 'raci-dd';
+  MEMBERS.forEach(function(m) {
+    var btn = document.createElement('button');
+    btn.className = 'raci-dropdown-item';
+    btn.textContent = m + (m === current ? ' ✓' : '');
+    btn.addEventListener('click', function(ev) { ev.stopPropagation(); closeRaciDropdown(); saveRaci(eType, eId, role, m); });
+    dd.appendChild(btn);
+  });
+  if (current) {
+    var del = document.createElement('button');
+    del.className = 'raci-dropdown-item danger';
+    del.textContent = 'Usuń';
+    del.addEventListener('click', function(ev) { ev.stopPropagation(); closeRaciDropdown(); saveRaci(eType, eId, role, null); });
+    dd.appendChild(del);
+  }
+  circleEl.closest('.raci-item').appendChild(dd);
+}
+
+function closeRaciDropdown() {
+  var dd = document.getElementById('raci-dd');
+  if (dd) dd.remove();
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.raci-dropdown') && !e.target.closest('[data-raci-click]')) {
+    closeRaciDropdown();
+  }
+});
+
+document.getElementById('root').addEventListener('click', function(e) {
+  var raciEl = e.target.closest('[data-raci-click]');
+  if (raciEl) {
+    e.stopPropagation();
+    var parts = raciEl.dataset.raciClick.split(':');
+    var eType = parts[0], eId = parts[1], role = parts[2];
+    openRaciDropdown(eType, eId, role, raciEl);
+    return;
+  }
+});
+
+// Patch init to load RACI data
+var _origInit = init;
+init = async function() {
+  await loadRaci();
+  await _origInit();
+};
 
 init();
 </script>
