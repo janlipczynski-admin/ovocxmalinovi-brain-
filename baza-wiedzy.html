@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Baza Wiedzy — OvocxMalinowi</title>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F6F2; --white: #FFFFFF;
+  --text: #1A1A1A; --muted: #6B6B6B; --border: #E5E4E0;
+  --green: #2D6A4F; --orange: #E07A2F; --red: #C0392B;
+  --blue: #1A5EA8; --blue2: #E8F0FA;
+  --f: 'Familjen Grotesk', sans-serif; --fm: 'DM Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--f); line-height: 1.5; min-height: 100vh; }
+
+nav {
+  background: var(--white); border-bottom: 0.5px solid var(--border);
+  height: 52px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; position: sticky; top: 0; z-index: 50;
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand-name { font-size: 16px; font-weight: 700; letter-spacing: -.02em; }
+.back-link { font-size: 13px; color: var(--muted); text-decoration: none; }
+.back-link:hover { color: var(--text); }
+
+/* Layout */
+.kb-layout {
+  display: flex; max-width: 1100px; margin: 0 auto;
+  min-height: calc(100vh - 52px);
+}
+
+/* Sidebar */
+.kb-sidebar {
+  width: 280px; flex-shrink: 0; padding: 24px 20px;
+  background: var(--white); border-right: 0.5px solid var(--border);
+  overflow-y: auto;
+}
+.kb-sidebar-title {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 20px;
+}
+.kb-section-header {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em;
+  padding: 10px 0 6px; cursor: pointer; display: flex;
+  align-items: center; justify-content: space-between;
+  user-select: none;
+}
+.kb-section-header:hover { color: var(--text); }
+.kb-section-header .arrow { font-size: 9px; transition: transform .15s; }
+.kb-section-header.open .arrow { transform: rotate(90deg); }
+.kb-section-list { display: none; padding-bottom: 4px; }
+.kb-section-header.open + .kb-section-list { display: block; }
+.kb-article-link {
+  display: block; font-size: 13px; font-weight: 500; color: var(--muted);
+  padding: 5px 0 5px 12px; text-decoration: none;
+  border-left: 2px solid transparent; cursor: pointer;
+  transition: all .12s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.kb-article-link:hover { color: var(--text); }
+.kb-article-link.active {
+  color: var(--text); font-weight: 600;
+  border-left-color: var(--blue);
+}
+.kb-add-btn {
+  display: block; width: 100%; margin-top: 20px; padding: 10px;
+  background: none; border: 1px dashed var(--border); border-radius: 8px;
+  font-family: var(--f); font-size: 13px; color: var(--muted);
+  cursor: pointer; transition: all .12s;
+}
+.kb-add-btn:hover { border-color: var(--text); color: var(--text); }
+
+/* Content */
+.kb-content {
+  flex: 1; padding: 32px 40px; overflow-y: auto;
+}
+.kb-empty {
+  text-align: center; color: var(--muted); font-size: 14px; padding: 60px 20px;
+}
+
+/* Article view */
+.kb-article-title {
+  font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 8px;
+}
+.kb-article-section-tag {
+  font-family: var(--fm); font-size: 10px; color: var(--muted);
+  background: #F0EFE9; padding: 2px 8px; border-radius: 4px;
+  display: inline-block; margin-bottom: 20px;
+}
+.kb-article-body {
+  font-size: 15px; line-height: 1.7; color: var(--text);
+}
+.kb-article-body p { margin-bottom: 12px; }
+.kb-article-body ol, .kb-article-body ul { margin-bottom: 12px; padding-left: 24px; }
+.kb-article-body li { margin-bottom: 4px; }
+.kb-article-body a { color: var(--blue); }
+.kb-article-body code {
+  font-family: var(--fm); font-size: 13px; background: #F0EFE9;
+  padding: 2px 6px; border-radius: 4px;
+}
+.kb-article-actions {
+  display: flex; gap: 8px; margin-top: 24px; padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Glossary list */
+.kb-glossary-item {
+  padding: 16px 0; border-bottom: 1px solid #F0EFE9;
+}
+.kb-glossary-item:last-child { border-bottom: none; }
+.kb-glossary-term {
+  font-size: 15px; font-weight: 700; margin-bottom: 4px;
+}
+.kb-glossary-def {
+  font-size: 14px; color: var(--muted); line-height: 1.6;
+}
+.kb-glossary-def p { margin-bottom: 6px; }
+.kb-glossary-def p:last-child { margin-bottom: 0; }
+
+/* Buttons */
+.btn-ghost {
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+  padding: 7px 14px; border-radius: 6px; font-family: var(--f); font-size: 12px;
+  font-weight: 600; cursor: pointer; transition: all .12s;
+}
+.btn-ghost:hover { border-color: var(--text); color: var(--text); }
+.btn-ghost.danger:hover { border-color: var(--red); color: var(--red); }
+.btn-solid {
+  background: var(--blue); border: none; color: white;
+  padding: 8px 20px; border-radius: 6px; font-family: var(--f); font-size: 13px;
+  font-weight: 700; cursor: pointer; transition: background .12s;
+}
+.btn-solid:hover { background: #144d8a; }
+.btn-solid:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Form */
+.kb-form { max-width: 640px; }
+.kb-form-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+.field { margin-bottom: 14px; }
+.field-label {
+  display: block; font-family: var(--fm); font-size: 10px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px;
+}
+.field-input {
+  width: 100%; background: #F0EFE9; border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 12px; font-family: var(--f);
+  font-size: 14px; color: var(--text); outline: none;
+}
+.field-input:focus { border-color: var(--muted); background: var(--white); }
+.field-textarea {
+  width: 100%; min-height: 200px; background: #F0EFE9; border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px; font-family: var(--fm);
+  font-size: 13px; color: var(--text); outline: none; resize: vertical; line-height: 1.5;
+}
+.field-textarea:focus { border-color: var(--muted); background: var(--white); }
+.field-select {
+  background: #F0EFE9; border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 12px; font-family: var(--f);
+  font-size: 14px; color: var(--text); outline: none; cursor: pointer;
+}
+.field-select:focus { border-color: var(--muted); background: var(--white); }
+.form-actions { display: flex; gap: 8px; margin-top: 20px; }
+.field-hint {
+  font-size: 11px; color: var(--muted); margin-top: 4px;
+}
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px);
+  background: var(--text); color: white; padding: 10px 20px;
+  border-radius: 8px; font-size: 13px; font-weight: 500;
+  opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .kb-layout { flex-direction: column; }
+  .kb-sidebar {
+    width: 100%; border-right: none; border-bottom: 0.5px solid var(--border);
+    padding: 16px 20px; max-height: 50vh; overflow-y: auto;
+  }
+  .kb-content { padding: 24px 20px; }
+  nav { padding: 0 16px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <a class="back-link" href="index.html">&larr; Powrot</a>
+    <a class="brand" href="index.html">
+      <img src="favicon.svg" width="24" height="24" alt="">
+      <span class="brand-name">Baza Wiedzy</span>
+    </a>
+  </div>
+</nav>
+
+<div class="kb-layout">
+  <aside class="kb-sidebar" id="sidebar">
+    <div class="kb-sidebar-title">Sekcje</div>
+    <div id="sidebar-content"><span style="font-size:12px;color:var(--muted)">Ladowanie...</span></div>
+    <button class="kb-add-btn" id="btn-add">+ Dodaj artykul</button>
+  </aside>
+  <main class="kb-content" id="content">
+    <div class="kb-empty">Wybierz sekcje lub artykul z menu po lewej</div>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+var SB  = 'https://fssfuricylndtetfktex.supabase.co';
+var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
+var H   = { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
+
+var SECTIONS = [
+  { key: 'slowniczek', label: 'Slowniczek' },
+  { key: 'wigi', label: 'WIG-i' },
+  { key: 'lagi', label: 'LAG-i' },
+  { key: 'leady', label: 'LEAD-y' },
+  { key: 'spotkania', label: 'Spotkania cotygodniowe' },
+  { key: 'mapa_procesow', label: 'Mapa procesow' }
+];
+
+var articles = [];
+var activeSection = null;
+var activeArticleId = null;
+var editingId = null;
+
+// --- API ---
+
+function sbGet(path) {
+  return fetch(SB + '/rest/v1/' + path, { headers: H })
+    .then(function(r) { if (!r.ok) throw new Error(r.statusText); return r.json(); });
+}
+
+function sbPost(path, body) {
+  return fetch(SB + '/rest/v1/' + path, {
+    method: 'POST', headers: Object.assign({}, H, { 'Prefer': 'return=representation' }),
+    body: JSON.stringify(body)
+  }).then(function(r) { if (!r.ok) throw new Error(r.statusText); return r.json(); });
+}
+
+function sbPatch(path, body) {
+  return fetch(SB + '/rest/v1/' + path, {
+    method: 'PATCH', headers: Object.assign({}, H, { 'Prefer': 'return=representation' }),
+    body: JSON.stringify(body)
+  }).then(function(r) { if (!r.ok) throw new Error(r.statusText); return r.json(); });
+}
+
+function sbDelete(path) {
+  return fetch(SB + '/rest/v1/' + path, { method: 'DELETE', headers: H })
+    .then(function(r) { if (!r.ok) throw new Error(r.statusText); });
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2500);
+}
+
+function sectionLabel(key) {
+  var s = SECTIONS.find(function(x) { return x.key === key; });
+  return s ? s.label : key;
+}
+
+// --- Load ---
+
+function load() {
+  return sbGet('kb_articles?select=*&order=section,sort_order,created_at')
+    .then(function(data) {
+      articles = data;
+      renderSidebar();
+      if (activeArticleId) {
+        var art = articles.find(function(a) { return a.id === activeArticleId; });
+        if (art) { showArticle(art); return; }
+      }
+      if (activeSection) {
+        showSection(activeSection);
+      }
+    })
+    .catch(function(e) {
+      document.getElementById('sidebar-content').innerHTML =
+        '<span style="font-size:12px;color:var(--red)">Blad ladowania: ' + esc(e.message) + '</span>';
+    });
+}
+
+// --- Sidebar ---
+
+function renderSidebar() {
+  var html = '';
+  SECTIONS.forEach(function(sec) {
+    var secArticles = articles.filter(function(a) { return a.section === sec.key; });
+    var isOpen = activeSection === sec.key;
+    var count = secArticles.length;
+
+    html += '<div class="kb-section-header' + (isOpen ? ' open' : '') + '" data-section="' + sec.key + '">';
+    html += esc(sec.label) + ' <span style="font-family:var(--fm);font-size:10px;color:var(--muted);margin-left:4px">' + count + '</span>';
+    html += '<span class="arrow">&#9654;</span>';
+    html += '</div>';
+    html += '<div class="kb-section-list">';
+    secArticles.forEach(function(art) {
+      var cls = activeArticleId === art.id ? ' active' : '';
+      html += '<a class="kb-article-link' + cls + '" data-article-id="' + art.id + '">' + esc(art.title) + '</a>';
+    });
+    html += '</div>';
+  });
+
+  document.getElementById('sidebar-content').innerHTML = html;
+}
+
+// --- Content ---
+
+function showSection(sectionKey) {
+  activeSection = sectionKey;
+  activeArticleId = null;
+  editingId = null;
+
+  var secArticles = articles.filter(function(a) { return a.section === sectionKey; });
+  var content = document.getElementById('content');
+
+  if (sectionKey === 'slowniczek') {
+    showGlossary(secArticles);
+  } else {
+    if (secArticles.length === 0) {
+      content.innerHTML = '<div class="kb-empty">Brak artykulow w sekcji "' + esc(sectionLabel(sectionKey)) + '"</div>';
+    } else {
+      showArticle(secArticles[0]);
+    }
+  }
+  renderSidebar();
+}
+
+function showGlossary(items) {
+  var content = document.getElementById('content');
+  var html = '<div class="kb-article-title">Slowniczek 4DX</div>';
+  html += '<div class="kb-article-section-tag">SLOWNICZEK</div>';
+
+  if (items.length === 0) {
+    html += '<div class="kb-empty">Brak hasel w slowniku</div>';
+  } else {
+    items.forEach(function(item) {
+      html += '<div class="kb-glossary-item">';
+      html += '<div class="kb-glossary-term">' + esc(item.title) + '</div>';
+      html += '<div class="kb-glossary-def">' + item.content + '</div>';
+      html += '<div style="margin-top:8px;display:flex;gap:6px">';
+      html += '<button class="btn-ghost" style="font-size:11px;padding:4px 10px" data-edit="' + item.id + '">Edytuj</button>';
+      html += '<button class="btn-ghost danger" style="font-size:11px;padding:4px 10px" data-delete="' + item.id + '">Usun</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+  }
+
+  content.innerHTML = html;
+}
+
+function showArticle(art) {
+  activeArticleId = art.id;
+  activeSection = art.section;
+  editingId = null;
+
+  var content = document.getElementById('content');
+  var html = '';
+  html += '<div class="kb-article-title">' + esc(art.title) + '</div>';
+  html += '<div class="kb-article-section-tag">' + esc(sectionLabel(art.section).toUpperCase()) + '</div>';
+  html += '<div class="kb-article-body">' + art.content + '</div>';
+  html += '<div class="kb-article-actions">';
+  html += '<button class="btn-ghost" data-edit="' + art.id + '">Edytuj</button>';
+  html += '<button class="btn-ghost danger" data-delete="' + art.id + '">Usun</button>';
+  html += '</div>';
+
+  content.innerHTML = html;
+  renderSidebar();
+}
+
+// --- Form ---
+
+function showForm(art) {
+  editingId = art ? art.id : null;
+  var content = document.getElementById('content');
+
+  var sectionOptions = SECTIONS.map(function(sec) {
+    var sel = art && art.section === sec.key ? ' selected' : '';
+    return '<option value="' + sec.key + '"' + sel + '>' + esc(sec.label) + '</option>';
+  }).join('');
+
+  var html = '<div class="kb-form">';
+  html += '<div class="kb-form-title">' + (art ? 'Edytuj artykul' : 'Nowy artykul') + '</div>';
+
+  html += '<div class="field">';
+  html += '<label class="field-label">Sekcja</label>';
+  html += '<select class="field-select" id="f-section">' + sectionOptions + '</select>';
+  html += '</div>';
+
+  html += '<div class="field">';
+  html += '<label class="field-label">Tytul</label>';
+  html += '<input type="text" class="field-input" id="f-title" placeholder="np. Czym jest WIG?" value="' + (art ? esc(art.title) : '') + '">';
+  html += '</div>';
+
+  html += '<div class="field">';
+  html += '<label class="field-label">Tresc (HTML)</label>';
+  html += '<textarea class="field-textarea" id="f-content" placeholder="<p>Tresc artykulu...</p>">' + (art ? esc(art.content) : '') + '</textarea>';
+  html += '<div class="field-hint">Uzyj &lt;p&gt;, &lt;strong&gt;, &lt;a href=&quot;...&quot;&gt;, &lt;ol&gt;&lt;li&gt; do formatowania</div>';
+  html += '</div>';
+
+  html += '<div class="field">';
+  html += '<label class="field-label">Kolejnosc</label>';
+  html += '<input type="number" class="field-input" id="f-sort" value="' + (art ? art.sort_order : 0) + '" min="0" style="max-width:100px">';
+  html += '</div>';
+
+  html += '<div class="form-actions">';
+  html += '<button class="btn-solid" id="btn-save">Zapisz</button>';
+  html += '<button class="btn-ghost" id="btn-cancel">Anuluj</button>';
+  html += '</div>';
+  html += '</div>';
+
+  content.innerHTML = html;
+
+  document.getElementById('btn-save').addEventListener('click', saveArticle);
+  document.getElementById('btn-cancel').addEventListener('click', function() {
+    if (editingId) {
+      var art = articles.find(function(a) { return a.id === editingId; });
+      if (art) { showArticle(art); return; }
+    }
+    if (activeSection) { showSection(activeSection); }
+    else { document.getElementById('content').innerHTML = '<div class="kb-empty">Wybierz sekcje lub artykul z menu po lewej</div>'; }
+  });
+
+  document.getElementById('f-title').focus();
+}
+
+function saveArticle() {
+  var btn = document.getElementById('btn-save');
+  var section = document.getElementById('f-section').value;
+  var title = document.getElementById('f-title').value.trim();
+  var contentVal = document.getElementById('f-content').value.trim();
+  var sort_order = parseInt(document.getElementById('f-sort').value) || 0;
+
+  if (!title) { toast('Tytul jest wymagany'); return; }
+  if (!contentVal) { toast('Tresc jest wymagana'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Zapisuje...';
+
+  var body = { section: section, title: title, content: contentVal, sort_order: sort_order };
+
+  var promise;
+  if (editingId) {
+    promise = sbPatch('kb_articles?id=eq.' + editingId, body);
+  } else {
+    promise = sbPost('kb_articles', body);
+  }
+
+  promise.then(function(res) {
+    toast(editingId ? 'Artykul zaktualizowany' : 'Artykul dodany');
+    var saved = Array.isArray(res) ? res[0] : res;
+    activeSection = saved.section;
+    activeArticleId = saved.id;
+    editingId = null;
+    return load();
+  }).catch(function(e) {
+    toast('Blad: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Zapisz';
+  });
+}
+
+function deleteArticle(id) {
+  var art = articles.find(function(a) { return a.id === id; });
+  if (!art) return;
+  if (!confirm('Usunac artykul "' + art.title + '"?')) return;
+
+  sbDelete('kb_articles?id=eq.' + id)
+    .then(function() {
+      toast('Artykul usuniety');
+      if (activeArticleId === id) {
+        activeArticleId = null;
+      }
+      return load();
+    })
+    .then(function() {
+      if (activeSection) { showSection(activeSection); }
+      else { document.getElementById('content').innerHTML = '<div class="kb-empty">Wybierz sekcje lub artykul z menu po lewej</div>'; }
+    })
+    .catch(function(e) { toast('Blad: ' + e.message); });
+}
+
+// --- Events ---
+
+document.getElementById('sidebar-content').addEventListener('click', function(e) {
+  var header = e.target.closest('.kb-section-header');
+  if (header) {
+    var key = header.dataset.section;
+    if (activeSection === key && header.classList.contains('open')) {
+      header.classList.remove('open');
+      activeSection = null;
+      return;
+    }
+    // Close all other sections
+    var allHeaders = document.querySelectorAll('.kb-section-header');
+    for (var i = 0; i < allHeaders.length; i++) {
+      allHeaders[i].classList.remove('open');
+    }
+    header.classList.add('open');
+    showSection(key);
+    return;
+  }
+
+  var link = e.target.closest('.kb-article-link');
+  if (link) {
+    var artId = link.dataset.articleId;
+    var art = articles.find(function(a) { return a.id === artId; });
+    if (art) showArticle(art);
+  }
+});
+
+document.getElementById('content').addEventListener('click', function(e) {
+  var editBtn = e.target.closest('[data-edit]');
+  if (editBtn) {
+    var art = articles.find(function(a) { return a.id === editBtn.dataset.edit; });
+    if (art) showForm(art);
+    return;
+  }
+
+  var delBtn = e.target.closest('[data-delete]');
+  if (delBtn) {
+    deleteArticle(delBtn.dataset.delete);
+    return;
+  }
+});
+
+document.getElementById('btn-add').addEventListener('click', function() {
+  showForm(null);
+});
+
+// --- Init ---
+load();
+</script>
+</body>
+</html>
