@@ -627,9 +627,25 @@ async function init() {
   try {
     const areaParam = new URLSearchParams(window.location.search).get('area') || 'os_malinovi';
 
-    const cfg = await q('config?key=eq.current_week');
-    D.week = cfg.length ? +cfg[0].value : 12;
-    D.currentWeek = D.week;
+    const [cfg, sessions] = await Promise.all([
+      q('config?key=eq.current_week'),
+      q('sessions?order=number')
+    ]);
+    var configWeek = cfg.length ? +cfg[0].value : 12;
+    var today = new Date().toISOString().split('T')[0];
+    var autoWeek = configWeek;
+    if (sessions && sessions.length) {
+      for (var si = 0; si < sessions.length; si++) {
+        var s = sessions[si];
+        if (s.period_from <= today && s.period_to >= today) {
+          autoWeek = parseInt(String(s.week).replace('T',''));
+          break;
+        }
+        if (s.period_to < today) autoWeek = parseInt(String(s.week).replace('T',''));
+      }
+    }
+    D.week = autoWeek;
+    D.currentWeek = autoWeek;
     updateWeekNav();
     document.getElementById('inp-week').value = D.currentWeek;
 
