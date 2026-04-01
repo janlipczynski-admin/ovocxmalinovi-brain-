@@ -1626,6 +1626,7 @@ document.getElementById('root').addEventListener('click', function(e) {
   var raciEl = e.target.closest('[data-raci-click]');
   if (raciEl) {
     e.stopPropagation();
+    e.preventDefault();
     var parts = raciEl.dataset.raciClick.split(':');
     var eType = parts[0], eId = parts[1], role = parts[2];
     openRaciDropdown(eType, eId, role, raciEl);
