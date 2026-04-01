@@ -93,52 +93,66 @@ nav {
 
 /* WIG */
 .wig-block {
-  background: var(--white);
   border: 1px solid var(--s2);
   border-radius: var(--r);
-  padding: 28px 32px;
   margin-bottom: 28px;
-  box-shadow: var(--sh);
+  box-shadow: 0 4px 28px rgba(0,0,0,.10);
+  overflow: hidden;
+}
+.wig-hd {
+  background: var(--t1);
+  padding: 24px 32px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 24px;
 }
+.wig-bd {
+  background: var(--white);
+  padding: 20px 32px 24px;
+}
 .wig-label {
   font-family: var(--fm);
   font-size: 10px;
   font-weight: 500;
-  color: var(--acc);
+  color: rgba(255,255,255,.4);
   letter-spacing: .15em;
   text-transform: uppercase;
   margin-bottom: 8px;
+  display: flex; align-items: center; gap: 7px;
+}
+.wig-label::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--acc);
+  flex-shrink: 0;
 }
 .wig-title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -.02em;
-  color: var(--t1);
-  margin-bottom: 6px;
-  line-height: 1.15;
+  color: var(--white);
+  margin-bottom: 10px;
+  line-height: 1.2;
 }
 .wig-desc {
   font-size: 13px;
   color: var(--t2);
   line-height: 1.6;
   max-width: 580px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
+.wig-hd .raci-person { color: rgba(255,255,255,.35); }
+.wig-hd .status-badge.on-track  { background: rgba(74,222,128,.15); color: #4ADE80; }
+.wig-hd .status-badge.off-track { background: rgba(251,191,36,.15); color: #FBB924; }
 .wig-bar-row { display: flex; align-items: center; gap: 14px; }
 .wig-bar-label { font-family: var(--fm); font-size: 10px; color: var(--t3); white-space: nowrap; }
 .bar-track { flex: 1; max-width: 300px; height: 5px; background: var(--s2); border-radius: 99px; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 99px; transition: width .8s ease; }
 .tag { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px; font-family: var(--fm); font-size: 10px; font-weight: 500; letter-spacing: .02em; }
 .tag-neutral { background: var(--s1); color: var(--t2); border: 1px solid var(--s2); }
-
-.wig-score {
-  text-align: right;
-  flex-shrink: 0;
-}
 .score-num {
   font-family: var(--fm);
   font-size: 52px;
@@ -155,8 +169,8 @@ nav {
 .measures { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 @media (max-width: 800px) {
   .measures { grid-template-columns: 1fr; }
-  .wig-block { flex-direction: column; }
-  .wig-score { text-align: left; }
+  .wig-hd { flex-direction: column; }
+  .wig-hd > div:last-child { text-align: left; padding-left: 0; }
 }
 
 .col-head {
@@ -927,18 +941,31 @@ function renderWigBlock(wig, wigLags, wigNum) {
 
   var weekBars = buildWigWeekBars(wigLags);
 
+  var barColDark = wp >= ip ? '#3FC97A' : '#FC7A6A';
+
   return '<div class="wig-block">'
-    +'<div style="flex:1;min-width:0;">'
-      +'<div class="wig-label">WIG #'+wigNum+' · '+esc((a.owner||'Jan (CEO)').toUpperCase())+'</div>'
-      +'<div class="wig-title">'+esc(wigName)+'</div>'
-      +(wig ? raciStripHtml('wig', wig.id) : '')
+    // ── Ciemny header ──
+    +'<div class="wig-hd">'
+      +'<div style="flex:1;min-width:0;">'
+        +'<div class="wig-label">WIG #'+wigNum+' · '+esc((a.owner||'Jan (CEO)').toUpperCase())+'</div>'
+        +'<div class="wig-title">'+esc(wigName)+'</div>'
+        +(wig ? raciStripHtml('wig', wig.id) : '')
+      +'</div>'
+      +'<div style="text-align:right;flex-shrink:0;padding-left:28px;">'
+        +'<div style="font-size:56px;font-weight:700;color:'+barColDark+';font-family:var(--fm);line-height:1;margin-bottom:6px;">'+pct(wp)+'%</div>'
+        +'<div style="font-size:12px;color:rgba(255,255,255,.38);margin-bottom:10px;">Cel: '+esc(wigTarget)+'</div>'
+        +statusBadgeHtml(wp)
+      +'</div>'
+    +'</div>'
+    // ── Białe body ──
+    +'<div class="wig-bd">'
       +(wig ? '' : '<div class="wig-desc" data-edit-wig-desc style="cursor:pointer;" title="Kliknij aby edytować opis WIG">'+esc(a.wig_description||'Kliknij aby dodać opis…')+'</div>')
       +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">'
         +'<span '+(wig ? '' : 'data-edit-wig-deadline ')+' style="'+(wig?'':'cursor:pointer;')+'font-size:12px;color:var(--t3);font-family:var(--fm);" title="Deadline">📅 '+esc(dlText)+'</span>'
         +'<span style="color:var(--s2);">·</span>'
         +'<span style="font-size:12px;color:var(--t3);">Idealne tempo T'+D.week+': '+pct(ip)+'%</span>'
       +'</div>'
-      +'<div style="position:relative;height:12px;margin-bottom:16px;">'
+      +'<div style="position:relative;height:10px;margin-bottom:16px;">'
         +'<div style="position:absolute;inset:0;background:#F0EFE9;border-radius:6px;overflow:hidden;">'
           +'<div style="width:'+pct(wp)+'%;height:100%;background:'+barCol+';transition:width .8s;"></div>'
         +'</div>'
@@ -947,11 +974,6 @@ function renderWigBlock(wig, wigLags, wigNum) {
       +'<div style="display:grid;grid-template-columns:repeat(13,1fr);gap:2px;">'
         +weekBars
       +'</div>'
-    +'</div>'
-    +'<div style="text-align:right;flex-shrink:0;padding-left:28px;">'
-      +'<div style="font-size:56px;font-weight:700;color:'+barCol+';font-family:var(--fm);line-height:1;margin-bottom:8px;">'+pct(wp)+'%</div>'
-      +'<div style="font-size:12px;color:var(--t3);margin-bottom:10px;">Cel: '+esc(wigTarget)+'</div>'
-      +statusBadgeHtml(wp)
     +'</div>'
   +'</div>';
 }
