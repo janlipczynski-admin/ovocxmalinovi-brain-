@@ -225,7 +225,7 @@ function renderNav() {
     var cls = 'sn-chip'
       + (i === ST.viewIdx ? ' active' : '')
       + (i === ST.currIdx ? ' is-curr' : '');
-    return '<button class="'+cls+'" data-i="'+i+'">SESJA '+s.number+' · '+fmt(s.date)+'</button>';
+    return '<button class="'+cls+'" data-i="'+i+'">T'+s.week.replace('T','')+' · '+fmt(s.date)+'</button>';
   }).join('');
   list.querySelectorAll('.sn-chip').forEach(function(btn) {
     btn.addEventListener('click', function() { setView(parseInt(this.dataset.i)); });
@@ -282,7 +282,7 @@ function render() {
 function renderCommitments() {
   var s = ST.sessions[ST.currIdx];
   var html = '<div class="page-hd">'
-    + '<h2>Zobowiązania — Sesja '+s.number+'</h2>'
+    + '<h2>Zobowiązania — Tydzień '+s.week.replace('T','')+'</h2>'
     + '<div class="meta">'+fmt(s.period_from)+' – '+fmt(s.period_to)+' · '+esc(s.week)+'</div>'
     + '</div>';
 
@@ -396,7 +396,7 @@ async function carryCommitForward(cid) {
     ST.viewIdx = ST.currIdx;
     renderNav();
     await loadData();
-    toast('Przerzucono → Sesja '+nextSess.number+' ✓');
+    toast('Przerzucono → Tydzień '+nextSess.week.replace('T','')+' ✓');
     render();
   } catch(e) { toast('Błąd: '+e.message); }
 }
@@ -443,9 +443,9 @@ function renderAccounting() {
   var s = ST.sessions[ST.viewIdx];
   var currS = ST.sessions[ST.currIdx];
   var html = '<div class="page-hd">'
-    + '<h2 class="hd-acc">Rozliczenie — Sesja '+s.number+'</h2>'
+    + '<h2 class="hd-acc">Rozliczenie — Tydzień '+s.week.replace('T','')+'</h2>'
     + '<div class="meta">'+fmt(s.period_from)+' – '+fmt(s.period_to)+' · '+esc(s.week)
-    + ' &nbsp;·&nbsp; <span style="color:var(--acc)">→ trafia do Sesji '+currS.number+'</span></div>'
+    + ' &nbsp;·&nbsp; <span style="color:var(--acc)">→ trafia do Tygodnia '+currS.week.replace('T','')+'</span></div>'
     + '</div>';
 
   var anyMember = false;
@@ -537,7 +537,7 @@ async function handleAction(act, cid) {
         body:{ session_id: ST.sessions[ST.currIdx].id, member:c.member, commitment:c.commitment, done:null, carry_over:true, week: parseInt(String(ST.sessions[ST.currIdx].week).replace('T','')) || 13 }
       });
       if (rows && rows.length) ST.currC.push(rows[0]);
-      toast('Przerzucono → Sesja '+ST.sessions[ST.currIdx].number+' ✓');
+      toast('Przerzucono → Tydzień '+ST.sessions[ST.currIdx].week.replace('T','')+' ✓');
     } else {
       toast('Zapisano ✓');
     }
