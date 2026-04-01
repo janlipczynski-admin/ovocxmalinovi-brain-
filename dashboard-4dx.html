@@ -518,9 +518,9 @@ nav {
 }
 .raci-item:hover .raci-tooltip { opacity: 1; }
 .raci-dropdown {
-  position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+  position: fixed;
   background: var(--white); border: 1px solid var(--s2); border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 100; min-width: 130px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 9999; min-width: 130px;
   padding: 4px 0; overflow: hidden;
 }
 .raci-dropdown-item {
@@ -1607,8 +1607,11 @@ function openRaciDropdown(eType, eId, role, circleEl) {
     del.addEventListener('click', function(ev) { ev.stopPropagation(); closeRaciDropdown(); saveRaci(eType, eId, role, null); });
     dd.appendChild(del);
   }
-  var container = circleEl.closest('.raci-item') || circleEl.closest('.raci-mini');
-  container.appendChild(dd);
+  var rect = circleEl.getBoundingClientRect();
+  dd.style.top = (rect.bottom + 4) + 'px';
+  dd.style.left = (rect.left + rect.width / 2) + 'px';
+  dd.style.transform = 'translateX(-50%)';
+  document.body.appendChild(dd);
 }
 
 function closeRaciDropdown() {
