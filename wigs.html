@@ -421,7 +421,7 @@ document.addEventListener('click', function(e) {
 async function load() {
   await loadRaci();
   [areas, wigs, lags] = await Promise.all([
-    sbGet('areas?select=id,name,slug,wig_description&order=id'),
+    sbGet('areas?select=id,name,wig_description&order=id'),
     sbGet('wigs?select=*&order=sort_order,created_at'),
     sbGet('lags?select=id,name,lag_number,area_id,wig_id&order=lag_number')
   ]);
