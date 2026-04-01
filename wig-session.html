@@ -250,8 +250,13 @@ async function init() {
       return;
     }
     ST.sessions = sessions;
-    ST.currIdx = sessions.length - 1;
-    ST.viewIdx = ST.currIdx;
+    var today = new Date().toISOString().split('T')[0];
+    var ci = 0;
+    for (var j = 0; j < sessions.length; j++) {
+      if (sessions[j].date <= today) ci = j;
+    }
+    ST.currIdx = ci;
+    ST.viewIdx = ci;
     renderNav();
     await loadData();
     render();
@@ -417,15 +422,19 @@ async function toggleStatus(act, cid) {
 
 async function addCommit(member, text, inp) {
   inp.disabled = true;
+  var targetSess = ST.sessions[ST.viewIdx];
   try {
     var rows = await q('wig_commitments', {
       method:'POST', prefer:'return=representation',
-      body:{ session_id: ST.sessions[ST.currIdx].id, member:member, commitment:text, done:null, carry_over:false, week: parseInt(String(ST.sessions[ST.currIdx].week).replace('T','')) || 13 }
+      body:{ session_id: targetSess.id, member:member, commitment:text, done:null, carry_over:false, week: parseInt(String(targetSess.week).replace('T','')) || 13 }
     });
-    if (rows && rows.length) ST.currC.push(rows[0]);
+    if (rows && rows.length) {
+      if (ST.viewIdx === ST.currIdx) ST.currC.push(rows[0]);
+      else ST.viewC.push(rows[0]);
+    }
     inp.value = '';
     toast('Dodano ✓');
-    renderCommitments();
+    render();
   } catch(e) { toast('Błąd: '+e.message); inp.disabled = false; }
 }
 
@@ -448,11 +457,8 @@ function renderAccounting() {
     + ' &nbsp;·&nbsp; <span style="color:var(--acc)">→ trafia do Tygodnia '+currS.week.replace('T','')+'</span></div>'
     + '</div>';
 
-  var anyMember = false;
   MEMBERS.forEach(function(m) {
     var mc = ST.viewC.filter(function(c){ return c.member === m; });
-    if (mc.length === 0) return;
-    anyMember = true;
 
     var decided = mc.filter(function(c){ return c.done !== null; });
     var doneN = mc.filter(function(c){ return c.done === true; }).length;
@@ -484,16 +490,23 @@ function renderAccounting() {
       html += '</div>';
     });
 
+    if (mc.length === 0) {
+      html += '<div class="empty-note">Brak zobowiązań</div>';
+    }
+    html += '<div class="add-row"><input class="add-input" placeholder="Dodaj zobowiązanie… (Enter)" data-member="'+esc(m)+'"></div>';
     html += '</div></div>';
   });
-
-  if (!anyMember) {
-    html += '<div class="empty-note" style="padding:20px 0">Brak zobowiązań z tej sesji.</div>';
-  }
 
   document.getElementById('root').innerHTML = html;
   document.getElementById('root').querySelectorAll('.a-btn').forEach(function(btn) {
     btn.addEventListener('click', function(){ handleAction(this.dataset.act, this.dataset.cid); });
+  });
+  document.getElementById('root').querySelectorAll('.add-input').forEach(function(inp) {
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && this.value.trim()) {
+        addCommit(this.dataset.member, this.value.trim(), this);
+      }
+    });
   });
   document.getElementById('root').querySelectorAll('.c-del').forEach(function(btn) {
     btn.addEventListener('click', async function(){
