@@ -155,6 +155,31 @@ nav {
   border: 1px dashed var(--border); border-radius: 8px;
 }
 
+/* Area description */
+.area-desc {
+  font-size: 13px; color: var(--muted); line-height: 1.5;
+  margin-bottom: 12px; cursor: text;
+  padding: 4px 6px; border-radius: 5px;
+  border: 1px solid transparent; transition: border-color .12s, background .12s;
+  white-space: pre-wrap;
+}
+.area-desc:hover { border-color: var(--border); background: var(--white); }
+.area-desc--empty { font-style: italic; font-size: 12px; }
+.area-desc-textarea {
+  width: 100%; min-height: 72px; font-family: var(--f); font-size: 13px;
+  color: var(--text); background: var(--white); border: 1px solid var(--muted);
+  border-radius: 5px; padding: 6px 8px; line-height: 1.5; resize: vertical;
+  outline: none; margin-bottom: 6px; display: block;
+}
+.area-desc-save {
+  font-size: 12px; font-weight: 600; background: var(--blue); color: white;
+  border: none; border-radius: 5px; padding: 4px 14px; cursor: pointer; margin-right: 6px;
+}
+.area-desc-cancel {
+  font-size: 12px; background: none; border: 1px solid var(--border);
+  border-radius: 5px; padding: 4px 12px; cursor: pointer; color: var(--muted);
+}
+
 /* RACI STRIP */
 .raci-strip { display: inline-flex; gap: 10px; margin: 8px 0 4px; position: relative; }
 .raci-item { display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative; }
@@ -396,7 +421,7 @@ document.addEventListener('click', function(e) {
 async function load() {
   await loadRaci();
   [areas, wigs, lags] = await Promise.all([
-    sbGet('areas?select=*&order=id'),
+    sbGet('areas?select=id,name,slug,wig_description&order=id'),
     sbGet('wigs?select=*&order=sort_order,created_at'),
     sbGet('lags?select=id,name,lag_number,area_id,wig_id&order=lag_number')
   ]);
@@ -421,6 +446,12 @@ function render() {
         ${esc(area.name)}
         <span class="area-badge">${areaWigs.length} WIG</span>
         <span class="area-badge">${areaLags.length} LAG</span>
+      </div>
+      <div class="area-desc-wrap" data-area-id="${area.id}">
+        ${area.wig_description
+          ? `<div class="area-desc" data-edit-area-desc="${area.id}">${esc(area.wig_description)}</div>`
+          : `<div class="area-desc area-desc--empty" data-edit-area-desc="${area.id}">+ Dodaj opis WIG dla ${esc(area.name)}</div>`
+        }
       </div>`;
 
     if (!areaWigs.length) {
@@ -598,11 +629,40 @@ document.getElementById('content').addEventListener('click', function(e) {
 
   var unassignBtn = e.target.closest('[data-unassign-lag]');
   if (unassignBtn) { unassignLag(parseInt(unassignBtn.dataset.unassignLag, 10)); return; }
+
+  var descEl = e.target.closest('[data-edit-area-desc]');
+  if (descEl) { startEditAreaDesc(descEl); return; }
 });
 
 document.getElementById('overlay').addEventListener('click', function(e) {
   if (e.target === e.currentTarget) closeModal();
 });
+
+function startEditAreaDesc(el) {
+  var areaId = el.dataset.editAreaDesc;
+  var area = areas.find(function(a) { return String(a.id) === String(areaId); });
+  if (!area) return;
+  var wrap = el.closest('.area-desc-wrap');
+  var current = area.wig_description || '';
+  wrap.innerHTML = '<textarea class="area-desc-textarea" id="area-desc-ta-'+areaId+'">' + esc(current) + '</textarea>'
+    + '<button class="area-desc-save" data-save-area-desc="'+areaId+'">Zapisz</button>'
+    + '<button class="area-desc-cancel" data-cancel-area-desc="'+areaId+'">Anuluj</button>';
+  var ta = document.getElementById('area-desc-ta-'+areaId);
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+
+  wrap.querySelector('[data-save-area-desc]').addEventListener('click', async function() {
+    var val = ta.value.trim() || null;
+    try {
+      await sbPatch('areas?id=eq.'+areaId, { wig_description: val });
+      area.wig_description = val;
+      toast('Opis zapisany');
+      render();
+    } catch(e) { toast('Błąd: ' + e.message.slice(0,60)); }
+  });
+
+  wrap.querySelector('[data-cancel-area-desc]').addEventListener('click', function() { render(); });
+}
 
 load();
 </script>
