@@ -623,7 +623,8 @@ async function init() {
       sbGet(`lag_items?lag_id=eq.${LAG_ID}&select=*&order=sort_order`),
       sbGet(`lag_lead_links?lag_id=eq.${LAG_ID}&select=*`),
       sbGet('leads?select=id,lead_number,name'),
-      sbGet('config?key=eq.current_week&select=value')
+      sbGet('config?key=eq.current_week&select=value'),
+      sbGet('sessions?order=number&select=week,period_from,period_to')
     ]);
 
     // Fetch weekly data using actual item IDs
@@ -637,7 +638,17 @@ async function init() {
     D.weekly  = weeklyData;
     D.links   = links;
     D.leads   = leads;
-    D.week    = cfg.length ? parseInt(cfg[0].value, 10) : 12;
+    const configWeek = cfg.length ? parseInt(cfg[0].value, 10) : 12;
+    const today = new Date().toISOString().split('T')[0];
+    let autoWeek = configWeek;
+    if (sessions && sessions.length) {
+      for (let si = 0; si < sessions.length; si++) {
+        const s = sessions[si];
+        if (s.period_from <= today && s.period_to >= today) { autoWeek = parseInt(s.week.replace('T','')); break; }
+        if (s.period_to < today) autoWeek = parseInt(s.week.replace('T',''));
+      }
+    }
+    D.week = autoWeek;
 
     document.title = `${D.lag.code || 'LAG'} — ${D.lag.name || ''} · OvocxMalinowi`;
 
