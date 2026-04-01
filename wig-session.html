@@ -253,7 +253,9 @@ async function init() {
     var today = new Date().toISOString().split('T')[0];
     var ci = 0;
     for (var j = 0; j < sessions.length; j++) {
-      if (sessions[j].date <= today) ci = j;
+      var s = sessions[j];
+      if (s.period_from <= today && s.period_to >= today) { ci = j; break; }
+      if (s.period_to < today) ci = j;
     }
     ST.currIdx = ci;
     ST.viewIdx = ci;
