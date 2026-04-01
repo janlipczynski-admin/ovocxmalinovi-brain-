@@ -210,6 +210,7 @@ nav {
 .card-id.lag { background: var(--lag2); color: var(--lag); }
 .card-id.lead { background: var(--lead2); color: var(--lead); }
 .card-name { font-size: 13px; font-weight: 600; flex: 1; line-height: 1.4; letter-spacing: -.01em; }
+[data-edit-lag-name]:hover, [data-edit-lead-name]:hover { background: var(--s1); border-radius: 4px; padding: 1px 4px; margin: -1px -4px; cursor: text; }
 .card-pct { font-family: var(--fm); font-size: 20px; font-weight: 500; flex-shrink: 0; letter-spacing: -.02em; }
 .card-pct.g { color: var(--gr); }
 .card-pct.m { color: var(--acc2); }
@@ -1484,7 +1485,7 @@ async function deleteLagItem(itemId) {
 }
 
 function startEditLagName(lagId, el) {
-  var lag = D.lags.find(function(l){ return l.id === lagId; });
+  var lag = D.lags.find(function(l){ return String(l.id) === String(lagId); });
   if (!lag) return;
   var inp = document.createElement('input');
   inp.type = 'text'; inp.value = lag.name;
