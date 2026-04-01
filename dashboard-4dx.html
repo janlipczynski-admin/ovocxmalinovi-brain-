@@ -1501,7 +1501,7 @@ document.getElementById('root').addEventListener('click', function(e) {
   var addLeadEl = e.target.closest('[data-add-lead]');
   if (addLeadEl) { e.stopPropagation(); startAddLead(addLeadEl); return; }
 
-  if (e.target.closest('select') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
+  if (e.target.closest('select') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('[data-raci-click]')) return;
   var card = e.target.closest('[id^="lead-card-"]');
   if (card) {
     var leadId = parseInt(card.id.replace('lead-card-', ''), 10);
