@@ -416,10 +416,20 @@ async function init() {
       sbGet('lags?select=*&order=id'),
       sbGet('lag_items?select=*&order=sort_order'),
       sbGet('lag_weekly?select=*'),
-      sbGet('config?key=eq.current_week&select=value')
+      sbGet('config?key=eq.current_week&select=value'),
+      sbGet('sessions?order=number&select=week,period_from,period_to')
     ]);
 
-    const week = cfg.length ? parseInt(cfg[0].value, 10) : 12;
+    const configWeek = cfg.length ? parseInt(cfg[0].value, 10) : 12;
+    const today = new Date().toISOString().split('T')[0];
+    let week = configWeek;
+    if (sessions && sessions.length) {
+      for (let si = 0; si < sessions.length; si++) {
+        const s = sessions[si];
+        if (s.period_from <= today && s.period_to >= today) { week = parseInt(s.week.replace('T','')); break; }
+        if (s.period_to < today) week = parseInt(s.week.replace('T',''));
+      }
+    }
     document.getElementById('nav-week').textContent = `T${week}`;
 
     // Zbuduj strukturę: lag.lag_items[].lag_weekly[]

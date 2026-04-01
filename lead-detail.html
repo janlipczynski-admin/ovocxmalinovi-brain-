@@ -236,14 +236,25 @@ async function init() {
     return;
   }
   try {
-    const [cfg, leads, items, links] = await Promise.all([
+    const [cfg, leads, items, links, sessions] = await Promise.all([
       sbGet('config?key=eq.current_week'),
       sbGet('leads?id=eq.'+LEAD_ID),
       sbGet('lead_items?lead_id=eq.'+LEAD_ID+'&order=sort_order'),
-      sbGet('lag_lead_links?lead_id=eq.'+LEAD_ID)
+      sbGet('lag_lead_links?lead_id=eq.'+LEAD_ID),
+      sbGet('sessions?order=number&select=week,period_from,period_to')
     ]);
 
-    D.week  = cfg.length ? +cfg[0].value : 12;
+    const configWeek = cfg.length ? +cfg[0].value : 12;
+    const today = new Date().toISOString().split('T')[0];
+    let autoWeek = configWeek;
+    if (sessions && sessions.length) {
+      for (let si = 0; si < sessions.length; si++) {
+        const s = sessions[si];
+        if (s.period_from <= today && s.period_to >= today) { autoWeek = parseInt(s.week.replace('T','')); break; }
+        if (s.period_to < today) autoWeek = parseInt(s.week.replace('T',''));
+      }
+    }
+    D.week = autoWeek;
     D.lead  = leads[0] || null;
     D.items = items || [];
 

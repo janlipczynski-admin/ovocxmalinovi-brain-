@@ -762,12 +762,16 @@ function cardLag(lag) {
   const barColor = onTrack ? '#2D6A4F' : '#C0392B';
   const badge    = statusBadgeHtml(cumul);
   const dlText   = lag.deadline ? fmtDate(lag.deadline) : 'Brak deadline';
+  const wigOpts = '<option value="">— bez WIG —</option>' + D.wigs.map(function(w){ return '<option value="'+w.id+'"'+(lag.wig_id===w.id?' selected':'')+'>'+esc(w.name)+'</option>'; }).join('');
+  const wigSelect = D.wigs.length ? `<select data-assign-lag-wig="${lag.id}" onclick="event.stopPropagation()" style="font-size:11px;border:1px solid var(--s2);border-radius:4px;padding:2px 6px;cursor:pointer;background:var(--s1);color:var(--t2);font-family:var(--fm);">${wigOpts}</select>` : '';
   return `<div class="card" id="lag-card-${lag.id}">
     <div class="card-head">
       <a class="card-id lag" href="lag-detail.html?id=${lag.id}" onclick="event.stopPropagation()">LAG-0${lag.lag_number}</a>
-      <div class="card-name">${lag.name}</div>
+      <div class="card-name" data-edit-lag-name="${lag.id}" style="cursor:text;flex:1;" title="Kliknij aby edytować">${esc(lag.name)}</div>
       ${badge}
+      ${wigSelect}
       ${leadTags ? `<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">${leadTags}</div>` : ''}
+      <button class="lead-del-btn" data-del-lag="${lag.id}" title="Usuń LAG">✕</button>
     </div>
     ${raciStripHtml('lag', lag.id)}
     <div class="card-dl" data-edit-lag-deadline="${lag.id}" style="cursor:pointer;user-select:none;" title="Kliknij aby edytować deadline">📅 ${dlText}</div>
@@ -1479,11 +1483,61 @@ async function deleteLagItem(itemId) {
   } catch(e) { notify('Błąd usuwania: '+e.message.slice(0,60)); }
 }
 
+function startEditLagName(lagId, el) {
+  var lag = D.lags.find(function(l){ return l.id === lagId; });
+  if (!lag) return;
+  var inp = document.createElement('input');
+  inp.type = 'text'; inp.value = lag.name;
+  inp.style.cssText = 'flex:1;font-size:13px;font-weight:600;border:none;border-bottom:2px solid #D64E12;outline:none;background:transparent;font-family:var(--f);color:var(--t1);padding:0;';
+  el.textContent = ''; el.appendChild(inp); inp.focus(); inp.select();
+  var saved = false;
+  function save() {
+    if (saved) return; saved = true;
+    var val = inp.value.trim();
+    if (!val) { reRenderLag(lagId); return; }
+    q('lags?id=eq.'+lagId, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({name:val})})
+      .then(function(){ lag.name=val; reRenderLag(lagId); notify('Nazwa LAG zaktualizowana ✓'); })
+      .catch(function(err){ saved=false; notify('Błąd: '+err.message); reRenderLag(lagId); });
+  }
+  inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();save();} if(ev.key==='Escape') reRenderLag(lagId); });
+  inp.addEventListener('blur', save);
+}
+
+async function deleteLag(lagId) {
+  var lag = D.lags.find(function(l){ return l.id===lagId; });
+  if (!lag) return;
+  var code = 'LAG-'+String(lag.lag_number).padStart(2,'0');
+  if (!confirm('Usuń '+code+'? Usunięcie kasuje też wszystkie kryteria i dane tygodniowe.')) return;
+  try {
+    var items = D.li[lagId] || [];
+    for (var i=0; i<items.length; i++) {
+      await q('lag_weekly?lag_item_id=eq.'+items[i].id, {method:'DELETE', headers:HD});
+    }
+    await q('lag_items?lag_id=eq.'+lagId, {method:'DELETE', headers:HD});
+    await q('lag_lead_links?lag_id=eq.'+lagId, {method:'DELETE', headers:HD});
+    await q('lags?id=eq.'+lagId, {method:'DELETE', headers:HD});
+    notify(code+' usunięty ✓');
+    init();
+  } catch(e) { notify('Błąd usuwania: '+e.message.slice(0,60)); }
+}
+
 document.getElementById('overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
 
 document.getElementById('root').addEventListener('change', function(e) {
   if (e.target.dataset.assignLead) {
     assignLeadToLag(parseInt(e.target.dataset.assignLead, 10), e.target.value ? parseInt(e.target.value, 10) : null);
+  }
+  if (e.target.dataset.assignLagWig) {
+    var lagId = parseInt(e.target.dataset.assignLagWig, 10);
+    var wigId = e.target.value || null;
+    q('lags?id=eq.'+lagId, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({wig_id:wigId})})
+      .then(function(){
+        var lag = D.lags.find(function(l){ return l.id===lagId; });
+        if (lag) lag.wig_id = wigId;
+        notify('WIG przypisany ✓');
+        paint();
+      })
+      .catch(function(e){ notify('Błąd: '+e.message); });
   }
 });
 
@@ -1511,6 +1565,12 @@ document.getElementById('root').addEventListener('click', function(e) {
     inp.addEventListener('blur', saveWDead);
     return;
   }
+
+  var editLagNameEl = e.target.closest('[data-edit-lag-name]');
+  if (editLagNameEl && !e.target.closest('input')) { e.stopPropagation(); startEditLagName(parseInt(editLagNameEl.dataset.editLagName, 10), editLagNameEl); return; }
+
+  var delLagEl = e.target.closest('[data-del-lag]');
+  if (delLagEl) { e.stopPropagation(); deleteLag(parseInt(delLagEl.dataset.delLag, 10)); return; }
 
   // Edycja wig_description inline
   var wdEl = e.target.closest('[data-edit-wig-desc]');
