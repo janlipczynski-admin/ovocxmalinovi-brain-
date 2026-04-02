@@ -618,7 +618,7 @@ async function init() {
     return;
   }
   try {
-    const [lagArr, items, links, leads, cfg] = await Promise.all([
+    const [lagArr, items, links, leads, cfg, sessions] = await Promise.all([
       sbGet(`lags?id=eq.${LAG_ID}&select=*`),
       sbGet(`lag_items?lag_id=eq.${LAG_ID}&select=*&order=sort_order`),
       sbGet(`lag_lead_links?lag_id=eq.${LAG_ID}&select=*`),
