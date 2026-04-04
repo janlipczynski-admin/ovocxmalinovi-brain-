@@ -398,8 +398,9 @@ async function carryCommitForward(cid) {
       method:'POST', prefer:'return=representation',
       body:{ session_id: nextSess.id, member:c.member, commitment:c.commitment, done:null, carry_over:true, week: weekNum }
     });
-    // Update currIdx to new session and reload
-    ST.currIdx = ST.sessions.length - 1;
+    // Update currIdx to next session and reload
+    var nextIdx = ST.sessions.findIndex(function(s){ return s.id === nextSess.id; });
+    ST.currIdx = nextIdx >= 0 ? nextIdx : ST.sessions.length - 1;
     ST.viewIdx = ST.currIdx;
     renderNav();
     await loadData();
