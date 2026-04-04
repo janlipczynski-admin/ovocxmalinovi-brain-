@@ -735,8 +735,8 @@ function sparkSVGLead(lead) {
   var scorePts = [];
   WKS.forEach(function(w, i){
     if (w > D.week) return;
-    var done = items.filter(function(item){ return (D.lew[item.id]||{})[w] === 1; }).length;
-    scorePts.push({ x: wx(i).toFixed(1), y: wy(done/items.length).toFixed(1) });
+    var weekScore = items.reduce(function(sum, item){ return sum + ((D.lew[item.id]||{})[w] || 0); }, 0) / items.length;
+    scorePts.push({ x: wx(i).toFixed(1), y: wy(weekScore).toFixed(1) });
   });
   if (!scorePts.length) return '';
   // Idealne tempo — linia szara przerywana (wszystkie tygodnie)
@@ -1020,7 +1020,7 @@ function openModal() {
     <div class="entry-row">
       <span class="entry-badge lead">LEAD-0${i.ln}</span>
       <div class="entry-name">${i.name}</div>
-      <input type="number" class="entry-input" data-t="lead" data-id="${i.id}" min="0" max="1" step="1" value="${(D.lew[i.id]||{})[w]||0}">
+      <input type="number" class="entry-input" data-t="lead" data-id="${i.id}" min="0" max="1" step="0.05" value="${(D.lew[i.id]||{})[w]||0}">
     </div>`).join('');
 
   document.getElementById('overlay').classList.add('on');
