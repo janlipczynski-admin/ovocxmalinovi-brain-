@@ -319,13 +319,7 @@ function buildChartSVG() {
 
   var weeksToShow = ALL_WEEKS.filter(function(w){ return w <= D.week; });
   var dataPoints  = weeksToShow.map(function(w) {
-    if (!D.items.length) return {w:w,v:0};
-    var maxVals = D.items.map(function(item) {
-      var data = D.weekly[item.id]||{};
-      var vals = ALL_WEEKS.filter(function(ww){ return ww<=w; }).map(function(ww){ return data[ww]!==undefined?data[ww]:0; });
-      return vals.length ? Math.max.apply(null,vals) : 0;
-    });
-    return {w:w, v: maxVals.reduce(function(a,b){return a+b;},0)/maxVals.length};
+    return {w:w, v: weekAvg(w)};
   });
 
   var pts      = dataPoints.map(function(p){ return xOf(p.w).toFixed(1)+','+yOf(p.v).toFixed(1); });
