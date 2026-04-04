@@ -103,7 +103,25 @@ nav {
 .status-pill { display: inline-block; font-size: 13px; font-weight: 700; padding: 6px 14px; border-radius: 20px; }
 .status-pill.on  { background: rgba(33,122,82,.12);  color: var(--gr); }
 .status-pill.off { background: rgba(232,148,26,.12); color: var(--acc2); }
+.status-pill.bad { background: rgba(192,57,43,.12);  color: var(--re); }
 .status-pace { font-family: var(--fm); font-size: 10px; color: var(--t3); margin-top: 8px; }
+
+/* INFO TOGGLE */
+.info-toggle {
+  font-family: var(--fm); font-size: 11px; color: var(--t3);
+  cursor: pointer; margin-top: 12px; display: flex; align-items: center; gap: 6px;
+  user-select: none; letter-spacing: .02em;
+}
+.info-toggle:hover { color: var(--t2); }
+.info-arrow { font-size: 9px; transition: transform .2s; }
+.info-toggle.open .info-arrow { transform: rotate(180deg); }
+.info-body {
+  display: none; margin-top: 10px; padding: 14px 16px;
+  background: var(--s1); border: 1px solid var(--s2); border-radius: 8px;
+  font-family: var(--fm); font-size: 11px; color: var(--t2); line-height: 1.7;
+}
+.info-body.open { display: block; }
+.info-body pre { background: var(--s2); border-radius: 6px; padding: 10px 12px; margin: 8px 0; font-size: 10px; line-height: 1.6; overflow-x: auto; }
 
 /* CHART */
 .chart-card {
@@ -306,62 +324,68 @@ function weekAvg(week) {
   return vals.reduce(function(a,b){ return a+b; },0) / vals.length;
 }
 
-function idealPace() {
-  return (D.week - WEEK_MIN) / (WEEK_MAX - WEEK_MIN);
+function seasonAvg() {
+  var weeks = ALL_WEEKS.filter(function(w){ return w <= D.week; });
+  if (!weeks.length) return 0;
+  return weeks.reduce(function(sum, w){ return sum + weekAvg(w); }, 0) / weeks.length;
 }
 
 /* ——— CHART ——— */
 function buildChartSVG() {
-  var PL=32, PR=12, PT=12, PB=28, W=700, H=130;
+  var PL=32, PR=20, PT=12, PB=28, W=700, H=130;
   var plotW = W-PL-PR, plotH = H-PT-PB;
-  var xOf = function(w){ return PL + ((w-WEEK_MIN)/(WEEK_MAX-WEEK_MIN))*plotW; };
+  var n = ALL_WEEKS.length;
+  var slot = plotW / n;
+  var barW = slot * 0.6;
+  var xCenter = function(w){ return PL + ((w-WEEK_MIN)/(WEEK_MAX-WEEK_MIN))*plotW; };
   var yOf = function(v){ return PT + (1-v)*plotH; };
 
-  var weeksToShow = ALL_WEEKS.filter(function(w){ return w <= D.week; });
-  var dataPoints  = weeksToShow.map(function(w) {
-    return {w:w, v: weekAvg(w)};
-  });
-
-  var pts      = dataPoints.map(function(p){ return xOf(p.w).toFixed(1)+','+yOf(p.v).toFixed(1); });
-  var greenPath = pts.length>=2 ? 'M'+pts.join(' L') : '';
-  var dots      = dataPoints.map(function(p){
-    var last = p.w===D.week;
-    return '<circle cx="'+xOf(p.w).toFixed(1)+'" cy="'+yOf(p.v).toFixed(1)+'" r="'+(last?4:2.2)+'" fill="#2D8A4E" opacity="'+(last?1:.5)+'" stroke="'+(last?'var(--white)':'none')+'" stroke-width="1.5"/>';
-  }).join('');
-
-  var idealPath = 'M'+xOf(WEEK_MIN).toFixed(1)+','+yOf(0).toFixed(1)+' L'+xOf(WEEK_MAX).toFixed(1)+','+yOf(1).toFixed(1);
-
   var yLines = [0,.25,.5,.75,1].map(function(v){
-    var y=yOf(v).toFixed(1);
+    var y = yOf(v).toFixed(1);
     return '<line x1="'+PL+'" y1="'+y+'" x2="'+(W-PR)+'" y2="'+y+'" stroke="#E8E6DE" stroke-width="0.6"/>'
       +'<text x="'+(PL-4)+'" y="'+(parseFloat(y)+3)+'" text-anchor="end" font-size="9" fill="#AEACA4" font-family="DM Mono,monospace">'+(v*100)+'</text>';
   }).join('');
 
-  var xLabels = weeksToShow.filter(function(w,i){ return i%2===0||w===D.week; }).map(function(w){
+  var bars = ALL_WEEKS.map(function(w){
+    if (w > D.week) return '';
+    var v = weekAvg(w);
+    var cx = xCenter(w);
+    var barH = Math.max(v * plotH, v > 0 ? 2 : 0);
+    var barY = yOf(v);
+    var isCur = w === D.week;
+    var fillCol = v >= 0.8 ? '#2D6A4F' : v >= 0.5 ? '#E07A2F' : '#C0392B';
+    var op = isCur ? 1 : 0.55;
+    return '<rect x="'+(cx-barW/2).toFixed(1)+'" y="'+barY.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+barH.toFixed(1)+'" rx="2" fill="'+fillCol+'" opacity="'+op+'"/>'
+      +(isCur?'<rect x="'+(cx-barW/2-1).toFixed(1)+'" y="'+(barY-1).toFixed(1)+'" width="'+(barW+2).toFixed(1)+'" height="'+(barH+1).toFixed(1)+'" rx="3" fill="none" stroke="'+fillCol+'" stroke-width="1.5"/>':'');
+  }).join('');
+
+  var targetY = yOf(1).toFixed(1);
+  var targetLine = '<line x1="'+PL+'" y1="'+targetY+'" x2="'+(W-PR)+'" y2="'+targetY+'" stroke="#2D6A4F" stroke-width="1.2" stroke-dasharray="4 3" opacity=".5"/>'
+    +'<text x="'+(W-PR+3)+'" y="'+(parseFloat(targetY)+3)+'" font-size="8" fill="#2D6A4F" font-family="DM Mono,monospace" opacity=".6">100%</text>';
+
+  var xLabels = ALL_WEEKS.filter(function(w,i){ return i%2===0||w===D.week; }).map(function(w){
     var cur = w===D.week;
-    return '<text x="'+xOf(w).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle" font-size="9" fill="'+(cur?'#1A5EA8':'#AEACA4')+'" font-weight="'+(cur?700:400)+'" font-family="DM Mono,monospace">T'+w+'</text>';
+    var future = w > D.week;
+    return '<text x="'+xCenter(w).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle" font-size="9" fill="'+(cur?'#1A5EA8':(future?'#D8D6D0':'#AEACA4'))+'" font-weight="'+(cur?700:400)+'" font-family="DM Mono,monospace">T'+w+'</text>';
   }).join('');
 
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible;">'
-    +yLines
-    +'<path d="'+idealPath+'" stroke="#AEACA4" stroke-width="1.5" fill="none" stroke-dasharray="4 3" opacity=".7"/>'
-    +(greenPath?'<path d="'+greenPath+'" stroke="#2D8A4E" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>':'')
-    +dots+xLabels+'</svg>';
+    +yLines+targetLine+bars+xLabels+'</svg>';
 }
 
 /* ——— COLOR HELPERS ——— */
 const pct = function(v){ return Math.round(v*100); };
-const col = function(v){ return v>=.7?'var(--gr)':v>=.3?'var(--acc2)':'var(--re)'; };
+const col = function(v){ return v>=.8?'var(--gr)':v>=.5?'var(--acc2)':'var(--re)'; };
+function statusCls(v) { return v>=.8?'on':v>=.5?'off':'bad'; }
+function statusTxt(v) { return v>=.8?'Na dobrej drodze':v>=.5?'Mogłoby być lepiej':'Słabo'; }
 
 /* ——— RENDER ——— */
 function render() {
   var lead   = D.lead;
-  var cumul  = cumulativeProgress();
-  var ip     = idealPace();
   var thisW  = weekAvg(D.week);
   var lastW  = weekAvg(D.week-1);
   var delta  = thisW - lastW;
-  var onTrack = cumul >= ip;
+  var avg    = seasonAvg();
 
   var leadNum = String(lead.lead_number||'?').padStart(2,'0');
   var lagBadge = D.lag
@@ -410,13 +434,6 @@ function render() {
 
     // METRICS
     +'<div class="metrics-grid">'
-      // Skumulowany
-      +'<div class="metric-card">'
-        +'<div class="metric-label">Skumulowany postęp</div>'
-        +'<div class="metric-value" style="color:'+col(cumul)+'">'+pct(cumul)+'%</div>'
-        +'<div class="metric-bar"><div class="metric-bar-fill" style="width:'+pct(cumul)+'%;background:'+col(cumul)+'"></div></div>'
-        +'<div class="metric-delta">max wartości do T'+D.week+'</div>'
-      +'</div>'
       // Ten tydzień
       +'<div class="metric-card">'
         +'<div class="metric-label">Ten tydzień (T'+D.week+')</div>'
@@ -426,21 +443,44 @@ function render() {
           +(delta>=0?'+':'')+pct(delta)+'% vs T'+(D.week-1)
         +'</div>'
       +'</div>'
+      // Średnia sezonowa
+      +'<div class="metric-card">'
+        +'<div class="metric-label">Średnia sezonowa</div>'
+        +'<div class="metric-value" style="color:'+col(avg)+'">'+pct(avg)+'%</div>'
+        +'<div class="metric-bar"><div class="metric-bar-fill" style="width:'+pct(avg)+'%;background:'+col(avg)+'"></div></div>'
+        +'<div class="metric-delta">T10–T'+D.week+'</div>'
+      +'</div>'
       // Status
       +'<div class="metric-card">'
-        +'<div class="metric-label">Status</div>'
-        +'<div class="status-pill '+(onTrack?'on':'off')+'">'+(onTrack?'Na dobrej drodze':'Do nadrobienia')+'</div>'
-        +'<div class="status-pace">Idealne: '+pct(ip)+'% | Obecne: '+pct(cumul)+'%</div>'
+        +'<div class="metric-label">Status (ten tydzień)</div>'
+        +'<div class="status-pill '+statusCls(thisW)+'">'+statusTxt(thisW)+'</div>'
+        +'<div class="status-pace">≥80% na dobrej drodze · 50–79% mogłoby być lepiej</div>'
       +'</div>'
     +'</div>'
 
     // CHART
     +'<div class="chart-card">'
-      +'<div class="chart-title">Postęp w czasie</div>'
+      +'<div class="chart-title">Realizacja tygodniowa</div>'
       +buildChartSVG()
       +'<div class="chart-legend">'
-        +'<div class="leg-item"><div class="leg-swatch" style="background:#2D8A4E;"></div>Skumulowany %</div>'
-        +'<div class="leg-item"><svg width="20" height="3" style="flex-shrink:0;"><line x1="0" y1="1.5" x2="20" y2="1.5" stroke="#AEACA4" stroke-width="1.5" stroke-dasharray="4 3"/></svg>Idealne tempo</div>'
+        +'<div class="leg-item"><div class="leg-swatch" style="background:#2D6A4F;height:10px;width:10px;border-radius:2px;"></div>≥80% na dobrej drodze</div>'
+        +'<div class="leg-item"><div class="leg-swatch" style="background:#E07A2F;height:10px;width:10px;border-radius:2px;"></div>50–79% mogłoby być lepiej</div>'
+        +'<div class="leg-item"><div class="leg-swatch" style="background:#C0392B;height:10px;width:10px;border-radius:2px;"></div>&lt;50% słabo</div>'
+      +'</div>'
+      +'<div class="info-toggle" onclick="this.classList.toggle(\'open\');this.nextElementSibling.classList.toggle(\'open\')">'
+        +'ℹ Jak liczymy procenty? <span class="info-arrow">▼</span>'
+      +'</div>'
+      +'<div class="info-body">'
+        +'<strong>Procent tygodniowy</strong> = średnia wartości wpisanych dla wszystkich kryteriów tego LEADa w danym tygodniu.<br><br>'
+        +'<pre>Przykład dla T'+D.week+':\n'
+          +'  Kryterium 1: 0.80  →  80%\n'
+          +'  Kryterium 2: 0.60  →  60%\n'
+          +'  ────────────────────────────\n'
+          +'  Średnia: (80% + 60%) / 2 = 70%</pre>'
+        +'Wartość wpisujesz bezpośrednio w tabelce poniżej (T10–T22) lub przez <strong>Wpis tygodniowy</strong> na dashboardzie (0.00–1.00, gdzie 1.00 = 100%).<br><br>'
+        +'<span style="color:#2D6A4F">●</span> ≥80% — na dobrej drodze &nbsp;&nbsp; '
+        +'<span style="color:#E07A2F">●</span> 50–79% — mogłoby być lepiej &nbsp;&nbsp; '
+        +'<span style="color:#C0392B">●</span> &lt;50% — słabo'
       +'</div>'
     +'</div>'
 
@@ -453,34 +493,30 @@ function render() {
 
 /* ——— REFRESH METRICS & CHART ——— */
 function refreshMetrics() {
-  var cumul   = cumulativeProgress();
-  var ip      = idealPace();
-  var thisW   = weekAvg(D.week);
-  var lastW   = weekAvg(D.week-1);
-  var delta   = thisW - lastW;
-  var onTrack = cumul >= ip;
+  var thisW  = weekAvg(D.week);
+  var lastW  = weekAvg(D.week-1);
+  var delta  = thisW - lastW;
+  var avg    = seasonAvg();
 
   // Metric cards
   var mc = document.querySelectorAll('.metric-card');
   if (mc[0]) {
-    mc[0].querySelector('.metric-value').textContent   = pct(cumul)+'%';
-    mc[0].querySelector('.metric-value').style.color   = col(cumul);
-    mc[0].querySelector('.metric-bar-fill').style.width = pct(cumul)+'%';
-    mc[0].querySelector('.metric-bar-fill').style.background = col(cumul);
+    mc[0].querySelector('.metric-value').textContent    = pct(thisW)+'%';
+    mc[0].querySelector('.metric-value').style.color    = col(thisW);
+    mc[0].querySelector('.metric-bar-fill').style.width = pct(thisW)+'%';
+    mc[0].querySelector('.metric-bar-fill').style.background = col(thisW);
+    var d = mc[0].querySelector('.metric-delta');
+    if (d) { d.textContent = (delta>=0?'+':'')+pct(delta)+'% vs T'+(D.week-1); d.style.color = delta>=0?'var(--gr)':'var(--re)'; }
   }
   if (mc[1]) {
-    mc[1].querySelector('.metric-value').textContent   = pct(thisW)+'%';
-    mc[1].querySelector('.metric-value').style.color   = col(thisW);
-    mc[1].querySelector('.metric-bar-fill').style.width = pct(thisW)+'%';
-    mc[1].querySelector('.metric-bar-fill').style.background = col(thisW);
-    var d = mc[1].querySelector('.metric-delta');
-    if (d) { d.textContent = (delta>=0?'+':'')+pct(delta)+'% vs T'+(D.week-1); d.style.color = delta>=0?'var(--gr)':'var(--re)'; }
+    mc[1].querySelector('.metric-value').textContent    = pct(avg)+'%';
+    mc[1].querySelector('.metric-value').style.color    = col(avg);
+    mc[1].querySelector('.metric-bar-fill').style.width = pct(avg)+'%';
+    mc[1].querySelector('.metric-bar-fill').style.background = col(avg);
   }
   if (mc[2]) {
     var pill = mc[2].querySelector('.status-pill');
-    if (pill) { pill.className='status-pill '+(onTrack?'on':'off'); pill.textContent=onTrack?'Na dobrej drodze':'Do nadrobienia'; }
-    var sp = mc[2].querySelector('.status-pace');
-    if (sp) sp.textContent='Idealne: '+pct(ip)+'% | Obecne: '+pct(cumul)+'%';
+    if (pill) { pill.className='status-pill '+statusCls(thisW); pill.textContent=statusTxt(thisW); }
   }
   // Chart
   var cc = document.querySelector('.chart-card');
