@@ -825,7 +825,7 @@ function cardLead(lead) {
         var sel = assignedLagId === lag.id ? ' selected' : '';
         return '<option value="'+lag.id+'"'+sel+'>LAG-'+String(lag.lag_number).padStart(2,'0')+': '+esc(lag.name)+'</option>';
       }).join('');
-  const assignHtml = '<select data-assign-lead="'+lead.id+'" style="font-size:11px;border:1px solid var(--s2);border-radius:4px;padding:2px 6px;cursor:pointer;background:var(--s1);color:var(--t2);font-family:var(--fm);">'+lagOptions+'</select>';
+  const assignHtml = '<select data-assign-lead="'+lead.id+'" onclick="event.stopPropagation()" style="font-size:11px;border:1px solid var(--s2);border-radius:4px;padding:2px 6px;cursor:pointer;background:var(--s1);color:var(--t2);font-family:var(--fm);">'+lagOptions+'</select>';
   const cumul = cumulativeValueLead(lead);
   const badge = statusBadgeHtml(cumul);
   return `<div class="card" id="lead-card-${lead.id}" style="cursor:pointer;position:relative;">
@@ -1395,14 +1395,25 @@ function startAddLeadItem(leadId, btn) {
 
 function startAddLead(btn) {
   var container = btn.parentElement;
-  if (container.querySelector('.new-lead-input')) return;
+  var wrapper = container.parentElement;
+  if (wrapper.querySelector('.new-lead-input')) return;
   var div = document.createElement('div'); div.className = 'card';
-  div.style.cssText = 'padding:14px 20px;margin-bottom:10px;';
+  div.style.cssText = 'padding:14px 20px;margin-bottom:10px;display:flex;flex-direction:column;gap:10px;';
   var inp = document.createElement('input');
   inp.className = 'new-lead-input'; inp.type = 'text'; inp.placeholder = 'Nazwa nowego LEAD…';
   inp.style.cssText = 'width:100%;font-size:13px;font-weight:600;border:none;border-bottom:2px solid #2563eb;outline:none;background:transparent;font-family:var(--f);color:var(--t1);padding:2px 0;';
   div.appendChild(inp);
-  container.insertBefore(div, btn);
+  var lagSel = null;
+  if (D.lags.length) {
+    lagSel = document.createElement('select');
+    lagSel.style.cssText = 'font-size:12px;border:1px solid var(--s2);border-radius:4px;padding:4px 8px;background:var(--s1);color:var(--t2);font-family:var(--fm);align-self:flex-start;';
+    var optNone = document.createElement('option'); optNone.value = ''; optNone.textContent = '— przypisz do LAG —'; lagSel.appendChild(optNone);
+    D.lags.forEach(function(l) {
+      var opt = document.createElement('option'); opt.value = l.id; opt.textContent = 'LAG-'+String(l.lag_number).padStart(2,'0')+': '+l.name; lagSel.appendChild(opt);
+    });
+    div.appendChild(lagSel);
+  }
+  wrapper.insertBefore(div, container);
   inp.focus();
   var saved = false;
   function save() {
@@ -1411,12 +1422,20 @@ function startAddLead(btn) {
     if (!val) return;
     var maxNum = D.leads.length ? Math.max.apply(null, D.leads.map(function(l){ return l.lead_number||0; })) : 0;
     var newNum = maxNum + 1;
+    var chosenLagId = lagSel ? (lagSel.value || null) : null;
     q('leads', {method:'POST', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({area_id:D.area.id, name:val, lead_number:newNum})})
-      .then(function(){ notify('LEAD-'+String(newNum).padStart(2,'0')+' dodany ✓'); init(); })
+      .then(function(rows) {
+        var newLead = rows && rows[0];
+        if (newLead && chosenLagId) {
+          return q('lag_lead_links', {method:'POST', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({lag_id:chosenLagId, lead_id:newLead.id})})
+            .then(function(){ notify('LEAD-'+String(newNum).padStart(2,'0')+' dodany i przypisany ✓'); init(); });
+        }
+        notify('LEAD-'+String(newNum).padStart(2,'0')+' dodany ✓'); init();
+      })
       .catch(function(e){ notify('Błąd: '+e.message.slice(0,60)); });
   }
   inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();save();} if(ev.key==='Escape') div.remove(); });
-  inp.addEventListener('blur', save);
+  inp.addEventListener('blur', function(ev){ if (lagSel && ev.relatedTarget === lagSel) return; save(); });
 }
 
 function startAddLag(btn) {
