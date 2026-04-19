@@ -1331,7 +1331,7 @@ function startEditLeadItemName(itemId, el) {
 }
 
 async function deleteLead(leadId) {
-  var lead = D.leads.find(function(l){ return l.id===leadId; });
+  var lead = D.leads.find(function(l){ return String(l.id)===String(leadId); });
   if (!lead) return;
   var code = 'LEAD-'+String(lead.lead_number).padStart(2,'0');
   if (!confirm('Usuń '+code+'? Usunięcie kasuje też wszystkie zadania i dane tygodniowe.')) return;
@@ -1349,7 +1349,7 @@ async function deleteLead(leadId) {
 
 async function deleteLeadItem(itemId) {
   var item=null, leadId=null;
-  D.leads.forEach(function(l){ (D.lei[l.id]||[]).forEach(function(i){ if(i.id===itemId){item=i;leadId=l.id;} }); });
+  D.leads.forEach(function(l){ (D.lei[l.id]||[]).forEach(function(i){ if(String(i.id)===String(itemId)){item=i;leadId=l.id;} }); });
   if (!item) return;
   if (!confirm('Usuń zadanie "'+item.name+'"? Usunie też dane tygodniowe.')) return;
   try {
@@ -1413,6 +1413,10 @@ function startAddLead(btn) {
     });
     div.appendChild(lagSel);
   }
+  var saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Dodaj LEAD';
+  saveBtn.style.cssText = 'align-self:flex-start;font-size:12px;font-weight:600;background:#1A5EA8;color:#fff;border:none;border-radius:6px;padding:5px 14px;cursor:pointer;font-family:var(--f);';
+  div.appendChild(saveBtn);
   wrapper.insertBefore(div, container);
   inp.focus();
   var saved = false;
@@ -1434,8 +1438,9 @@ function startAddLead(btn) {
       })
       .catch(function(e){ notify('Błąd: '+e.message.slice(0,60)); });
   }
+  saveBtn.addEventListener('click', function(ev){ ev.preventDefault(); save(); });
   inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();save();} if(ev.key==='Escape') div.remove(); });
-  inp.addEventListener('blur', function(ev){ if (lagSel && ev.relatedTarget === lagSel) return; save(); });
+  inp.addEventListener('blur', function(ev){ if((lagSel&&ev.relatedTarget===lagSel)||ev.relatedTarget===saveBtn) return; save(); });
 }
 
 function startAddLag(btn) {
@@ -1458,6 +1463,10 @@ function startAddLag(btn) {
     });
     div.appendChild(sel);
   }
+  var saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Dodaj LAG';
+  saveBtn.style.cssText = 'align-self:flex-start;font-size:12px;font-weight:600;background:#D64E12;color:#fff;border:none;border-radius:6px;padding:5px 14px;cursor:pointer;font-family:var(--f);';
+  div.appendChild(saveBtn);
   wrapper.insertBefore(div, container);
   inp.focus();
   var saved = false;
@@ -1472,8 +1481,9 @@ function startAddLag(btn) {
       .then(function(){ notify('LAG-'+String(newNum).padStart(2,'0')+' dodany ✓'); init(); })
       .catch(function(e){ notify('Błąd: '+e.message.slice(0,60)); });
   }
+  saveBtn.addEventListener('click', function(ev){ ev.preventDefault(); save(); });
   inp.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ev.preventDefault();save();} if(ev.key==='Escape') div.remove(); });
-  if (!sel) inp.addEventListener('blur', save);
+  inp.addEventListener('blur', function(ev){ if(ev.relatedTarget===sel||ev.relatedTarget===saveBtn) return; save(); });
 }
 
 function startAddLagItem(lagId, btn) {
@@ -1543,7 +1553,7 @@ function startEditLagName(lagId, el) {
 }
 
 async function deleteLag(lagId) {
-  var lag = D.lags.find(function(l){ return l.id===lagId; });
+  var lag = D.lags.find(function(l){ return String(l.id)===String(lagId); });
   if (!lag) return;
   var code = 'LAG-'+String(lag.lag_number).padStart(2,'0');
   if (!confirm('Usuń '+code+'? Usunięcie kasuje też wszystkie kryteria i dane tygodniowe.')) return;
