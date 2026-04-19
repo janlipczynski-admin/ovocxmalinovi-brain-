@@ -780,7 +780,7 @@ function cardLag(lag) {
   const dlText   = lag.deadline ? fmtDate(lag.deadline) : 'Brak deadline';
   const wigOpts = '<option value="">— bez WIG —</option>' + D.wigs.map(function(w){ return '<option value="'+w.id+'"'+(lag.wig_id===w.id?' selected':'')+'>'+esc(w.name)+'</option>'; }).join('');
   const wigSelect = D.wigs.length ? `<select data-assign-lag-wig="${lag.id}" onclick="event.stopPropagation()" style="font-size:11px;border:1px solid var(--s2);border-radius:4px;padding:2px 6px;cursor:pointer;background:var(--s1);color:var(--t2);font-family:var(--fm);">${wigOpts}</select>` : '';
-  return `<div class="card" id="lag-card-${lag.id}">
+  return `<div class="card" id="lag-card-${lag.id}" style="cursor:pointer;position:relative;">
     <div class="card-head">
       <a class="card-id lag" href="lag-detail.html?id=${lag.id}" onclick="event.stopPropagation()">LAG-0${lag.lag_number}</a>
       <div class="card-name" data-edit-lag-name="${lag.id}" style="cursor:text;flex:1;" title="Kliknij aby edytować">${esc(lag.name)}</div>
@@ -1749,9 +1749,15 @@ document.getElementById('root').addEventListener('click', function(e) {
   if (delLagItemEl) { e.stopPropagation(); deleteLagItem(delLagItemEl.dataset.delLagItem); return; }
 
   if (e.target.closest('select') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('[data-raci-click]')) return;
-  var card = e.target.closest('[id^="lead-card-"]');
-  if (card) {
-    var leadId = card.id.replace('lead-card-', '');
+  var lagCard = e.target.closest('[id^="lag-card-"]');
+  if (lagCard) {
+    var lagId = lagCard.id.replace('lag-card-', '');
+    window.location.href = 'lag-detail.html?id=' + lagId;
+    return;
+  }
+  var leadCard = e.target.closest('[id^="lead-card-"]');
+  if (leadCard) {
+    var leadId = leadCard.id.replace('lead-card-', '');
     window.location.href = 'lead-detail.html?id=' + leadId;
   }
 });
