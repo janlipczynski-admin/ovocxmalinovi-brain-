@@ -1075,7 +1075,7 @@ function getLeadsForLag(lagId) {
 function reRenderLead(leadId) {
   var el = document.getElementById('lead-card-'+leadId);
   if (!el) return;
-  var lead = D.leads.find(function(l){ return l.id === leadId; });
+  var lead = D.leads.find(function(l){ return String(l.id) === String(leadId); });
   if (!lead) return;
   el.outerHTML = cardLead(lead);
 }
@@ -1083,7 +1083,7 @@ function reRenderLead(leadId) {
 function reRenderLag(lagId) {
   var el = document.getElementById('lag-card-'+lagId);
   if (!el) return;
-  var lag = D.lags.find(function(l){ return l.id === lagId; });
+  var lag = D.lags.find(function(l){ return String(l.id) === String(lagId); });
   if (!lag) return;
   el.outerHTML = cardLag(lag);
 }
