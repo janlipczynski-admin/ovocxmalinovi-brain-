@@ -180,7 +180,7 @@ tfoot td { border-top: 2px solid var(--border); }
 <body>
 
 <nav>
-  <a class="back-btn" href="dashboard-4dx.html">← Powrót</a>
+  <a class="back-btn" id="back-btn" href="dashboard-4dx.html">← Powrót</a>
   <span class="nav-sep">|</span>
   <span class="nav-code" id="nav-code">LAG-—</span>
 </nav>
@@ -313,6 +313,12 @@ function renderHeader() {
   const st    = statusInfo(score, pace);
 
   document.getElementById('nav-code').textContent = lag.code || `LAG-${LAG_ID}`;
+  var backBtn = document.getElementById('back-btn');
+  if (backBtn && lag.area_id) {
+    var backUrl = 'dashboard-4dx.html?area=' + encodeURIComponent(lag.area_id);
+    if (lag.wig_id) backUrl += '&wig=' + encodeURIComponent(lag.wig_id);
+    backBtn.href = backUrl;
+  }
   document.getElementById('header-card').innerHTML = `
     <div class="header-top">
       <div class="header-left">

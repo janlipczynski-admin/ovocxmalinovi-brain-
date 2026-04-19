@@ -551,7 +551,7 @@ nav {
 
 <nav>
   <div style="display:flex;align-items:center;gap:16px;">
-  <a class="back-link" href="index.html">← Powrót</a>
+  <a id="nav-back-link" class="back-link" href="index.html">← Powrót</a>
   <div class="brand">
     <div class="brand-icon">OxM</div>
     <span class="brand-name">OvocxMalinowi</span>
@@ -609,7 +609,7 @@ const BASE = 'https://fssfuricylndtetfktex.supabase.co';
 const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzc2Z1cmljeWxuZHRldGZrdGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODUzMjgsImV4cCI6MjA4OTI2MTMyOH0.Xs6kne86IQpGb8ShvU9zntQDTkQNGBuXKajxnWHOUYQ';
 const HD   = { 'Content-Type':'application/json', apikey:KEY, Authorization:'Bearer '+KEY };
 
-const D = { week:12, currentWeek:12, area:{}, wigs:[], lags:[], leads:[], li:{}, lei:{}, lw:{}, lew:{}, lagLeadLinks:[] };
+const D = { week:12, currentWeek:12, area:{}, wigs:[], lags:[], leads:[], li:{}, lei:{}, lw:{}, lew:{}, lagLeadLinks:[], wigFilter:null };
 
 function updateWeekNav() {
   var wk = D.week, cw = D.currentWeek;
@@ -639,7 +639,9 @@ async function q(path, opts={}) {
 
 async function init() {
   try {
-    const areaParam = new URLSearchParams(window.location.search).get('area') || 'os_malinovi';
+    const params = new URLSearchParams(window.location.search);
+    const areaParam = params.get('area') || 'os_malinovi';
+    D.wigFilter = params.get('wig') || null;
 
     const [cfg, sessions] = await Promise.all([
       q('config?key=eq.current_week'),
@@ -853,12 +855,13 @@ var PAIR_COLORS = [
   '#C42D6A', // różowy
 ];
 
-function renderArea() {
+function renderArea(lagFilter) {
   var pairedLeadIds = new Set();
   var pairIndex = 0;
   var html = '';
+  var visibleLags = lagFilter ? lagFilter : D.lags;
 
-  D.lags.forEach(function(lag) {
+  visibleLags.forEach(function(lag) {
     var linkedLeadIds = getLeadsForLag(lag.id);
     var linkedLeads = linkedLeadIds
       .map(function(id){ return D.leads.find(function(l){ return l.id === id; }); })
@@ -923,7 +926,7 @@ function buildWigWeekBars(wigLags) {
   }).join('');
 }
 
-function renderWigBlock(wig, wigLags, wigNum) {
+function renderWigBlock(wig, wigLags, wigNum, clickable) {
   var a = D.area;
   var wp = 0;
   if (wigLags.length) {
@@ -940,7 +943,11 @@ function renderWigBlock(wig, wigLags, wigNum) {
 
   var weekBars = buildWigWeekBars(wigLags);
 
-  return '<div class="wig-block">'
+  var wigUrl = wig ? ('dashboard-4dx.html?area='+encodeURIComponent(a.id)+'&wig='+encodeURIComponent(wig.id)) : '';
+  var clickStyle = clickable && wig ? 'cursor:pointer;' : '';
+  var clickAttr = clickable && wig ? ' onclick="window.location.href=\''+wigUrl+'\'"' : '';
+
+  return '<div class="wig-block" style="'+clickStyle+'"'+clickAttr+'>'
     +'<div class="wig-hd">'
       +'<div style="flex:1;min-width:0;">'
         +'<div class="wig-label">WIG #'+wigNum+' · '+esc((a.owner||'Jan (CEO)').toUpperCase())+'</div>'
@@ -976,28 +983,41 @@ function renderWigBlock(wig, wigLags, wigNum) {
 
 function paint() {
   var a = D.area;
-  var ip = idealPace();
   var html = '';
 
-  if (D.wigs.length) {
-    // Multi-WIG: jeden blok per WIG
-    D.wigs.forEach(function(wig, i) {
-      var wigLags = D.lags.filter(function(l){ return l.wig_id === wig.id; });
-      html += renderWigBlock(wig, wigLags, i + 1);
-    });
-
-    // Nieprzypisane LAG-i — tylko nagłówek, karty renderuje renderArea() poniżej
-    var assignedWigIds = D.wigs.map(function(w){ return w.id; });
-    var unassignedLags = D.lags.filter(function(l){ return !l.wig_id || assignedWigIds.indexOf(l.wig_id) === -1; });
-    if (unassignedLags.length) {
-      html += '<div style="margin-bottom:8px;margin-top:4px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;">Nieprzypisane LAG-i</div>';
+  // Aktualizuj link powrotu w nav
+  var backLink = document.getElementById('nav-back-link');
+  if (backLink) {
+    if (D.wigFilter) {
+      backLink.href = 'dashboard-4dx.html?area=' + encodeURIComponent(a.id || 'os_malinovi');
+      backLink.textContent = '← ' + esc(a.name || 'Obszar');
+      backLink.style.display = '';
+    } else {
+      backLink.href = 'index.html';
+      backLink.textContent = '← Powrót';
+      backLink.style.display = '';
     }
-  } else {
-    // Fallback: stary tryb — 1 WIG per area
-    html += renderWigBlock(null, D.lags, 1);
   }
 
-  html += renderArea();
+  if (D.wigFilter) {
+    // ── WIDOK WIG: jeden WIG + LAG-i/LEAD-y ──
+    var wig = D.wigs.find(function(w){ return String(w.id) === String(D.wigFilter); });
+    var wigIdx = D.wigs.indexOf(wig);
+    var wigLags = D.lags.filter(function(l){ return String(l.wig_id) === String(D.wigFilter); });
+    if (wig) html += renderWigBlock(wig, wigLags, wigIdx + 1, false);
+    html += renderArea(wigLags);
+  } else if (D.wigs.length) {
+    // ── WIDOK OBSZARU: wszystkie WIG-i klikalne, bez kart LAG/LEAD ──
+    D.wigs.forEach(function(wig, i) {
+      var wigLags = D.lags.filter(function(l){ return String(l.wig_id) === String(wig.id); });
+      html += renderWigBlock(wig, wigLags, i + 1, true);
+    });
+  } else {
+    // Fallback: obszar bez WIG-ów
+    html += renderWigBlock(null, D.lags, 1, false);
+    html += renderArea(D.lags);
+  }
+
   document.getElementById('root').innerHTML = html;
 }
 
@@ -1453,7 +1473,7 @@ function startAddLag(btn) {
   inp.style.cssText = 'width:100%;font-size:13px;font-weight:600;border:none;border-bottom:2px solid #D64E12;outline:none;background:transparent;font-family:var(--f);color:var(--t1);padding:2px 0;';
   div.appendChild(inp);
   var sel = null;
-  if (D.wigs.length > 1) {
+  if (!D.wigFilter && D.wigs.length > 1) {
     sel = document.createElement('select');
     sel.style.cssText = 'font-size:12px;border:1px solid var(--s2);border-radius:4px;padding:4px 8px;background:var(--s1);color:var(--t2);font-family:var(--fm);align-self:flex-start;';
     D.wigs.forEach(function(w, i) {
@@ -1475,7 +1495,7 @@ function startAddLag(btn) {
     if (saved) return; saved = true;
     var val = inp.value.trim(); div.remove();
     if (!val) return;
-    var wigId = D.wigs.length === 1 ? D.wigs[0].id : (sel ? (sel.value || null) : null);
+    var wigId = D.wigFilter || (D.wigs.length === 1 ? D.wigs[0].id : (sel ? (sel.value || null) : null));
     var maxNum = D.lags.length ? Math.max.apply(null, D.lags.map(function(l){ return l.lag_number||0; })) : 0;
     var newNum = maxNum + 1;
     q('lags', {method:'POST', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({area_id:D.area.id, lag_number:newNum, name:val, wig_id:wigId})})

@@ -197,7 +197,7 @@ nav {
 
 <nav>
   <div style="display:flex;align-items:center;gap:16px;">
-    <a class="back-btn" href="dashboard-4dx.html">← Wróć</a>
+    <a class="back-btn" id="back-btn" href="dashboard-4dx.html">← Wróć</a>
     <a class="brand" href="dashboard-4dx.html">
       <div class="brand-icon">OxM</div>
       <span class="brand-name">OvocxMalinowi</span>
@@ -283,6 +283,12 @@ async function init() {
 
     document.getElementById('wtag').textContent = 'T'+D.week;
     document.title = 'LEAD-'+String(D.lead.lead_number||'?').padStart(2,'0')+' — '+D.lead.name;
+    var backBtn = document.getElementById('back-btn');
+    if (backBtn && D.lead.area_id) {
+      var backUrl = 'dashboard-4dx.html?area=' + encodeURIComponent(D.lead.area_id);
+      if (D.lag && D.lag.wig_id) backUrl += '&wig=' + encodeURIComponent(D.lag.wig_id);
+      backBtn.href = backUrl;
+    }
 
     // Linked LAG
     if (links.length) {
