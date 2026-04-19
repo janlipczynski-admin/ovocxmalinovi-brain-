@@ -172,6 +172,9 @@ nav {
 .week-input.current { border-color: var(--bl); background: var(--bl2); }
 .week-input.saving { opacity: .5; }
 .week-input.saved  { border-color: var(--gr); background: var(--gr2); }
+.task-del-btn { background:none;border:none;cursor:pointer;color:var(--t3);font-size:13px;padding:0 0 0 8px;line-height:1;transition:color .12s; }
+.task-del-btn:hover { color:var(--re); }
+.lead-name[data-edit-lead-name]:hover { background:#F0EFE9; border-radius:4px; }
 
 /* STATES */
 .state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 72px 20px; gap: 12px; }
@@ -245,6 +248,29 @@ async function sbUpsert(table, data, onConflict) {
   });
   if (!r.ok) throw new Error(await r.text());
   return r.status === 204 ? null : r.json();
+}
+
+async function sbPatch(table, id, data) {
+  const r = await fetch(BASE+'/rest/v1/'+table+'?id=eq.'+id, {
+    method: 'PATCH', headers: { ...HD, Prefer:'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function sbDelete(table, id) {
+  const r = await fetch(BASE+'/rest/v1/'+table+'?id=eq.'+id, { method:'DELETE', headers:HD });
+  if (!r.ok) throw new Error(await r.text());
+}
+
+async function sbInsert(table, data) {
+  const r = await fetch(BASE+'/rest/v1/'+table, {
+    method: 'POST', headers: { ...HD, Prefer:'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
 }
 
 /* ——— INIT ——— */
@@ -416,8 +442,9 @@ function render() {
     }).join('');
     return '<div class="task-row" id="task-row-'+item.id+'">'
       +'<div class="task-top">'
-        +'<div class="task-name">'+esc(item.name)+'</div>'
+        +'<div class="task-name" data-edit-task-name="'+item.id+'" style="cursor:pointer;flex:1;" title="Kliknij, aby edytować">'+esc(item.name)+'</div>'
         +'<div class="task-pct" style="color:'+barColor+'">'+pct(curV)+'%</div>'
+        +'<button data-del-task="'+item.id+'" class="task-del-btn" title="Usuń zadanie">✕</button>'
       +'</div>'
       +'<div class="task-bar"><div class="task-bar-fill" style="width:'+pct(curV)+'%;background:'+barColor+'"></div></div>'
       +'<div class="week-grid">'+weekCells+'</div>'
@@ -434,7 +461,7 @@ function render() {
           +lagBadge
           +dlBadge
         +'</div>'
-        +'<div class="lead-name">'+esc(lead.name)+'</div>'
+        +'<div class="lead-name" id="lead-name-display" data-edit-lead-name style="cursor:pointer" title="Kliknij, aby edytować">'+esc(lead.name)+'</div>'
       +'</div>'
     +'</div>'
 
@@ -494,6 +521,7 @@ function render() {
     +'<div class="tasks-card">'
       +'<div class="tasks-title">Zadania — edycja tygodniowa</div>'
       +tasksHtml
+      +'<button data-add-task style="display:flex;align-items:center;gap:6px;padding:12px 16px;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;border:none;background:none;width:100%;text-align:left;border-top:1px solid var(--s1);font-family:var(--f);transition:background .12s;" onmouseover="this.style.background=\'var(--s1)\'" onmouseout="this.style.background=\'none\'">+ Dodaj zadanie</button>'
     +'</div>';
 }
 
@@ -573,6 +601,95 @@ document.addEventListener('change', function(e) {
   var val    = inp.value === '' ? 0 : parseFloat(inp.value);
   if (isNaN(val)) return;
   saveWeekly(inp, itemId, week, val);
+});
+
+document.addEventListener('click', function(e) {
+  // Edit LEAD name
+  if (e.target.closest('[data-edit-lead-name]') && !e.target.closest('input')) {
+    var el = document.getElementById('lead-name-display');
+    if (!el) return;
+    var old = D.lead.name || '';
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = old;
+    inp.style.cssText = 'font-size:22px;font-weight:700;letter-spacing:-.02em;font-family:var(--f);border:1px solid var(--bl);border-radius:4px;padding:2px 6px;outline:none;width:100%;';
+    el.replaceWith(inp);
+    inp.focus(); inp.select();
+    var saved = false;
+    function saveLeadName() {
+      if (saved) return; saved = true;
+      var name = inp.value.trim() || old;
+      sbPatch('leads', D.lead.id, { name: name }).then(function() {
+        D.lead.name = name;
+        notify('Nazwa zapisana ✓');
+        render();
+      }).catch(function(err) { notify('Błąd: '+err.message.slice(0,60)); render(); });
+    }
+    inp.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); saveLeadName(); }
+      if (ev.key === 'Escape') render();
+    });
+    inp.addEventListener('blur', saveLeadName);
+    return;
+  }
+
+  // Edit task name
+  var editTask = e.target.closest('[data-edit-task-name]');
+  if (editTask && !e.target.closest('input')) {
+    var itemId = String(editTask.dataset.editTaskName);
+    var item = D.items.find(function(i){ return String(i.id) === itemId; });
+    if (!item) return;
+    var old = item.name || '';
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = old;
+    inp.style.cssText = 'font-size:14px;font-weight:600;font-family:var(--f);border:1px solid var(--bl);border-radius:4px;padding:2px 6px;outline:none;flex:1;width:100%;';
+    editTask.replaceWith(inp);
+    inp.focus(); inp.select();
+    var saved = false;
+    function saveTaskName() {
+      if (saved) return; saved = true;
+      var name = inp.value.trim() || old;
+      sbPatch('lead_items', item.id, { name: name }).then(function() {
+        item.name = name;
+        notify('Zadanie zaktualizowane ✓');
+        render();
+      }).catch(function(err) { notify('Błąd: '+err.message.slice(0,60)); render(); });
+    }
+    inp.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); saveTaskName(); }
+      if (ev.key === 'Escape') render();
+    });
+    inp.addEventListener('blur', saveTaskName);
+    return;
+  }
+
+  // Delete task
+  var delBtn = e.target.closest('[data-del-task]');
+  if (delBtn) {
+    var itemId = String(delBtn.dataset.delTask);
+    if (!confirm('Usuń to zadanie?')) return;
+    sbDelete('lead_items', itemId).then(function() {
+      D.items = D.items.filter(function(i){ return String(i.id) !== itemId; });
+      delete D.weekly[itemId];
+      notify('Zadanie usunięte');
+      render();
+    }).catch(function(err) { notify('Błąd: '+err.message.slice(0,60)); });
+    return;
+  }
+
+  // Add task
+  if (e.target.closest('[data-add-task]')) {
+    var name = prompt('Nazwa nowego zadania:');
+    if (!name || !name.trim()) return;
+    sbInsert('lead_items', { lead_id: LEAD_ID, name: name.trim(), sort_order: D.items.length + 1 }).then(function(rows) {
+      var created = rows[0];
+      D.items.push(created);
+      notify('Zadanie dodane ✓');
+      render();
+    }).catch(function(err) { notify('Błąd: '+err.message.slice(0,60)); });
+    return;
+  }
 });
 
 /* ——— UTILS ——— */
