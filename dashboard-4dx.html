@@ -1290,7 +1290,7 @@ async function toggleLeadItem(itemId) {
 }
 
 function startEditLeadName(leadId, el) {
-  var lead = D.leads.find(function(l){ return l.id===leadId; });
+  var lead = D.leads.find(function(l){ return String(l.id)===String(leadId); });
   if (!lead) return;
   var inp = document.createElement('input');
   inp.type = 'text'; inp.value = lead.name;
@@ -1440,7 +1440,8 @@ function startAddLead(btn) {
 
 function startAddLag(btn) {
   var container = btn.parentElement;
-  if (container.querySelector('.new-lag-input')) return;
+  var wrapper = container.parentElement;
+  if (wrapper.querySelector('.new-lag-input')) return;
   var div = document.createElement('div'); div.className = 'card';
   div.style.cssText = 'padding:14px 20px;margin-bottom:10px;display:flex;flex-direction:column;gap:10px;';
   var inp = document.createElement('input');
@@ -1457,7 +1458,7 @@ function startAddLag(btn) {
     });
     div.appendChild(sel);
   }
-  container.insertBefore(div, btn);
+  wrapper.insertBefore(div, container);
   inp.focus();
   var saved = false;
   function save() {
@@ -1563,14 +1564,14 @@ document.getElementById('overlay').addEventListener('click', e => { if(e.target=
 
 document.getElementById('root').addEventListener('change', function(e) {
   if (e.target.dataset.assignLead) {
-    assignLeadToLag(parseInt(e.target.dataset.assignLead, 10), e.target.value ? parseInt(e.target.value, 10) : null);
+    assignLeadToLag(e.target.dataset.assignLead, e.target.value || null);
   }
   if (e.target.dataset.assignLagWig) {
-    var lagId = parseInt(e.target.dataset.assignLagWig, 10);
+    var lagId = e.target.dataset.assignLagWig;
     var wigId = e.target.value || null;
     q('lags?id=eq.'+lagId, {method:'PATCH', headers:{...HD,'Prefer':'return=representation'}, body:JSON.stringify({wig_id:wigId})})
       .then(function(){
-        var lag = D.lags.find(function(l){ return l.id===lagId; });
+        var lag = D.lags.find(function(l){ return String(l.id)===String(lagId); });
         if (lag) lag.wig_id = wigId;
         notify('WIG przypisany ✓');
         paint();
@@ -1605,10 +1606,10 @@ document.getElementById('root').addEventListener('click', function(e) {
   }
 
   var editLagNameEl = e.target.closest('[data-edit-lag-name]');
-  if (editLagNameEl && !e.target.closest('input')) { e.stopPropagation(); startEditLagName(parseInt(editLagNameEl.dataset.editLagName, 10), editLagNameEl); return; }
+  if (editLagNameEl && !e.target.closest('input')) { e.stopPropagation(); startEditLagName(editLagNameEl.dataset.editLagName, editLagNameEl); return; }
 
   var delLagEl = e.target.closest('[data-del-lag]');
-  if (delLagEl) { e.stopPropagation(); deleteLag(parseInt(delLagEl.dataset.delLag, 10)); return; }
+  if (delLagEl) { e.stopPropagation(); deleteLag(delLagEl.dataset.delLag); return; }
 
   // Edycja wig_description inline
   var wdEl = e.target.closest('[data-edit-wig-desc]');
@@ -1638,8 +1639,8 @@ document.getElementById('root').addEventListener('click', function(e) {
   var dlEl = e.target.closest('[data-edit-lag-deadline]');
   if (dlEl && !e.target.closest('input')) {
     e.stopPropagation();
-    var lagId = parseInt(dlEl.dataset.editLagDeadline, 10);
-    var lag = D.lags.find(function(l){ return l.id === lagId; });
+    var lagId = dlEl.dataset.editLagDeadline;
+    var lag = D.lags.find(function(l){ return String(l.id) === String(lagId); });
     if (!lag) return;
     var inp = document.createElement('input');
     inp.type = 'date';
@@ -1663,22 +1664,22 @@ document.getElementById('root').addEventListener('click', function(e) {
 
   // LEAD CRUD handlers
   var toggleItem = e.target.closest('[data-toggle-lead-item]');
-  if (toggleItem) { e.stopPropagation(); toggleLeadItem(parseInt(toggleItem.dataset.toggleLeadItem, 10)); return; }
+  if (toggleItem) { e.stopPropagation(); toggleLeadItem(toggleItem.dataset.toggleLeadItem); return; }
 
   var editLeadNameEl = e.target.closest('[data-edit-lead-name]');
-  if (editLeadNameEl && !e.target.closest('input')) { e.stopPropagation(); startEditLeadName(parseInt(editLeadNameEl.dataset.editLeadName, 10), editLeadNameEl); return; }
+  if (editLeadNameEl && !e.target.closest('input')) { e.stopPropagation(); startEditLeadName(editLeadNameEl.dataset.editLeadName, editLeadNameEl); return; }
 
   var editLeadItemEl = e.target.closest('[data-edit-lead-item-name]');
-  if (editLeadItemEl && !e.target.closest('input')) { e.stopPropagation(); startEditLeadItemName(parseInt(editLeadItemEl.dataset.editLeadItemName, 10), editLeadItemEl); return; }
+  if (editLeadItemEl && !e.target.closest('input')) { e.stopPropagation(); startEditLeadItemName(editLeadItemEl.dataset.editLeadItemName, editLeadItemEl); return; }
 
   var delLeadEl = e.target.closest('[data-del-lead]');
-  if (delLeadEl) { e.stopPropagation(); deleteLead(parseInt(delLeadEl.dataset.delLead, 10)); return; }
+  if (delLeadEl) { e.stopPropagation(); deleteLead(delLeadEl.dataset.delLead); return; }
 
   var delLeadItemEl = e.target.closest('[data-del-lead-item]');
-  if (delLeadItemEl) { e.stopPropagation(); deleteLeadItem(parseInt(delLeadItemEl.dataset.delLeadItem, 10)); return; }
+  if (delLeadItemEl) { e.stopPropagation(); deleteLeadItem(delLeadItemEl.dataset.delLeadItem); return; }
 
   var addLeadItemEl = e.target.closest('[data-add-lead-item]');
-  if (addLeadItemEl) { e.stopPropagation(); startAddLeadItem(parseInt(addLeadItemEl.dataset.addLeadItem, 10), addLeadItemEl); return; }
+  if (addLeadItemEl) { e.stopPropagation(); startAddLeadItem(addLeadItemEl.dataset.addLeadItem, addLeadItemEl); return; }
 
   var addLeadEl = e.target.closest('[data-add-lead]');
   if (addLeadEl) { e.stopPropagation(); startAddLead(addLeadEl); return; }
@@ -1687,15 +1688,15 @@ document.getElementById('root').addEventListener('click', function(e) {
   if (addLagEl) { e.stopPropagation(); startAddLag(addLagEl); return; }
 
   var addLagItemEl = e.target.closest('[data-add-lag-item]');
-  if (addLagItemEl) { e.stopPropagation(); startAddLagItem(parseInt(addLagItemEl.dataset.addLagItem, 10), addLagItemEl); return; }
+  if (addLagItemEl) { e.stopPropagation(); startAddLagItem(addLagItemEl.dataset.addLagItem, addLagItemEl); return; }
 
   var delLagItemEl = e.target.closest('[data-del-lag-item]');
-  if (delLagItemEl) { e.stopPropagation(); deleteLagItem(parseInt(delLagItemEl.dataset.delLagItem, 10)); return; }
+  if (delLagItemEl) { e.stopPropagation(); deleteLagItem(delLagItemEl.dataset.delLagItem); return; }
 
   if (e.target.closest('select') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('[data-raci-click]')) return;
   var card = e.target.closest('[id^="lead-card-"]');
   if (card) {
-    var leadId = parseInt(card.id.replace('lead-card-', ''), 10);
+    var leadId = card.id.replace('lead-card-', '');
     window.location.href = 'lead-detail.html?id=' + leadId;
   }
 });
